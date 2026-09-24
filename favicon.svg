@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Quiet Bands mark: three equal bands, spacing = height. Ink #111111, Brass #FFBE0B -->
+  <rect width="64" height="64" fill="#111111"/>
+  <rect x="14" y="17" width="36" height="6" fill="#FFBE0B"/>
+  <rect x="14" y="29" width="36" height="6" fill="#FFBE0B"/>
+  <rect x="14" y="41" width="36" height="6" fill="#FFBE0B"/>
+</svg>

@@ -1,0 +1,37 @@
+[build]
+  command = "echo 'Static site, no build needed'"
+  publish = "."
+
+  [build.environment]
+    NODE_VERSION = "20"
+    # The Supabase project URL and publishable (anon) key are public by design:
+    # they ship in the browser so the discovery form can POST leads, and access is
+    # controlled by RLS (anon INSERT only; reads require authentication).
+    # They are also stored as Netlify env vars for the server-side function, which
+    # makes the secrets scanner flag them in HTML. Omit that one key from scanning
+    # rather than disabling the scanner — real secrets (service key, API keys,
+    # Square tokens) stay covered.
+    SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL"
+
+[functions]
+  directory = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://jkilmecbhjepltbianof.supabase.co https://api.anthropic.com; object-src 'none'"
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/downloads/*"
+  [headers.values]
+    Cache-Control = "public, max-age=600"
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+

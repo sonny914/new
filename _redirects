@@ -1,0 +1,24 @@
+# R&D funnel: short, shareable paths for Flighty content. The PDF file itself lives at
+# /downloads/flighty-rd-field-guide.pdf — replace that file to ship a new edition; no page changes needed.
+/field-guide               /downloads/flighty-rd-field-guide.pdf   302
+/field-guide.pdf           /downloads/flighty-rd-field-guide.pdf   302
+/pressure-test             /rd/pressure-test/                       301
+
+# Developer tooling is checked in beside the site; never serve it
+/tools/*                   /404.html   404
+/release/*                 /404.html   404
+/DEPLOYMENT_NOTES.md       /404.html   404
+
+# Legacy property-teams path now lives at /commercial
+/for-property-teams        /commercial/    301!
+/for-property-teams/       /commercial/    301!
+/property-technology       /commercial/    301!
+/property-technology/      /commercial/    301!
+
+# Legacy "Silent Wealth" side-hustle blog: removed content, clean 404s
+# (not redirected to / — unrelated content should die honestly)
+/top-10-side-hustles-for-gen-z     /404.html   404
+/top-10-side-hustles-for-gen-z/    /404.html   404
+/blog/*                            /404.html   404
+/side-hustles/*                    /404.html   404
+/passive-income/*                  /404.html   404
