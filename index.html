@@ -30,6 +30,7 @@
 <link rel="modulepreload" href="/assets/qb.js" />
 <link rel="modulepreload" href="/assets/story/story.js" />
 <link rel="modulepreload" href="/assets/story/engine.js" />
+<link rel="modulepreload" href="/assets/story/signatures.js" />
 <script>document.documentElement.classList.add('js');if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');</script>
 <script type="application/ld+json">
 {
@@ -146,6 +147,22 @@
     <!-- the seven objects (and the ghosts they grow in scene 03) -->
     <div class="story-world" aria-hidden="true">
 
+      <!-- Signature 01: the Three Bands. The mark as a physical object; the artifacts start on its surfaces. -->
+      <div class="qb-obj qb-hero" data-obj="hero">
+        <div class="qb-slab" data-slab="0">
+          <div class="qb-face top"><span class="num">01</span><span class="lbl"><b>01</b> · The promise</span></div>
+          <div class="qb-face under"></div><div class="qb-face front"></div><div class="qb-face back"></div><div class="qb-face side l"></div><div class="qb-face side r"></div>
+        </div>
+        <div class="qb-slab" data-slab="1">
+          <div class="qb-face top"><span class="num">02</span><span class="lbl"><b>02</b> · The operation</span></div>
+          <div class="qb-face under"></div><div class="qb-face front"></div><div class="qb-face back"></div><div class="qb-face side l"></div><div class="qb-face side r"></div>
+        </div>
+        <div class="qb-slab" data-slab="2">
+          <div class="qb-face top"><span class="num">03</span><span class="lbl"><b>03</b> · The record</span></div>
+          <div class="qb-face under"></div><div class="qb-face front"></div><div class="qb-face back"></div><div class="qb-face side l"></div><div class="qb-face side r"></div>
+        </div>
+      </div>
+
       <div class="qb-obj" data-obj="email" data-depth="mid" style="--w:220px;--z:5">
         <span class="qb-tag"></span>
         <div class="qb-card">
@@ -224,6 +241,11 @@
       </div>
 
     </div>
+
+    <!-- Signature 02: the Lenticular (built by JS from the scene 03 and 04 plates) -->
+    <div class="story-lens" aria-hidden="true"></div>
+    <!-- Signature 03: the Blank Page -->
+    <div class="story-void" aria-hidden="true"></div>
 
     <p class="story-index" aria-hidden="true"><b>01</b> / 07 · The work</p>
     <div class="story-note" aria-hidden="true"></div>

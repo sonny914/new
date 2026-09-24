@@ -271,3 +271,29 @@ After reviewing the visual reference (a WebGL studio site with continuous camera
 Not done, by design: real-device iPhone Safari pass (Phase 2), hover notes on links (Phase 3), Lighthouse and screen-reader pass (Phase 5).
 
 Known limitations to review in Phase 2: the stage assumes at least ~560px of viewport height on desktop; the scene readout and the proximity note are decorative only; the two Notes articles still load the unused Supabase CDN script.
+
+---
+
+## SIGNATURE INTERACTIONS (visual ambition correction)
+
+The Phase 1 build was a coherent system and not yet a memorable one. Three signature moments now carry the motion budget. Each is chosen because it argues something; each is meant to survive a five-second screen recording with the logo removed.
+
+### 01 · The Three Bands (Scene 01 → 02)
+
+The Quiet Bands mark, three bars, as a physical object. Three slabs of operational paper stacked in real CSS 3D (`perspective` on the stage, `preserve-3d` world), with ruled ivory tops, turmeric edges, a moving sheen and embossed labels: 01 The promise, 02 The operation, 03 The record. The seven artifacts start printed on those surfaces, each on the layer it belongs to. Scrolling turns the object toward the viewer and lifts the layers apart; the pointer rocks it. Into Scene 02 the artifacts peel off into the workflow while the layers recede into the dark. At the doors the object returns exactly edge-on: three turmeric bars, the logo.
+
+Implementation: `OBJECTS.hero` in `story.js` with function poses (`heroAt`), and the artifacts' Scene 01 poses computed from slab-local coordinates (`onSlab`) so they lie flat on the rotated surfaces. The engine writes z, rotateX and rotateY as part of every pose. `will-change: opacity` would flatten the 3D stack, so the hero's opacity lives on its faces.
+
+### 02 · The Lenticular (Scene 03 → 04)
+
+The same workflow as a lenticular print. The stage is sliced into vertical strips (18 desktop, 12 mobile); each strip is a two-sided card. Face A is the operation with its friction (ghost duplicate, queued approvals, broken line, drifting SOP). Face B is the intervened operation (solid lines, single approval, context carried, human preserved). Scrolling through Scene 04 sweeps the flip across the composition strip by strip; the pointer rocks the viewing angle so both realities shimmer through each other. The two faces are built once from the engine's own `plate()` at the end states of Scenes 03 and 04, so the swap in and out of the lens is pixel-identical to the live world. Camera is locked across both scenes to keep that true.
+
+### 03 · The Blank Page (Scene 05)
+
+"Sometimes the right thing to build is nothing" is a wipe, not a fade. An ivory disc, born at full stage size and scaled from zero, expands from the centre and the seven artifacts are flung off the stage. Copy switches to black on ivory. The page shrinks away as the Pressure Test assembles from the edges.
+
+### Performance notes
+
+All three are `transform` and `opacity` only. Measured in headless Chromium (software rendering, the pessimistic case): Scenes 01, 02, 03, 05, 06 and 07 hold 60fps through a full scrub; the lens scene sits around 30fps on the CPU because 36 rotated faces re-rasterise, and the strip layers are pre-warmed late in Scene 03 so the swap itself is free. On GPU-composited browsers those flips are compositor-only. Strips at rest skip all style writes. Cards inside the lens and on the slabs drop their blurred shadows. Real-device iPhone Safari remains the gate.
+
+Reduced motion shows the seven static plates as before; the hero, lens and blank page are not rendered there.

@@ -2,7 +2,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildTimeline, sceneAt, resolvePoses, poseAt, resolveLink, linkAt, cameraAt, copyAt, project, ease, clamp } from '../assets/story/engine.js';
-import { SCENES, OBJECTS, LINKS, CAMERA, PACKET, BAND } from '../assets/story/story.js';
+import { SCENES, OBJECTS, LINKS, CAMERA, PACKET, BAND, heroAt, onSlab } from '../assets/story/story.js';
+const CTX = { W: 1440, H: 800, mobile: false, pointer: { x: 0, y: 0 } };
 
 const tl = buildTimeline(SCENES);
 
@@ -36,8 +37,8 @@ test('poses inherit forward when a scene defines nothing', () => {
 test('a pose tweens across its window and holds after it', () => {
   const r = resolvePoses(OBJECTS.email, SCENES, false);
   const i = SCENES.findIndex((s) => s.id === 'understand');
-  const before = poseAt(r, i, 0), during = poseAt(r, i, BAND / 2), after = poseAt(r, i, BAND + 0.01);
-  assert.equal(before.x, r[i - 1].x);
+  const before = poseAt(r, i, 0, BAND, CTX), during = poseAt(r, i, BAND / 2, BAND, CTX), after = poseAt(r, i, BAND + 0.01, BAND, CTX);
+  assert.equal(before.x, poseAt(r, i - 1, 1, BAND, CTX).x);
   assert.ok(during.x !== before.x && during.x !== after.x);
   assert.equal(after.x, r[i].x); assert.equal(after.k, 1);
 });
@@ -53,6 +54,7 @@ test('an explicit `at` window delays the tween into the hold', () => {
 test('mobile geometry is used when present and never falls back to desktop x/y silently', () => {
   Object.entries(OBJECTS).forEach(([id, o]) => {
     Object.entries(o.poses).forEach(([sc, p]) => {
+      if (typeof p.d === 'function') { assert.equal(typeof p.m, 'function', `${id}.${sc} has a desktop pose function but no mobile one`); return; }
       if (p.d && (p.d.x !== undefined)) assert.ok(p.m && p.m.x !== undefined, `${id}.${sc} has desktop geometry but no mobile geometry`);
     });
   });
@@ -68,13 +70,40 @@ test('every object ends the story with a pose in the doors scene or fades out be
   });
 });
 
+test('scene 01 poses are functions of the hero orientation and lift off into flat 2D by scene 02', () => {
+  const r = resolvePoses(OBJECTS.sheet, SCENES, false);
+  const start = poseAt(r, 0, 0, BAND, CTX), end = poseAt(r, 0, 1, BAND, CTX);
+  assert.ok(start.rx > 40 && start.ry < 0, 'lies on a tilted slab');
+  assert.ok(Math.abs(start.z - end.z) > 20, 'the layers lift apart through the scene');
+  const flat = poseAt(r, 1, 1, BAND, CTX);
+  assert.equal(flat.rx, 0); assert.equal(flat.ry, 0); assert.equal(flat.z, 0);
+  const mid = poseAt(r, 1, BAND / 2, BAND, CTX);
+  assert.ok(mid.rx > 0 && mid.rx < end.rx, 'rotation tweens out, it does not snap');
+});
+
+test('hero orientation responds to progress and to the pointer', () => {
+  const a = heroAt(0, false), b = heroAt(1, false), c = heroAt(1, false, { x: 1, y: 0 });
+  assert.ok(b.gap > a.gap && b.ry > a.ry);
+  assert.ok(c.ry > b.ry);
+  const p = onSlab(0, 0, 0, 1, 1, CTX), q = onSlab(2, 0, 0, 1, 1, CTX);
+  assert.ok(p.z > q.z, 'slab 0 sits above slab 2');
+});
+
+test('the interruption flings every artifact off the stage', () => {
+  const iN = SCENES.findIndex((s) => s.id === 'nothing');
+  ['email', 'sheet', 'human', 'approval', 'db', 'doc', 'api'].forEach((id) => {
+    const p = poseAt(resolvePoses(OBJECTS[id], SCENES, false), iN, 1, BAND, CTX);
+    assert.ok(Math.abs(p.x) > 60 || Math.abs(p.y) > 55, `${id} is still on stage`);
+  });
+});
+
 test('links resolve, fade between states and draw progressively', () => {
   const link = LINKS.find((l) => l.id === 'email-sheet');
   const r = resolveLink(link, SCENES);
   const iU = SCENES.findIndex((s) => s.id === 'understand');
-  assert.equal(r[0].state, 'faint'); assert.equal(r[iU].state, 'draw');
+  assert.equal(r[0].state, 'hidden'); assert.equal(r[iU].state, 'draw');
   const early = linkAt(r, link.order, iU, 0.05), late = linkAt(r, link.order, iU, 0.6);
-  assert.equal(early.style, 'faint'); assert.equal(late.style, 'draw'); assert.equal(late.draw, 1);
+  assert.equal(early.style, 'draw'); assert.ok(early.draw === 0); assert.equal(late.style, 'draw'); assert.equal(late.draw, 1);
   const iP = SCENES.findIndex((s) => s.id === 'pressure');
   assert.equal(linkAt(r, link.order, iP, 0.9).opacity, 0);
   const iD = SCENES.findIndex((s) => s.id === 'doors');
@@ -87,10 +116,10 @@ test('links only join objects that exist and the packet path is a chain of exist
   Object.keys(PACKET.runs).forEach((sc) => assert.ok(SCENES.some((s) => s.id === sc)));
 });
 
-test('camera pulls back in the interruption and depth projects near objects more', () => {
-  const iN = SCENES.findIndex((s) => s.id === 'nothing');
-  const cam = cameraAt(CAMERA, SCENES, iN, 1, false);
-  assert.ok(cam.s < 1);
+test('camera is locked across the lenticular scenes and depth projects near objects more', () => {
+  const iF = SCENES.findIndex((s) => s.id === 'friction'), iI = SCENES.findIndex((s) => s.id === 'intervene');
+  const endF = cameraAt(CAMERA, SCENES, iF, 1, false), startI = cameraAt(CAMERA, SCENES, iI, 0, false), endI = cameraAt(CAMERA, SCENES, iI, 1, false);
+  assert.deepEqual(endF, startI); assert.deepEqual(startI, endI); // the lens plates must match the world at both swaps
   const near = project({ x: 10, y: 0, s: 1 }, { x: 0, y: 0, s: 1.2 }, 0.8), far = project({ x: 10, y: 0, s: 1 }, { x: 0, y: 0, s: 1.2 }, 0.3);
   assert.ok(near.x > far.x && near.s > far.s);
 });
