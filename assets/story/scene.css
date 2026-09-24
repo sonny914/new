@@ -6,6 +6,7 @@
 
 .story{--navh:63px;--gutter:clamp(24px,6vw,96px);position:relative;background:var(--black);color:var(--ivory)}
 .story-stage{position:relative;overflow:hidden}
+.story-stage::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(120% 90% at 50% 40%,rgba(255,190,11,.045),rgba(17,17,17,0) 55%),radial-gradient(140% 110% at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)}
 .story-world,.story-links{position:absolute;inset:0}
 .story-links{pointer-events:none;overflow:visible}
 

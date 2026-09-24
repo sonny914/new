@@ -93,25 +93,39 @@ export function linkAt(resolvedLink, order, i, u, band = BAND) {
   return { style, opacity: style === 'hidden' ? 0 : opacity, draw };
 }
 
-/** Camera at scene i,u (scale + offset), inheriting forward. */
+/** Camera at scene i,u. Each scene's pose is reached at the end of the transition band and then
+    drifts slowly through the hold (pose + drift at u=1), so the world never sits still. */
 export function cameraAt(camera, scenes, i, u, mobile, band = BAND) {
-  const get = (idx) => { let c = { x: 0, y: 0, s: 1 }; for (let j = 0; j <= idx; j++) { const p = camera[scenes[j].id]; if (p) c = { ...c, ...((mobile && p.m) || p.d || {}) }; } return c; };
-  const cur = get(i), prev = i > 0 ? get(i - 1) : cur;
-  const k = ease(clamp(u / band));
-  return { x: lerp(prev.x, cur.x, k), y: lerp(prev.y, cur.y, k), s: lerp(prev.s, cur.s, k) };
+  const at = (idx) => {
+    let c = { x: 0, y: 0, s: 1, dx: 0, dy: 0, ds: 0 };
+    for (let j = 0; j <= idx; j++) {
+      const p = camera[scenes[j].id]; if (!p) continue;
+      const g = (mobile && p.m) || p.d || {};
+      c = { ...c, ...g, dx: g.dx || 0, dy: g.dy || 0, ds: g.ds || 0 };
+    }
+    return c;
+  };
+  const cur = at(i);
+  const end = (c) => ({ x: c.x + c.dx, y: c.y + c.dy, s: c.s + c.ds });
+  const from = i > 0 ? end(at(i - 1)) : cur;
+  if (u < band) { const k = ease(u / band); return { x: lerp(from.x, cur.x, k), y: lerp(from.y, cur.y, k), s: lerp(from.s, cur.s, k) }; }
+  const k = (u - band) / (1 - band), e = end(cur);
+  return { x: lerp(cur.x, e.x, k), y: lerp(cur.y, e.y, k), s: lerp(cur.s, e.s, k) };
 }
 
 /** Copy block visibility for scene i. First scene is visible at u=0; last never fades out. */
-export function copyAt(i, u, count) {
-  const fadeIn = i === 0 ? 1 : smooth((u - 0.1) / 0.22);
+export function copyAt(i, u, count, delay = 0) {
+  const fadeIn = i === 0 ? 1 : smooth((u - 0.1 - delay) / 0.22);
   const fadeOut = i === count - 1 ? 1 : 1 - smooth((u - 0.86) / 0.12);
   return { opacity: fadeIn * fadeOut, y: (1 - fadeIn) * 14 };
 }
 
-/** Apply camera through depth: near objects zoom and shift more than far ones. */
+/** Apply camera through depth: near objects zoom and shift a lot more than far ones.
+    Far objects barely respond to a push-in; near ones grow and slide past the frame. */
 export function project(p, cam, depth) {
-  const zoom = 1 + (cam.s - 1) * (0.4 + depth);
-  return { x: p.x * zoom + cam.x * depth, y: p.y * zoom + cam.y * depth, s: p.s * zoom };
+  const zoom = 1 + (cam.s - 1) * (0.15 + depth * 1.5);
+  const par = 0.2 + depth * 1.2;
+  return { x: p.x * zoom + cam.x * par, y: p.y * zoom + cam.y * par, s: p.s * zoom };
 }
 
 /* ---------- runtime ---------- */
@@ -245,7 +259,7 @@ export function createEngine(story, dom, opts = {}) {
 
   function writeCopy(i, u) {
     dom.copies.forEach((el, n) => {
-      const c = copyAt(n, n === i ? u : (n < i ? 1 : 0), dom.copies.length);
+      const c = copyAt(n, n === i ? u : (n < i ? 1 : 0), dom.copies.length, SCENES[n].copyDelay || 0);
       const vis = n === i ? c.opacity : (n === dom.copies.length - 1 && i === n ? 1 : 0);
       el.style.opacity = vis.toFixed(3);
       el.style.transform = vis > 0 ? `translate3d(0, ${(n === i ? c.y : 0).toFixed(1)}px, 0)` : 'translate3d(0,0,0)';

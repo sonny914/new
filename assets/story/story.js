@@ -14,24 +14,25 @@ export const SCENES = [
   { id: 'understand', n: '02', name: 'Understand',         weight: 1.3 },
   { id: 'friction',   n: '03', name: 'Find the friction',  weight: 1.3 },
   { id: 'intervene',  n: '04', name: 'Intervene',          weight: 1.3 },
-  { id: 'nothing',    n: '05', name: 'The interruption',   weight: 1.2 },
+  { id: 'nothing',    n: '05', name: 'The interruption',   weight: 1.2, copyDelay: 0.16 },
   { id: 'pressure',   n: '06', name: 'Pressure test',      weight: 1.3 },
   { id: 'doors',      n: '07', name: 'Two doors',          weight: 0.9 },
 ];
 
 /* Camera: scale and offset applied through each object's depth. */
+/* Camera: scale and offset applied through each object's depth. dx/dy/ds = slow drift across the hold. */
 export const CAMERA = {
-  work:       { d: { s: 1.00 }, m: { s: 1.00 } },
-  understand: { d: { s: 1.10 }, m: { s: 1.04 } },
-  friction:   { d: { s: 1.10 }, m: { s: 1.04 } },
-  intervene:  { d: { s: 1.12 }, m: { s: 1.05 } },
-  nothing:    { d: { s: 0.78 }, m: { s: 0.84 } },
-  pressure:   { d: { s: 1.00 }, m: { s: 1.00 } },
-  doors:      { d: { s: 1.00 }, m: { s: 1.00 } },
+  work:       { d: { s: 1.00, x: 0,  dx: -1.5, ds: 0.05 }, m: { s: 1.00, x: 0, dx: 0,   ds: 0.03 } },
+  understand: { d: { s: 1.10, x: 1,  dx: -2,   ds: 0.02 }, m: { s: 1.05, x: 0, dx: 0,   ds: 0.02 } },
+  friction:   { d: { s: 1.12, x: -1, dx: 2,    ds: 0.02 }, m: { s: 1.06, x: 0, dx: 0,   ds: 0.02 } },
+  intervene:  { d: { s: 1.14, x: 1,  dx: -1.5, ds: 0.02 }, m: { s: 1.07, x: 0, dx: 0,   ds: 0.02 } },
+  nothing:    { d: { s: 0.72, x: 0,  dx: 0,    ds: -0.05 }, m: { s: 0.82, x: 0, dx: 0,  ds: -0.03 } },
+  pressure:   { d: { s: 1.00, x: 0,  dx: 1.5,  ds: 0.04 }, m: { s: 1.00, x: 0, dx: 0,   ds: 0.02 } },
+  doors:      { d: { s: 1.00, x: 0,  dx: 0,    ds: 0.02 }, m: { s: 1.00, x: 0, dx: 0,   ds: 0.01 } },
 };
 
 /* Chain geometry shared by scenes 02–04 (desktop: a row; mobile: a column). */
-const ROW = { email: -37, sheet: -22, human: -7, approval: 8, db: 23, api: 38 };
+const ROW = { email: -35, sheet: -21, human: -7, approval: 7, db: 21, api: 35 };
 const COL = { email: -7, sheet: 2.4, human: 11.8, approval: 21.2, db: 30.6, api: 40 };
 const chainD = (id, extra = {}) => ({ x: ROW[id], y: 12, s: 0.76, r: 0, ...extra });
 const chainM = (id, extra = {}) => ({ x: -18, y: COL[id], s: 0.5, r: 0, ...extra });

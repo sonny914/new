@@ -266,6 +266,8 @@ Built and verified locally in Chromium at 1440×860 and 390×780, with and witho
 - `npm test` runs 12 unit tests on the engine's pure functions and the story data (inheritance, tween windows, mobile geometry coverage, link resolution, camera, copy windows).
 - Analytics: `story_scene` fires once per scene per session through the existing `track()` fan-out. Door links carry attribution through `preserveUtm`.
 
+After reviewing the visual reference (a WebGL studio site with continuous camera flight and extreme depth): the camera now drifts slowly through every hold so the world never sits still, the depth curve is steeper so a push-in moves near objects far more than far ones, and the stage carries a faint vignette for light. Particles, morphing and WebGL remain deliberately out.
+
 Not done, by design: real-device iPhone Safari pass (Phase 2), hover notes on links (Phase 3), Lighthouse and screen-reader pass (Phase 5).
 
 Known limitations to review in Phase 2: the stage assumes at least ~560px of viewport height on desktop; the scene readout and the proximity note are decorative only; the two Notes articles still load the unused Supabase CDN script.
