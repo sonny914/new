@@ -219,6 +219,7 @@ assets/story/story.js    the narrative as data: scenes, object poses (desktop + 
 assets/story/engine.js   scroll → progress → poses → transforms; static plates for reduced motion
 assets/story/scene.css   stage, objects, links, copy layer, mobile choreography, no-JS fallback
 assets/story/boot.js     wiring, reduced-motion switch, story_scene analytics via qb.js
+assets/story/signatures.js  the lenticular (scenes 03→04) and the blank page (scene 05) components
 tools/story.test.mjs     unit tests for the engine's pure functions (`npm test`)
 ```
 

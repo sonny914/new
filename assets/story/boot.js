@@ -4,6 +4,7 @@
 import { track, preserveUtm } from '/assets/qb.js';
 import * as story from './story.js';
 import { createEngine } from './engine.js';
+import { createLens, createVoid } from './signatures.js';
 
 const root = document.documentElement;
 const storyEl = document.querySelector('.story');
@@ -35,6 +36,9 @@ if (storyEl) {
   } else {
     window.addEventListener('resize', setNav, { passive: true });
     engine.start();
+    const lensEl = storyEl.querySelector('.story-lens'), voidEl = storyEl.querySelector('.story-void');
+    if (lensEl) engine.addComponent(createLens(engine, lensEl, { strips: 18, stripsMobile: 12 }));
+    if (voidEl) engine.addComponent(createVoid(engine, voidEl, dom.stage));
 
     // one analytics event per scene per session, after a short dwell so a fast scrub doesn't spray events
     const seen = new Set(); let timer = 0;

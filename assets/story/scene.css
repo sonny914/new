@@ -177,3 +177,62 @@ html:not(.js) .qb-obj[data-obj="sheetGhost"],html:not(.js) .qb-obj[data-obj^="ap
 @media (prefers-reduced-motion:reduce){
   .qb-card,.qb-ring,.door,.door .story-h,.story-note{transition:none}
 }
+
+/* ═══════════ SIGNATURES ═══════════ */
+
+/* the stage is a real 3D room; the world and the lens preserve depth inside it */
+.js:not(.rm) .story-stage,.story-live .story-stage{perspective:1400px;perspective-origin:50% 45%}
+.story-live .story-world{transform-style:preserve-3d}
+.story-world.is-hidden,.story-links.is-hidden{opacity:0}
+.story-world-plate{position:absolute;inset:0}
+
+/* ---------- 01 · The Three Bands (hero object) ---------- */
+.qb-hero{--w:640px;--h:240px;--t:22px;--gap:34px;--sheen:50%;--ho:1;width:var(--w);height:var(--h);transform-style:preserve-3d;pointer-events:none;z-index:0;will-change:transform;opacity:1 !important}
+.qb-slab{position:absolute;inset:0;transform-style:preserve-3d}
+.qb-slab[data-slab="0"]{transform:translateZ(var(--gap))}
+.qb-slab[data-slab="1"]{transform:translateZ(0)}
+.qb-slab[data-slab="2"]{transform:translateZ(calc(-1 * var(--gap)))}
+.qb-face{position:absolute;backface-visibility:hidden;-webkit-backface-visibility:hidden;opacity:var(--ho)}
+.qb-slab .lbl,.qb-slab .num{opacity:var(--ho)}
+.qb-face.top{inset:0;transform:translateZ(calc(var(--t) / 2));background:var(--ivory) repeating-linear-gradient(0deg,transparent 0 23px,rgba(17,17,17,.055) 23px 24px);box-shadow:inset 0 0 0 1px rgba(17,17,17,.08)}
+.qb-face.top::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--turmeric);opacity:.9}
+.qb-face.top::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent calc(var(--sheen) - 22%),rgba(255,255,255,.42) var(--sheen),transparent calc(var(--sheen) + 22%));pointer-events:none}
+.qb-face.under{inset:0;transform:rotateX(180deg) translateZ(calc(var(--t) / 2));background:#CDBF9E}
+.qb-face.front{left:0;top:50%;width:var(--w);height:var(--t);margin-top:calc(var(--t) / -2);transform:translateY(calc(var(--h) / 2)) rotateX(-90deg);background:var(--turmeric)}
+.qb-face.back{left:0;top:50%;width:var(--w);height:var(--t);margin-top:calc(var(--t) / -2);transform:translateY(calc(var(--h) / -2)) rotateX(90deg);background:#D9A209}
+.qb-face.side{left:50%;top:50%;width:var(--h);height:var(--t);margin:calc(var(--t) / -2) 0 0 calc(var(--h) / -2);background:#E3AA0B}
+.qb-face.side.r{transform:translateX(calc(var(--w) / 2)) rotateY(90deg) rotateZ(90deg)}
+.qb-face.side.l{transform:translateX(calc(var(--w) / -2)) rotateY(-90deg) rotateZ(90deg)}
+.qb-slab .lbl{position:absolute;left:18px;bottom:12px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#6B6459;transform:translateZ(calc(var(--t) / 2 + 1px));white-space:nowrap}
+.qb-slab .lbl b{color:var(--spice);font-weight:700}
+.qb-slab .num{position:absolute;right:18px;top:12px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:28px;letter-spacing:-.02em;color:rgba(17,17,17,.12);transform:translateZ(calc(var(--t) / 2 + 1px))}
+.story-plate .qb-hero,html:not(.js) .qb-hero,.story-static .qb-hero{display:none}
+.story-stage[data-scene="doors"] .qb-face.top,.story-stage[data-scene="doors"] .qb-face.under,.story-stage[data-scene="doors"] .qb-slab .lbl,.story-stage[data-scene="doors"] .qb-slab .num{opacity:0 !important}
+@media(max-width:760px){.js:not(.rm) .story-stage,.story-live .story-stage{perspective:2200px}.qb-hero{--w:200px;--h:84px;--t:9px}.qb-slab .lbl{font-size:8px;left:10px;bottom:7px;letter-spacing:.18em}.qb-slab .num{font-size:18px;right:10px;top:7px}}
+
+/* ---------- 02 · The Lenticular ---------- */
+.story-lens{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none;opacity:0;z-index:4}
+.story-lens.is-warm{opacity:.002}
+.story-lens.is-on{opacity:1}
+.lens-strip{position:absolute;top:0;height:100%;width:var(--sw);transform-style:preserve-3d;will-change:transform}
+.lens-face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--black)}
+.lens-face.a{transform:translateZ(0)}
+.lens-face.b{transform:rotateY(180deg)}
+.lens-face::after{content:"";position:absolute;inset:0;background:#000;pointer-events:none}
+.lens-face.a::after{opacity:calc(var(--sa,0) * .85)}
+.lens-face.b::after{opacity:calc(var(--sb,1) * .85)}
+.lens-plate{position:absolute;top:0;width:var(--pw);height:100%}
+.lens-plate .story-links{position:absolute;inset:0;width:100%;height:100%}
+.lens-plate .qb-obj{opacity:1}
+.lens-plate .qb-card,.story-stage[data-scene="work"] .qb-card{box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.lens-face{contain:paint}
+html:not(.js) .story-lens,.story-static .story-lens{display:none}
+
+/* ---------- 03 · The Blank Page ---------- */
+.story-void{position:absolute;left:50%;top:50%;width:100px;height:100px;margin:-50px 0 0 -50px;border-radius:50%;background:var(--ivory);transform:scale(0);opacity:0;z-index:10;pointer-events:none;will-change:transform}
+.story-stage[data-void="1"] .story-index{color:#7B7462}
+.story-stage[data-void="1"] .story-index b{color:var(--spice)}
+.story-stage[data-void="1"] .story-copy[data-scene="nothing"] .story-h{color:var(--black)}
+.story-stage[data-void="1"] .story-copy[data-scene="nothing"] .story-sub{color:#5F584A}
+.story-copy[data-scene="nothing"] .story-h,.story-copy[data-scene="nothing"] .story-sub{transition:color .35s var(--ease)}
+html:not(.js) .story-void,.story-static .story-void{display:none}
