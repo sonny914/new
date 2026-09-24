@@ -26,6 +26,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Jost:wght@400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/assets/site.css" />
+<link rel="stylesheet" href="/assets/story/scene.css" />
+<link rel="modulepreload" href="/assets/qb.js" />
+<link rel="modulepreload" href="/assets/story/story.js" />
+<link rel="modulepreload" href="/assets/story/engine.js" />
+<script>document.documentElement.classList.add('js');if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -70,58 +75,201 @@
 
 <main>
 
-<!-- 01 — HERO -->
-<section class="hero">
-  <div class="wrap">
-    <p class="eyebrow rise in">Quiet Bands / Houston</p>
-    <h1 class="display rise in">Software built<br>around the work.</h1>
-    <p class="lede rise in d1">Quiet Bands designs and develops custom software, internal tools, integrations and automation around real operational problems. We understand the work before we build the software.</p>
-    <div class="cta-row rise in d1">
-      <a class="btn" href="/work/">Tell us about the work →</a>
-      <a class="btn btn-ghost" href="/rd/pressure-test/">Pressure-test an idea →</a>
+<!-- ════════ THE STORY: one stage, seven scenes, seven persistent objects ════════ -->
+<section class="story" aria-label="How Quiet Bands works">
+  <div class="story-stage" data-scene="work">
+
+    <!-- 01 — THE WORK -->
+    <div class="story-copy" data-scene="work">
+      <p class="eyebrow">Quiet Bands / Houston</p>
+      <h1 class="story-h">Software built<br>around the work.</h1>
+      <p class="story-sub">Quiet Bands designs and develops custom software, internal tools, integrations and automation around real operational problems. We understand the work before we build the software.</p>
+      <p class="story-hint">Scroll to move through the system</p>
+    </div>
+
+    <!-- 02 — UNDERSTAND -->
+    <div class="story-copy" data-scene="understand">
+      <p class="eyebrow">02 · Understand</p>
+      <h2 class="story-h">Understand the work<br>before building the software.</h2>
+      <p class="story-mono">Email <span class="a">→</span> Sheet <span class="a">→</span> Decision <span class="a">→</span> Approval <span class="a">→</span> Database <span class="a">→</span> API</p>
+    </div>
+
+    <!-- 03 — FIND THE FRICTION -->
+    <div class="story-copy" data-scene="friction">
+      <p class="eyebrow">03 · Observe</p>
+      <h2 class="story-h">Find the friction.</h2>
+      <p class="story-sub">The same request, re-typed, re-approved, reconciled on Fridays. The rules live in one person's head and an SOP nobody has open.</p>
+    </div>
+
+    <!-- 04 — INTERVENE -->
+    <div class="story-copy" data-scene="intervene">
+      <p class="eyebrow">04 · Intervene</p>
+      <h2 class="story-h">Automate the coordination.<br>Carry the context.<br>Preserve the human.</h2>
+      <p class="story-mono">Build only what the work requires.</p>
+    </div>
+
+    <!-- 05 — THE INTERRUPTION -->
+    <div class="story-copy" data-scene="nothing">
+      <h2 class="story-h">Sometimes<br>the right thing to build<br>is nothing.</h2>
+      <p class="story-sub">We investigate whether something deserves to exist before we build it. If the economics can't support the build, that's a finding, not a failed sale.</p>
+    </div>
+
+    <!-- 06 — PRESSURE TEST -->
+    <div class="story-copy" data-scene="pressure">
+      <p class="eyebrow">06 · R&amp;D</p>
+      <h2 class="story-h">Before you build it,<br>try to kill it.</h2>
+      <p class="story-sub">The Pressure Test. Seven questions about the evidence underneath an idea. Transparent rules, no score, and a next step that may be “not yet”.</p>
+      <a class="arrow-link" href="/rd/pressure-test/" data-door>Pressure-test an idea →</a>
+    </div>
+
+    <!-- 07 — TWO DOORS -->
+    <div class="story-copy" data-scene="doors">
+      <div class="doors">
+        <a class="door" href="/work/" data-door>
+          <span class="n">01</span>
+          <span class="story-h" role="heading" aria-level="2">I have real work.</span>
+          <span class="story-sub">A process that runs on spreadsheets, email and memory. Two systems that should talk and don't. Software you've outgrown.</span>
+          <span class="arrow-link">Tell us about the work →</span>
+        </a>
+        <a class="door" href="/rd/pressure-test/" data-door>
+          <span class="n">02</span>
+          <span class="story-h" role="heading" aria-level="2">I have an idea.</span>
+          <span class="story-sub">Something that may or may not deserve to be built. Seven questions about the evidence, then a next step.</span>
+          <span class="arrow-link">Pressure-test the idea →</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- connections -->
+    <svg class="story-links" aria-hidden="true" focusable="false"></svg>
+
+    <!-- the seven objects (and the ghosts they grow in scene 03) -->
+    <div class="story-world" aria-hidden="true">
+
+      <div class="qb-obj" data-obj="email" data-depth="mid" style="--w:220px;--z:5">
+        <span class="qb-tag"></span>
+        <div class="qb-card">
+          <span class="qb-role">Email</span><span class="qb-kind">09:14</span>
+          <b class="qb-title">Sept order change</b>
+          <span class="qb-line">dana@northline.co</span>
+          <span class="qb-line q">“Can we move 40 units to Thursday?”</span>
+        </div>
+      </div>
+
+      <div class="qb-obj" data-obj="sheetGhost" data-depth="near" style="--w:240px;--z:7">
+        <div class="qb-card">
+          <span class="qb-role">Spreadsheet (2)</span><span class="qb-kind">Orders — Sept copy</span>
+          <div class="qb-grid"><span class="h">Order</span><span class="h">Qty</span><span class="h">Ship</span><span>#4470</span><span>120</span><span>Tue</span><span class="hl">#4471</span><span class="hl">40</span><span class="hl">Thu?</span></div>
+        </div>
+      </div>
+      <div class="qb-obj" data-obj="sheet" data-depth="near" style="--w:240px;--z:8">
+        <span class="qb-tag"></span>
+        <div class="qb-card">
+          <span class="qb-role">Spreadsheet</span><span class="qb-kind">Orders — Sept</span>
+          <div class="qb-grid"><span class="h">Order</span><span class="h">Qty</span><span class="h">Ship</span><span>#4470</span><span>120</span><span>Tue</span><span class="hl">#4471</span><span class="hl">40</span><span class="hl">Thu?</span><span>#4472</span><span>60</span><span>Fri</span></div>
+        </div>
+      </div>
+
+      <div class="qb-obj" data-obj="human" data-depth="mid" style="--w:168px;--z:7">
+        <span class="qb-tag"></span>
+        <div class="qb-card">
+          <span class="qb-role">Decision</span>
+          <span class="qb-ring">MO</span>
+          <div><b class="qb-title">M. Ortiz</b><span class="qb-line">Ops lead · decides</span></div>
+        </div>
+      </div>
+
+      <div class="qb-obj" data-obj="approvalQ2" data-depth="far" style="--w:176px;--z:2">
+        <div class="qb-card"><span class="qb-role">Approval</span><span class="qb-kind">#4471</span><span class="qb-stamp">Pending</span></div>
+      </div>
+      <div class="qb-obj" data-obj="approvalQ1" data-depth="far" style="--w:176px;--z:3">
+        <div class="qb-card"><span class="qb-role">Approval</span><span class="qb-kind">#4471</span><span class="qb-stamp">Pending</span></div>
+      </div>
+      <div class="qb-obj" data-obj="approval" data-depth="far" style="--w:176px;--z:4">
+        <span class="qb-tag"></span>
+        <div class="qb-card">
+          <span class="qb-role">Approval</span><span class="qb-kind">#4471</span>
+          <span class="qb-stamp">Pending</span>
+          <span class="qb-line">Waiting 2 days · asked by email</span>
+        </div>
+      </div>
+
+      <div class="qb-obj" data-obj="db" data-depth="far" style="--w:176px;--z:3">
+        <span class="qb-tag"></span>
+        <div class="qb-card">
+          <span class="qb-role">Database</span>
+          <div class="qb-db">
+            <svg viewBox="0 0 26 26" aria-hidden="true"><ellipse cx="13" cy="6" rx="10" ry="3.5" fill="none" stroke="#111" stroke-width="1.4"/><path d="M3 6v14c0 1.9 4.5 3.5 10 3.5s10-1.6 10-3.5V6" fill="none" stroke="#111" stroke-width="1.4"/><path d="M3 13c0 1.9 4.5 3.5 10 3.5s10-1.6 10-3.5" fill="none" stroke="#111" stroke-width="1.4"/></svg>
+            <div><b class="qb-title">orders</b><span class="qb-line">12,408 rows · updated Fri</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qb-obj" data-obj="doc" data-depth="mid" style="--w:172px;--z:5">
+        <span class="qb-tag"></span>
+        <div class="qb-card">
+          <span class="qb-role">Document</span><span class="qb-kind">p. 4</span>
+          <b class="qb-title">SOP v3 · Change requests</b>
+          <span class="qb-rules"><i></i><i></i><i></i><i></i></span>
+        </div>
+      </div>
+
+      <div class="qb-obj" data-obj="api" data-depth="far" style="--w:216px;--z:2">
+        <span class="qb-tag"></span>
+        <div class="qb-card">
+          <span class="qb-role">API</span>
+          <span class="qb-mono">POST /orders/4471 <b>201</b></span>
+          <span class="qb-line">Fulfilment system · pushed nightly</span>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="story-index" aria-hidden="true"><b>01</b> / 07 · The work</p>
+    <div class="story-note" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- ════════ THE RECORD: static reference, after the story resolves ════════ -->
+
+<!-- Production proof -->
+<section class="sec built-sec" id="work" aria-labelledby="b1-h">
+  <div class="wrap sel-grid">
+    <div>
+      <p class="eyebrow">Production proof · In production</p>
+      <h2 class="display" id="b1-h">Frenchies Coffee Bar</h2>
+      <p class="built-caps">Ordering · Loyalty · Payments · Multi-location</p>
+      <p class="built-copy">A Connecticut coffee company running Stratford and Bridgeport needed ordering, rewards and payments that worked at counter speed — without turning the counter into an admin desk. Quiet Bands studied the operation, built the customer-facing layer and the operating system underneath it, and connected it to the Square stack the shop already ran.</p>
+      <p class="pull" style="font-size:clamp(17px,2.2vw,20px)">Great once is hospitality. Great every time is infrastructure.</p>
+      <div class="built-ctas">
+        <a class="btn" href="/work/frenchies/">See the decisions →</a>
+        <a class="arrow-link" href="https://frenchiesapp.com" target="_blank" rel="noopener">Open live product →</a>
+      </div>
+    </div>
+    <div class="comp-sm">
+      <div class="phone p-main" role="img" aria-label="Frenchies app home screen: seasonal specials and order-to-go"><div class="screen"><img class="scr-shot" src="/assets/frenchies/home.png" alt="" aria-hidden="true" loading="lazy" onerror="this.remove()" /><div class="scr-body" aria-hidden="true">
+        <p class="scr-tag">Connecticut's Craft Coffee</p>
+        <p class="scr-h">Coffee, <i>Friends,</i><br>Frenchies.</p>
+        <div class="scr-card"><b>⭐ Frenchies Rewards</b><br>Buy 5, get the 6th free →</div>
+        <p class="scr-label">Seasonal Specials</p>
+        <div class="scr-row"><b>Peach Matcha</b><span class="scr-chip">New</span></div>
+        <div class="scr-row"><b>Costa Rica Roast</b><span class="scr-chip">Single origin</span></div>
+      </div><div class="scr-btn" aria-hidden="true">Order To Go →</div></div></div>
+      <div class="phone p-b" role="img" aria-label="Frenchies app rewards screen: punch cards"><div class="screen"><img class="scr-shot" src="/assets/frenchies/rewards.png" alt="" aria-hidden="true" loading="lazy" onerror="this.remove()" /><div class="scr-body" aria-hidden="true">
+        <p class="scr-tag">Frenchies Rewards</p>
+        <p class="scr-h">Buy 5, get the <i>6th free.</i></p>
+        <div class="punches"><span class="punch f">✓</span><span class="punch f">✓</span><span class="punch f">✓</span><span class="punch"></span><span class="punch star">★</span></div>
+      </div><div class="scr-btn" aria-hidden="true">View Rewards →</div></div></div>
     </div>
   </div>
 </section>
 
-<!-- 02 — TWO VISITOR STATES -->
-<section class="sec" id="contact" aria-labelledby="start-h">
-  <div class="wrap">
-    <p class="eyebrow rise">Start here</p>
-    <h2 class="display rise" id="start-h">Two ways in. Both start with evidence.</h2>
-    <div class="split rise">
-      <div class="split-col">
-        <p class="split-n">01</p>
-        <h3 class="split-h">I have real work.</h3>
-        <p class="split-p">For organizations with an existing workflow, operational problem, manual process, integration problem or system limitation.</p>
-        <ul class="split-for">
-          <li>A process that runs on spreadsheets, email and memory</li>
-          <li>Two systems that should talk to each other and don’t</li>
-          <li>Software you’ve outgrown, or that never fit</li>
-        </ul>
-        <a class="btn" href="/work/">Tell us about the work →</a>
-      </div>
-      <div class="split-col">
-        <p class="split-n">02</p>
-        <h3 class="split-h">I have an idea.</h3>
-        <p class="split-p">For someone deciding whether something deserves to be built at all. Before you build it, try to kill it.</p>
-        <ul class="split-for">
-          <li>Seven questions about the evidence underneath the idea</li>
-          <li>Transparent rules, no score, no fake validation</li>
-          <li>A next step, which may be “not yet”</li>
-        </ul>
-        <a class="btn btn-ghost" href="/rd/pressure-test/">Pressure-test the idea →</a>
-        <p class="quiet" style="font-size:13.5px;margin-top:14px">From <a href="/rd/" style="color:var(--brass);font-weight:600">Flighty.ai R&amp;D</a>, a Quiet Bands process.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 03 — WHAT WE BUILD -->
+<!-- What we design and develop -->
 <section class="sec bone" aria-labelledby="build-h">
   <div class="wrap">
-    <p class="eyebrow rise">What we design and develop</p>
-    <h2 class="display rise" id="build-h">Operational software, shaped by the operation.</h2>
-    <div class="ledger rise">
+    <p class="eyebrow">What we design and develop</p>
+    <h2 class="display" id="build-h">Operational software, shaped by the operation.</h2>
+    <div class="ledger">
       <div class="ledger-row"><span class="n">01</span><span class="k">Custom web applications<span class="v">Customer-facing and staff-facing, built for the specific job.</span></span></div>
       <div class="ledger-row"><span class="n">02</span><span class="k">Internal tools<span class="v">The screens your team actually needs, instead of a spreadsheet with rules nobody wrote down.</span></span></div>
       <div class="ledger-row"><span class="n">03</span><span class="k">Databases<span class="v">A source of truth for the records that currently live in five places.</span></span></div>
@@ -131,54 +279,15 @@
       <div class="ledger-row"><span class="n">07</span><span class="k">AI-assisted systems and workflows<span class="v">Used where it earns its place inside an operation, not as the product.</span></span></div>
       <div class="ledger-row"><span class="n">08</span><span class="k">Operational software<span class="v">Intake, eligibility, routing, exceptions, reporting: the layer between the promise and the delivery.</span></span></div>
     </div>
-    <p class="pull rise">Understand the work before building the software.</p>
   </div>
 </section>
 
-<!-- 02 — THE HANDOFF (the reveal) -->
-<section class="sec" aria-labelledby="ho-h">
+<!-- What you buy -->
+<section class="sec" aria-labelledby="buy-h">
   <div class="wrap">
-    <p class="eyebrow rise">How we think about the work</p>
-    <h2 class="display rise" id="ho-h">One resident. One coffee benefit. Multiple hidden operating states.</h2>
-    <p class="sec-lead rise">The same benefit, passed between three parties. Switch the operating layer on and off.</p>
-
-    <div class="handoff rise">
-      <p class="ho-status">Designed system · In development</p>
-
-      <div class="ho-controls" role="group" aria-label="Operating layer">
-        <button type="button" class="ho-btn" id="ho-off" aria-pressed="true">Without an operating layer</button>
-        <button type="button" class="ho-btn" id="ho-on" aria-pressed="false">With Quiet Bands</button>
-      </div>
-
-      <div class="ho-track">
-        <div class="ho-stop">
-          <span class="who">01 · Property</span>
-          <div class="ho-card" id="ho-start"></div>
-        </div>
-        <div class="ho-stop">
-          <span class="who">02 · Resident</span>
-          <div class="ho-card" id="ho-mid"></div>
-        </div>
-        <div class="ho-stop">
-          <span class="who">03 · Merchant</span>
-          <div class="ho-card" id="ho-end"></div>
-        </div>
-      </div>
-
-      <p class="ho-state" id="ho-state" aria-live="polite"></p>
-
-      <p class="ho-wedge rise">A $6 benefit is simple to the resident. <b>Across hundreds of residents, multiple partners, changing eligibility, exceptions and monthly settlement, the operating problem is not.</b></p>
-    </div>
-  </div>
-</section>
-
-
-<!-- 04b — WHAT YOU BUY -->
-<section class="sec bone" aria-labelledby="buy-h">
-  <div class="wrap">
-    <p class="eyebrow rise">What you buy</p>
-    <h2 class="display rise" id="buy-h">Understand the work. Prove the fix. Build the system.</h2>
-    <div class="ladder rise">
+    <p class="eyebrow">What you buy</p>
+    <h2 class="display" id="buy-h">Understand the work. Prove the fix. Build the system.</h2>
+    <div class="ladder">
       <div class="rung">
         <span class="rung-n">01</span>
         <div>
@@ -201,79 +310,22 @@
         </div>
       </div>
     </div>
+    <p class="pull">We price problems, not software. If the economics can't support the build, we should know that before anyone writes code.</p>
   </div>
 </section>
 
-<!-- 05 — PRODUCTION PROOF -->
-<section class="sec built-sec" id="work" aria-labelledby="b1-h">
-  <div class="wrap sel-grid">
-    <div>
-      <p class="eyebrow rise">Production proof · In production</p>
-      <h2 class="display rise" id="b1-h">Frenchies Coffee Bar</h2>
-      <p class="built-caps rise">Ordering · Loyalty · Payments · Multi-location</p>
-      <p class="built-copy rise">A Connecticut coffee company running Stratford and Bridgeport needed ordering, rewards and payments that worked at counter speed — without turning the counter into an admin desk. Quiet Bands studied the operation, built the customer-facing layer and the operating system underneath it, and connected it to the Square stack the shop already ran.</p>
-      <p class="pull rise" style="font-size:clamp(17px,2.2vw,20px)">Great once is hospitality. Great every time is infrastructure.</p>
-      <div class="built-ctas rise">
-        <a class="btn" href="/work/frenchies/">See the decisions →</a>
-        <a class="arrow-link" href="https://frenchiesapp.com" target="_blank" rel="noopener">Open live product →</a>
-      </div>
-    </div>
-    <div class="comp-sm rise d1 plane" data-depth="0.03">
-      <div class="phone p-main" role="img" aria-label="Frenchies app home screen: seasonal specials and order-to-go"><div class="screen"><img class="scr-shot" src="/assets/frenchies/home.png" alt="" aria-hidden="true" loading="lazy" onerror="this.remove()" /><div class="scr-body" aria-hidden="true">
-        <p class="scr-tag">Connecticut's Craft Coffee</p>
-        <p class="scr-h">Coffee, <i>Friends,</i><br>Frenchies.</p>
-        <div class="scr-card"><b>⭐ Frenchies Rewards</b><br>Buy 5, get the 6th free →</div>
-        <p class="scr-label">Seasonal Specials</p>
-        <div class="scr-row"><b>Peach Matcha</b><span class="scr-chip">New</span></div>
-        <div class="scr-row"><b>Costa Rica Roast</b><span class="scr-chip">Single origin</span></div>
-      </div><div class="scr-btn" aria-hidden="true">Order To Go →</div></div></div>
-      <div class="phone p-b" role="img" aria-label="Frenchies app rewards screen: punch cards"><div class="screen"><img class="scr-shot" src="/assets/frenchies/rewards.png" alt="" aria-hidden="true" loading="lazy" onerror="this.remove()" /><div class="scr-body" aria-hidden="true">
-        <p class="scr-tag">Frenchies Rewards</p>
-        <p class="scr-h">Buy 5, get the <i>6th free.</i></p>
-        <div class="punches"><span class="punch f">✓</span><span class="punch f">✓</span><span class="punch f">✓</span><span class="punch"></span><span class="punch star">★</span></div>
-      </div><div class="scr-btn" aria-hidden="true">View Rewards →</div></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- 06 — BUYER MATH -->
-<section class="sec bone" aria-labelledby="math-h">
+<!-- What it isn't -->
+<section class="sec bone pad-b" aria-labelledby="isnt-h">
   <div class="wrap">
-    <p class="eyebrow rise">Buyer math</p>
-    <h2 class="display rise" id="math-h">We price problems, not software.</h2>
-    <p class="path rise" aria-label="Operating baseline, measurable friction, system intervention, observed change, economic effect"><b>Operating baseline</b><span class="a">→</span><b>Measurable friction</b><span class="a">→</span><b>System intervention</b><span class="a">→</span><b>Observed change</b><span class="a">→</span><b>Economic effect</b></p>
-    <div class="prose rise" style="margin-top:26px">
-      <p>In a residential amenity program, that chain runs through eligible residents, the monthly benefit budget, participating vendors, utilization, manual reconciliation hours, disputed records, and the spend nobody can currently measure.</p>
-      <p>We don't manufacture ROI. Where the data doesn't exist yet, we identify what should start being measured.</p>
-    </div>
-    <p class="pull rise">If the economics can't support the build, we should know that before anyone writes code.</p>
-  </div>
-</section>
-
-<!-- 07 — WHAT IT ISN'T -->
-<section class="sec" aria-labelledby="isnt-h">
-  <div class="wrap">
-    <p class="eyebrow rise">To be clear</p>
-    <h2 class="display rise" id="isnt-h">What this isn't.</h2>
-    <div class="isnt rise">
+    <p class="eyebrow">To be clear</p>
+    <h2 class="display" id="isnt-h">What this isn't.</h2>
+    <div class="isnt">
       <div class="isnt-row"><span class="isnt-k">Not a yes machine</span><span class="isnt-v">The Pressure Test is written so it can tell you not to build yet, even though building is what we sell.</span></div>
       <div class="isnt-row"><span class="isnt-k">Not generic automation</span><span class="isnt-v">The goal isn't to remove the human from the experience. It's to stop making them reconstruct the rules.</span></div>
       <div class="isnt-row"><span class="isnt-k">Not software for its own sake</span><span class="isnt-v">If the economics don't justify a build, that's a finding, not a failed sale.</span></div>
       <div class="isnt-row"><span class="isnt-k">Not an AI agent shop</span><span class="isnt-v">Monitoring and agents get used where they earn their place inside an operating system — not as the product.</span></div>
     </div>
-  </div>
-</section>
-
-<!-- 08 — CTA -->
-<section class="sec bone pad-b" aria-labelledby="contact-h">
-  <div class="wrap">
-    <p class="eyebrow rise">Start the conversation</p>
-    <h2 class="display rise" id="contact-h">Tell us what is happening today.</h2>
-    <p class="sec-lead rise">Not what app you want. Who does the work, how often, what it touches, what goes wrong. One sentence is enough to start. Or email directly: <a href="mailto:jason@quietbands.com" style="color:var(--brass);font-weight:600">jason@quietbands.com</a>.</p>
-    <div class="cta-row rise" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:32px">
-      <a class="btn" href="/work/">Tell us about the work →</a>
-      <a class="btn btn-ghost" href="/rd/">Still deciding? Start with R&amp;D →</a>
-    </div>
+    <p class="sec-lead" style="margin-top:34px">Or email directly: <a href="mailto:jason@quietbands.com" style="color:var(--brass);font-weight:600">jason@quietbands.com</a>.</p>
   </div>
 </section>
 
@@ -299,82 +351,6 @@
   <div class="wrap foot-legal">© Quiet Bands LLC — Houston, Texas</div>
 </footer>
 
-<script>
-  var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  (function(){
-    var els = document.querySelectorAll('.rise:not(.in)');
-    if(REDUCED || !('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return;}
-    var io = new IntersectionObserver(function(en){
-      en.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
-    },{threshold:0.12, rootMargin:'0px 0px -40px 0px'});
-    els.forEach(function(e){io.observe(e)});
-  })();
-
-  (function(){
-    if(REDUCED) return;
-    var planes = [].slice.call(document.querySelectorAll('.plane'));
-    if(!planes.length) return;
-    var ticking=false;
-    function frame(){
-      var vh=window.innerHeight;
-      planes.forEach(function(p){
-        var r=p.getBoundingClientRect();
-        if(r.bottom<-200||r.top>vh+200) return;
-        var off=((r.top+r.height/2)-vh/2)*parseFloat(p.dataset.depth||0);
-        p.style.transform='translate3d(0,'+off.toFixed(1)+'px,0)';
-      });
-      ticking=false;
-    }
-    function onScroll(){ if(!ticking){ticking=true;requestAnimationFrame(frame);} }
-    window.addEventListener('scroll',onScroll,{passive:true});
-    window.addEventListener('resize',onScroll,{passive:true});
-    frame();
-  })();
-
-  /* THE HANDOFF — state is real text; failure never signalled by colour alone. */
-  (function(){
-    var off=document.getElementById('ho-off'), on=document.getElementById('ho-on');
-    var start=document.getElementById('ho-start'), mid=document.getElementById('ho-mid'),
-        end=document.getElementById('ho-end'), state=document.getElementById('ho-state');
-    if(!off||!on) return;
-
-    var DATA = {
-      off: {
-        start:[['Resident','Unit 1408','kept'],['Entitlement','$6 monthly credit','kept'],['Valid','Through the 30th','kept']],
-        mid:[['Identity','Says they live there','lost'],['Entitlement','“A free coffee, I think”','lost'],['Status','Unknown','lost']],
-        end:[['Is it valid?','The barista decides','lost'],['Already used?','No way to tell','lost'],['Who pays?','Sorted out later','lost']],
-        text:'<b>Without an operating layer:</b> the benefit arrives at the counter as a claim. Someone decides on the spot, and nothing downstream knows it happened.'
-      },
-      on: {
-        start:[['Resident','Unit 1408','kept'],['Entitlement','$6 monthly credit','kept'],['Valid','Through the 30th','kept']],
-        mid:[['Identity','Verified resident','kept'],['Entitlement','$6 available','kept'],['Status','Unused this month','kept']],
-        end:[['Is it valid?','Confirmed at the counter','kept'],['Difference owed','Resident pays $1.75','kept'],['Settlement','Recorded for reconciliation','kept']],
-        text:'<b>With Quiet Bands:</b> the rules travel with the request. The merchant fulfills without becoming an administrator, the resident pays only the difference, and the record exists before anyone asks for it.'
-      }
-    };
-
-    function render(el, rows){
-      el.innerHTML = rows.map(function(r){
-        var lost = r[2] === 'lost';
-        var flag = lost ? '<span class="sr-only"> (context lost) </span>' : '<span class="sr-only"> (carried through) </span>';
-        var mark = lost ? '✕ ' : '';
-        return '<span class="ho-field '+r[2]+'"><span class="fk">'+r[0]+flag+'</span><span class="fv">'+mark+r[1]+'</span></span>';
-      }).join('');
-    }
-    function set(mode){
-      var d = DATA[mode];
-      render(start,d.start); render(mid,d.mid); render(end,d.end);
-      state.innerHTML = d.text;
-      on.setAttribute('aria-pressed', mode==='on');
-      off.setAttribute('aria-pressed', mode==='off');
-    }
-    off.addEventListener('click',function(){set('off')});
-    on.addEventListener('click',function(){set('on')});
-    set('off');
-  })();
-
-</script>
-<script type="module" src="/assets/qb.js"></script>
+<script type="module" src="/assets/story/boot.js"></script>
 </body>
 </html>

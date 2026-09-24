@@ -5,7 +5,7 @@
   "description": "Quiet Bands \u2014 software built around the work. Static site + zero-dependency Netlify function.",
   "private": true,
   "scripts": {
-    "test": "node --test tools/triage.test.mjs tools/score-lead.test.mjs",
+    "test": "node --test \"tools/**/*.test.mjs\"",
     "qa": "node tools/qa.mjs",
     "serve": "npx http-server -p 8080 -c-1 ."
   },

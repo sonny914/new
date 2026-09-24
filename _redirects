@@ -22,3 +22,6 @@
 /blog/*                            /404.html   404
 /side-hustles/*                    /404.html   404
 /passive-income/*                  /404.html   404
+
+# Planning documents are checked in beside the site; never serve them
+/docs/*                    /404.html   404
