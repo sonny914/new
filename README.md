@@ -209,3 +209,17 @@ assets/triage.js       Triage rules (pure; `npm test`)
 assets/pressure-test.js, assets/intake.js   Page runtimes
 tools/                 Unit tests and the Playwright QA runner (never served)
 ```
+
+## Homepage story engine (cinematic rebuild)
+
+The homepage (`/`) is a single scroll-driven scene: seven operational objects (email, spreadsheet, decision, approval, database, document, API) that persist across seven scenes and resolve into the two doors (`/work/`, `/rd/pressure-test/`). Plan and storyboard: `docs/CINEMATIC-EXPERIENCE-PLAN.md`.
+
+```
+assets/story/story.js    the narrative as data: scenes, object poses (desktop + mobile), links, camera
+assets/story/engine.js   scroll → progress → poses → transforms; static plates for reduced motion
+assets/story/scene.css   stage, objects, links, copy layer, mobile choreography, no-JS fallback
+assets/story/boot.js     wiring, reduced-motion switch, story_scene analytics via qb.js
+tools/story.test.mjs     unit tests for the engine's pure functions (`npm test`)
+```
+
+To change the choreography, edit poses in `story.js`; the engine needs no changes. Every other route, `qb.js`, `triage.js`, `pressure-test.js`, `intake.js` and the Netlify function are untouched by the rebuild.
