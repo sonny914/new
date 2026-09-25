@@ -78,3 +78,16 @@ Headless Chromium, software rendering, 393×852, a 240-frame scrub with tilt: **
 Unchanged: the engine, the slats, tilt, thumb, scroll, purple, reduced motion (which now carries the new type and the QUIET-over-BANDS order without the shadow).
 
 Measured after: p50 16.7 ms, worst 16.8 ms. 37 tests.
+
+---
+
+## v1.2 · ONE MOBILE COMPOSITION
+
+Brief: the void between the wordmark and the workflow separated two ideas. Recomposed with the existing elements only.
+
+- The workflow rule is now the ground BANDS stands on: `--line-top = --b-top + --b × .8 + 5px`, the baseline of BANDS. The letters' feet occlude the rule (the rule is at depth 0, BANDS at +80); under tilt the letters slide off it, which is the moment the viewer learns they are separate.
+- REQUEST and COMPLETE flank the rule beneath the letters; COMPLETE sits under the D and S, crossed by their strokes, on purpose.
+- The Houston descriptor is the base of the object, 22 px under the rule, on the same left edge as REQUEST.
+- The whole object (QUIET top to descriptor bottom, 332 → 505 px on a 393 × 852 window) is centred in the window with air above and below. Desktop takes the same rule: the line at BANDS's baseline inside its span, the descriptor under it.
+
+Layer measurements at rest: QUIET 332–417, BANDS 392–461, line 455–476, descriptor 488–505.
