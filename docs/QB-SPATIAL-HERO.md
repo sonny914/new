@@ -91,3 +91,16 @@ Brief: the void between the wordmark and the workflow separated two ideas. Recom
 - The whole object (QUIET top to descriptor bottom, 332 → 505 px on a 393 × 852 window) is centred in the window with air above and below. Desktop takes the same rule: the line at BANDS's baseline inside its span, the descriptor under it.
 
 Layer measurements at rest: QUIET 332–417, BANDS 392–461, line 455–476, descriptor 488–505.
+
+---
+
+## v1.3 · THE STRATUM (purple layer only; motion system locked)
+
+Treatment 2 of three proposed. The engine, tilt, thumb, scroll, timing and the edge-on slat mechanism are untouched; only what each slat carries and where it stands changed.
+
+- No vertical staircase: every slat stands on the rule itself (`top: var(--line-top)`), so under a change of angle the hidden language separates along the REQUEST → COMPLETE axis by depth and scale, not down a diagonal.
+- Packed: the six positions moved from 16–86% of the rule to 22–65%, so the nearer words occlude the deeper ones (real occlusion: the preserve-3d context sorts by depth).
+- Lowercase, quieter: 12.5 px shrinking 0.7 px per depth step (14 px on desktop), tracking 0.01em, alpha .6 fading .06 per step. Purple still arrives per word as it becomes legible.
+- The existing six words stay as temporary content while the behaviour is evaluated.
+
+Result at full tilt: a band of activity on the line, some words half hidden behind the one in front, deeper ones smaller and dimmer. At six degrees: a row of slivers standing in the rule. At rest: the rule.
