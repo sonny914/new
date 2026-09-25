@@ -9,7 +9,7 @@
   --q:27vw;                           /* QUIET's size; the composition is built from it */
   --q-left:-5vw; --q-top:34vh;         /* the Q shows, the T runs off the right; the object sits just above centre, the air is below it (v1.4.3) */
   --b:22vw; --b-left:24vw;             /* the S runs off the right */
-  --b-top:calc(var(--q-top) + var(--q) * .56);   /* BANDS's cap line sits inside QUIET's lower fifth: the overlap */
+  --b-top:calc(var(--q-top) + var(--q) * .67);   /* BANDS's cap line just inside QUIET's foot: a 13% interlock, not a fifth (v1.4.4) */
   --line-left:22px; --line-width:calc(100vw - 44px);
   --line-top:calc(var(--b-top) + var(--b) * .8 + 5px);   /* the rule is the ground BANDS stands on: the letters' feet occlude it */
   --final-left:22px; --final-width:calc(100vw - 44px);
@@ -35,7 +35,7 @@ a{color:inherit;text-decoration:none;touch-action:manipulation}
 /* the wordmark: one sculpture at two depths */
 .quiet,.qshadow{left:var(--q-left);top:var(--q-top);font-size:var(--q);font-weight:900;font-stretch:125%;line-height:.8;letter-spacing:-.012em;text-transform:uppercase;white-space:nowrap}
 .qshadow{color:#000;translate:.032em .05em}     /* the light is upper-left; the shadow falls down and right onto BANDS, and only exists where BANDS is */
-.bands{left:var(--b-left);top:var(--b-top);font-size:var(--b);font-weight:200;font-stretch:110%;line-height:.8;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.bands{left:var(--b-left);top:var(--b-top);font-size:var(--b);font-weight:300;font-stretch:110%;line-height:.8;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
 
 /* the line: the reference depth. The six slats stand in it. */
 .line{left:var(--line-left);top:var(--line-top);width:var(--line-width);translate:0 -50%;display:flex;align-items:center;gap:14px;font-size:15px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap}

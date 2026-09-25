@@ -21,7 +21,7 @@ await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 const FONT_DIR = process.env.FONT_DIR;
 
-const LIMITS = { gapQL: 16, ovQB: 12, feet: 16, gapLW: 6 };   // px, CSS
+const LIMITS = { gapQL: 16, ovQB: 0, feet: 16, gapLW: 6 };   // ovQB 0: the two words may touch, never separate   // px, CSS
 const VIEWPORTS = [[393, 680, 'iPhone in-app browser'], [393, 852, 'iPhone 15 Pro'], [430, 932, 'iPhone Pro Max']];
 const grid = [];
 for (const p of [0, 0.12, 0.25]) for (const vy of [-1, 0, 1]) for (const vx of [-1, 0, 1]) grid.push([vx, vy, p]);

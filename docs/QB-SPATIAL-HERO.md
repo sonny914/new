@@ -137,3 +137,9 @@ Acceptance: `npm run accept:hero` (Playwright) drives the engine through x, y �
 - **The drift.** `measure()` read every object's rect with its 3D transform still applied, so a resize mid-interaction (the in-app browser's toolbar collapsing on scroll, a rotation, a font swap) baked the current tilt and scroll offsets into the layout positions, and the scene moved a little further on every resize. Reproduced headless: 36 px of drift after five resizes while tilted and scrolled. `measure()` now reads with transforms off and restores them, wakes the engine afterwards, and runs again when the fonts finish loading, since the first measure can see fallback metrics. Drift after the same five resizes: 0 px. The stability case is part of `npm run accept:hero`.
 - **Start.** `--q-top` 34vh: 39 was too low in the in-app browser, 30 too high. The object now spans 34–57% of the in-app viewport and 34–54% of a full window.
 - Lab asset version bumped to `?v=143`.
+
+### v1.4.4 · BANDS weight and the interlock
+
+- **BANDS 200 → 300.** At 22vw the 200 hairline read as skinny against QUIET at 900; 300 keeps the light/heavy pairing but gives the strokes body. Width and tracking unchanged.
+- **Less overlap.** BANDS's cap line moves from 56% to 67% of QUIET's size: the interlock is 13% of QUIET (about 14 px on a phone) instead of 24% (25 px). The rule and descriptor move down with BANDS; the start stays at 34vh. The acceptance rule for the interlock changes from "at least 12 px" to "may touch, never separate": worst case across the grid is 3 px at full backward pitch while scrolling in.
+- Lab asset version `?v=144`.
