@@ -108,3 +108,13 @@ Result at full tilt: a band of activity on the line, some words half hidden behi
 ### v1.3.1 · flat stratum
 
 The remaining diagonal was vertical parallax: a phone in the hand always carries some pitch, and each deeper slat moved further in Y for it, a staircase by depth. The slats' Y parallax is removed; the six share one Y origin (measured: all six centres at the same pixel row under ±0.35 of pitch, both tilt directions) and separate only by X displacement, depth, scale and occlusion. Everything else, including the vertical parallax of every other object, is unchanged.
+
+## v1.4 · GEOMETRY TEST (words removed; motion system locked)
+
+The open question after the Impeccable critique: can geometry alone communicate concealed structure, or were the six words doing all the work? This test removes the words and leaves the surfaces.
+
+- Each slat is now an empty, uniform plane: 48 × 14 px on mobile, 64 × 16 px on desktop, a 1 px outline, black fill so a nearer plane occludes a deeper one. Same positions on the rule, same depths, same transforms, thresholds and choreography; the render loop is untouched.
+- Edge-on at the canonical viewpoint they collapse into the rule and show nothing. Violet arrives with exposure through the existing legibility ramp, now on the outline.
+- Nothing is added: no ticks at rest, no camera-facing elements. Reduced motion shows six violet outlines in a row.
+
+Judgement from the frames: at six degrees the row of small parallelograms on the rule reads as tabs or pagination, not as structure. At full tilt the overlapping outlines read as wireframe panels: cards in outline. In the scroll passage the receding stack does read as depth, but as a deck of panels, not as a process. The outline is a drawn box, and a drawn box is a card. Geometry in this form carries "six things at six depths" and nothing more; the words carried the meaning. Kept as a reference frame for the next treatment.
