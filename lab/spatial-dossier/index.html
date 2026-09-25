@@ -27,6 +27,9 @@
       </header>
 
       <!-- instruments on the stage, outside the object -->
+      <span class="big" aria-hidden="true">T.</span>
+      <i class="octa" aria-hidden="true"></i>
+      <i class="accent" aria-hidden="true"></i>
       <svg class="crosshair" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M40 4v20M40 56v20M4 40h20M56 40h20" stroke="currentColor" stroke-width=".8"/><circle cx="40" cy="40" r="1.6" fill="currentColor"/></svg>
       <span class="reg mono">®</span>
 
@@ -43,6 +46,9 @@
           <!-- Z0 · shadow -->
           <div class="layer l-shadow" data-layer="shadow" aria-hidden="true"></div>
 
+          <!-- Z0.5 · two more dark panels stepping up and right -->
+          <div class="layer l-stack" data-layer="stack" aria-hidden="true"><i class="s1"></i><i class="s2"></i></div>
+
           <!-- Z1 · scratched acrylic back panel with the wire globe -->
           <div class="layer l-acrylic" data-layer="acrylic" aria-label="System schematic">
             <svg class="globe" viewBox="0 0 200 130" aria-hidden="true">
@@ -54,12 +60,15 @@
               </g>
               <path d="M150 28l22 -14m-6 2l6 -2 -1 6" fill="none" stroke="#C4B2E0" stroke-width=".9"/>
             </svg>
+            <span class="ruler" aria-hidden="true"></span>
+            <i class="tab t1"></i><i class="tab t2"></i>
             <span class="a-id mono">SYS-DIAGRAM 001 · REV C</span>
             <span class="a-sheet mono">SHEET 1 / 1</span>
           </div>
 
           <!-- Z1.5 · gold-framed plate, upper right, bleeding off the object -->
           <div class="layer l-goldplate" data-layer="goldplate" aria-hidden="true">
+            <span class="gp-inner"></span>
             <span class="gp-tag mono">QB</span>
           </div>
 

@@ -13,12 +13,13 @@ const TAP_MS = 220, MOVE_PX = 8;
 const LAYERS = [
   { id: 'verdict',   baseZ: -150, px: -0.05, py: -0.05, holdZ: -20,  holdX: 0,   holdY: 0,   rot: 0.10 },
   { id: 'shadow',    baseZ: -80,  px: -0.12, py: -0.12, holdZ: -60,  holdX: 0,   holdY: 0,   rot: 0.15 },
+  { id: 'stack',     baseZ: -62,  px: -0.22, py: -0.18, holdZ: -120, holdX: 14,  holdY: -70, rot: 0.35 },
   { id: 'acrylic',   baseZ: -40,  px: -0.30, py: -0.25, holdZ: -90,  holdX: 6,   holdY: -48, rot: 0.50 },
   { id: 'goldplate', baseZ: -26,  px: -0.10, py: -0.10, holdZ: -60,  holdX: 18,  holdY: -40, rot: 0.60 },
   { id: 'photo',     baseZ: -8,   px:  0.30, py:  0.25, holdZ: -10,  holdX: -10, holdY: -64, rot: 0.80 },
   { id: 'glass',     baseZ:  10,  px:  0.60, py:  0.50, holdZ:  36,  holdX: 14,  holdY: 30,  rot: 1.00 },
-  { id: 'ink',       baseZ:  22,  px:  0.85, py:  0.75, holdZ:  70,  holdX: 16,  holdY: 66,  rot: 1.05 },
-  { id: 'text',      baseZ:  30,  px:  1.00, py:  0.90, holdZ:  90,  holdX: 8,   holdY: 80,  rot: 1.10 },
+  { id: 'ink',       baseZ:  22,  px:  0.85, py:  0.75, holdZ:  70,  holdX: 16,  holdY: 52,  rot: 1.05 },
+  { id: 'text',      baseZ:  30,  px:  1.00, py:  0.90, holdZ:  90,  holdX: 8,   holdY: 58,  rot: 1.10 },
   { id: 'gold',      baseZ:  44,  px:  1.40, py:  1.20, holdZ: 120,  holdX: 6,   holdY: 0,   rot: 1.20 },
 ];
 
@@ -109,7 +110,7 @@ export function createDossier(root) {
     // layers
     LAYERS.forEach((L) => {
       const t = layerTransform(L, s), el = els[L.id];
-      el.style.transform = `translate3d(${t.x.toFixed(2)}px, ${t.y.toFixed(2)}px, ${t.z.toFixed(1)}px) rotateX(${t.rx.toFixed(2)}deg) rotateY(${t.ry.toFixed(2)}deg)`;
+      el.style.transform = `translate3d(${t.x.toFixed(2)}px, ${t.y.toFixed(2)}px, ${t.z.toFixed(1)}px) rotateX(${t.rx.toFixed(2)}deg) rotateY(${t.ry.toFixed(2)}deg) rotateZ(var(--tilt))`;
       const o = t.o;
       if (L.id === 'verdict') el.style.setProperty('--reveal', clamp(Math.max(sep * 1.3 - 0.1, tl.travel * 1.2)).toFixed(3));   // the method only exists once the file is opened
       el.style.opacity = o.toFixed(3);

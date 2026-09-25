@@ -21,9 +21,10 @@ a{color:inherit;text-decoration:none}
 .track{position:relative;height:560vh}
 .stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:grid;place-items:center;
   background:
-    radial-gradient(14% 9% at 12% 34%,rgba(214,150,60,.22),transparent 70%),
-    radial-gradient(10% 6% at 30% 30%,rgba(214,150,60,.14),transparent 70%),
-    radial-gradient(18% 10% at 8% 56%,rgba(201,164,92,.12),transparent 70%),
+    radial-gradient(22% 13% at 10% 36%,rgba(224,160,70,.30),transparent 68%),
+    radial-gradient(12% 7% at 30% 31%,rgba(224,160,70,.18),transparent 70%),
+    radial-gradient(26% 14% at 6% 58%,rgba(201,164,92,.16),transparent 70%),
+    radial-gradient(9% 5% at 22% 66%,rgba(224,160,70,.14),transparent 70%),
     radial-gradient(120% 70% at 50% 10%,rgba(107,63,160,.18),transparent 60%),
     radial-gradient(90% 60% at 50% 110%,rgba(59,42,90,.3),transparent 60%),
     var(--ink)}
@@ -41,14 +42,17 @@ a{color:inherit;text-decoration:none}
 .dossier{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;outline:none;cursor:grab}
 .dossier:focus-visible{outline:1px solid var(--gold);outline-offset:10px}
 .dossier.is-inspect{cursor:grabbing}
-.layer{position:absolute;inset:0;will-change:transform,opacity;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:4px;transform:translate3d(0,0,0)}
+.layer{--tilt:0deg;position:absolute;inset:0;will-change:transform,opacity;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:4px;transform:translate3d(0,0,0)}
 
 /* instruments */
 .crosshair{position:absolute;left:18px;top:calc(76px + env(safe-area-inset-top));width:56px;height:56px;color:var(--ivory-2);opacity:.7;z-index:12;pointer-events:none}
 .reg{position:absolute;left:22px;top:calc(56px + env(safe-area-inset-top));font-size:9px;color:var(--mute);z-index:12}
+.big{position:absolute;left:0;top:50%;translate:calc(-100% + 0.78em) -46%;z-index:2;pointer-events:none;font-weight:800;font-variation-settings:'wdth' 75;font-size:clamp(120px,34vw,300px);line-height:1;letter-spacing:-.02em;text-transform:uppercase;white-space:nowrap;background:linear-gradient(170deg,#EDE4D2 0%,#C9BEAA 48%,#E2D8C4 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;opacity:.94}
+.octa{position:absolute;left:44px;top:calc(50% + 56px);width:12px;height:12px;z-index:3;background:var(--gold);clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%)}
+.accent{position:absolute;left:-6px;bottom:calc(72px + env(safe-area-inset-bottom));width:22px;height:22px;border:1.5px solid #8F6BC7;border-radius:3px;z-index:3;opacity:.8}
 
 /* Z-1 verdict: the plate under everything */
-.l-verdict{--reveal:0;background:#0F0B16 url(/assets/lab/plate-acrylic.jpg) center/cover;border:1px solid rgba(233,226,240,.07);display:flex;flex-direction:column;justify-content:flex-end;padding:0 16px 31%;overflow:hidden}
+.l-verdict{--reveal:0;background:#0F0B16 url(/assets/lab/plate-acrylic.jpg) center/cover;border:1px solid rgba(233,226,240,.07);display:flex;flex-direction:column;justify-content:flex-end;padding:0 16px 41%;overflow:hidden}
 .l-verdict::before{content:"";position:absolute;inset:0;background:rgba(11,9,16,.62)}
 .v-stamp{position:relative;font-weight:800;font-variation-settings:'wdth' 75;font-size:clamp(17px,5.6vw,26px);white-space:nowrap;line-height:1;text-transform:uppercase;letter-spacing:-.01em;color:var(--ivory);opacity:var(--reveal)}
 .v-line{position:relative;margin-top:6px;font-size:7px;letter-spacing:.2em;opacity:var(--reveal)}
@@ -57,21 +61,35 @@ a{color:inherit;text-decoration:none}
 .l-shadow{inset:-6% -8%;border-radius:40%;background:radial-gradient(60% 60% at 50% 50%,rgba(0,0,0,.85),rgba(0,0,0,.55) 45%,transparent 72%)}
 .l-shadow::before{content:"";position:absolute;inset:8% 10%;border-radius:40%;background:radial-gradient(50% 50% at 50% 45%,rgba(107,63,160,.2),transparent 70%)}
 
+/* Z0.5 stepped dark panels */
+.l-stack{inset:6% 8% 0 0;pointer-events:none}
+.l-stack i{position:absolute;inset:0;border-radius:6px;background:#0E0B14 url(/assets/lab/plate-acrylic.jpg) center/cover;border:1px solid rgba(196,178,224,.12)}
+.l-stack i::after{content:"";position:absolute;inset:0;border-radius:6px;background:rgba(9,7,13,.72)}
+.l-stack .s1{transform:translate(4%,-3.5%)}
+.l-stack .s2{transform:translate(8%,-7%)}
+
 /* Z1 scratched acrylic back panel */
-.l-acrylic{inset:6% 8% 0 0;background:#130E1C url(/assets/lab/plate-acrylic.jpg) center/cover;border:1px solid rgba(196,178,224,.16);overflow:hidden;clip-path:inset(0 0 22% 0 round 4px)}
-.l-acrylic::before{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/420px;opacity:.55}
-.l-acrylic::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,9,16,.15),rgba(11,9,16,.55) 70%)}
+.l-acrylic{inset:6% 8% 0 0;border-radius:6px;background:#0F0B15 url(/assets/lab/plate-acrylic.jpg) center/cover;border:1px solid rgba(196,178,224,.18);overflow:hidden;clip-path:inset(0 0 22% 0 round 6px)}
+.l-acrylic::before{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/380px;opacity:.75;z-index:1}
+.l-acrylic::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,7,13,.42),rgba(9,7,13,.7) 70%)}
+.ruler{position:absolute;left:10%;right:10%;top:0;height:6px;z-index:1;background:repeating-linear-gradient(90deg,rgba(196,178,224,.55) 0 1px,transparent 1px 9px)}
+.tab{position:absolute;top:-1px;width:26px;height:9px;background:linear-gradient(180deg,var(--gold-hi),var(--gold-lo));border-radius:0 0 2px 2px;z-index:2;opacity:.9}
+.tab.t1{right:14%}
+.tab.t2{right:4%}
 .globe{position:absolute;left:5%;top:8%;width:52%;height:auto;z-index:1}
 .a-id{position:absolute;left:12px;top:10px;font-size:7.5px;letter-spacing:.2em;color:var(--ivory-2);z-index:1}
 .a-sheet{position:absolute;right:12px;top:10px;font-size:7.5px;letter-spacing:.2em;color:var(--mute);z-index:1}
 
 /* Z1.5 gold-framed plate */
-.l-goldplate{inset:2% -7% 46% 46%;background:#1A1220 url(/assets/lab/plate-gold.jpg) center/cover;border:1px solid rgba(201,164,92,.5);box-shadow:0 18px 40px -22px rgba(0,0,0,.9)}
-.l-goldplate::after{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/380px;opacity:.35}
-.gp-tag{position:absolute;left:10px;top:10px;font-size:8px;font-weight:700;letter-spacing:.2em;color:#F1DCA6;background:rgba(80,58,22,.85);border:1px solid rgba(201,164,92,.7);padding:3px 6px 2px}
+.l-goldplate{inset:2% -7% 46% 46%;border-radius:4px;background:#8A6B2E url(/assets/lab/plate-gold.jpg) center/cover;border:1px solid rgba(241,220,166,.5);box-shadow:0 18px 40px -22px rgba(0,0,0,.95),inset 0 1px 0 rgba(241,220,166,.5)}
+.l-goldplate::after{content:"";position:absolute;inset:0;border-radius:4px;background:url(/assets/lab/scratch.png) center/300px;opacity:.4}
+.gp-inner{position:absolute;inset:11px;border-radius:2px;background:#0F0B15 url(/assets/lab/plate-acrylic.jpg) center/cover;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6)}
+.gp-inner::before{content:"";position:absolute;inset:0;background:rgba(9,7,13,.55)}
+.gp-inner::after{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/240px;opacity:.9}
+.gp-tag{position:absolute;left:-6px;top:-8px;z-index:2;font-size:8px;font-weight:700;letter-spacing:.2em;color:#F1DCA6;background:rgba(80,58,22,.85);border:1px solid rgba(201,164,92,.7);padding:3px 6px 2px}
 
 /* Z2 photograph + lenticular */
-.l-photo{inset:24% 24% 30% 6%;border-radius:2px;overflow:hidden;background:#1A1324;box-shadow:0 26px 50px -24px rgba(0,0,0,.95)}
+.l-photo{--tilt:-2.2deg;inset:21% 24% 38% 6%;border-radius:2px;overflow:hidden;background:#1A1324;box-shadow:0 26px 50px -24px rgba(0,0,0,.95);clip-path:polygon(0 1.5%,3% 0,55% .8%,97% 0,100% 4%,99.2% 52%,100% 97%,96% 100%,40% 99%,2% 100%,0 96%,.8% 40%)}
 .l-photo::after{content:"";position:absolute;inset:0;background:url(/assets/lab/grain.png) repeat;background-size:64px;opacity:.14;pointer-events:none}
 .lens{position:absolute;inset:0;--lens:0;--shift:0px}
 .lens-a,.lens-b{position:absolute;inset:0;background:url(/assets/lab/plate-photo.jpg) center/cover}
@@ -93,19 +111,18 @@ a{color:inherit;text-decoration:none}
 .film-id{position:absolute;left:10px;bottom:8px;font-size:7px;letter-spacing:.2em;color:var(--ivory-2)}
 
 /* Z3 smoked glass */
-.l-glass{inset:48% -3% 24% 40%;border-radius:3px;background:linear-gradient(160deg,rgba(28,21,39,.62),rgba(20,16,28,.5) 60%,rgba(59,42,90,.42));border:1px solid rgba(233,226,240,.14);box-shadow:inset 0 1px 0 rgba(233,226,240,.16)}
+.l-glass{inset:44% -3% 30% 40%;border-radius:3px;background:linear-gradient(160deg,rgba(28,21,39,.62),rgba(20,16,28,.5) 60%,rgba(59,42,90,.42));border:1px solid rgba(233,226,240,.14);box-shadow:inset 0 1px 0 rgba(233,226,240,.16)}
 .l-glass::before{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/300px;opacity:.5}
 
 /* Z4 ink notes */
-.l-ink{inset:56% -2% 4% 38%;background:#221A2E url(/assets/lab/plate-ink.jpg) center/cover;border-radius:3px;border:1px solid rgba(233,226,240,.1);box-shadow:0 22px 44px -22px rgba(0,0,0,.95)}
+.l-ink{--tilt:1.4deg;inset:56% -2% 4% 38%;background:#221A2E url(/assets/lab/plate-ink.jpg) center/cover;border-radius:3px;border:1px solid rgba(233,226,240,.1);box-shadow:0 22px 44px -22px rgba(0,0,0,.95)}
 .l-ink::after{content:"";position:absolute;inset:0;background:url(/assets/lab/grain.png) repeat;background-size:64px;opacity:.1}
 
 /* Z4.5 the words */
-.l-text{inset:50% 46% 4% 0;background:rgba(17,12,26,.78);border:1px solid rgba(196,178,224,.18);padding:12px 12px 10px;overflow:hidden}
-.l-text::before{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/360px;opacity:.28;pointer-events:none}
-.t-h{position:relative;font-family:'Space Mono',monospace;font-weight:700;font-size:clamp(9.5px,2.9vw,12.5px);line-height:1.5;letter-spacing:.06em;text-transform:uppercase;color:var(--ivory);padding-bottom:8px;border-bottom:1px solid rgba(233,226,240,.18)}
-.t-list{position:relative;list-style:none;margin-top:8px;font-size:clamp(7.5px,2.3vw,9.5px);letter-spacing:.1em;line-height:1.5}
-.t-list li{padding:2px 0 2px 12px;text-indent:-12px;color:var(--ivory)}
+.l-text{inset:60% 46% 0 0;padding:10px 12px 0;overflow:hidden}
+.t-h{position:relative;font-family:'Space Mono',monospace;font-weight:700;font-size:clamp(9.5px,2.9vw,12.5px);line-height:1.42;letter-spacing:.06em;text-transform:uppercase;color:var(--ivory);padding-bottom:8px;border-bottom:1px solid rgba(233,226,240,.18)}
+.t-list{position:relative;list-style:none;margin-top:6px;font-size:clamp(7.5px,2.3vw,9.5px);letter-spacing:.1em;line-height:1.4}
+.t-list li{padding:1px 0 1px 12px;text-indent:-12px;color:var(--ivory)}
 .t-list li::before{content:"> ";color:var(--ivory-2)}
 .t-list li.dim{color:var(--mute);transition:color .5s var(--ease)}
 .dossier.is-inspect .t-list li.dim{color:var(--ivory)}
@@ -139,7 +156,9 @@ a{color:inherit;text-decoration:none}
 
 /* ---------- desktop ---------- */
 @media(min-width:761px){
-  :root{--dw:min(80vw, 470px)}
+  :root{--dw:min(80vw, 560px);--dh:calc(var(--dw) * 1.2)}
+  .big{font-size:clamp(200px,22vw,320px);translate:calc(-100% + 0.9em) -46%}
+  .octa{left:calc(0.62em * .38 + 24px)}
   .track{height:520vh}
   .dossier{cursor:default}
   .hud{padding:0 32px}
@@ -152,6 +171,7 @@ html.rm .stage::after,html:not(.js):not(.rm) .stage::after{display:none}
 html.rm .hud,html:not(.js):not(.rm) .hud{position:relative;top:auto;bottom:auto;padding:0;margin-bottom:28px}
 html.rm .hud-bottom,html:not(.js):not(.rm) .hud-bottom{margin:28px 0 0}
 html.rm .hud-hint,html:not(.js):not(.rm) .hud-hint{display:none}
+html.rm .big,html:not(.js):not(.rm) .big,html.rm .octa,html:not(.js):not(.rm) .octa,html.rm .accent,html:not(.js):not(.rm) .accent,html.rm .l-stack,html:not(.js):not(.rm) .l-stack{display:none}
 html.rm .scene,html:not(.js):not(.rm) .scene{perspective:none;width:auto;height:auto;max-width:400px;margin:0 auto}
 html.rm .dossier,html:not(.js):not(.rm) .dossier{position:relative;transform-style:flat;display:flex;flex-direction:column;gap:18px}
 html.rm .layer,html:not(.js):not(.rm) .layer{position:relative;inset:auto;transform:none !important;opacity:1 !important;width:100%;aspect-ratio:1/1.4;will-change:auto}
