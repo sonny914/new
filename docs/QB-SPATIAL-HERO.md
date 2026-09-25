@@ -51,3 +51,30 @@ Headless Chromium, software rendering, 393×852, a 240-frame scrub with tilt: **
 - The specular coating is set at 2.5% to 7%; it may read as nothing on an OLED at low brightness.
 - The wordmark on desktop is one layout, not art-directed. Desktop is not the constraint for this phase.
 - The Archivo width axis is loaded as a variable font from Google Fonts; the first paint before the font arrives shows the system fallback at the wrong width. A `font-display: optional` or a self-hosted subset is the fix once the direction is confirmed.
+
+---
+
+## v1.1 · TYPOGRAPHY, WORDMARK, DEPTH, DESKTOP (art-direction pass, engine untouched)
+
+### Static-frame test on v1, before changing anything
+
+| | Mobile at rest | Desktop at rest |
+| --- | --- | --- |
+| Composition strong without movement | No: two stacked lines with a full line of air between them, a heading not an object | No: the mobile layout enlarged and centred |
+| Expensive | Half: expanded black Archivo is the giant-grotesk poster move; light Archivo is a generic grotesk | Same |
+| Depth before interaction | No: nothing occludes anything; only a contrast step | No |
+| Eye directed | Top-left to the line, then nowhere | Centre, then nowhere |
+| Accidental space | Below the line to the Houston line | Right third, bottom half |
+| Reads as a web effect | The specular smear reads as a CSS gradient | Same |
+
+### What changed
+
+- **Typeface: Hubot Sans** (variable, width 75–125, weight 200–900). An engineered grotesk with flat sides and rectangular counters: precise, controlled, slightly severe, and not the Helvetica-clone silhouette. QUIET at 900 / width 125, tracking −0.012em. BANDS at 200 / width 110, tracking +0.04em. Everything small at 500 / width 100. One family; width and weight are the system.
+- **One sculpture.** BANDS's cap line sits inside QUIET's lower fifth (`--b-top = --q-top + --q × .56`), so QUIET sits on BANDS. On mobile the Q shows and the T runs off the right; the S runs off the right. QUIET at +180, BANDS at +80, so they separate under tilt.
+- **A cast shadow, not a text-shadow.** A black copy of QUIET, offset .032em right and .05em down (light upper-left), placed at BANDS's depth and painted between BANDS and QUIET. It exists only where BANDS is, because black on black is nothing; it stays attached to BANDS under tilt while QUIET moves more, which is what a shadow on a receiving surface does. Hard-edged, 82%.
+- **Desktop is a different framing.** QUIET at 21vw from −4vw (Q cut), BANDS at 17vw from 44vw running off the right, the line inside BANDS's span (48vw to 88vw), the resolution laid out on the line so the camera pan (now x and y) arrives on it, the Houston line anchoring the empty left-bottom. The left half is left alone on purpose.
+- **Specular** base opacity 2.5% → 1.6%.
+
+Unchanged: the engine, the slats, tilt, thumb, scroll, purple, reduced motion (which now carries the new type and the QUIET-over-BANDS order without the shadow).
+
+Measured after: p50 16.7 ms, worst 16.8 ms. 37 tests.

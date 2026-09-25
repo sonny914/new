@@ -43,26 +43,26 @@ export function createHero(root) {
   const slats = [...root.querySelectorAll('.slat')].map((el, i) => ({ el, ...SLATS[i], cx: 0, cy: 0 }));
   const spec = root.querySelector('.spec');
   const finalEl = root.querySelector('.final'), res = root.querySelector('.res'), lineEl = root.querySelector('.line');
-  let lineY = 0;   // the line's layout y relative to the centre: where the camera aims as it goes in
+  let lineX = 0, lineY = 0;   // the line's layout position relative to the centre: where the camera aims as it goes in
   let origin = { x: 0, y: 0 };
   function measure() {
     const r = volume.getBoundingClientRect(); origin = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     const at = (o) => { const b = o.el.getBoundingClientRect(); o.cx = b.left + b.width / 2 - origin.x; o.cy = b.top + b.height / 2 - origin.y; };
     world.forEach(at); slats.forEach(at);
-    const l = world.find((w) => w.el === lineEl); lineY = l ? l.cy : 0;
+    const l = world.find((w) => w.el === lineEl); lineX = l ? l.cx : 0; lineY = l ? l.cy : 0;
   }
   let sheen = 0;
 
   function render(st, dt) {
     const tl = timeline(st.scroll);
     const sceneView = st.view.x + tl.drift;           // the viewing angle, including the drift of the way in
-    const camZ = tl.camZ, panY = lineY * tl.pan;   // a camera pan is the same shift for every object before projection
+    const camZ = tl.camZ, panX = lineX * tl.pan, panY = lineY * tl.pan;   // a camera pan is the same shift for every object before projection
     const q2 = (n) => n.toFixed(2);
 
     world.forEach((w) => {
       const comp = compensation(w.depth, w.arrive), px = parallax(w.depth, sceneView, st.view.y, camZ);
       const z = w.depth + camZ;
-      const x = px.x + w.cx * (comp - 1), y = px.y + w.cy * (comp - 1) - panY;
+      const x = px.x + w.cx * (comp - 1) - panX, y = px.y + w.cy * (comp - 1) - panY;
       w.el.style.transform = `translate3d(${q2(x)}px, ${q2(y)}px, ${z.toFixed(1)}px) scale(${comp.toFixed(4)})`;
       let o = w.base * depthOpacity(z);
       if (w.el === finalEl) o = smooth((camZ - 250) / 700) * depthOpacity(z);   // nothing until the camera is well inside; contrast rises as it reaches it
@@ -76,7 +76,7 @@ export function createHero(root) {
       const z = s.depth + camZ;
       const xw = s.cx + px.x;                                   // where it stands relative to the camera axis
       const open = slatOpen(s, sceneView, xw, camZ), state = slatState(open);
-      const x = px.x + s.cx * (comp - 1), y = px.y + s.cy * (comp - 1) - panY;
+      const x = px.x + s.cx * (comp - 1) - panX, y = px.y + s.cy * (comp - 1) - panY;
       s.el.style.transform = `translate3d(${q2(x)}px, ${q2(y)}px, ${z.toFixed(1)}px) rotateY(${(dir * (90 - open)).toFixed(2)}deg) scale(${comp.toFixed(4)})`;
       const o = state.visible ? depthOpacity(z) : 0;
       s.el.style.opacity = o.toFixed(3);
@@ -86,7 +86,7 @@ export function createHero(root) {
 
     // the glass: an anti-reflective coating whose specular travels with the viewing angle, brighter while the view moves
     sheen += (clamp(st.viewSpeed * 1.2) - sheen) * (st.viewSpeed > sheen ? 0.35 : 1 - Math.exp(-dt / 500));
-    if (spec) { spec.style.setProperty('--lx', (50 + sceneView * 34).toFixed(1) + '%'); spec.style.setProperty('--ly', (50 + st.view.y * 30).toFixed(1) + '%'); spec.style.setProperty('--sp', (0.025 + Math.abs(sceneView) * 0.02 + sheen * 0.03).toFixed(3)); }
+    if (spec) { spec.style.setProperty('--lx', (50 + sceneView * 34).toFixed(1) + '%'); spec.style.setProperty('--ly', (50 + st.view.y * 30).toFixed(1) + '%'); spec.style.setProperty('--sp', (0.016 + Math.abs(sceneView) * 0.02 + sheen * 0.03).toFixed(3)); }
 
     if (finalEl) finalEl.classList.toggle('on', camZ > TRAVEL - 120);
     if (res) res.style.setProperty('--near', smooth((camZ - 700) / 380).toFixed(3));
