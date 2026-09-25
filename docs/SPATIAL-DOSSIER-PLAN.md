@@ -42,3 +42,47 @@ Stacked editorial dossier: each plane rendered flat in order with its Z label, c
 ## Performance rules
 
 Transforms and opacity only. Seven composited planes plus captions. Grain is a 128px tiled PNG (generated, ~4 KB), no filters, no blend modes, no backdrop-filter. The mask on the lenticular repaints one 330×460 layer only while tilt changes. Frame loop sleeps when nothing is moving.
+
+---
+
+## v0.1 REPORT
+
+### What worked
+
+- The object reads as one artifact, not six cards. Depth ordering, occlusion and the counter-moving back planes do the work; nothing needed WebGL.
+- Press-and-hold is the strongest moment. The file visibly opens, the method plate appears from underneath the schematic, and the return has weight. It is the interaction that makes people touch it twice.
+- The lenticular is genuinely optical. At rest the diagram is clean; a right tilt strips the second reality in. Because both faces are real SVG, it costs nothing and stays selectable.
+- The controller model holds: touch, hold and scroll never fight because they resolve into one transform per layer. Adding a plane is one config line.
+- Reduced motion is a real page, not an apology.
+
+### What feels weak
+
+- The photograph is procedural (gradients + grain). It reads as UV through blinds at a glance but has no subject. A real monochrome-purple frame, small and heavily grained, would lift the whole object.
+- Field notes are the least convincing material: Caveat is a web font, not scanned ink. v0.2 should use traced SVG handwriting or a tiny scanned PNG with alpha.
+- Mid-flip on the lenticular, both diagrams are half-present. The flip window is narrow so it passes quickly, but a per-strip counter-offset would make it read as prisms rather than a wipe.
+- Scene C to D on scroll: the gold plane fading as it passes the camera is correct but under-dramatic. A short bloom or a sharper "pass through" would sell the travel more.
+- The gold could be more jewellery-like: it is a text gradient today. A specular sweep tied to tilt on the brackets and seal would make it catch light.
+
+### Performance
+
+- Software-rendered headless Chromium at iPhone size: 60fps median through a full scrub, worst frame 50 ms. On a real GPU the seven planes are pure compositor work.
+- Seven composited layers plus the caption group. The grain is an 8 KB tile drawn twice. No filters, blend modes, or backdrop-filter anywhere.
+- The lenticular mask repaints one 330×460 layer only while tilt changes; the frame loop sleeps when nothing moves.
+
+### Safari concerns (untested on device from this sandbox)
+
+- `preserve-3d` with per-layer `opacity` can flatten in WebKit in some nestings; opacity lives on the planes themselves, not on the 3D group, to avoid that. Verify on device.
+- `mask-image` with a repeating gradient works in WebKit with the `-webkit-` prefix, included. Verify no seam on 3× displays.
+- `100svh` sticky stage: verify the reassembled state and OPEN THE FILE are not hidden behind the collapsed toolbar.
+- Long-press: `-webkit-touch-callout: none` and `user-select: none` are set on the object so iOS does not show a callout during hold; `contextmenu` is prevented. Verify no magnifier appears.
+- `navigator.vibrate` is not supported on iOS Safari; the hold does not depend on it.
+
+### v0.2
+
+1. Real photographic plate (small, grained, purple-toned) and traced ink notes.
+2. Specular sweep on gold tied to tilt; a faint UV rim light on the glass edge that follows the finger.
+3. Per-strip prism offset on the lenticular; optional second lenticular on the photograph (day / night of the same room).
+4. A "pass-through" beat when the gold plane crosses the camera.
+5. Inertia on release: carry a little of the last finger velocity into the tilt before damping.
+6. Desktop: click-and-hold already works; add a subtle hover exposure of depth.
+7. Device pass on iPhone Safari with the toolbar in both states; measure with Safari's timeline, not Chromium.
