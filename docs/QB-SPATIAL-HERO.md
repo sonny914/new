@@ -150,3 +150,11 @@ Acceptance: `npm run accept:hero` (Playwright) drives the engine through x, y �
 - **The rule is 28px under BANDS's feet** (30px on desktop) instead of 5px. It is a ground line with air, no longer a baseline the letters stand on. The descriptor keeps its 22px under the rule.
 - **Interlock 63% of QUIET.** With the smaller QUIET the 67% interlock was 10px and full backward pitch while scrolling separated the words by 1px. 63% is ~14px at rest; worst case across the grid is 1px, still touching.
 - Acceptance: the feet rule becomes "BANDS's foot is 8–60px above the rule" (measured 12–29 across the grid). 82 frames hold, 0px resize drift. Lab asset version `?v=145`.
+
+### v1.4.6 · the sensor request that gave up
+
+Tilt stopped on the phone. The engine's motion-permission code (unchanged since v1) asked once, on the first touch anywhere, and never again. Safari only grants a permission prompt from a tap; the touchend that ends a scroll carries no user activation, so the request throws. If the first thing a visitor does is scroll, which it usually is, the one shot was spent and the page ran on scroll alone for the rest of the visit.
+
+Fix in `spatial-engine.js`, permission plumbing only: a throw is not an answer, so the listener stays on until Safari answers `granted` or `denied`. Proven headless with Safari's behaviour mocked: pending → retry after a scroll's touchend → granted on the next tap → live on the first event. Tilt response, timing, easing and touch are untouched.
+
+Diagnostics: `?debug=1` on the lab URL shows one line at the bottom of the phone: the sensor state (`pending`, `retry:NotAllowedError`, `granted`, `denied`, `live`, `pointer`, `unsupported`, `auto`), the live view angle, and the mode. `granted` that never becomes `live` means the browser accepted the request but delivers no events, which is what some in-app browsers do. Lab asset version `?v=146`.

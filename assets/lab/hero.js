@@ -109,6 +109,13 @@ export function createHero(root) {
   measure();
   const engine = createSpatialEngine({ scene: volume, object: volume, track, stage, hint: null, render, hold: false, drag: 'relative', permission: 'gesture' });
   const remeasure = () => { measure(); engine.wake(); };
+  if (/[?&]debug/.test(location.search)) {   // lab diagnostics only: ?debug shows the sensor state and the view on the phone
+    const d = document.createElement('div'); d.id = 'dbg';
+    d.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:9;font:11px/1.4 ui-monospace,monospace;color:#8B5CFF;pointer-events:none;white-space:pre';
+    document.body.appendChild(d);
+    const tick = () => { const s = engine.state; d.textContent = `sensor ${s.orientation}  view ${s.view.x.toFixed(2)} ${s.view.y.toFixed(2)}  ${s.mode}`; requestAnimationFrame(tick); };
+    tick();
+  }
   window.addEventListener('resize', remeasure, { passive: true });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);   // the first measure may have read fallback metrics
   return { engine, measure, SLATS, timeline };

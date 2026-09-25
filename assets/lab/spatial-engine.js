@@ -160,6 +160,7 @@ export function createSpatialEngine(opts) {
   const orient = { x: 0, y: 0, on: false, base: null };
   function onOrient(e) {
     if (e.gamma == null || e.beta == null) return;
+    st.orientation = 'live';
     if (!orient.base) orient.base = { g: e.gamma, b: e.beta };
     const gx = e.gamma - orient.base.g, gy = e.beta - orient.base.b;
     orient.base.g += (e.gamma - orient.base.g) * 0.004; orient.base.b += (e.beta - orient.base.b) * 0.004;
@@ -172,18 +173,28 @@ export function createSpatialEngine(opts) {
     if (hint) { hint.classList.remove('ask'); swapText(hint, labels.ready); }
   }
   const DOE = window.DeviceOrientationEvent;
+  st.orientation = DOE ? (fine ? 'pointer' : 'pending') : 'unsupported';   // diagnostic only: what happened to the sensor request
   if (DOE && !fine) {
     if (typeof DOE.requestPermission === 'function' && permission === 'gesture') {
-      // no UI: the first touch anywhere is the gesture Safari needs
-      let asked = false;
-      const ask = async () => { if (asked) return; asked = true; window.removeEventListener('touchend', ask); window.removeEventListener('click', ask); try { if (await DOE.requestPermission() === 'granted') startOrientation(); } catch { /* touch remains the instrument */ } };
+      // no UI: the first tap anywhere is the gesture Safari needs. A scroll's touchend carries no user activation and
+      // Safari throws; that is not an answer, so keep listening until it actually answers (granted or denied). (v1.4.6)
+      let answered = false, asking = false;
+      const ask = async () => {
+        if (answered || asking) return; asking = true;
+        try {
+          const r = await DOE.requestPermission(); st.orientation = r;
+          if (r === 'granted' || r === 'denied') { answered = true; window.removeEventListener('touchend', ask); window.removeEventListener('click', ask); }
+          if (r === 'granted') startOrientation();
+        } catch (err) { st.orientation = 'retry:' + ((err && err.name) || 'error'); }
+        finally { asking = false; }
+      };
       window.addEventListener('touchend', ask, { passive: true }); window.addEventListener('click', ask);
     } else if (typeof DOE.requestPermission === 'function') {
       if (hint) {
         swapText(hint, labels.ask); hint.classList.add('ask');
         hint.addEventListener('click', async () => { try { const r = await DOE.requestPermission(); if (r === 'granted') startOrientation(); else hint.classList.remove('ask'); } catch { hint.classList.remove('ask'); } }, { once: true });
       }
-    } else startOrientation();
+    } else { st.orientation = 'auto'; startOrientation(); }
   }
 
   readScroll(); wake();
