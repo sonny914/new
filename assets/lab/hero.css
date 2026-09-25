@@ -6,12 +6,12 @@
 :root{
   --black:#000; --white:#ECEAF0; --violet:#8B5CFF;
   --P:900px;
-  --q:27vw;                           /* QUIET's size; the composition is built from it */
-  --q-left:-5vw; --q-top:34vh;         /* the Q shows, the T runs off the right; the object sits just above centre, the air is below it (v1.4.3) */
-  --b:22vw; --b-left:24vw;             /* the S runs off the right */
-  --b-top:calc(var(--q-top) + var(--q) * .67);   /* BANDS's cap line just inside QUIET's foot: a 13% interlock, not a fifth (v1.4.4) */
+  --q:20.4vw;                         /* QUIET's size; the composition is built from it. QUIET is 4.34em wide: 20.4vw fills the 22px margins exactly (v1.4.5) */
+  --q-left:22px; --q-top:34vh;         /* inside the margins on a phone; the object sits just above centre, the air is below it */
+  --b:16.6vw; --b-left:calc(100vw - 22px - var(--b) * 3.96);   /* BANDS (3.96em wide) ends on the right margin */
+  --b-top:calc(var(--q-top) + var(--q) * .63);   /* BANDS's cap line just inside QUIET's foot: a 17% interlock (~14px on a phone), so pitch never separates the words (v1.4.5) */
   --line-left:22px; --line-width:calc(100vw - 44px);
-  --line-top:calc(var(--b-top) + var(--b) * .8 + 5px);   /* the rule is the ground BANDS stands on: the letters' feet occlude it */
+  --line-top:calc(var(--b-top) + var(--b) * .8 + 28px);  /* the rule sits 28px under BANDS's feet: a ground line with air, not a baseline the letters stand on (v1.4.5) */
   --final-left:22px; --final-width:calc(100vw - 44px);
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -64,7 +64,7 @@ a{color:inherit;text-decoration:none;touch-action:manipulation}
   :root{
     --q:21vw; --q-left:-4vw; --q-top:12vh;
     --b:17vw; --b-left:44vw;
-    --line-left:44vw; --line-width:46vw; --line-top:calc(var(--b-top) + var(--b) * .8 + 6px);
+    --line-left:44vw; --line-width:46vw; --line-top:calc(var(--b-top) + var(--b) * .8 + 30px);
     --final-left:44vw; --final-width:48vw;
   }
   .line{font-size:16px}

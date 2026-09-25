@@ -143,3 +143,10 @@ Acceptance: `npm run accept:hero` (Playwright) drives the engine through x, y �
 - **BANDS 200 → 300.** At 22vw the 200 hairline read as skinny against QUIET at 900; 300 keeps the light/heavy pairing but gives the strokes body. Width and tracking unchanged.
 - **Less overlap.** BANDS's cap line moves from 56% to 67% of QUIET's size: the interlock is 13% of QUIET (about 14 px on a phone) instead of 24% (25 px). The rule and descriptor move down with BANDS; the start stays at 34vh. The acceptance rule for the interlock changes from "at least 12 px" to "may touch, never separate": worst case across the grid is 3 px at full backward pitch while scrolling in.
 - Lab asset version `?v=144`.
+
+### v1.4.5 · inside the margins; the rule gets air
+
+- **The wordmark fits the phone.** QUIET measures 4.34em wide, BANDS 3.96em. QUIET is now 20.4vw starting at the 22px margin, so it spans the margins exactly; BANDS is 16.6vw and ends on the right margin. Nothing runs off the edge on mobile any more. Desktop keeps its off-the-edges framing.
+- **The rule is 28px under BANDS's feet** (30px on desktop) instead of 5px. It is a ground line with air, no longer a baseline the letters stand on. The descriptor keeps its 22px under the rule.
+- **Interlock 63% of QUIET.** With the smaller QUIET the 67% interlock was 10px and full backward pitch while scrolling separated the words by 1px. 63% is ~14px at rest; worst case across the grid is 1px, still touching.
+- Acceptance: the feet rule becomes "BANDS's foot is 8–60px above the rule" (measured 12–29 across the grid). 82 frames hold, 0px resize drift. Lab asset version `?v=145`.
