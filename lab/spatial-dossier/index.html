@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="robots" content="noindex, nofollow" />
-<meta name="theme-color" content="#0B0910" />
+<meta name="theme-color" content="#0A0810" />
 <title>QB / FILE 001 — Spatial Dossier v0.1</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,7 +27,6 @@
       </header>
 
       <!-- instruments on the stage, outside the object -->
-      <span class="big" aria-hidden="true">T.</span>
 
       <!-- ====== THE OBJECT ====== -->
       <div class="scene" id="scene">
@@ -36,7 +35,6 @@
           <!-- Z-1 · verdict: what you only see by opening the file -->
           <div class="layer l-verdict" data-layer="verdict" aria-label="Status">
             <span class="v-stamp">Under examination</span>
-            <span class="v-line mono">QB / FILE 001 · N 29.7604 · W 95.3698</span>
           </div>
 
           <!-- Z0 · shadow -->
@@ -47,7 +45,6 @@
 
           <!-- Z1 · scratched acrylic back panel with the wire globe -->
           <div class="layer l-acrylic spec" data-layer="acrylic" aria-label="System schematic">
-            <span class="veil"></span>
             <svg class="globe" viewBox="0 0 200 130" aria-hidden="true">
               <g fill="none" stroke="#C4B2E0" stroke-width=".9" opacity=".85">
                 <ellipse cx="100" cy="65" rx="92" ry="58"/>
@@ -57,7 +54,6 @@
               </g>
               <path d="M150 28l22 -14m-6 2l6 -2 -1 6" fill="none" stroke="#C4B2E0" stroke-width=".9"/>
             </svg>
-            <span class="a-id mono">SYS-DIAGRAM 001 · REV C</span>
           </div>
 
           <!-- Z1.5 · smoked evidence plate, upper right, bleeding off the object -->
@@ -83,11 +79,10 @@
                 <span class="lens-foot mono">8 steps · 5 handoffs · 1 exception</span>
               </div>
             </div>
-            <span class="holo"></span>
           </div>
 
           <!-- Z3 · smoked glass -->
-          <div class="layer l-glass spec" data-layer="glass" aria-hidden="true"><span class="holo"></span></div>
+          <div class="layer l-glass spec" data-layer="glass" aria-hidden="true"><span class="holo"></span><span class="holo-edge"></span></div>
 
           <!-- Z4 · field notes: scanned ink -->
           <div class="layer l-ink" data-layer="ink" aria-label="Field notes"></div>
@@ -127,7 +122,7 @@
       </div>
 
       <footer class="hud hud-bottom" aria-hidden="true">
-        <span class="hud-hint mono" id="hint">Touch · Hold · Scroll</span>
+        <button class="hud-hint mono" id="hint" type="button">Touch · Hold · Scroll</button>
         <span class="hud-status mono">Status: Under examination</span>
       </footer>
     </div>

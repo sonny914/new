@@ -2,25 +2,28 @@
    One state, one frame loop. Touch exploration, press-and-hold inspection and scroll travel all resolve
    into the same per-layer transform, so they blend instead of fighting. No libraries. */
 
-const P = 1100;                 // perspective distance (matches --P in CSS)
-const K = 16;                   // px of layer parallax per unit tilt
-const ROT_REST = 6, ROT_INSPECT = 8;   // degrees of whole-object tilt
+const P = 1000;                 // perspective distance (matches --P in CSS)
+const K = 46;                   // px of layer parallax per unit tilt (front plane); rear planes counter-move
+const ROT_REST = 5, ROT_INSPECT = 7;   // degrees of whole-object tilt: the depth comes from relative motion, not from rotating the stack
+/* Development aid: ?holo=1 exaggerates the optical reflection so its behaviour is unmistakable. Production: off. */
+const HOLO_DEBUG = typeof location !== 'undefined' && /[?&]holo=1/.test(location.search);
 const HOLD_MS = 320;            // press-and-hold arming time
 const TAP_MS = 220, MOVE_PX = 8;
 
 /* Layer configuration. px/py: parallax rate (1 = front). holdZ/X/Y: where the layer goes when the file opens.
    rot: how much more than the group this layer rotates (adds thickness to the parallax). */
 const LAYERS = [
-  { id: 'verdict',   baseZ: -150, px: -0.05, py: -0.05, holdZ: -20,  holdX: 0,   holdY: 0,   rot: 0.10 },
-  { id: 'shadow',    baseZ: -80,  px: -0.12, py: -0.12, holdZ: -60,  holdX: 0,   holdY: 0,   rot: 0.15 },
-  { id: 'stack',     baseZ: -62,  px: -0.22, py: -0.18, holdZ: -120, holdX: 14,  holdY: -70, rot: 0.35 },
-  { id: 'acrylic',   baseZ: -40,  px: -0.30, py: -0.25, holdZ: -90,  holdX: 6,   holdY: -48, rot: 0.50 },
-  { id: 'plate',     baseZ: -26,  px: -0.10, py: -0.10, holdZ: -60,  holdX: 18,  holdY: -40, rot: 0.60 },
-  { id: 'photo',     baseZ: -8,   px:  0.30, py:  0.25, holdZ: -10,  holdX: -10, holdY: -64, rot: 0.80 },
-  { id: 'glass',     baseZ:  10,  px:  0.60, py:  0.50, holdZ:  36,  holdX: 14,  holdY: -40, rot: 1.00 },
-  { id: 'ink',       baseZ:  22,  px:  0.85, py:  0.75, holdZ:  70,  holdX: 16,  holdY: 72,  rot: 1.05 },
-  { id: 'text',      baseZ:  30,  px:  1.00, py:  0.90, holdZ:  90,  holdX: 8,   holdY: 58,  rot: 1.10 },
-  { id: 'front',     baseZ:  44,  px:  1.40, py:  1.20, holdZ: 120,  holdX: 6,   holdY: 0,   rot: 1.20 },
+  /* px/py: parallax ratio (1 = front). Rear planes negative: they slide the other way, so the eye sees between the planes. */
+  { id: 'verdict',   baseZ: -230, px: -0.28, py: -0.22, holdZ: -20,  holdX: 0,   holdY: 0,   rot: 0.10 },
+  { id: 'shadow',    baseZ: -200, px: -0.25, py: -0.20, holdZ: -60,  holdX: 0,   holdY: 0,   rot: 0.10 },
+  { id: 'stack',     baseZ: -170, px: -0.18, py: -0.15, holdZ: -110, holdX: 14,  holdY: -70, rot: 0.25 },
+  { id: 'acrylic',   baseZ: -120, px: -0.02, py: -0.02, holdZ: -90,  holdX: 6,   holdY: -48, rot: 0.40 },
+  { id: 'plate',     baseZ: -60,  px:  0.28, py:  0.22, holdZ: -60,  holdX: 18,  holdY: -40, rot: 0.60 },
+  { id: 'photo',     baseZ:  0,   px:  0.55, py:  0.45, holdZ: -10,  holdX: -10, holdY: -64, rot: 0.80 },
+  { id: 'glass',     baseZ:  55,  px:  0.80, py:  0.68, holdZ:  36,  holdX: 14,  holdY: -64, rot: 1.00 },
+  { id: 'ink',       baseZ:  85,  px:  0.90, py:  0.78, holdZ:  70,  holdX: 16,  holdY: 72,  rot: 1.05 },
+  { id: 'text',      baseZ:  105, px:  1.00, py:  0.88, holdZ:  90,  holdX: 8,   holdY: 58,  rot: 1.10 },
+  { id: 'front',     baseZ:  135, px:  1.15, py:  1.00, holdZ: 120,  holdX: 6,   holdY: 0,   rot: 1.20 },
 ];
 
 /* ---------- pure helpers ---------- */
@@ -58,7 +61,7 @@ export function layerTransform(L, s) {
   const x = s.tilt.x * L.px * K * s.tiltW + S * L.holdX;
   const y = s.tilt.y * L.py * K * s.tiltW + S * L.holdY;
   const z = L.baseZ + S * L.holdZ + s.camZ;
-  const extra = (L.rot - 1) * 0.35;
+  const extra = (L.rot - 1) * 0.9;
   const rx = -s.tilt.y * s.rot * extra, ry = s.tilt.x * s.rot * extra;
   return { x, y, z, rx, ry, o: depthOpacity(z) };
 }
@@ -111,10 +114,13 @@ export function createDossier(root) {
     const gx = -st.tilt.y * rot * tiltW, gy = st.tilt.x * rot * tiltW;
     dossier.style.transform = `rotateX(${gx.toFixed(2)}deg) rotateY(${gy.toFixed(2)}deg)`;
     // light: the same normalized coordinates drive the specular band and the spectral sweep
-    dossier.style.setProperty('--lx', (50 + st.tilt.x * 38).toFixed(1) + '%');
-    dossier.style.setProperty('--ly', (50 + st.tilt.y * 30).toFixed(1) + '%');
-    dossier.style.setProperty('--holo', (st.holo * (0.17 + st.hold * 0.06) + 0.012).toFixed(4));
-    dossier.style.setProperty('--spec', (0.04 + Math.abs(st.tilt.x) * 0.08 + st.holo * 0.08).toFixed(3));
+    const q = (v) => (Math.round(v * 2) / 2).toFixed(1) + '%';
+    dossier.style.setProperty('--ly', q(50 + st.tilt.y * 30));
+    const angle = Math.hypot(st.tilt.x, st.tilt.y);            // distance from the neutral viewing angle
+    const holoV = HOLO_DEBUG ? 0.85 : clamp(angle * 0.9) * 0.34 + st.holo * 0.16 + st.hold * 0.08;
+    dossier.style.setProperty('--holo', (Math.round(holoV * 100) / 100).toFixed(2));
+    dossier.style.setProperty('--spec', (Math.round((0.03 + Math.abs(st.tilt.x) * 0.1 + st.holo * 0.06) * 100) / 100).toFixed(2));
+    dossier.style.setProperty('--lx', q(50 + st.tilt.x * 46));
 
     // layers
     LAYERS.forEach((L) => {
@@ -174,7 +180,7 @@ export function createDossier(root) {
     ptr = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), moved: false, held: false };
     clearTimeout(holdTimer);
     if (assembled()) holdTimer = setTimeout(() => { if (ptr && !ptr.moved) { ptr.held = true; beginInspect(); try { dossier.setPointerCapture(e.pointerId); } catch { /* ignore */ } } }, HOLD_MS);
-    if (!fine) tiltFrom(e, 0.6); else tiltFrom(e);
+    tiltFrom(e);
     wake();
   }
   function move(e) {
@@ -185,7 +191,7 @@ export function createDossier(root) {
       // a mostly-vertical drag on touch is the page scrolling; the browser will cancel us. Horizontal: explore.
       if (Math.abs(dx) > Math.abs(dy)) { setMode('EXPLORE'); try { dossier.setPointerCapture(e.pointerId); } catch { /* ignore */ } }
     }
-    if (ptr.held || st.mode === 'EXPLORE' || fine) tiltFrom(e, ptr.held ? 1 : 0.85);
+    if (ptr.held || st.mode === 'EXPLORE' || fine) tiltFrom(e);
     wake();
   }
   function up(e) {
@@ -195,10 +201,10 @@ export function createDossier(root) {
     if (ptr.held) endInspect(true);
     else if (!ptr.moved && dur < TAP_MS) { st.pulseAt = performance.now(); setMode(assembled() ? 'REST' : 'SCROLLING'); }
     else setMode(assembled() ? 'REST' : 'SCROLLING');
-    if (!fine) { st.tiltT.x = 0; st.tiltT.y = 0; }
+    if (!fine) { st.tiltT.x = orient.x; st.tiltT.y = orient.y; }
     ptr = null; wake();
   }
-  function cancel(e) { if (!ptr || e.pointerId !== ptr.id) return; clearTimeout(holdTimer); if (ptr.held) endInspect(false); else setMode('REST'); if (!fine) { st.tiltT.x = 0; st.tiltT.y = 0; } ptr = null; wake(); }
+  function cancel(e) { if (!ptr || e.pointerId !== ptr.id) return; clearTimeout(holdTimer); if (ptr.held) endInspect(false); else setMode('REST'); if (!fine) { st.tiltT.x = orient.x; st.tiltT.y = orient.y; } ptr = null; wake(); }
   dossier.addEventListener('pointerdown', down);
   dossier.addEventListener('pointermove', move);
   dossier.addEventListener('pointerup', up);
@@ -208,6 +214,32 @@ export function createDossier(root) {
   if (fine) {
     scene.addEventListener('pointerleave', () => { if (!ptr) { st.tiltT.x = 0; st.tiltT.y = 0; st.hoverT = 0; wake(); } });
   }
+  /* ---------- device orientation: the same spatial model, driven by the phone ---------- */
+  const orient = { x: 0, y: 0, on: false, base: null };
+  const RANGE = 18; // degrees of device tilt that map to the full viewing range
+  function onOrient(e) {
+    if (e.gamma == null || e.beta == null) return;
+    if (!orient.base) orient.base = { g: e.gamma, b: e.beta };   // the angle the phone is held at when it starts is neutral
+    let gx = e.gamma - orient.base.g, gy = e.beta - orient.base.b;
+    // slowly re-centre so a change of posture does not leave the object permanently skewed
+    orient.base.g += (e.gamma - orient.base.g) * 0.004; orient.base.b += (e.beta - orient.base.b) * 0.004;
+    orient.x = clamp(gx / RANGE, -1, 1); orient.y = clamp(gy / RANGE, -1, 1);
+    if (!ptr) { st.tiltT.x = orient.x; st.tiltT.y = orient.y; wake(); }
+  }
+  function startOrientation() {
+    if (orient.on) return; orient.on = true;
+    window.addEventListener('deviceorientation', onOrient, { passive: true });
+    if (hint) { hint.classList.remove('ask'); hint.textContent = 'Tilt · Hold · Scroll'; }
+  }
+  const DOE = window.DeviceOrientationEvent;
+  if (DOE && !fine) {
+    if (typeof DOE.requestPermission === 'function') {
+      // iOS: sensors need an explicit grant, only after a real gesture
+      if (hint) { hint.textContent = 'Move through it →'; hint.classList.add('ask');
+        hint.addEventListener('click', async () => { try { const r = await DOE.requestPermission(); if (r === 'granted') startOrientation(); else hint.classList.remove('ask'); } catch { hint.classList.remove('ask'); } }, { once: true }); }
+    } else startOrientation();
+  }
+
   // keyboard: Enter/Space opens the file while held
   dossier.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && st.mode !== 'INSPECT') { e.preventDefault(); beginInspect(); } });
   dossier.addEventListener('keyup', (e) => { if (e.key === 'Enter' || e.key === ' ') endInspect(true); });

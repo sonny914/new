@@ -114,3 +114,16 @@ Direction: covert, technological, contemporary. Luxury from depth, material, lig
 - **Specular.** A soft dirty-silver band on the acrylic and the glass, positioned by the same normalized pointer x that drives parallax (`--lx`). Nothing emissive.
 - **Holographic.** A spectral layer on the glass and the photograph: violet, indigo, faint cyan, faint magenta, positioned by `--lx/--ly`. Its opacity is driven by tilt velocity, not tilt position: rises fast with movement (peak ≈ 0.18 while dragging), decays with a 420 ms time constant at rest to ≈ 0.02. Still image: barely there. Move: it appears. Stop: it goes.
 - Frame times unchanged (60fps median, 50 ms worst, ten composited planes at iPhone size, software rendering).
+
+---
+
+## v0.3 · CLEANER / DEEPER / PHYSICAL
+
+- **Cleaned.** Scratch overlays removed from every plane but the glass (at 16%). Stage grain 3.5%. Torn edges, the letterform, crosshair, ruler, coordinates, sheet label, film id gone. Environment is near-black plum; purple emerges from black in one soft radial behind the object.
+- **Deeper.** Perspective 1000px; planes now span translateZ −230 to +135, so perspective itself scales rear planes down and front planes up. Parallax gain K = 46px with ratios from −0.28 (verdict) through 0 (acrylic) to 1.15 (front): rear planes counter-move, so a tilt lets the eye see between the planes and occlusion changes. Whole-object rotation reduced to 5° so depth comes from relative motion, not from a card turning. Independent per-layer rotation widened.
+- **Larger.** On mobile the object is 118vw wide; the periphery crops and a tilt discovers the edges.
+- **Device orientation.** `deviceorientation` drives the same tilt target as touch when no finger is down; the neutral angle is whatever the phone is held at when it starts, re-centring slowly. On iOS the sensors are requested behind one gesture: the hint reads "Move through it →" and becomes "Tilt · Hold · Scroll" once granted. Touch remains the complete fallback. Because orientation writes the same `--lx/--ly`, the specular and the reflection move with the phone too.
+- **One optical plane.** The reflection lives on the glass only: a narrow spectral band (indigo → electric violet → violet → cyan edge → faint magenta) whose position follows the viewing angle and whose opacity follows distance from neutral (≈0 at neutral, ≈0.34 at full tilt) plus a velocity boost. `?holo=1` exaggerates it for device checks.
+- Light values are quantized to half-percent steps so gradient layers repaint only on visible change.
+
+Measured at iPhone size in software-rendered Chromium: 30fps median through a full scrub with the larger object and the light layers, worst frame 83 ms. Those gradient repaints are compositor work on a real GPU; the device pass decides whether the glass plane needs its own compositing layer or a smaller footprint.
