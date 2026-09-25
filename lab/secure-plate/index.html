@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#050408" />
+<title>Quiet Bands — Secure / 001</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/lab/plate.css" />
+<script>document.documentElement.classList.add(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'rm' : 'js');</script>
+</head>
+<body>
+
+<main class="lab">
+  <section class="track" id="track" aria-label="Secure Plate 001">
+    <div class="stage" id="stage">
+      <div class="env" id="env" aria-hidden="true"></div>
+
+      <header class="hud hud-top">
+        <span class="wordmark">Quiet Bands</span>
+        <span class="mono id">Secure / 001</span>
+      </header>
+
+      <!-- ====== the Secure Plate: four optical planes in one shallow volume ====== -->
+      <div class="scene" id="scene">
+        <div class="plate" id="plate" tabindex="0" role="img" aria-label="Secure Plate 001. A documented process, REQUEST to SYSTEM to COMPLETE, over the eight steps it actually takes: request, email, spreadsheet, handoff, wait, exception, rework, complete. Tilt, hold or scroll to look between the planes.">
+
+          <!-- PLANE 01 · intelligence: the deepest surface. System geometry and what actually happens. -->
+          <div class="layer l-intel" data-layer="intel" aria-hidden="true">
+            <svg class="intel-svg" viewBox="0 0 100 62" preserveAspectRatio="none">
+              <g class="geo">
+                <path d="M50 4v54M6 31h88" />
+                <circle cx="50" cy="31" r="22" />
+                <path d="M4 6h4M4 6v4M96 6h-4M96 6v4M4 56h4M4 56v-4M96 56h-4M96 56v-4" />
+              </g>
+            </svg>
+            <div class="hidden" id="hidden">
+              <ol class="hidden-path">
+                <li class="hidden-node"><i>01</i>Request</li>
+                <li class="hidden-node"><i>02</i>Email</li>
+                <li class="hidden-node"><i>03</i>Spreadsheet</li>
+                <li class="hidden-node"><i>04</i>Handoff</li>
+                <li class="hidden-node"><i>05</i>Wait</li>
+                <li class="hidden-node"><i>06</i>Exception</li>
+                <li class="hidden-node"><i>07</i>Rework</li>
+                <li class="hidden-node"><i>08</i>Complete</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- PLANE 02 · evidence: the process as documented. Smoked glass; light from the plane behind shows through when the system is active. -->
+          <div class="layer l-evidence" data-layer="evidence" data-energy aria-hidden="true">
+            <span class="ev-label mono">Process / as documented</span>
+            <div class="path">
+              <span class="node">Request</span>
+              <span class="link"></span>
+              <span class="node sys">System</span>
+              <span class="link"></span>
+              <span class="node">Complete</span>
+            </div>
+          </div>
+
+          <!-- PLANE 03 · analysis: two markings, nothing else. -->
+          <div class="layer l-analysis" data-layer="analysis" data-energy aria-hidden="true">
+            <svg class="an-svg" viewBox="0 0 100 62" preserveAspectRatio="none">
+              <path class="bracket" d="M38 22.5h-2v17h2M62 22.5h2v17h-2" />
+              <path class="lead" d="M50 39.5v4.5h-14" />
+            </svg>
+            <span class="an-friction mono">Friction / detected</span>
+            <span class="an-count mono">03 shown / 08 observed</span>
+          </div>
+
+          <!-- PLANE 04 · security laminate: closest to the viewer. Etched mark, identifier, the optical material. -->
+          <div class="layer l-security spec" data-layer="security" aria-hidden="true">
+            <span class="insignia"><i></i><i></i><b class="mono">QB</b></span>
+            <span class="sec-id mono">001</span>
+            <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+            <div class="holo"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="captions" aria-live="polite">
+        <h1 class="cap ed" data-cap="0">The work<br>isn't always<br>what the system<br>says it is.</h1>
+        <p class="cap ed deeper" data-cap="1">Look deeper.</p>
+        <p class="cap mono friction" data-cap="2">Friction / detected</p>
+      </div>
+
+      <div class="final" id="final">
+        <span class="wordmark">Quiet Bands</span>
+        <p class="ed find">Find out first.</p>
+        <a class="access" href="/work/">Access the work <span aria-hidden="true">→</span></a>
+      </div>
+
+      <footer class="hud hud-bottom">
+        <div class="field">
+          <span class="ed">Field Intelligence</span>
+          <span class="mono">Status / active</span>
+        </div>
+        <button class="hud-hint mono" id="hint" type="button">Tilt · Hold · Scroll</button>
+      </footer>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="/assets/lab/plate.js"></script>
+</body>
+</html>
