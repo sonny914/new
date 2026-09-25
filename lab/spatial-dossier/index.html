@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#0B0910" />
+<title>QB / FILE 001 — Spatial Dossier v0.1</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,500..800&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/lab/dossier.css" />
+<script>document.documentElement.classList.add(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'rm' : 'js');</script>
+</head>
+<body>
+
+<main class="lab" id="lab">
+
+  <!-- ====== the timeline: a tall track with a sticky stage ====== -->
+  <section class="track" id="track" aria-label="QB File 001">
+    <div class="stage" id="stage">
+
+      <header class="hud hud-top" aria-hidden="false">
+        <span class="wordmark">Quiet Bands</span>
+        <span class="hud-file gold">QB / FILE 001</span>
+      </header>
+
+      <!-- ====== THE OBJECT ====== -->
+      <div class="scene" id="scene">
+        <div class="dossier" id="dossier" role="group" aria-label="File 001, a layered dossier. Touch to tilt, press and hold to open, scroll to travel through it." tabindex="0">
+
+          <!-- Z-1 · verdict: the plate you only see by opening the file -->
+          <div class="layer l-verdict" data-layer="verdict" aria-label="Method">
+                        <ol class="v-list">
+              <li>Observe</li>
+              <li>Find friction</li>
+              <li>Test assumptions</li>
+              <li>Build only what's warranted</li>
+            </ol>
+            <p class="v-foot mono">Field · Lab · Shop</p>
+          </div>
+
+          <!-- Z0 · shadow -->
+          <div class="layer l-shadow" data-layer="shadow" aria-hidden="true"></div>
+
+          <!-- Z1 · schematic + lenticular -->
+          <div class="layer l-schematic" data-layer="schematic" aria-label="System schematic">
+            <svg class="sch" viewBox="0 0 330 460" aria-hidden="true">
+              <defs>
+                <pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r=".6" fill="#8F6BC7" opacity=".28"/></pattern>
+                <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#B9A6D6"/></marker>
+              </defs>
+              <rect x="0" y="0" width="330" height="460" fill="url(#dots)"/>
+              <!-- registration + ticks -->
+              <g stroke="#8F6BC7" stroke-width=".8" opacity=".7" fill="none">
+                <path d="M18 34 v-16 h16 M312 18 v16 M312 18 h-16 M18 426 v16 h16 M312 442 v-16 M296 442 h16"/>
+                <path d="M165 10 v8 M165 442 v8 M10 230 h8 M312 230 h8"/>
+              </g>
+              <g class="mono-svg" fill="#B9A6D6" font-size="6.5" letter-spacing="1.2">
+                <text x="26" y="30">SYS-DIAGRAM 001 · REV C</text>
+                <text x="26" y="446">N 29.7604 · W 95.3698</text>
+                <text x="238" y="446">SHEET 1 / 1</text>
+              </g>
+              <!-- faint grid rulers -->
+              <g stroke="#8F6BC7" stroke-width=".5" opacity=".35"><path d="M26 48 h278 M26 412 h278"/></g>
+            </svg>
+
+            <!-- Lenticular: A over B, B revealed through a striped mask driven by horizontal tilt -->
+            <div class="lens" id="lens">
+              <svg class="lens-a" viewBox="0 0 330 460" aria-hidden="true">
+                <text class="lens-title" x="26" y="252">HOW IT LOOKS</text>
+                <g class="node" transform="translate(26 268)"><rect width="84" height="34" rx="3"/><text x="42" y="21">REQUEST</text></g>
+                <g class="node" transform="translate(123 268)"><rect width="84" height="34" rx="3"/><text x="42" y="21">SYSTEM</text></g>
+                <g class="node" transform="translate(220 268)"><rect width="84" height="34" rx="3"/><text x="42" y="21">COMPLETE</text></g>
+                <g class="wire"><path d="M110 285 H121"/><path d="M207 285 H218"/></g>
+                <text class="lens-foot" x="26" y="330">3 STEPS · 0 HANDOFFS · AS PRESENTED</text>
+              </svg>
+              <svg class="lens-b" id="lensB" viewBox="0 0 330 460" aria-hidden="true">
+                <text class="lens-title b" x="26" y="252">WHAT ACTUALLY HAPPENS</text>
+                <g class="node" transform="translate(26 260)"><rect width="64" height="26" rx="3"/><text x="32" y="17">REQUEST</text></g>
+                <g class="node" transform="translate(97 260)"><rect width="64" height="26" rx="3"/><text x="32" y="17">EMAIL</text></g>
+                <g class="node" transform="translate(168 260)"><rect width="64" height="26" rx="3"/><text x="32" y="17">SPREADSHEET</text></g>
+                <g class="node" transform="translate(239 260)"><rect width="65" height="26" rx="3"/><text x="32" y="17">TEXT SOMEONE</text></g>
+                <g class="node wait" transform="translate(239 300)"><rect width="65" height="26" rx="3"/><text x="32" y="17">WAIT</text></g>
+                <g class="node" transform="translate(168 300)"><rect width="64" height="26" rx="3"/><text x="32" y="17">COPY AGAIN</text></g>
+                <g class="node exc" transform="translate(97 300)"><rect width="64" height="26" rx="3"/><text x="32" y="17">FIX EXCEPTION</text></g>
+                <g class="node" transform="translate(26 300)"><rect width="64" height="26" rx="3"/><text x="32" y="17">COMPLETE</text></g>
+                <g class="wire"><path d="M90 273 H95"/><path d="M161 273 H166"/><path d="M232 273 H237"/><path d="M271 286 V298"/><path d="M239 313 H234"/><path d="M168 313 H163"/><path d="M97 313 H92"/></g>
+                <text class="lens-foot b" x="26" y="344">8 STEPS · 5 HANDOFFS · 2 RE-ENTRIES · 1 EXCEPTION</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Z2 · photograph -->
+          <div class="layer l-photo" data-layer="photo" aria-label="Photograph, film frame 12A">
+            <div class="film">
+              <span class="film-id mono">FILM 001 · 12A</span>
+              <span class="film-mark mono">◂ ▸</span>
+            </div>
+          </div>
+
+          <!-- Z3 · smoked glass -->
+          <div class="layer l-glass" data-layer="glass" aria-hidden="true">
+            <span class="etch mono">Smoked · Plate 03</span>
+          </div>
+
+          <!-- Z4 · field notes -->
+          <div class="layer l-notes" data-layer="notes" aria-label="Field notes">
+            <svg class="ink" viewBox="0 0 330 460" aria-hidden="true">
+              <path class="ink-line" d="M22 286 c-4 -22 30 -30 60 -26 c26 4 44 12 42 24 c-2 14 -30 18 -56 16 c-24 -2 -44 -6 -46 -14"/>
+              <path class="ink-line" d="M120 338 c30 -6 62 -8 92 -3"/>
+              <path class="ink-line" d="M228 226 c14 -10 24 -20 34 -34 m-10 6 c4 -4 7 -6 10 -5 m-5 -5 c1 3 1 6 -1 9"/>
+              <path class="ink-line thin" d="M212 108 c18 -3 40 -2 60 2"/>
+            </svg>
+            <span class="hand h1">start here</span>
+            <span class="hand h2">who decides?</span>
+            <span class="hand h3">copied twice — why?</span>
+            <span class="hand h4 gold">warranted?</span>
+          </div>
+
+          <!-- Z5 · gold annotation -->
+          <div class="layer l-gold" data-layer="gold" aria-label="File status">
+            <i class="bracket tl"></i><i class="bracket tr"></i><i class="bracket bl"></i><i class="bracket br"></i>
+            <span class="g-file mono gold">QB / FILE 001</span>
+            <span class="g-status mono gold">Status: Under examination</span>
+            <span class="g-coord mono gold">N 29.7604 · W 95.3698</span>
+            <span class="g-seal gold" aria-hidden="true"><span class="seal-ring"></span><span class="seal-qb">QB</span></span>
+            <span class="g-tri mono gold">Field · Lab · Shop</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- journey captions: above the object, outside the 3D world -->
+      <div class="captions" aria-live="polite">
+        <h2 class="cap" data-cap="0">Real work.</h2>
+        <h2 class="cap" data-cap="1">Real context.</h2>
+        <h2 class="cap" data-cap="2">Real decisions.</h2>
+      </div>
+
+      <!-- final state -->
+      <div class="final" id="final">
+        <p class="mono gold">QB / FILE 001</p>
+        <a class="open" href="/work/">Open the file <span aria-hidden="true">→</span></a>
+      </div>
+
+      <footer class="hud hud-bottom" aria-hidden="true">
+        <span class="hud-hint mono" id="hint">Touch · Hold · Scroll</span>
+        <span class="hud-status mono">Status: Under examination</span>
+      </footer>
+    </div>
+  </section>
+
+  <!-- reduced motion / no-JS: the same planes, stacked editorially (styled by CSS, content is above) -->
+  <section class="rm-note" aria-hidden="true"></section>
+
+</main>
+
+<script type="module" src="/assets/lab/dossier.js"></script>
+</body>
+</html>
