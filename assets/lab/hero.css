@@ -1,0 +1,71 @@
+/* Quiet Bands · QB Spatial Hero · visual system
+   Black. Soft white. One family, Archivo, whose width axis is the hierarchy: expanded and heavy near the glass, condensed and heavy at the far end.
+   Purple is a state: a word that has become legible. Nothing else is ever purple. No surfaces. */
+:root{
+  --black:#000; --white:#ECEAF0; --violet:#8B5CFF;
+  --P:900px;
+  --line-left:11vw; --line-width:78vw; --line-top:66%;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--black);color:var(--white);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+body{font-family:'Archivo',system-ui,sans-serif;font-weight:500;background:var(--black);overflow-x:clip;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none;touch-action:manipulation}
+
+.track{position:relative;height:380vh}
+.stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--black)}
+/* the window: one perspective, origin at the centre. Objects are placed in layout and then carried to their depth. */
+.volume{position:absolute;inset:0;perspective:var(--P);perspective-origin:50% 50%;transform-style:preserve-3d;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
+.world{position:absolute;will-change:transform,opacity;transform-origin:50% 50%;backface-visibility:hidden}
+.slats{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}   /* a flat container would discard the slats' depth */
+
+/* the glass, in front of everything: an anti-reflective coating with a travelling specular. Larger than the window so its parallax never shows an edge. */
+.coat{left:-25vw;top:-25vh;width:150vw;height:150vh;pointer-events:none}
+.spec{--lx:50%;--ly:50%;--sp:.025;position:absolute;inset:0;opacity:var(--sp);
+  background:linear-gradient(112deg,transparent calc(var(--lx) - 16%),rgba(236,234,240,.9) calc(var(--lx) - 1%),rgba(236,234,240,1) var(--lx),rgba(95,214,232,.5) calc(var(--lx) + 1.5%),transparent calc(var(--lx) + 12%));
+  -webkit-mask-image:radial-gradient(90% 120% at var(--lx) var(--ly),#000 20%,transparent 75%);mask-image:radial-gradient(90% 120% at var(--lx) var(--ly),#000 20%,transparent 75%)}
+
+/* the wordmark: two words, two depths, extending past the window */
+.quiet{left:-22vw;top:11%;font-size:36vw;font-weight:900;font-stretch:125%;line-height:.86;letter-spacing:-.02em;text-transform:uppercase;white-space:nowrap}
+.bands{right:-7vw;top:33%;font-size:26vw;font-weight:300;font-stretch:100%;line-height:.86;letter-spacing:-.01em;text-transform:uppercase;white-space:nowrap}
+
+/* the line: the reference depth. The six slats stand in it. */
+.line{left:var(--line-left);top:var(--line-top);width:var(--line-width);translate:0 -50%;display:flex;align-items:center;gap:14px;font-size:15px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.line i{flex:1;height:1px;background:rgba(236,234,240,.55)}
+/* each slat stands a little lower the deeper it is: invisible edge-on, a receding staircase when open */
+.slat{left:calc(var(--line-left) + var(--t) * var(--line-width));top:calc(var(--line-top) + var(--i) * 17px);translate:-50% -50%;font-size:14px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;--p:0;
+  color:color-mix(in oklab,rgba(236,234,240,.55),var(--violet) calc(var(--p) * 100%));opacity:0}
+@supports not (color:color-mix(in oklab,#000,#fff)){ .slat{color:rgba(236,234,240,.7)} }
+
+.where{left:22px;bottom:7%;font-size:12px;font-weight:400;letter-spacing:.01em}
+
+/* the resolution: far behind everything until the camera reaches it */
+.final{left:22px;right:22px;top:var(--line-top);translate:0 -50%;display:flex;flex-direction:column;align-items:flex-start;gap:26px;pointer-events:none}
+.final.on{pointer-events:auto}
+.res{--near:0;font-size:clamp(30px,9.4vw,72px);font-weight:700;font-stretch:90%;line-height:.96;letter-spacing:-.02em;text-transform:uppercase}
+.cta{display:inline-block;font-size:14px;font-weight:500;letter-spacing:.02em;padding:14px 0;border-bottom:1px solid rgba(236,234,240,.4);transition:transform 140ms cubic-bezier(.23,1,.32,1),color .3s,border-color .3s}
+.cta:active{transform:scale(.97);color:var(--violet);border-color:var(--violet)}
+@media (hover:hover) and (pointer:fine){.cta:hover{border-color:var(--violet)}}
+.volume:focus-visible{outline:1px solid var(--violet);outline-offset:-8px}
+
+@media (min-width:820px){
+  :root{--line-left:30vw;--line-width:40vw;--line-top:64%}
+  .quiet{left:4vw;top:8%;font-size:20vw}
+  .bands{right:6vw;top:38%;font-size:14vw}
+  .where{left:4vw}
+  .final{left:4vw;right:auto;max-width:14ch}
+  .res{font-size:6vw}
+}
+
+/* ---------- reduced motion / no JS: the same information as a still composition ---------- */
+html.rm .track,html:not(.js):not(.rm) .track{height:auto}
+html.rm .stage,html:not(.js):not(.rm) .stage{position:relative;height:auto;overflow:visible;padding:calc(24px + env(safe-area-inset-top)) 22px 64px}
+html.rm .volume,html:not(.js):not(.rm) .volume{position:relative;inset:auto;perspective:none;transform-style:flat;display:flex;flex-direction:column;gap:22px;cursor:default}
+html.rm .world,html:not(.js):not(.rm) .world{position:relative;inset:auto;translate:none;transform:none!important;opacity:1!important;visibility:visible!important}
+html.rm .coat,html:not(.js):not(.rm) .coat{display:none}
+html.rm .quiet,html:not(.js):not(.rm) .quiet{font-size:30vw;margin-left:-2vw}
+html.rm .bands,html:not(.js):not(.rm) .bands{font-size:22vw;align-self:flex-end;margin-top:-4vw}
+html.rm .line,html:not(.js):not(.rm) .line{width:100%;margin-top:40px}
+html.rm .slats,html:not(.js):not(.rm) .slats{position:relative;inset:auto;display:flex;flex-wrap:wrap;gap:10px 22px;pointer-events:auto}
+html.rm .slat,html:not(.js):not(.rm) .slat{position:relative;left:auto;top:auto;translate:none;opacity:1;color:var(--violet)}
+html.rm .where,html:not(.js):not(.rm) .where{margin-top:12px}
+html.rm .final,html:not(.js):not(.rm) .final{top:auto;translate:none;margin-top:56px;pointer-events:auto}

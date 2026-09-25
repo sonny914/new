@@ -35,6 +35,9 @@ export function createSpatialEngine(opts) {
     orientRange = 18, movePx = 8,
     assembledAt = (p) => p < 0.03 || p > 0.97,
     labels = { ask: 'Activate depth →', ready: 'Tilt · Hold · Scroll' },
+    hold = true,               // press-and-hold inspection
+    drag = 'absolute',         // 'absolute': the pointer's position in the scene is the angle. 'relative': a drag changes the angle from where it was (thumb exploration)
+    permission = 'hint',       // iOS sensor grant: 'hint' = a button; 'gesture' = the first touch anywhere asks, no UI
   } = opts;
   const fine = window.matchMedia('(pointer: fine)').matches;
 
@@ -90,6 +93,12 @@ export function createSpatialEngine(opts) {
   const assembled = () => assembledAt(st.scrollT);
   function viewFrom(e) {
     const r = scene.getBoundingClientRect();
+    if (drag === 'relative' && ptr && !fine) {
+      // a drag across 60% of the width is the full range; beyond it the rubber-band
+      st.viewT.x = rubberband(ptr.baseX + (e.clientX - ptr.x) / (r.width * 0.3));
+      st.viewT.y = rubberband(ptr.baseY + (e.clientY - ptr.y) / (r.height * 0.3));
+      return;
+    }
     st.viewT.x = rubberband(((e.clientX - r.left) / r.width) * 2 - 1);
     st.viewT.y = rubberband(((e.clientY - r.top) / r.height) * 2 - 1);
   }
@@ -106,11 +115,12 @@ export function createSpatialEngine(opts) {
   function down(e) {
     if (e.button !== undefined && e.button !== 0) return;
     if (ptr) return;
-    ptr = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, held: false };
+    ptr = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, held: false, baseX: st.viewT.x, baseY: st.viewT.y };
     st.pressT = 1;
     clearTimeout(holdTimer);
-    if (assembled()) holdTimer = setTimeout(() => { if (ptr && !ptr.moved) { ptr.held = true; beginInspect(); try { object.setPointerCapture(e.pointerId); } catch { /* ignore */ } } }, holdArm);
-    viewFrom(e); wake();
+    if (hold && assembled()) holdTimer = setTimeout(() => { if (ptr && !ptr.moved) { ptr.held = true; beginInspect(); try { object.setPointerCapture(e.pointerId); } catch { /* ignore */ } } }, holdArm);
+    if (drag === 'absolute' || fine) viewFrom(e);
+    wake();
   }
   function move(e) {
     if (!ptr || e.pointerId !== ptr.id) { if (fine && !ptr) { viewFrom(e); st.hoverT = 1; wake(); } return; }
@@ -163,7 +173,12 @@ export function createSpatialEngine(opts) {
   }
   const DOE = window.DeviceOrientationEvent;
   if (DOE && !fine) {
-    if (typeof DOE.requestPermission === 'function') {
+    if (typeof DOE.requestPermission === 'function' && permission === 'gesture') {
+      // no UI: the first touch anywhere is the gesture Safari needs
+      let asked = false;
+      const ask = async () => { if (asked) return; asked = true; window.removeEventListener('touchend', ask); window.removeEventListener('click', ask); try { if (await DOE.requestPermission() === 'granted') startOrientation(); } catch { /* touch remains the instrument */ } };
+      window.addEventListener('touchend', ask, { passive: true }); window.addEventListener('click', ask);
+    } else if (typeof DOE.requestPermission === 'function') {
       if (hint) {
         swapText(hint, labels.ask); hint.classList.add('ask');
         hint.addEventListener('click', async () => { try { const r = await DOE.requestPermission(); if (r === 'granted') startOrientation(); else hint.classList.remove('ask'); } catch { hint.classList.remove('ask'); } }, { once: true });
