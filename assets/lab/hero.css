@@ -7,7 +7,7 @@
   --black:#000; --white:#ECEAF0; --violet:#8B5CFF;
   --P:900px;
   --q:27vw;                           /* QUIET's size; the composition is built from it */
-  --q-left:-5vw; --q-top:39vh;         /* the Q shows, the T runs off the right; the whole object sits at the centre of the window */
+  --q-left:-5vw; --q-top:30vh;         /* the Q shows, the T runs off the right; the object sits in the upper half, the air is below it (v1.4.2) */
   --b:22vw; --b-left:24vw;             /* the S runs off the right */
   --b-top:calc(var(--q-top) + var(--q) * .56);   /* BANDS's cap line sits inside QUIET's lower fifth: the overlap */
   --line-left:22px; --line-width:calc(100vw - 44px);
