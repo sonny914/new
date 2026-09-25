@@ -104,3 +104,7 @@ Treatment 2 of three proposed. The engine, tilt, thumb, scroll, timing and the e
 - The existing six words stay as temporary content while the behaviour is evaluated.
 
 Result at full tilt: a band of activity on the line, some words half hidden behind the one in front, deeper ones smaller and dimmer. At six degrees: a row of slivers standing in the rule. At rest: the rule.
+
+### v1.3.1 · flat stratum
+
+The remaining diagonal was vertical parallax: a phone in the hand always carries some pitch, and each deeper slat moved further in Y for it, a staircase by depth. The slats' Y parallax is removed; the six share one Y origin (measured: all six centres at the same pixel row under ±0.35 of pitch, both tilt directions) and separate only by X displacement, depth, scale and occlusion. Everything else, including the vertical parallax of every other object, is unchanged.

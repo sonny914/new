@@ -76,7 +76,8 @@ export function createHero(root) {
       const z = s.depth + camZ;
       const xw = s.cx + px.x;                                   // where it stands relative to the camera axis
       const open = slatOpen(s, sceneView, xw, camZ), state = slatState(open);
-      const x = px.x + s.cx * (comp - 1) - panX, y = px.y + s.cy * (comp - 1) - panY;
+      // the stratum shares one Y origin: it separates by X, depth, scale and occlusion, never by a per-depth Y step
+      const x = px.x + s.cx * (comp - 1) - panX, y = s.cy * (comp - 1) - panY;
       s.el.style.transform = `translate3d(${q2(x)}px, ${q2(y)}px, ${z.toFixed(1)}px) rotateY(${(dir * (90 - open)).toFixed(2)}deg) scale(${comp.toFixed(4)})`;
       const o = state.visible ? depthOpacity(z) : 0;
       s.el.style.opacity = o.toFixed(3);
