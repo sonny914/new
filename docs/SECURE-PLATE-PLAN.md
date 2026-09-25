@@ -71,3 +71,43 @@ Safari: `100svh` stage; `viewport-fit=cover` with safe-area insets; `-webkit-mas
 - The hidden path is two rows of four; a true serpentine with drawn connectors would be more "system".
 - The desktop composition is a single layout (headline left, plate right); it has not been art-directed beyond that.
 - The device-tilt feel (range, spring) has been tuned by reasoning, not on a phone.
+
+---
+
+## v2 · REBUILD ON THE CRITIQUE (frontend-design skill process: plan → review → build → critique)
+
+### Design plan
+
+- **Subject.** Quiet Bands examines operations: the documented process against what actually happens. The plate's content is exactly that. Its job: make one person tilt the phone, feel "these people look deeper", and tap through.
+- **Color.** Room `#000000` (true black: the room is off, the object is the only light). Ceramic `#0E0C13`. Smoke `rgba(20,17,28,.92)`. Bone `#E9E6EE`, Ash `#8A8794`. Violet `#8B5CFF`, the single chroma, meaning "what the system is actually doing". Indigo `#4338A8` only inside the laminate's reflection.
+- **Type.** Jost (the open Futura) for everything editorial, sentence case, 500/600. Futura is the Apollo plaque and the Supreme box logo: federal aerospace and street in one family. DM Mono, uppercase, for two identifiers per view.
+- **Layout.** Left-aligned HUD; centered plate at 92vw, 4:3, silhouette visible, about a third of the viewport at rest; nothing else at rest. Desktop: plate right of centre, sentences left.
+- **Principles.** The room is off. One chroma, one meaning. Substitution, not addition. Motion only answers the hand, plus one orchestrated moment (a single light sweep across the laminate on load).
+
+### Review against the generic tells
+
+Cut: the eyebrow label above the path, the middle-dot hint, numbered nodes, plate corner ticks, the duplicate ID on the plate, the rear-plane crosshair, the ambient glow behind the plate, Inter Tight. Kept because the brief pins them: uppercase mono identifiers (capped at two per view) and the arrow on the call to action.
+
+### What changed from v1
+
+| v1 | v2 | Why |
+| --- | --- | --- |
+| 120vw plate cropped on both sides | 92vw plate, silhouette visible | A cropped landscape plate on a portrait phone reads as a band, not an object |
+| Headline in the first viewport | Rest is wordmark, plate, status. Headline is the first scroll beat | "Start with almost nothing" |
+| Six scroll states, three captions | Four beats, two sentences | Captions were explaining what the camera shows |
+| Real path added on top of the documented one | Documented path recedes to 38% as the real one lights | One story at a time |
+| Purple: env glow + bracket + label + nodes + holo | Purple: the real path and the ceramic plane's edge light. Laminate reflection is indigo | One chroma, one meaning |
+| Rear plane: crosshair + circle | Rear plane: the real path only | HUD geometry is decoration |
+| Three friction marks | One bracket; one sentence that appears only when opened or entered | Structure is information |
+| Uppercase Inter Tight | Sentence-case Jost | Two voices actually separate; the caps grotesk was the template look |
+| Shadows: none | Contact shadow only while the planes are apart | Depth from motion and occlusion; shadow as a secondary cue when it is physically true |
+| Hint "Tilt · Hold · Scroll" always | No hint. The button exists only for the iOS sensor grant: "Enter spatial view →" | The user learns by doing |
+
+Measured: p50 16.7 ms, p90 16.7 ms, worst 50 ms (software rendering, full scrub with tilt). 30 tests.
+
+### Self-critique, honest
+
+- The insignia is two hairlines. It reads as a placeholder because it is one; the brief said not to design the mark yet.
+- With the camera inside (beat 3) the real path is large and cropped; that is cinematic on purpose but the count sentence sits on the plate's bottom edge on some heights.
+- The laminate reflection at production intensity is still a device call.
+- Jost's italic-less geometry means the quotation marks in the annotation look slightly formal; consider dropping the quotes.

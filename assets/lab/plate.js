@@ -17,15 +17,15 @@ export const LAYERS = [
   { id: 'security', depth: 64,   parallaxX: 1, parallaxY: 0.85, rotationX: 1.1, rotationY: 1.1, holdDistance: 110,  holdX: 0, holdY: -24, material: 'laminate', lightingResponse: 1 },
 ];
 
-/** Scroll timeline. Six states: SEALED · SEPARATION · ENTRY · INTELLIGENCE · REASSEMBLY · RESOLUTION. */
+/** Scroll timeline. Four beats: SEALED · OPEN · INSIDE · RESOLVED. */
 export function timeline(p) {
   p = clamp(p);
-  const sep = smooth((p - 0.10) / 0.18) * (1 - smooth((p - 0.72) / 0.16));
-  const travel = smooth((p - 0.28) / 0.26) * (1 - smooth((p - 0.70) / 0.18));
+  const sep = smooth((p - 0.10) / 0.16) * (1 - smooth((p - 0.72) / 0.16));
+  const travel = smooth((p - 0.30) / 0.24) * (1 - smooth((p - 0.70) / 0.18));
   const camZ = travel * 700;
   const win = (a, b, f = 0.05) => smooth((p - a) / f) * (1 - smooth((p - b) / f));
-  const caps = [1 - smooth((p - 0.04) / 0.08), win(0.30, 0.46), win(0.54, 0.70)];
-  const wake = win(0.48, 0.74, 0.06);
+  const caps = [win(0.12, 0.32), win(0.50, 0.68)];
+  const wake = win(0.46, 0.74, 0.06);
   const final = smooth((p - 0.9) / 0.1);
   return { sep, travel, camZ, caps, wake, final };
 }
@@ -45,7 +45,7 @@ export function project(L, v) {
   return { x, y, z, rx, ry, scale, o: depthOpacity(z) };
 }
 
-/** How awake the hidden layer is: from angle (the lenticular principle), from inspection, from the scroll timeline. */
+/** How awake the real path is: from angle (the lenticular principle), from inspection, from the scroll timeline. */
 export function wakeOf(viewX, viewW, inspection, tlWake) {
   const angle = smooth((Math.abs(viewX) * viewW - 0.18) / 0.5);
   return clamp(Math.max(angle * 0.7, inspection, tlWake));
@@ -54,17 +54,21 @@ export function wakeOf(viewX, viewW, inspection, tlWake) {
 export function createPlate(root) {
   const scene = root.querySelector('#scene'), object = root.querySelector('#plate');
   const track = root.querySelector('#track'), stage = root.querySelector('#stage');
-  const hint = root.querySelector('#hint'), finalEl = root.querySelector('#final'), env = root.querySelector('#env');
+  const hint = root.querySelector('#hint'), finalEl = root.querySelector('#final');
   const caps = [...root.querySelectorAll('.cap')];
   const lightEls = [...root.querySelectorAll('.holo, .spec')];
   const energyEls = [...root.querySelectorAll('[data-energy]')];
+  const shadowEls = [root.querySelector('.l-security'), root.querySelector('.l-analysis'), root.querySelector('.l-evidence')].filter(Boolean);
   const nodes = [...root.querySelectorAll('.hidden-node')];
-  const hiddenPath = root.querySelector('#hidden');
+  const real = root.querySelector('#hidden'), documented = root.querySelector('#documented');
   const els = {}; LAYERS.forEach((L) => { els[L.id] = root.querySelector(`[data-layer="${L.id}"]`); });
   const ROT_REST = 3.5, ROT_INSPECT = 5;
-  let holo = 0;
+  const BOOT_MS = 700;                             // the one self-driven moment: light sweeps the laminate once when the plate powers on
+  let holo = 0, born = 0;
 
-  function render(st, dt) {
+  function render(st, dt, now) {
+    if (!born) born = now;
+    const boot = clamp((now - born) / BOOT_MS);
     const tl = timeline(st.scroll);
     const viewW = 1 - tl.travel * 0.7;
     const sep = clamp(st.inspection * (1 - tl.travel) + tl.sep + st.hover * 0.08 + st.press * 0.04, 0, 1.3);
@@ -80,39 +84,52 @@ export function createPlate(root) {
       el.style.opacity = t.o.toFixed(3);
       el.style.visibility = t.o > 0.005 ? 'visible' : 'hidden';
     });
+    // contact shadow only while the planes are apart
+    const sS = clamp(sep).toFixed(2);
+    shadowEls.forEach((el) => el.style.setProperty('--s', sS));
 
-    // optical material on the security plane: a narrow spectral response that travels with the viewing angle
+    // optical material on the laminate: a narrow spectral response that travels with the viewing angle
     holo += (clamp(st.viewSpeed * 1.4) - holo) * (st.viewSpeed > holo ? 0.35 : 1 - Math.exp(-dt / 420));
     const angle = Math.hypot(st.view.x, st.view.y);
     const q = (n) => (Math.round(n * 2) / 2).toFixed(1) + '%';
-    const lx = q(50 + st.view.x * 30), ly = q(50 + st.view.y * 30);   // the reflection stays on the visible part of the plate
-    const holoV = HOLO_DEBUG ? 0.9 : clamp(angle * 1.1) * 0.42 + holo * 0.18 + st.inspection * 0.1;
+    const sweep = 1 - Math.pow(1 - boot, 3);
+    const lx = boot < 1 ? q(-10 + sweep * 120) : q(50 + st.view.x * 30), ly = q(50 + st.view.y * 30);
+    const holoV = HOLO_DEBUG ? 0.9 : Math.max(clamp(angle * 1.1) * 0.42 + holo * 0.18 + st.inspection * 0.1, boot < 1 ? 0.5 * (1 - boot) : 0);
     const holoS = (Math.round(holoV * 100) / 100).toFixed(2);
-    const specS = (Math.round((0.02 + Math.abs(st.view.x) * 0.08 + holo * 0.05) * 100) / 100).toFixed(2);
+    const specS = (Math.round((0.02 + Math.abs(st.view.x) * 0.08 + holo * 0.05 + (boot < 1 ? 0.12 * (1 - boot) : 0)) * 100) / 100).toFixed(2);
     lightEls.forEach((el) => { el.style.setProperty('--lx', lx); el.style.setProperty('--ly', ly); el.style.setProperty('--holo', holoS); el.style.setProperty('--spec', specS); });
 
-    // purple is energy: mostly black at rest, apparent under interaction
+    // purple is energy: black at rest, apparent under interaction. Set on the elements that use it.
     const wake = wakeOf(st.view.x, viewW, st.inspection, tl.wake);
     const e = clamp(angle * 0.5 * viewW + st.inspection * 0.85 + tl.wake + holo * 0.25 + tl.sep * 0.25);
     const eS = (Math.round(e * 100) / 100).toFixed(2);
     energyEls.forEach((el) => el.style.setProperty('--e', eS));
-    if (env) env.style.opacity = (e * 0.55).toFixed(3);
+    els.intel.style.setProperty('--e', eS);
+    // the annotation is a sentence: it appears when the plate is opened or entered, never from a glance
+    els.analysis.style.setProperty('--n', clamp(Math.max(st.inspection, tl.wake)).toFixed(2));
 
-    // the hidden path wakes node by node from the side the viewer leans to; fully under inspection or in the timeline
-    if (hiddenPath) hiddenPath.style.setProperty('--w', wake.toFixed(3));
+    // substitution, not addition: the documented path recedes as the real one lights, node by node from the side the viewer leans to
+    const wS = wake.toFixed(3);
+    if (real) real.style.setProperty('--w', wS);
+    if (documented) documented.style.setProperty('--w', wS);
     const n = nodes.length, dir = st.view.x < 0 ? -1 : 1;
     nodes.forEach((node, i) => {
       const order = dir > 0 ? i : n - 1 - i;
-      const w = smooth((wake - (order / n) * 0.55) / 0.45);
-      node.style.setProperty('--w', w.toFixed(3));
+      node.style.setProperty('--w', smooth((wake - (order / n) * 0.55) / 0.45).toFixed(3));
     });
 
-    caps.forEach((c, i) => { const k = tl.caps[i]; c.style.opacity = k.toFixed(3); c.style.transform = `translate3d(0, ${((1 - k) * 14).toFixed(1)}px, 0)`; });
+    caps.forEach((c, i) => { const k = tl.caps[i]; c.style.opacity = k.toFixed(3); c.style.transform = `translate3d(0, ${((1 - k) * 10).toFixed(1)}px, 0)`; });
     finalEl.classList.toggle('on', tl.final > 0.6);
-    return holo > 0.004;
+    return holo > 0.004 || boot < 1;
   }
 
-  const engine = createSpatialEngine({ scene, object, track, stage, hint, render, labels: { ask: 'Activate depth →', ready: 'Tilt · Hold · Scroll' } });
+  const engine = createSpatialEngine({ scene, object, track, stage, hint, render, labels: { ask: 'Enter spatial view →', ready: '' } });
+  if (hint) {
+    // the button exists only for the iOS sensor grant; once granted, or where no grant is needed, there is nothing to say
+    const show = () => { hint.hidden = !hint.classList.contains('ask'); };
+    new MutationObserver(show).observe(hint, { attributes: true, attributeFilter: ['class'] });
+    show();
+  }
   return { engine, LAYERS, timeline };
 }
 

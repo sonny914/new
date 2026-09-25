@@ -14,16 +14,16 @@ test('timeline is continuous, sealed at both ends, resolved at the end', () => {
     prev = t;
   }
   for (const p of [0, 1]) { const t = timeline(p); assert.equal(t.sep, 0); assert.equal(t.camZ, 0); assert.equal(t.wake, 0); }
-  assert.equal(timeline(1).final, 1); assert.equal(timeline(0).final, 0); assert.equal(timeline(0).caps[0], 1);
+  assert.equal(timeline(1).final, 1); assert.equal(timeline(0).final, 0); assert.equal(timeline(0).caps[0], 0, 'rest says nothing');
 });
 
-test('the six states happen in order', () => {
+test('the four beats happen in order', () => {
   const at = (p) => timeline(p);
-  assert.ok(at(0.22).sep > 0.6 && at(0.22).camZ < 100, 'separation before entry');
-  assert.ok(at(0.40).camZ > 250 && at(0.40).caps[1] > 0.5, 'entry with LOOK DEEPER');
-  assert.ok(at(0.62).wake > 0.9 && at(0.62).camZ > 600, 'intelligence: awake and inside');
+  assert.ok(at(0.05).sep === 0 && at(0.05).caps[0] === 0, 'sealed: assembled and silent');
+  assert.ok(at(0.22).sep > 0.6 && at(0.22).camZ < 60 && at(0.22).caps[0] > 0.9, 'open: separated, the headline speaks');
+  assert.ok(at(0.60).wake > 0.9 && at(0.60).camZ > 600 && at(0.60).caps[1] > 0.9, 'inside: awake, the count speaks');
   assert.ok(at(0.86).camZ < 100 && at(0.86).sep < 0.3, 'reassembly');
-  assert.ok(at(0.97).final > 0.5, 'resolution');
+  assert.ok(at(0.97).final > 0.5, 'resolved');
 });
 
 test('captions never overlap and appear in order', () => {
@@ -33,7 +33,7 @@ test('captions never overlap and appear in order', () => {
     assert.ok(on.length <= 1, `two captions at ${p}`);
     if (on.length && seen[seen.length - 1] !== on[0]) seen.push(on[0]);
   }
-  assert.deepEqual(seen, [0, 1, 2]);
+  assert.deepEqual(seen, [0, 1]);
 });
 
 test('from the front, all four planes project to the same rectangle', () => {
