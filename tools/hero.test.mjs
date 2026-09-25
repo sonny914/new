@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { timeline, depthOpacity, parallax, compensation, slatOpen, slatState, SLATS, P, TRAVEL } from '../assets/lab/hero.js';
+import { timeline, depthOpacity, parallax, compensation, slatOpen, slatState, SLATS, P, TRAVEL, K, Y_GAIN } from '../assets/lab/hero.js';
 
 test('the line is the fixed reference: depth 0 never moves, front moves with, back moves against', () => {
   assert.deepEqual(parallax(0, 1, 1), { x: 0, y: 0 });
@@ -63,4 +63,11 @@ test('the camera arrives exactly at the resolution, and everything nearer has be
 
 test('planes fade before they reach the camera', () => {
   assert.equal(depthOpacity(400), 1); assert.equal(depthOpacity(640), 0);
+});
+
+test('pitch keeps the sculpture one object: QUIET-to-rule travel fits the 38 px clearance, the words keep their 25 px interlock', () => {
+  const quiet = parallax(180, 0, 1).y, bands = parallax(80, 0, 1).y, rule = parallax(0, 0, 1).y;
+  assert.ok(Math.abs(quiet - rule) <= 12, `QUIET moves ${(quiet - rule).toFixed(1)} px against the rule at full pitch`);
+  assert.ok(Math.abs(quiet - bands) <= 8, `QUIET moves ${(quiet - bands).toFixed(1)} px against BANDS at full pitch`);
+  assert.ok(Y_GAIN > 0 && K * Y_GAIN * (180 / 300) < 38 - 16, 'clearance to the rule survives with margin');
 });

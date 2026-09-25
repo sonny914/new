@@ -22,8 +22,14 @@ export function timeline(p) {
   return { travel, camZ: travel * TRAVEL, drift: DRIFT * smooth(travel / 0.6), pan: smooth(travel / PAN) };
 }
 export function depthOpacity(z) { return 1 - smooth((z - 420) / 200); }
+/* The pitch axis. A phone in the hand always carries some pitch, and the sculpture (QUIET at 180, BANDS at 80, the rule at 0) has
+   38 px between the wordmark and the rule and a 25 px interlock between the two words. At the old gain (0.85) full pitch moved
+   QUIET 36 px against the rule: the wordmark landed on REQUEST and buried BANDS one way, and the two words came apart the other.
+   v1.4.1 lowers the pitch response so the whole object stays one object across the range: 10 px QUIET-to-rule, 6 px between the words.
+   This is a depth-response change on the pitch axis only; x, timing, easing and touch are untouched. */
+export const Y_GAIN = 0.25;
 /** Parallax by depth relative to the camera: the plane the camera is on never moves under a change of angle. */
-export function parallax(depth, viewX, viewY, camZ = 0) { const f = (depth + camZ) / ZREF; return { x: viewX * K * f, y: viewY * K * 0.85 * f }; }
+export function parallax(depth, viewX, viewY, camZ = 0) { const f = (depth + camZ) / ZREF; return { x: viewX * K * f, y: viewY * K * Y_GAIN * f }; }
 /** Scale that makes an object project at its layout size and place when the camera is at `arrive` (0 = from the front). */
 export function compensation(depth, arrive = 0) { return (P - depth - arrive) / P; }
 

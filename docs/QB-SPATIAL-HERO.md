@@ -118,3 +118,11 @@ The open question after the Impeccable critique: can geometry alone communicate 
 - Nothing is added: no ticks at rest, no camera-facing elements. Reduced motion shows six violet outlines in a row.
 
 Judgement from the frames: at six degrees the row of small parallelograms on the rule reads as tabs or pagination, not as structure. At full tilt the overlapping outlines read as wireframe panels: cards in outline. In the scroll passage the receding stack does read as depth, but as a deck of panels, not as a process. The outline is a drawn box, and a drawn box is a card. Geometry in this form carries "six things at six depths" and nothing more; the words carried the meaning. Kept as a reference frame for the next treatment.
+
+### v1.4.1 · pitch clearance (one depth-response adjustment, named)
+
+An iPhone screenshot from the in-app browser (393 × 680) showed the wordmark sitting on REQUEST with BANDS buried behind it. Reproduced headless: it is full pitch, not scroll. Orientation calibrates to the first reading and maps ±18° of pitch to view.y ±1, which a hand reaches without trying. At the old pitch gain (0.85) QUIET at depth 180 moved 36 px against the rule at depth 0; the composition has 38 px of clearance there and a 25 px interlock between the words. Pitched forward, QUIET was 7 px into the rule and 53 px over BANDS. Pitched back, the two words separated by 2 px and BANDS floated 23 px above the rule.
+
+No placement or scale change fixes that without breaking the sculpture at rest, so the fix is the pitch-axis depth response itself: `Y_GAIN` 0.85 → 0.25 in `hero.js`. Full pitch now moves QUIET 10 px against the rule and 6 px against BANDS. The x axis, timing, easing, touch and scroll are untouched. This is the one locked value that changed, and it is the only change.
+
+Acceptance: `npm run accept:hero` (Playwright) drives the engine through x, y ∈ {−1, 0, 1} at three scroll positions on three iPhone viewports and asserts on every frame: wordmark ≥ 16 px above the rule, QUIET/BANDS interlock ≥ 12 px, BANDS's feet within 16 px of the rule, descriptor ≥ 6 px below the rule. 81 frames hold; worst case is 25 px clearance and a 17 px interlock. A unit test guards the same budget on the parallax function.
