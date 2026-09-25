@@ -11,13 +11,15 @@ const TAP_MS = 220, MOVE_PX = 8;
 /* Layer configuration. px/py: parallax rate (1 = front). holdZ/X/Y: where the layer goes when the file opens.
    rot: how much more than the group this layer rotates (adds thickness to the parallax). */
 const LAYERS = [
-  { id: 'verdict',   baseZ: -150, px: -0.05, py: -0.05, holdZ: -30,  holdX: 0,   holdY: 26,  rot: 0.10 },
+  { id: 'verdict',   baseZ: -150, px: -0.05, py: -0.05, holdZ: -20,  holdX: 0,   holdY: 0,   rot: 0.10 },
   { id: 'shadow',    baseZ: -80,  px: -0.12, py: -0.12, holdZ: -60,  holdX: 0,   holdY: 0,   rot: 0.15 },
-  { id: 'schematic', baseZ: -40,  px: -0.30, py: -0.25, holdZ: -110, holdX: 10,  holdY: -34, rot: 0.50 },
-  { id: 'photo',     baseZ: -14,  px:  0.30, py:  0.25, holdZ: -30,  holdX: -18, holdY: -48, rot: 0.80 },
-  { id: 'glass',     baseZ:  10,  px:  0.60, py:  0.50, holdZ:  50,  holdX: 18,  holdY: 20,  rot: 1.00 },
-  { id: 'notes',     baseZ:  26,  px:  1.00, py:  0.90, holdZ: 130,  holdX: -22, holdY: -12, rot: 1.10 },
-  { id: 'gold',      baseZ:  44,  px:  1.40, py:  1.20, holdZ: 210,  holdX: 26,  holdY: 16,  rot: 1.20 },
+  { id: 'acrylic',   baseZ: -40,  px: -0.30, py: -0.25, holdZ: -90,  holdX: 6,   holdY: -48, rot: 0.50 },
+  { id: 'goldplate', baseZ: -26,  px: -0.10, py: -0.10, holdZ: -60,  holdX: 18,  holdY: -40, rot: 0.60 },
+  { id: 'photo',     baseZ: -8,   px:  0.30, py:  0.25, holdZ: -10,  holdX: -10, holdY: -64, rot: 0.80 },
+  { id: 'glass',     baseZ:  10,  px:  0.60, py:  0.50, holdZ:  36,  holdX: 14,  holdY: 30,  rot: 1.00 },
+  { id: 'ink',       baseZ:  22,  px:  0.85, py:  0.75, holdZ:  70,  holdX: 16,  holdY: 66,  rot: 1.05 },
+  { id: 'text',      baseZ:  30,  px:  1.00, py:  0.90, holdZ:  90,  holdX: 8,   holdY: 80,  rot: 1.10 },
+  { id: 'gold',      baseZ:  44,  px:  1.40, py:  1.20, holdZ: 120,  holdX: 6,   holdY: 0,   rot: 1.20 },
 ];
 
 /* ---------- pure helpers ---------- */
@@ -98,7 +100,7 @@ export function createDossier(root) {
     const tiltW = 1 - tl.travel * 0.7;
     const sep = clamp(st.hold * (1 - tl.travel) + tl.sep + pulse + st.hover * 0.1, 0, 1.4);
     const rot = st.mode === 'INSPECT' ? ROT_INSPECT : ROT_REST;
-    const s = { tilt: st.tilt, tiltW, sep, camZ: tl.camZ, rot };
+    const s = { tilt: st.tilt, tiltW, sep, camZ: tl.camZ - st.hold * (1 - tl.travel) * 90, rot };
 
     // whole object
     const gx = -st.tilt.y * rot * tiltW, gy = st.tilt.x * rot * tiltW;
@@ -115,7 +117,7 @@ export function createDossier(root) {
     });
 
     // lenticular: horizontal viewing angle reveals what actually happens
-    const lensV = clamp(smooth((st.tilt.x * tiltW - 0.12) / 0.5) + st.hold * 0.35, 0, 1);
+    const lensV = clamp(smooth((st.tilt.x * tiltW - 0.12) / 0.5), 0, 1);
     lens.style.setProperty('--lens', lensV.toFixed(3));
     lens.style.setProperty('--shift', (st.tilt.x * 6).toFixed(2) + 'px');
 

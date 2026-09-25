@@ -86,3 +86,18 @@ Transforms and opacity only. Seven composited planes plus captions. Grain is a 1
 5. Inertia on release: carry a little of the last finger velocity into the tilt before damping.
 6. Desktop: click-and-hold already works; add a subtle hover exposure of depth.
 7. Device pass on iPhone Safari with the toolbar in both states; measure with Safari's timeline, not Chromium.
+
+---
+
+## v0.2 · MATERIAL PASS (after the concept render)
+
+The v0.1 engine held; the surfaces did not. v0.2 rebuilds the object around real material and a real composition:
+
+- **Plates cut from the concept render**, as placeholders at concept resolution: the purple street photograph (`plate-photo.jpg`, plus a darkened variant for the lenticular's second face), the scanned ink notes (`plate-ink.jpg`), the gold-framed plate (`plate-gold.jpg`), scratched acrylic (`plate-acrylic.jpg`). Replace these with production assets; the CSS only references the filenames.
+- **Generated scratch overlay** (`scratch.png`, 27 KB RGBA): long hairlines, micro scratches, dust. Laid over the acrylic, glass, gold plate and text panel at different scales so no two surfaces share a pattern.
+- **Composition**: nine planes now, offset and overlapping like the render. Acrylic back panel with a wire globe (SVG) and sheet metadata; gold-framed plate bleeding off the top right; photograph mid-left; smoked glass lower right; ink notes lower right; the words on a scratched panel lower left (REAL WORK / REAL CONTEXT / REAL DECISIONS and the method list, with the first two items dimmed until the file is opened); gold layer with brackets, seal and a FIELD · LAB · SHOP · QB rail bleeding off the right. A crosshair and ® mark sit on the stage outside the object. Amber bokeh behind the object balances the purple.
+- **Lenticular moved onto the photograph.** Angle A is the street as it looks, captioned REQUEST → SYSTEM → COMPLETE. Tilt right and the same frame strips into the darkened print with WHAT ACTUALLY HAPPENS written down its left edge: eight steps, the exception in gold. Two interpretations of the central image, as briefed.
+- **Opening the file** now spreads the planes vertically: back planes rise, front planes drop, the object lifts slightly away from the viewer so nothing outgrows the viewport, and UNDER EXAMINATION appears in the gap from the plate under everything.
+- **Captions** during the scroll travel are now huge condensed display type bleeding off the left edge, like the render's letterform.
+
+Measured again at iPhone size in software-rendered Chromium: 60fps median through a full scrub, worst frame 50 ms, nine composited planes. Payload is now ≈ 190 KB, of which 165 KB is the five placeholder plates; production assets should be exported at 2× the rendered size and no larger.
