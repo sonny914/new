@@ -146,3 +146,21 @@ Audited the controller and stylesheet against Emil Kowalski's design-engineering
 | Tap highlight, overscroll, tap delay defaults | `-webkit-tap-highlight-color: transparent`, `overscroll-behavior: none`, `touch-action: manipulation` on controls | The website tells |
 
 Tests: 20 (rubber-band, spring settle/no-overshoot/velocity, spring stability at long frames). Frame times unchanged in software rendering.
+
+---
+
+## v0.3.2 · POLISH PASS (improve-animations method)
+
+Recon → audit → vet → apply. Findings confirmed at their lines before fixing:
+
+| # | Severity | Finding | Fix |
+| --- | --- | --- | --- |
+| 1 | HIGH | Release from the hold took 650 ms cubic-out, nearly the 900 ms of the open | Asymmetric: open stays 900 ms expo-out; release snaps at 420 ms expo-out (700 ms on cancel) |
+| 2 | MEDIUM | Tap pulse: symmetric 520 ms sine on release, redundant with the press-down breath | Deleted (remedial hierarchy: delete first) |
+| 3 | MEDIUM | Scroll followed with a 140 ms lag, trailing the finger | 90 ms |
+| 4 | MEDIUM | `--lens`/`--shift` set on the `.lens` parent, read by its children | Set on `.lens-a`/`.lens-b` directly |
+| 5 | LOW | OPEN THE FILE entered with the generic ease at 500 ms, no scale | 360 ms strong ease-out from scale .97 |
+| 6 | LOW | Both dimmed method items brightened at once on open | 50 ms stagger, `ease` for a colour change |
+| 7 | LOW | Hint text swapped in place | 160 ms dip through the swap |
+
+Not changed, by design: the 900 ms open (a deliberate phase), the scroll-driven caption windows (scrubbed, not timed), the 30 fps software-rendered figure (GPU compositor work on device).

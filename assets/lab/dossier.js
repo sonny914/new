@@ -8,7 +8,7 @@ const ROT_REST = 5, ROT_INSPECT = 7;   // degrees of whole-object tilt: the dept
 /* Development aid: ?holo=1 exaggerates the optical reflection so its behaviour is unmistakable. Production: off. */
 const HOLO_DEBUG = typeof location !== 'undefined' && /[?&]holo=1/.test(location.search);
 const HOLD_MS = 320;            // press-and-hold arming time
-const TAP_MS = 220, MOVE_PX = 8;
+const MOVE_PX = 8;
 
 /* Layer configuration. px/py: parallax rate (1 = front). holdZ/X/Y: where the layer goes when the file opens.
    rot: how much more than the group this layer rotates (adds thickness to the parallax). */
@@ -89,6 +89,7 @@ export function createDossier(root) {
   const lens = root.querySelector('#lens'), hint = root.querySelector('#hint'), finalEl = root.querySelector('#final');
   const caps = [...root.querySelectorAll('.cap')];
   const lightEls = [...root.querySelectorAll('.holo, .holo-edge, .spec')];
+  const lensFaces = [...root.querySelectorAll('.lens-a, .lens-b')];
   const els = {}; LAYERS.forEach((L) => { els[L.id] = root.querySelector(`[data-layer="${L.id}"]`); });
   const fine = window.matchMedia('(pointer: fine)').matches;
 
@@ -100,7 +101,6 @@ export function createDossier(root) {
     hold: 0, holdT: 0, holdFrom: 0, holdStart: 0, holdDur: 900, holdEase: outExpo,
     scroll: 0, scrollT: 0,
     hover: 0, hoverT: 0, holo: 0,
-    pulse: 0, pulseAt: 0,
   };
   let running = false, lastFrame = 0, lastKey = '';
 
@@ -109,7 +109,7 @@ export function createDossier(root) {
   /* ---------- frame ---------- */
   function frame(now) {
     const dt = Math.min(48, now - (lastFrame || now)); lastFrame = now;
-    const a = 1 - Math.exp(-dt / 90), b = 1 - Math.exp(-dt / 140);
+    const a = 1 - Math.exp(-dt / 90), b = 1 - Math.exp(-dt / 90);
     const px0 = st.tilt.x, py0 = st.tilt.y;
     // the tilt is a critically damped spring per axis: a release carries the finger's velocity; an interruption re-targets from the live value
     const sdt = dt / 1000;
@@ -123,8 +123,7 @@ export function createDossier(root) {
     st.hover += (st.hoverT - st.hover) * a;
     // hold: time-based ease from holdFrom to holdT
     if (st.hold !== st.holdT) { const k = (now - st.holdStart) / st.holdDur; st.hold = k >= 1 ? st.holdT : lerp(st.holdFrom, st.holdT, st.holdEase(k)); }
-    // tap pulse: a brief breath of separation
-    let pulse = 0; if (st.pulseAt) { const k = (now - st.pulseAt) / 520; pulse = k >= 1 ? 0 : Math.sin(Math.PI * clamp(k)) * 0.22; if (k >= 1) st.pulseAt = 0; }
+    const pulse = 0;
 
     const tl = timeline(st.scroll);
     const tiltW = 1 - tl.travel * 0.7;
@@ -157,8 +156,8 @@ export function createDossier(root) {
 
     // lenticular: horizontal viewing angle reveals what actually happens
     const lensV = clamp(smooth((st.tilt.x * tiltW - 0.12) / 0.5), 0, 1);
-    lens.style.setProperty('--lens', lensV.toFixed(3));
-    lens.style.setProperty('--shift', (st.tilt.x * 6).toFixed(2) + 'px');
+    const lensS = lensV.toFixed(3), shiftS = (st.tilt.x * 6).toFixed(2) + 'px';
+    lensFaces.forEach((el) => { el.style.setProperty('--lens', lensS); el.style.setProperty('--shift', shiftS); });
 
     // captions and final state
     caps.forEach((c, i) => { const v = tl.caps[i]; c.style.opacity = v.toFixed(3); c.style.transform = `translate3d(0, ${((1 - v) * 18).toFixed(1)}px, 0) scale(${(0.96 + v * 0.04).toFixed(3)})`; });
@@ -168,7 +167,7 @@ export function createDossier(root) {
     // mode from scroll
     if (st.mode !== 'INSPECT' && st.mode !== 'EXPLORE') setMode(st.scroll > 0.02 && st.scroll < 0.98 ? 'SCROLLING' : (st.scroll >= 0.98 ? 'ASSEMBLED' : 'REST'));
 
-    const moving = st.holo > 0.004 || Math.abs(st.tiltT.x - st.tilt.x) > 0.0008 || Math.abs(st.tiltT.y - st.tilt.y) > 0.0008 || Math.abs(st.tiltV.x) > 0.002 || Math.abs(st.tiltV.y) > 0.002 || Math.abs(st.pressT - st.press) > 0.002 || Math.abs(st.scrollT - st.scroll) > 0.0004 || st.hold !== st.holdT || st.pulseAt || Math.abs(st.hoverT - st.hover) > 0.002;
+    const moving = st.holo > 0.004 || Math.abs(st.tiltT.x - st.tilt.x) > 0.0008 || Math.abs(st.tiltT.y - st.tilt.y) > 0.0008 || Math.abs(st.tiltV.x) > 0.002 || Math.abs(st.tiltV.y) > 0.002 || Math.abs(st.pressT - st.press) > 0.002 || Math.abs(st.scrollT - st.scroll) > 0.0004 || st.hold !== st.holdT || Math.abs(st.hoverT - st.hover) > 0.002;
     if (moving) requestAnimationFrame(frame); else running = false;
   }
   function wake() { if (!running) { running = true; lastFrame = 0; requestAnimationFrame(frame); } }
@@ -195,7 +194,7 @@ export function createDossier(root) {
     try { navigator.vibrate && navigator.vibrate(8); } catch { /* not required */ }
   }
   function endInspect(snap = true) {
-    if (st.mode === 'INSPECT') setHold(0, snap ? 650 : 900, outCubic);
+    if (st.mode === 'INSPECT') setHold(0, snap ? 420 : 700, outExpo);
     setMode(assembled() ? (st.scrollT > 0.5 ? 'ASSEMBLED' : 'REST') : 'SCROLLING');
   }
   function down(e) {
@@ -222,10 +221,8 @@ export function createDossier(root) {
   function up(e) {
     if (!ptr || e.pointerId !== ptr.id) return;
     clearTimeout(holdTimer);
-    const dur = performance.now() - ptr.t;
     st.pressT = 0;
     if (ptr.held) endInspect(true);
-    else if (!ptr.moved && dur < TAP_MS) { st.pulseAt = performance.now(); setMode(assembled() ? 'REST' : 'SCROLLING'); }
     else setMode(assembled() ? 'REST' : 'SCROLLING');
     if (!fine) { st.tiltT.x = orient.x; st.tiltT.y = orient.y; }
     ptr = null; wake();
@@ -240,6 +237,9 @@ export function createDossier(root) {
   if (fine) {
     scene.addEventListener('pointerleave', () => { if (!ptr) { st.tiltT.x = 0; st.tiltT.y = 0; st.hoverT = 0; wake(); } });
   }
+  /** Content never teleports: dip, swap, return. */
+  function swapText(el, text) { el.classList.add('swap'); setTimeout(() => { el.textContent = text; el.classList.remove('swap'); }, 160); }
+
   /* ---------- device orientation: the same spatial model, driven by the phone ---------- */
   const orient = { x: 0, y: 0, on: false, base: null };
   const RANGE = 18; // degrees of device tilt that map to the full viewing range
@@ -255,13 +255,13 @@ export function createDossier(root) {
   function startOrientation() {
     if (orient.on) return; orient.on = true;
     window.addEventListener('deviceorientation', onOrient, { passive: true });
-    if (hint) { hint.classList.remove('ask'); hint.textContent = 'Tilt · Hold · Scroll'; }
+    if (hint) { hint.classList.remove('ask'); swapText(hint, 'Tilt · Hold · Scroll'); }
   }
   const DOE = window.DeviceOrientationEvent;
   if (DOE && !fine) {
     if (typeof DOE.requestPermission === 'function') {
       // iOS: sensors need an explicit grant, only after a real gesture
-      if (hint) { hint.textContent = 'Move through it →'; hint.classList.add('ask');
+      if (hint) { swapText(hint, 'Move through it →'); hint.classList.add('ask');
         hint.addEventListener('click', async () => { try { const r = await DOE.requestPermission(); if (r === 'granted') startOrientation(); else hint.classList.remove('ask'); } catch { hint.classList.remove('ask'); } }, { once: true }); }
     } else startOrientation();
   }
