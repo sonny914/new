@@ -59,6 +59,29 @@ for (const [w, h, name] of VIEWPORTS) {
   console.log(`${name} ${w}x${h}: worst gapQL ${worst.gapQL.toFixed(0)} (>=${LIMITS.gapQL})  ovQB ${worst.ovQB.toFixed(0)} (>=${LIMITS.ovQB})  |feet| ${worst.feet.toFixed(0)} (<=${LIMITS.feet})  gapLW ${worst.gapLW.toFixed(0)} (>=${LIMITS.gapLW})`);
   await ctx.close();
 }
+// Stability: a resize while tilted and scrolled must not move the composition once it returns to rest.
+{
+  const ctx = await b.newContext({ viewport: { width: 393, height: 680 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const pg = await ctx.newPage();
+  await pg.goto(`${base}/lab/spatial-hero/`, { waitUntil: 'networkidle' });
+  await pg.waitForTimeout(600);
+  const rest = () => pg.evaluate(() => ['.quiet', '.bands', '.line', '.slat'].map((s) => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top)]; }));
+  const before = await rest();
+  for (let i = 0; i < 5; i++) {
+    await pg.evaluate(([x, y, sy]) => { window.scrollTo(0, sy); const s = window.QB_HERO.engine.state; s.viewT.x = x; s.viewT.y = y; window.QB_HERO.engine.wake(); }, [i % 2 ? 1 : -1, 1, 400]);
+    await pg.waitForTimeout(500);
+    await pg.evaluate(() => window.dispatchEvent(new Event('resize')));
+    await pg.waitForTimeout(100);
+  }
+  await pg.evaluate(() => { window.scrollTo(0, 0); const s = window.QB_HERO.engine.state; s.viewT.x = 0; s.viewT.y = 0; window.QB_HERO.engine.wake(); });
+  await pg.waitForTimeout(1200);
+  const after = await rest();
+  const drift = Math.max(...before.map((p, i) => Math.hypot(p[0] - after[i][0], p[1] - after[i][1])));
+  checks++;
+  if (drift > 1) { failures++; console.log(`FAIL stability: composition drifted ${drift.toFixed(1)}px after five resizes mid-interaction`); }
+  else console.log(`stability: ${drift.toFixed(1)}px drift after five resizes mid-interaction (<=1)`);
+  await ctx.close();
+}
 await b.close(); server.close();
 console.log(failures ? `${failures}/${checks} frames fail` : `all ${checks} frames hold`);
 process.exit(failures ? 1 : 0);

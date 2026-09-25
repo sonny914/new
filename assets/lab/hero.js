@@ -52,9 +52,15 @@ export function createHero(root) {
   let lineX = 0, lineY = 0;   // the line's layout position relative to the centre: where the camera aims as it goes in
   let origin = { x: 0, y: 0 };
   function measure() {
+    // Layout positions only: the rects must be read with every object's transform off, or a resize mid-interaction
+    // (the in-app browser's toolbar collapsing, a rotation, a font swap) bakes the current tilt and scroll offsets
+    // into the composition and the scene drifts a little further on every resize. (v1.4.3)
+    const all = [...world, ...slats], saved = all.map((o) => o.el.style.transform);
+    all.forEach((o) => { o.el.style.transform = 'none'; });
     const r = volume.getBoundingClientRect(); origin = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     const at = (o) => { const b = o.el.getBoundingClientRect(); o.cx = b.left + b.width / 2 - origin.x; o.cy = b.top + b.height / 2 - origin.y; };
     world.forEach(at); slats.forEach(at);
+    all.forEach((o, i) => { o.el.style.transform = saved[i]; });
     const l = world.find((w) => w.el === lineEl); lineX = l ? l.cx : 0; lineY = l ? l.cy : 0;
   }
   let sheen = 0;
@@ -100,8 +106,11 @@ export function createHero(root) {
     return sheen > 0.004;
   }
 
-  measure(); window.addEventListener('resize', measure, { passive: true });
+  measure();
   const engine = createSpatialEngine({ scene: volume, object: volume, track, stage, hint: null, render, hold: false, drag: 'relative', permission: 'gesture' });
+  const remeasure = () => { measure(); engine.wake(); };
+  window.addEventListener('resize', remeasure, { passive: true });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);   // the first measure may have read fallback metrics
   return { engine, measure, SLATS, timeline };
 }
 

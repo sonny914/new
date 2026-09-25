@@ -131,3 +131,9 @@ Acceptance: `npm run accept:hero` (Playwright) drives the engine through x, y �
 
 - **Higher on mobile.** `--q-top` 39vh → 30vh. The object now spans 30–54% of the in-app browser viewport (393 × 680) and 30–50% of a full iPhone window, with the air below it where the thumb and the browser toolbar live, instead of sitting on the bottom third. Desktop unchanged. The resolution rises with the line, since it arrives centred on it. All 81 acceptance frames still hold.
 - **Cache.** `/assets/*` is served with a one-hour browser cache, so the phone kept running the pre-v1.4.1 script after the deploy and showed the collision again. The lab page now references its stylesheet and script with a version query (`?v=142`); bump it with each lab deploy that changes those files. Production assets and headers untouched.
+
+### v1.4.3 · stability on resize; start at 34vh
+
+- **The drift.** `measure()` read every object's rect with its 3D transform still applied, so a resize mid-interaction (the in-app browser's toolbar collapsing on scroll, a rotation, a font swap) baked the current tilt and scroll offsets into the layout positions, and the scene moved a little further on every resize. Reproduced headless: 36 px of drift after five resizes while tilted and scrolled. `measure()` now reads with transforms off and restores them, wakes the engine afterwards, and runs again when the fonts finish loading, since the first measure can see fallback metrics. Drift after the same five resizes: 0 px. The stability case is part of `npm run accept:hero`.
+- **Start.** `--q-top` 34vh: 39 was too low in the in-app browser, 30 too high. The object now spans 34–57% of the in-app viewport and 34–54% of a full window.
+- Lab asset version bumped to `?v=143`.
