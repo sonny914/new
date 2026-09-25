@@ -101,3 +101,16 @@ The v0.1 engine held; the surfaces did not. v0.2 rebuilds the object around real
 - **Captions** during the scroll travel are now huge condensed display type bleeding off the left edge, like the render's letterform.
 
 Measured again at iPhone size in software-rendered Chromium: 60fps median through a full scrub, worst frame 50 ms, nine composited planes. Payload is now ≈ 190 KB, of which 165 KB is the five placeholder plates; production assets should be exported at 2× the rendered size and no larger.
+
+---
+
+## v0.2 · MATERIAL REFINEMENT (no gold)
+
+Direction: covert, technological, contemporary. Luxury from depth, material, light, restraint, motion, precision.
+
+- **Gold removed entirely.** Tokens, gradients, frame, brackets, seal, tabs, octagon, accent square, crosshair, ® mark, ruler, sheet label, film id, duplicate file and status labels: all gone. Metadata reduced by roughly 40%. What remains: SYS-DIAGRAM label, the two lenticular captions, the FIELD · LAB · SHOP · QB rail, the verdict line. Dirty silver (`--silver`, `--gunmetal`, `--graphite`) replaces gold where a marking must exist.
+- **No frame.** The evidence plate is a smoked plate with no border; depth establishes it. The letterform is now graphite, nearly the background's value.
+- **Three purple grades across depth.** Foreground photograph: brighter, sharpened, more contrast. Middle evidence plate: rich ultraviolet overlay. Rear acrylic and stack: darker, lower contrast, heavier veil. Depth reads in the still.
+- **Specular.** A soft dirty-silver band on the acrylic and the glass, positioned by the same normalized pointer x that drives parallax (`--lx`). Nothing emissive.
+- **Holographic.** A spectral layer on the glass and the photograph: violet, indigo, faint cyan, faint magenta, positioned by `--lx/--ly`. Its opacity is driven by tilt velocity, not tilt position: rises fast with movement (peak ≈ 0.18 while dragging), decays with a 420 ms time constant at rest to ≈ 0.02. Still image: barely there. Move: it appears. Stop: it goes.
+- Frame times unchanged (60fps median, 50 ms worst, ten composited planes at iPhone size, software rendering).

@@ -23,15 +23,11 @@
 
       <header class="hud hud-top" aria-hidden="false">
         <span class="wordmark">Quiet Bands</span>
-        <span class="hud-file gold">QB / FILE 001</span>
+        <span class="hud-file silver">QB / FILE 001</span>
       </header>
 
       <!-- instruments on the stage, outside the object -->
       <span class="big" aria-hidden="true">T.</span>
-      <i class="octa" aria-hidden="true"></i>
-      <i class="accent" aria-hidden="true"></i>
-      <svg class="crosshair" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M40 4v20M40 56v20M4 40h20M56 40h20" stroke="currentColor" stroke-width=".8"/><circle cx="40" cy="40" r="1.6" fill="currentColor"/></svg>
-      <span class="reg mono">®</span>
 
       <!-- ====== THE OBJECT ====== -->
       <div class="scene" id="scene">
@@ -40,17 +36,18 @@
           <!-- Z-1 · verdict: what you only see by opening the file -->
           <div class="layer l-verdict" data-layer="verdict" aria-label="Status">
             <span class="v-stamp">Under examination</span>
-            <span class="v-line mono gold">QB / FILE 001 · N 29.7604 · W 95.3698</span>
+            <span class="v-line mono">QB / FILE 001 · N 29.7604 · W 95.3698</span>
           </div>
 
           <!-- Z0 · shadow -->
           <div class="layer l-shadow" data-layer="shadow" aria-hidden="true"></div>
 
           <!-- Z0.5 · two more dark panels stepping up and right -->
-          <div class="layer l-stack" data-layer="stack" aria-hidden="true"><i class="s1"></i><i class="s2"></i></div>
+          <div class="layer l-stack" data-layer="stack" aria-hidden="true"><i class="s1"></i></div>
 
           <!-- Z1 · scratched acrylic back panel with the wire globe -->
-          <div class="layer l-acrylic" data-layer="acrylic" aria-label="System schematic">
+          <div class="layer l-acrylic spec" data-layer="acrylic" aria-label="System schematic">
+            <span class="veil"></span>
             <svg class="globe" viewBox="0 0 200 130" aria-hidden="true">
               <g fill="none" stroke="#C4B2E0" stroke-width=".9" opacity=".85">
                 <ellipse cx="100" cy="65" rx="92" ry="58"/>
@@ -60,17 +57,11 @@
               </g>
               <path d="M150 28l22 -14m-6 2l6 -2 -1 6" fill="none" stroke="#C4B2E0" stroke-width=".9"/>
             </svg>
-            <span class="ruler" aria-hidden="true"></span>
-            <i class="tab t1"></i><i class="tab t2"></i>
             <span class="a-id mono">SYS-DIAGRAM 001 · REV C</span>
-            <span class="a-sheet mono">SHEET 1 / 1</span>
           </div>
 
-          <!-- Z1.5 · gold-framed plate, upper right, bleeding off the object -->
-          <div class="layer l-goldplate" data-layer="goldplate" aria-hidden="true">
-            <span class="gp-inner"></span>
-            <span class="gp-tag mono">QB</span>
-          </div>
+          <!-- Z1.5 · smoked evidence plate, upper right, bleeding off the object -->
+          <div class="layer l-plate" data-layer="plate" aria-hidden="true"></div>
 
           <!-- Z2 · photograph · the lenticular lives here: the street as it looks, and what actually happens, written over it -->
           <div class="layer l-photo" data-layer="photo" aria-label="Photograph, film frame 12A">
@@ -92,11 +83,11 @@
                 <span class="lens-foot mono">8 steps · 5 handoffs · 1 exception</span>
               </div>
             </div>
-            <span class="film-id mono">Film 001 · 12A</span>
+            <span class="holo"></span>
           </div>
 
           <!-- Z3 · smoked glass -->
-          <div class="layer l-glass" data-layer="glass" aria-hidden="true"></div>
+          <div class="layer l-glass spec" data-layer="glass" aria-hidden="true"><span class="holo"></span></div>
 
           <!-- Z4 · field notes: scanned ink -->
           <div class="layer l-ink" data-layer="ink" aria-label="Field notes"></div>
@@ -112,14 +103,10 @@
             </ol>
           </div>
 
-          <!-- Z5 · gold annotation -->
-          <div class="layer l-gold" data-layer="gold" aria-label="File status">
-            <i class="bracket tl"></i><i class="bracket bl"></i>
-            <span class="g-file mono gold">QB / FILE 001</span>
-            <span class="g-status mono gold">Status: Under examination</span>
-            <span class="g-seal gold" aria-hidden="true"><span class="seal-ring"></span><span class="seal-qb">QB</span></span>
+          <!-- Z5 · front rail -->
+          <div class="layer l-front" data-layer="front" aria-label="Divisions">
             <ul class="rail mono">
-              <li>Field</li><li>Lab</li><li>Shop</li><li class="gold">QB</li>
+              <li>Field</li><li>Lab</li><li>Shop</li><li class="silver">QB</li>
             </ul>
           </div>
 
@@ -135,7 +122,7 @@
 
       <!-- final state -->
       <div class="final" id="final">
-        <p class="mono gold">QB / FILE 001</p>
+        <p class="mono silver">QB / FILE 001</p>
         <a class="open" href="/work/">Open the file <span aria-hidden="true">→</span></a>
       </div>
 

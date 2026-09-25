@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { timeline, depthOpacity, layerTransform } from '../assets/lab/dossier.js';
 
-const L = { id: 'gold', baseZ: 44, px: 1.4, py: 1.2, holdZ: 210, holdX: 26, holdY: 16, rot: 1.2 };
+const L = { id: 'front', baseZ: 44, px: 1.4, py: 1.2, holdZ: 210, holdX: 26, holdY: 16, rot: 1.2 };
 const rest = { tilt: { x: 0, y: 0 }, tiltW: 1, sep: 0, camZ: 0, rot: 6 };
 
 test('timeline is continuous and returns to the assembled state', () => {

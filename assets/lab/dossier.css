@@ -1,11 +1,13 @@
-/* QUIET BANDS — SPATIAL DOSSIER v0.1
-   Street luxury × dossier × technology. Near black, black plum, deep amethyst, smoked glass, restrained gold.
-   Transforms and opacity only; no filters, blend modes or backdrop-filter. */
+/* QUIET BANDS — SPATIAL DOSSIER v0.2 · material pass
+   Near black, smoked black, deep plum, ultraviolet, graphite, dirty silver, smoked acrylic.
+   No gold. Luxury from depth, material, light, restraint. Transforms and opacity only; no filters,
+   blend modes or backdrop-filter. The light (--lx/--ly/--holo/--spec) is written by the controller
+   from the same normalized pointer coordinates that drive the parallax. */
 
 :root{
   --ink:#0B0910; --plum:#14101C; --plum-2:#1C1527; --amethyst:#3B2A5A; --uv:#6B3FA0; --uv-hi:#8F6BC7;
-  --ivory:#E9E2F0; --ivory-2:#B9A6D6; --mute:#7C6F91;
-  --gold:#C9A45C; --gold-hi:#EBD59A; --gold-lo:#8A6B2E;
+  --ivory:#E9E2F0; --ivory-2:#B9A6D6; --mute:#6F6782;
+  --graphite:#3A3D45; --gunmetal:#5A5E68; --silver:#A9AEB8; --silver-hi:#D6DAE2;
   --P:1100px;
   --dw:min(80vw, 400px); --dh:calc(var(--dw) * 1.4);
   --ease:cubic-bezier(.22,1,.36,1);
@@ -14,19 +16,15 @@
 html{background:var(--ink);color:var(--ivory);-webkit-text-size-adjust:100%}
 body{font-family:'Bricolage Grotesque','Instrument Sans',system-ui,sans-serif;background:var(--ink);overflow-x:clip;-webkit-font-smoothing:antialiased}
 .mono{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase}
-.gold{color:var(--gold);background:linear-gradient(100deg,var(--gold-lo) 0%,var(--gold) 35%,var(--gold-hi) 52%,var(--gold) 70%,var(--gold-lo) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.silver{color:var(--silver);background:linear-gradient(100deg,var(--gunmetal) 0%,var(--silver) 40%,var(--silver-hi) 52%,var(--silver) 64%,var(--gunmetal) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 a{color:inherit;text-decoration:none}
 
 /* ---------- stage ---------- */
 .track{position:relative;height:560vh}
 .stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:grid;place-items:center;
   background:
-    radial-gradient(22% 13% at 10% 36%,rgba(224,160,70,.30),transparent 68%),
-    radial-gradient(12% 7% at 30% 31%,rgba(224,160,70,.18),transparent 70%),
-    radial-gradient(26% 14% at 6% 58%,rgba(201,164,92,.16),transparent 70%),
-    radial-gradient(9% 5% at 22% 66%,rgba(224,160,70,.14),transparent 70%),
-    radial-gradient(120% 70% at 50% 10%,rgba(107,63,160,.18),transparent 60%),
-    radial-gradient(90% 60% at 50% 110%,rgba(59,42,90,.3),transparent 60%),
+    radial-gradient(120% 70% at 50% 8%,rgba(107,63,160,.14),transparent 60%),
+    radial-gradient(90% 60% at 50% 112%,rgba(59,42,90,.26),transparent 60%),
     var(--ink)}
 .stage::after{content:"";position:absolute;inset:0;background:url(/assets/lab/grain.png) repeat;background-size:64px;opacity:.07;pointer-events:none;z-index:30}
 .hud{position:absolute;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;z-index:20;pointer-events:none}
@@ -36,111 +34,96 @@ a{color:inherit;text-decoration:none}
 .hud-file{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase}
 .hud-hint,.hud-status{font-size:9px;letter-spacing:.24em;color:var(--mute);transition:opacity .4s var(--ease)}
 .hud-hint.off{opacity:0}
+.big{position:absolute;left:0;top:50%;translate:calc(-100% + 0.78em) -46%;z-index:2;pointer-events:none;font-weight:800;font-variation-settings:'wdth' 75;font-size:clamp(120px,34vw,300px);line-height:1;letter-spacing:-.02em;text-transform:uppercase;white-space:nowrap;background:linear-gradient(170deg,#4A4E57 0%,#2A2C33 55%,#3A3D45 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;opacity:.9}
 
 /* ---------- the object ---------- */
 .scene{perspective:var(--P);perspective-origin:50% 50%;width:var(--dw);height:var(--dh);position:relative;z-index:10}
-.dossier{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;outline:none;cursor:grab}
-.dossier:focus-visible{outline:1px solid var(--gold);outline-offset:10px}
+.dossier{--lx:50%;--ly:50%;--holo:0;--spec:.05;position:absolute;inset:0;transform-style:preserve-3d;will-change:transform;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;outline:none;cursor:grab}
+.dossier:focus-visible{outline:1px solid var(--silver);outline-offset:10px}
 .dossier.is-inspect{cursor:grabbing}
 .layer{--tilt:0deg;position:absolute;inset:0;will-change:transform,opacity;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:4px;transform:translate3d(0,0,0)}
 
-/* instruments */
-.crosshair{position:absolute;left:18px;top:calc(76px + env(safe-area-inset-top));width:56px;height:56px;color:var(--ivory-2);opacity:.7;z-index:12;pointer-events:none}
-.reg{position:absolute;left:22px;top:calc(56px + env(safe-area-inset-top));font-size:9px;color:var(--mute);z-index:12}
-.big{position:absolute;left:0;top:50%;translate:calc(-100% + 0.78em) -46%;z-index:2;pointer-events:none;font-weight:800;font-variation-settings:'wdth' 75;font-size:clamp(120px,34vw,300px);line-height:1;letter-spacing:-.02em;text-transform:uppercase;white-space:nowrap;background:linear-gradient(170deg,#EDE4D2 0%,#C9BEAA 48%,#E2D8C4 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;opacity:.94}
-.octa{position:absolute;left:44px;top:calc(50% + 56px);width:12px;height:12px;z-index:3;background:var(--gold);clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%)}
-.accent{position:absolute;left:-6px;bottom:calc(72px + env(safe-area-inset-bottom));width:22px;height:22px;border:1.5px solid #8F6BC7;border-radius:3px;z-index:3;opacity:.8}
+/* light: a soft specular band that follows the viewing angle (acrylic, glass), and the spectral sweep (glass, photo) */
+.spec::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;
+  background:linear-gradient(105deg,transparent calc(var(--lx) - 26%),rgba(214,218,226,var(--spec)) var(--lx),transparent calc(var(--lx) + 26%))}
+.holo{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:4;opacity:var(--holo);will-change:opacity;
+  background:
+    radial-gradient(70% 90% at var(--lx) var(--ly),rgba(120,80,255,1),rgba(80,60,220,.7) 22%,rgba(40,140,220,.5) 40%,rgba(200,60,200,.3) 58%,transparent 76%),
+    linear-gradient(calc(90deg + (var(--lx) - 50%) * 1.2),rgba(90,60,220,.5),rgba(60,160,220,.35) 40%,rgba(200,70,200,.3) 70%,rgba(90,60,220,.5))}
 
-/* Z-1 verdict: the plate under everything */
-.l-verdict{--reveal:0;background:#0F0B16 url(/assets/lab/plate-acrylic.jpg) center/cover;border:1px solid rgba(233,226,240,.07);display:flex;flex-direction:column;justify-content:flex-end;padding:0 16px 41%;overflow:hidden}
-.l-verdict::before{content:"";position:absolute;inset:0;background:rgba(11,9,16,.62)}
+/* Z-1 verdict: the plate under everything, rear grade: darker, low contrast */
+.l-verdict{--reveal:0;background:#0B0810 url(/assets/lab/plate-acrylic.jpg) center/cover;display:flex;flex-direction:column;justify-content:flex-end;padding:0 16px 32%;overflow:hidden}
+.l-verdict::before{content:"";position:absolute;inset:0;background:rgba(11,9,16,.78)}
 .v-stamp{position:relative;font-weight:800;font-variation-settings:'wdth' 75;font-size:clamp(17px,5.6vw,26px);white-space:nowrap;line-height:1;text-transform:uppercase;letter-spacing:-.01em;color:var(--ivory);opacity:var(--reveal)}
-.v-line{position:relative;margin-top:6px;font-size:7px;letter-spacing:.2em;opacity:var(--reveal)}
+.v-line{position:relative;margin-top:6px;font-size:7px;letter-spacing:.2em;color:var(--silver);opacity:var(--reveal)}
 
 /* Z0 shadow */
 .l-shadow{inset:-6% -8%;border-radius:40%;background:radial-gradient(60% 60% at 50% 50%,rgba(0,0,0,.85),rgba(0,0,0,.55) 45%,transparent 72%)}
-.l-shadow::before{content:"";position:absolute;inset:8% 10%;border-radius:40%;background:radial-gradient(50% 50% at 50% 45%,rgba(107,63,160,.2),transparent 70%)}
+.l-shadow::before{content:"";position:absolute;inset:8% 10%;border-radius:40%;background:radial-gradient(50% 50% at 50% 45%,rgba(107,63,160,.18),transparent 70%)}
 
-/* Z0.5 stepped dark panels */
+/* Z0.5 one stepped dark panel */
 .l-stack{inset:6% 8% 0 0;pointer-events:none}
-.l-stack i{position:absolute;inset:0;border-radius:6px;background:#0E0B14 url(/assets/lab/plate-acrylic.jpg) center/cover;border:1px solid rgba(196,178,224,.12)}
-.l-stack i::after{content:"";position:absolute;inset:0;border-radius:6px;background:rgba(9,7,13,.72)}
-.l-stack .s1{transform:translate(4%,-3.5%)}
-.l-stack .s2{transform:translate(8%,-7%)}
+.l-stack i{position:absolute;inset:0;border-radius:6px;background:#0C0912 url(/assets/lab/plate-acrylic.jpg) center/cover;transform:translate(5%,-4.5%)}
+.l-stack i::after{content:"";position:absolute;inset:0;border-radius:6px;background:rgba(9,7,13,.82)}
 
-/* Z1 scratched acrylic back panel */
-.l-acrylic{inset:6% 8% 0 0;border-radius:6px;background:#0F0B15 url(/assets/lab/plate-acrylic.jpg) center/cover;border:1px solid rgba(196,178,224,.18);overflow:hidden;clip-path:inset(0 0 22% 0 round 6px)}
-.l-acrylic::before{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/380px;opacity:.75;z-index:1}
-.l-acrylic::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,7,13,.42),rgba(9,7,13,.7) 70%)}
-.ruler{position:absolute;left:10%;right:10%;top:0;height:6px;z-index:1;background:repeating-linear-gradient(90deg,rgba(196,178,224,.55) 0 1px,transparent 1px 9px)}
-.tab{position:absolute;top:-1px;width:26px;height:9px;background:linear-gradient(180deg,var(--gold-hi),var(--gold-lo));border-radius:0 0 2px 2px;z-index:2;opacity:.9}
-.tab.t1{right:14%}
-.tab.t2{right:4%}
-.globe{position:absolute;left:5%;top:8%;width:52%;height:auto;z-index:1}
-.a-id{position:absolute;left:12px;top:10px;font-size:7.5px;letter-spacing:.2em;color:var(--ivory-2);z-index:1}
-.a-sheet{position:absolute;right:12px;top:10px;font-size:7.5px;letter-spacing:.2em;color:var(--mute);z-index:1}
+/* Z1 smoked acrylic back panel, rear grade */
+.l-acrylic{inset:6% 8% 0 0;border-radius:6px;background:#0E0B14 url(/assets/lab/plate-acrylic.jpg) center/cover;overflow:hidden;clip-path:inset(0 0 22% 0 round 6px)}
+.l-acrylic::before{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/380px;opacity:.6;z-index:1}
+.l-acrylic .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,7,13,.5),rgba(9,7,13,.74) 70%)}
+.globe{position:absolute;left:5%;top:9%;width:50%;height:auto;z-index:1;opacity:.55}
+.a-id{position:absolute;left:12px;top:10px;font-size:7.5px;letter-spacing:.2px;letter-spacing:.2em;color:var(--mute);z-index:1}
 
-/* Z1.5 gold-framed plate */
-.l-goldplate{inset:2% -7% 46% 46%;border-radius:4px;background:#8A6B2E url(/assets/lab/plate-gold.jpg) center/cover;border:1px solid rgba(241,220,166,.5);box-shadow:0 18px 40px -22px rgba(0,0,0,.95),inset 0 1px 0 rgba(241,220,166,.5)}
-.l-goldplate::after{content:"";position:absolute;inset:0;border-radius:4px;background:url(/assets/lab/scratch.png) center/300px;opacity:.4}
-.gp-inner{position:absolute;inset:11px;border-radius:2px;background:#0F0B15 url(/assets/lab/plate-acrylic.jpg) center/cover;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6)}
-.gp-inner::before{content:"";position:absolute;inset:0;background:rgba(9,7,13,.55)}
-.gp-inner::after{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/240px;opacity:.9}
-.gp-tag{position:absolute;left:-6px;top:-8px;z-index:2;font-size:8px;font-weight:700;letter-spacing:.2em;color:#F1DCA6;background:rgba(80,58,22,.85);border:1px solid rgba(201,164,92,.7);padding:3px 6px 2px}
+/* Z1.5 smoked evidence plate, middle grade: rich ultraviolet. No frame; depth establishes it. */
+.l-plate{inset:2% -7% 46% 46%;border-radius:4px;background:#1A1230 url(/assets/lab/plate-evidence.jpg) center/cover;box-shadow:0 18px 40px -22px rgba(0,0,0,.95);overflow:hidden}
+.l-plate::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(74,40,130,.55),rgba(30,18,52,.7))}
+.l-plate::after{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/300px;opacity:.35}
 
-/* Z2 photograph + lenticular */
+/* Z2 photograph + lenticular, foreground grade: brighter, sharper */
 .l-photo{--tilt:-2.2deg;inset:21% 24% 38% 6%;border-radius:2px;overflow:hidden;background:#1A1324;box-shadow:0 26px 50px -24px rgba(0,0,0,.95);clip-path:polygon(0 1.5%,3% 0,55% .8%,97% 0,100% 4%,99.2% 52%,100% 97%,96% 100%,40% 99%,2% 100%,0 96%,.8% 40%)}
-.l-photo::after{content:"";position:absolute;inset:0;background:url(/assets/lab/grain.png) repeat;background-size:64px;opacity:.14;pointer-events:none}
+.l-photo::after{content:"";position:absolute;inset:0;background:url(/assets/lab/grain.png) repeat;background-size:64px;opacity:.12;pointer-events:none}
 .lens{position:absolute;inset:0;--lens:0;--shift:0px}
 .lens-a,.lens-b{position:absolute;inset:0;background:url(/assets/lab/plate-photo.jpg) center/cover}
+.lens-a::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(233,226,240,.08),transparent 40%,rgba(60,30,110,.18))}
 .lens-b{background-image:url(/assets/lab/plate-photo-dark.jpg);transform:translate3d(var(--shift),0,0);
   -webkit-mask-image:repeating-linear-gradient(90deg,#000 0,#000 calc(var(--lens) * 7px),transparent calc(var(--lens) * 7px),transparent 7px);
   mask-image:repeating-linear-gradient(90deg,#000 0,#000 calc(var(--lens) * 7px),transparent calc(var(--lens) * 7px),transparent 7px)}
 .lens-a{transform:translate3d(calc(var(--shift) * -0.6),0,0);opacity:calc(1 - var(--lens))}
 .lens-cap{position:absolute;left:10px;top:9px;font-size:7px;letter-spacing:.2em;color:var(--ivory);background:rgba(11,9,16,.55);padding:3px 5px 2px}
-.lens-cap.b{color:#F1DCA6}
-.lens-chain{position:absolute;left:10px;bottom:24px;font-size:7px;letter-spacing:.16em;color:var(--ivory);background:rgba(11,9,16,.55);padding:3px 5px 2px}
-.lens-chain i{font-style:normal;color:var(--gold);padding:0 2px}
+.lens-cap.b{color:var(--silver-hi)}
+.lens-chain{position:absolute;left:10px;bottom:34px;font-size:7px;letter-spacing:.16em;color:var(--ivory);background:rgba(11,9,16,.55);padding:3px 5px 2px}
+.lens-chain i{font-style:normal;color:var(--silver);padding:0 2px}
 .lens-b svg{position:absolute;left:8%;top:13%;width:84%;height:42%}
 .lens-b .ln text{font-family:'Space Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.8px;fill:var(--ivory)}
-.lens-b .ln .exc{fill:#F1DCA6}
-.lens-b .ln-wire{stroke:#C4B2E0;stroke-width:.8;fill:none}
-.lens-b .ln-tick path{stroke:#C4B2E0;stroke-width:.8}
-.lens-b .ln-loop{stroke:#F1DCA6;stroke-width:.8;fill:none;stroke-dasharray:2 2}
-.lens-foot{position:absolute;left:10px;top:57%;font-size:6.5px;letter-spacing:.14em;color:#F1DCA6;background:rgba(11,9,16,.6);padding:3px 5px 2px}
-.film-id{position:absolute;left:10px;bottom:8px;font-size:7px;letter-spacing:.2em;color:var(--ivory-2)}
+.lens-b .ln .exc{fill:#B9A6D6}
+.lens-b .ln-wire{stroke:#9F94B8;stroke-width:.8;fill:none}
+.lens-b .ln-tick path{stroke:#9F94B8;stroke-width:.8}
+.lens-b .ln-loop{stroke:#B9A6D6;stroke-width:.8;fill:none;stroke-dasharray:2 2}
+.lens-foot{position:absolute;left:10px;top:57%;font-size:6.5px;letter-spacing:.14em;color:var(--silver-hi);background:rgba(11,9,16,.6);padding:3px 5px 2px}
+.film-id{display:none}
 
-/* Z3 smoked glass */
-.l-glass{inset:44% -3% 30% 40%;border-radius:3px;background:linear-gradient(160deg,rgba(28,21,39,.62),rgba(20,16,28,.5) 60%,rgba(59,42,90,.42));border:1px solid rgba(233,226,240,.14);box-shadow:inset 0 1px 0 rgba(233,226,240,.16)}
-.l-glass::before{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/300px;opacity:.5}
+/* Z3 smoked glass: the material that carries the spectral reflection */
+.l-glass{inset:44% -3% 30% 40%;border-radius:3px;background:linear-gradient(160deg,rgba(28,21,39,.6),rgba(20,16,28,.5) 60%,rgba(59,42,90,.4));border:1px solid rgba(233,226,240,.1);box-shadow:inset 0 1px 0 rgba(233,226,240,.12)}
+.l-glass::before{content:"";position:absolute;inset:0;background:url(/assets/lab/scratch.png) center/300px;opacity:.45}
 
-/* Z4 ink notes */
-.l-ink{--tilt:1.4deg;inset:56% -2% 4% 38%;background:#221A2E url(/assets/lab/plate-ink.jpg) center/cover;border-radius:3px;border:1px solid rgba(233,226,240,.1);box-shadow:0 22px 44px -22px rgba(0,0,0,.95)}
+/* Z4 ink notes, foreground grade */
+.l-ink{--tilt:1.4deg;inset:56% -2% 4% 38%;background:#221A2E url(/assets/lab/plate-ink.jpg) center/cover;border-radius:3px;box-shadow:0 22px 44px -22px rgba(0,0,0,.95)}
+.l-ink::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(233,226,240,.05),transparent 50%)}
 .l-ink::after{content:"";position:absolute;inset:0;background:url(/assets/lab/grain.png) repeat;background-size:64px;opacity:.1}
 
-/* Z4.5 the words */
+/* Z4.5 the words, on the acrylic */
 .l-text{inset:60% 46% 0 0;padding:10px 12px 0;overflow:hidden}
-.t-h{position:relative;font-family:'Space Mono',monospace;font-weight:700;font-size:clamp(9.5px,2.9vw,12.5px);line-height:1.42;letter-spacing:.06em;text-transform:uppercase;color:var(--ivory);padding-bottom:8px;border-bottom:1px solid rgba(233,226,240,.18)}
+.t-h{position:relative;font-family:'Space Mono',monospace;font-weight:700;font-size:clamp(9.5px,2.9vw,12.5px);line-height:1.42;letter-spacing:.06em;text-transform:uppercase;color:var(--ivory);padding-bottom:8px;border-bottom:1px solid rgba(233,226,240,.16)}
 .t-list{position:relative;list-style:none;margin-top:6px;font-size:clamp(7.5px,2.3vw,9.5px);letter-spacing:.1em;line-height:1.4}
 .t-list li{padding:1px 0 1px 12px;text-indent:-12px;color:var(--ivory)}
-.t-list li::before{content:"> ";color:var(--ivory-2)}
+.t-list li::before{content:"> ";color:var(--mute)}
 .t-list li.dim{color:var(--mute);transition:color .5s var(--ease)}
 .dossier.is-inspect .t-list li.dim{color:var(--ivory)}
 
-/* Z5 gold */
-.l-gold{pointer-events:none;inset:0 -12% 0 0}
-.bracket{position:absolute;width:16px;height:16px;border:1px solid var(--gold);opacity:.9}
-.bracket.tl{left:-6px;top:-4px;border-right:0;border-bottom:0}
-.bracket.bl{left:-6px;bottom:-4px;border-right:0;border-top:0}
-.g-file{position:absolute;left:8px;top:-22px;font-weight:700;font-size:9px}
-.g-status{position:absolute;left:8px;bottom:-22px;font-size:7.5px;letter-spacing:.2em}
-.g-seal{position:absolute;left:7px;top:34%;width:30px;height:30px;display:grid;place-items:center}
-.seal-ring{position:absolute;inset:0;border:1px solid var(--gold);border-radius:50%}
-.seal-ring::after{content:"";position:absolute;inset:3px;border:.5px solid var(--gold);border-radius:50%;opacity:.7}
-.seal-qb{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:9px;letter-spacing:.08em;color:var(--gold)}
-.rail{position:absolute;right:0;top:64%;list-style:none;text-align:right;font-size:8.5px;letter-spacing:.24em;color:var(--ivory)}
-.rail li{padding:5px 0;border-bottom:1px solid rgba(201,164,92,.35);position:relative;padding-right:14px}
-.rail li::after{content:"";position:absolute;right:0;top:50%;width:8px;height:1px;background:var(--gold)}
+/* Z5 front rail */
+.l-front{pointer-events:none;inset:0 -12% 0 0}
+.rail{position:absolute;right:0;top:64%;list-style:none;text-align:right;font-size:8.5px;letter-spacing:.24em;color:var(--ivory-2)}
+.rail li{padding:5px 0;border-bottom:1px solid rgba(169,174,184,.22);position:relative;padding-right:14px}
+.rail li::after{content:"";position:absolute;right:0;top:50%;width:8px;height:1px;background:var(--gunmetal)}
 .rail li:last-child{border-bottom:0}
 
 /* ---------- captions ---------- */
@@ -151,14 +134,13 @@ a{color:inherit;text-decoration:none}
 .final{position:absolute;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:16;text-align:center;opacity:0;pointer-events:none;transform:translate3d(0,10px,0);transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .final.on{opacity:1;pointer-events:auto;transform:none}
 .final .mono{margin-bottom:12px}
-.open{display:inline-block;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-variation-settings:'wdth' 80;font-size:22px;text-transform:uppercase;letter-spacing:.02em;color:var(--ivory);padding:12px 22px;border:1px solid rgba(201,164,92,.7);border-radius:2px;transition:background .3s,border-color .3s}
-.open:hover{background:rgba(201,164,92,.1);border-color:var(--gold)}
+.open{display:inline-block;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-variation-settings:'wdth' 80;font-size:22px;text-transform:uppercase;letter-spacing:.02em;color:var(--ivory);padding:12px 22px;border:1px solid rgba(169,174,184,.5);border-radius:2px;transition:background .3s,border-color .3s}
+.open:hover{background:rgba(169,174,184,.08);border-color:var(--silver)}
 
 /* ---------- desktop ---------- */
 @media(min-width:761px){
   :root{--dw:min(80vw, 560px);--dh:calc(var(--dw) * 1.2)}
   .big{font-size:clamp(200px,22vw,320px);translate:calc(-100% + 0.9em) -46%}
-  .octa{left:calc(0.62em * .38 + 24px)}
   .track{height:520vh}
   .dossier{cursor:default}
   .hud{padding:0 32px}
@@ -171,25 +153,21 @@ html.rm .stage::after,html:not(.js):not(.rm) .stage::after{display:none}
 html.rm .hud,html:not(.js):not(.rm) .hud{position:relative;top:auto;bottom:auto;padding:0;margin-bottom:28px}
 html.rm .hud-bottom,html:not(.js):not(.rm) .hud-bottom{margin:28px 0 0}
 html.rm .hud-hint,html:not(.js):not(.rm) .hud-hint{display:none}
-html.rm .big,html:not(.js):not(.rm) .big,html.rm .octa,html:not(.js):not(.rm) .octa,html.rm .accent,html:not(.js):not(.rm) .accent,html.rm .l-stack,html:not(.js):not(.rm) .l-stack{display:none}
+html.rm .big,html:not(.js):not(.rm) .big,html.rm .l-stack,html:not(.js):not(.rm) .l-stack,html.rm .holo,html:not(.js):not(.rm) .holo{display:none}
 html.rm .scene,html:not(.js):not(.rm) .scene{perspective:none;width:auto;height:auto;max-width:400px;margin:0 auto}
 html.rm .dossier,html:not(.js):not(.rm) .dossier{position:relative;transform-style:flat;display:flex;flex-direction:column;gap:18px}
-html.rm .layer,html:not(.js):not(.rm) .layer{position:relative;inset:auto;transform:none !important;opacity:1 !important;width:100%;aspect-ratio:1/1.4;will-change:auto}
-html.rm .layer::after,html:not(.js):not(.rm) .layer::after{content:attr(data-layer);position:absolute;left:0;top:-14px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
+html.rm .layer,html:not(.js):not(.rm) .layer{position:relative;inset:auto;transform:none !important;opacity:1 !important;width:100%;aspect-ratio:1/1.4;will-change:auto;clip-path:none}
+html.rm .layer::after,html:not(.js):not(.rm) .layer::after{content:attr(data-layer);position:absolute;left:0;top:-14px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);background:none}
 html.rm .l-shadow,html:not(.js):not(.rm) .l-shadow{display:none}
-
+html.rm .l-verdict,html:not(.js):not(.rm) .l-verdict{--reveal:1;aspect-ratio:2/1;padding:18px}
 html.rm .l-photo,html:not(.js):not(.rm) .l-photo{aspect-ratio:3/4}
-html.rm .l-goldplate,html:not(.js):not(.rm) .l-goldplate,html.rm .l-ink,html:not(.js):not(.rm) .l-ink{aspect-ratio:4/3}
-html.rm .l-text,html:not(.js):not(.rm) .l-text{aspect-ratio:auto;padding:18px}
-html.rm .l-gold,html:not(.js):not(.rm) .l-gold{aspect-ratio:3/1}
-html.rm .rail,html:not(.js):not(.rm) .rail{top:20px}
-html.rm .l-acrylic,html:not(.js):not(.rm) .l-acrylic{clip-path:none}
-html.rm .l-verdict,html:not(.js):not(.rm) .l-verdict{--reveal:1;aspect-ratio:2/1}
-html.rm .cap,html:not(.js):not(.rm) .cap{translate:none;left:auto;top:auto}
+html.rm .l-plate,html:not(.js):not(.rm) .l-plate,html.rm .l-ink,html:not(.js):not(.rm) .l-ink{aspect-ratio:4/3}
 html.rm .l-glass,html:not(.js):not(.rm) .l-glass{aspect-ratio:2/1}
-html.rm .l-gold,html:not(.js):not(.rm) .l-gold{background:var(--plum);border:1px solid rgba(233,226,240,.06)}
-html.rm .lens-b,html:not(.js):not(.rm) .lens-b{-webkit-mask-image:none;mask-image:none;transform:translateY(0)}
+html.rm .l-text,html:not(.js):not(.rm) .l-text{aspect-ratio:auto;padding:18px}
+html.rm .l-front,html:not(.js):not(.rm) .l-front{aspect-ratio:3/1;background:var(--plum)}
+html.rm .rail,html:not(.js):not(.rm) .rail{top:20px}
+html.rm .lens-b,html:not(.js):not(.rm) .lens-b{-webkit-mask-image:none;mask-image:none;transform:none}
 html.rm .lens-a,html:not(.js):not(.rm) .lens-a{opacity:0}
 html.rm .captions,html:not(.js):not(.rm) .captions{position:relative;inset:auto;display:block;margin:36px auto 0;max-width:400px}
-html.rm .cap,html:not(.js):not(.rm) .cap{position:relative;opacity:1;font-size:clamp(40px,12vw,64px);text-align:left;padding:0;margin-top:10px}
+html.rm .cap,html:not(.js):not(.rm) .cap{position:relative;opacity:1;font-size:clamp(40px,12vw,64px);text-align:left;padding:0;margin-top:10px;translate:none;left:auto;top:auto}
 html.rm .final,html:not(.js):not(.rm) .final{position:relative;bottom:auto;opacity:1;pointer-events:auto;transform:none;margin-top:36px}

@@ -15,12 +15,12 @@ const LAYERS = [
   { id: 'shadow',    baseZ: -80,  px: -0.12, py: -0.12, holdZ: -60,  holdX: 0,   holdY: 0,   rot: 0.15 },
   { id: 'stack',     baseZ: -62,  px: -0.22, py: -0.18, holdZ: -120, holdX: 14,  holdY: -70, rot: 0.35 },
   { id: 'acrylic',   baseZ: -40,  px: -0.30, py: -0.25, holdZ: -90,  holdX: 6,   holdY: -48, rot: 0.50 },
-  { id: 'goldplate', baseZ: -26,  px: -0.10, py: -0.10, holdZ: -60,  holdX: 18,  holdY: -40, rot: 0.60 },
+  { id: 'plate',     baseZ: -26,  px: -0.10, py: -0.10, holdZ: -60,  holdX: 18,  holdY: -40, rot: 0.60 },
   { id: 'photo',     baseZ: -8,   px:  0.30, py:  0.25, holdZ: -10,  holdX: -10, holdY: -64, rot: 0.80 },
-  { id: 'glass',     baseZ:  10,  px:  0.60, py:  0.50, holdZ:  36,  holdX: 14,  holdY: 30,  rot: 1.00 },
-  { id: 'ink',       baseZ:  22,  px:  0.85, py:  0.75, holdZ:  70,  holdX: 16,  holdY: 52,  rot: 1.05 },
+  { id: 'glass',     baseZ:  10,  px:  0.60, py:  0.50, holdZ:  36,  holdX: 14,  holdY: -40, rot: 1.00 },
+  { id: 'ink',       baseZ:  22,  px:  0.85, py:  0.75, holdZ:  70,  holdX: 16,  holdY: 72,  rot: 1.05 },
   { id: 'text',      baseZ:  30,  px:  1.00, py:  0.90, holdZ:  90,  holdX: 8,   holdY: 58,  rot: 1.10 },
-  { id: 'gold',      baseZ:  44,  px:  1.40, py:  1.20, holdZ: 120,  holdX: 6,   holdY: 0,   rot: 1.20 },
+  { id: 'front',     baseZ:  44,  px:  1.40, py:  1.20, holdZ: 120,  holdX: 6,   holdY: 0,   rot: 1.20 },
 ];
 
 /* ---------- pure helpers ---------- */
@@ -78,7 +78,7 @@ export function createDossier(root) {
     tilt: { x: 0, y: 0 }, tiltT: { x: 0, y: 0 },
     hold: 0, holdT: 0, holdFrom: 0, holdStart: 0, holdDur: 900, holdEase: outExpo,
     scroll: 0, scrollT: 0,
-    hover: 0, hoverT: 0,
+    hover: 0, hoverT: 0, holo: 0,
     pulse: 0, pulseAt: 0,
   };
   let running = false, lastFrame = 0, lastKey = '';
@@ -89,7 +89,11 @@ export function createDossier(root) {
   function frame(now) {
     const dt = Math.min(48, now - (lastFrame || now)); lastFrame = now;
     const a = 1 - Math.exp(-dt / 90), b = 1 - Math.exp(-dt / 140);
+    const px0 = st.tilt.x, py0 = st.tilt.y;
     st.tilt.x += (st.tiltT.x - st.tilt.x) * a; st.tilt.y += (st.tiltT.y - st.tilt.y) * a;
+    // material response: the spectral reflection is revealed by movement and decays at rest
+    const v = Math.hypot(st.tilt.x - px0, st.tilt.y - py0) / Math.max(1, dt) * 1000; // tilt units per second
+    st.holo += (clamp(v * 1.6) - st.holo) * (v > st.holo ? 0.35 : 1 - Math.exp(-dt / 420));
     st.scroll += (st.scrollT - st.scroll) * b;
     st.hover += (st.hoverT - st.hover) * a;
     // hold: time-based ease from holdFrom to holdT
@@ -106,6 +110,11 @@ export function createDossier(root) {
     // whole object
     const gx = -st.tilt.y * rot * tiltW, gy = st.tilt.x * rot * tiltW;
     dossier.style.transform = `rotateX(${gx.toFixed(2)}deg) rotateY(${gy.toFixed(2)}deg)`;
+    // light: the same normalized coordinates drive the specular band and the spectral sweep
+    dossier.style.setProperty('--lx', (50 + st.tilt.x * 38).toFixed(1) + '%');
+    dossier.style.setProperty('--ly', (50 + st.tilt.y * 30).toFixed(1) + '%');
+    dossier.style.setProperty('--holo', (st.holo * (0.17 + st.hold * 0.06) + 0.012).toFixed(4));
+    dossier.style.setProperty('--spec', (0.04 + Math.abs(st.tilt.x) * 0.08 + st.holo * 0.08).toFixed(3));
 
     // layers
     LAYERS.forEach((L) => {
@@ -130,7 +139,7 @@ export function createDossier(root) {
     // mode from scroll
     if (st.mode !== 'INSPECT' && st.mode !== 'EXPLORE') setMode(st.scroll > 0.02 && st.scroll < 0.98 ? 'SCROLLING' : (st.scroll >= 0.98 ? 'ASSEMBLED' : 'REST'));
 
-    const moving = Math.abs(st.tiltT.x - st.tilt.x) > 0.0008 || Math.abs(st.tiltT.y - st.tilt.y) > 0.0008 || Math.abs(st.scrollT - st.scroll) > 0.0004 || st.hold !== st.holdT || st.pulseAt || Math.abs(st.hoverT - st.hover) > 0.002;
+    const moving = st.holo > 0.004 || Math.abs(st.tiltT.x - st.tilt.x) > 0.0008 || Math.abs(st.tiltT.y - st.tilt.y) > 0.0008 || Math.abs(st.scrollT - st.scroll) > 0.0004 || st.hold !== st.holdT || st.pulseAt || Math.abs(st.hoverT - st.hover) > 0.002;
     if (moving) requestAnimationFrame(frame); else running = false;
   }
   function wake() { if (!running) { running = true; lastFrame = 0; requestAnimationFrame(frame); } }
