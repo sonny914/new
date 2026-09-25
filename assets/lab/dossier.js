@@ -28,6 +28,22 @@ const LAYERS = [
 
 /* ---------- pure helpers ---------- */
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+/** Soft boundary: past ±1 the value keeps moving but with rising resistance (Apple's rubber-band). */
+export function rubberband(v, limit = 1, c = 0.55) {
+  const over = Math.abs(v) - limit; if (over <= 0) return v;
+  return Math.sign(v) * (limit + (over * c) / (1 + c * over));
+}
+/** Critically damped spring step: no overshoot, carries velocity, settles by parameters not duration. */
+export function springStep(x, v, target, dt, response = 0.42) {
+  const w = 2 * Math.PI / response, k = w * w, c = 2 * w;   // damping ratio 1.0
+  // semi-implicit Euler in ≤4ms substeps: stable for any frame length the browser hands us
+  let left = Math.min(dt, 0.1);
+  while (left > 0) {
+    const h = Math.min(left, 0.004); left -= h;
+    v += (-k * (x - target) - c * v) * h; x += v * h;
+  }
+  return [x, v];
+}
 const lerp = (a, b, k) => a + (b - a) * k;
 const smooth = (k) => { k = clamp(k); return k * k * (3 - 2 * k); };
 const outCubic = (k) => 1 - Math.pow(1 - clamp(k), 3);
@@ -72,13 +88,15 @@ export function createDossier(root) {
   const track = root.querySelector('#track'), stage = root.querySelector('#stage');
   const lens = root.querySelector('#lens'), hint = root.querySelector('#hint'), finalEl = root.querySelector('#final');
   const caps = [...root.querySelectorAll('.cap')];
+  const lightEls = [...root.querySelectorAll('.holo, .holo-edge, .spec')];
   const els = {}; LAYERS.forEach((L) => { els[L.id] = root.querySelector(`[data-layer="${L.id}"]`); });
   const fine = window.matchMedia('(pointer: fine)').matches;
 
   // state: targets and smoothed currents
   const st = {
     mode: 'REST',
-    tilt: { x: 0, y: 0 }, tiltT: { x: 0, y: 0 },
+    tilt: { x: 0, y: 0 }, tiltT: { x: 0, y: 0 }, tiltV: { x: 0, y: 0 },
+    press: 0, pressT: 0,
     hold: 0, holdT: 0, holdFrom: 0, holdStart: 0, holdDur: 900, holdEase: outExpo,
     scroll: 0, scrollT: 0,
     hover: 0, hoverT: 0, holo: 0,
@@ -93,7 +111,11 @@ export function createDossier(root) {
     const dt = Math.min(48, now - (lastFrame || now)); lastFrame = now;
     const a = 1 - Math.exp(-dt / 90), b = 1 - Math.exp(-dt / 140);
     const px0 = st.tilt.x, py0 = st.tilt.y;
-    st.tilt.x += (st.tiltT.x - st.tilt.x) * a; st.tilt.y += (st.tiltT.y - st.tilt.y) * a;
+    // the tilt is a critically damped spring per axis: a release carries the finger's velocity; an interruption re-targets from the live value
+    const sdt = dt / 1000;
+    [st.tilt.x, st.tiltV.x] = springStep(st.tilt.x, st.tiltV.x, st.tiltT.x, sdt, ptr ? 0.2 : 0.42);
+    [st.tilt.y, st.tiltV.y] = springStep(st.tilt.y, st.tiltV.y, st.tiltT.y, sdt, ptr ? 0.2 : 0.42);
+    st.press += (st.pressT - st.press) * a;
     // material response: the spectral reflection is revealed by movement and decays at rest
     const v = Math.hypot(st.tilt.x - px0, st.tilt.y - py0) / Math.max(1, dt) * 1000; // tilt units per second
     st.holo += (clamp(v * 1.6) - st.holo) * (v > st.holo ? 0.35 : 1 - Math.exp(-dt / 420));
@@ -106,21 +128,22 @@ export function createDossier(root) {
 
     const tl = timeline(st.scroll);
     const tiltW = 1 - tl.travel * 0.7;
-    const sep = clamp(st.hold * (1 - tl.travel) + tl.sep + pulse + st.hover * 0.1, 0, 1.4);
+    const sep = clamp(st.hold * (1 - tl.travel) + tl.sep + pulse + st.hover * 0.1 + st.press * 0.05, 0, 1.4);
     const rot = st.mode === 'INSPECT' ? ROT_INSPECT : ROT_REST;
     const s = { tilt: st.tilt, tiltW, sep, camZ: tl.camZ - st.hold * (1 - tl.travel) * 90, rot };
 
     // whole object
     const gx = -st.tilt.y * rot * tiltW, gy = st.tilt.x * rot * tiltW;
     dossier.style.transform = `rotateX(${gx.toFixed(2)}deg) rotateY(${gy.toFixed(2)}deg)`;
-    // light: the same normalized coordinates drive the specular band and the spectral sweep
+    // light: the same normalized coordinates drive the specular band and the spectral sweep.
+    // Written to the light elements themselves, never to the parent: a variable on the parent recalculates every child.
     const q = (v) => (Math.round(v * 2) / 2).toFixed(1) + '%';
-    dossier.style.setProperty('--ly', q(50 + st.tilt.y * 30));
+    const ly = q(50 + st.tilt.y * 30);
     const angle = Math.hypot(st.tilt.x, st.tilt.y);            // distance from the neutral viewing angle
     const holoV = HOLO_DEBUG ? 0.85 : clamp(angle * 0.9) * 0.34 + st.holo * 0.16 + st.hold * 0.08;
-    dossier.style.setProperty('--holo', (Math.round(holoV * 100) / 100).toFixed(2));
-    dossier.style.setProperty('--spec', (Math.round((0.03 + Math.abs(st.tilt.x) * 0.1 + st.holo * 0.06) * 100) / 100).toFixed(2));
-    dossier.style.setProperty('--lx', q(50 + st.tilt.x * 46));
+    const lx = q(50 + st.tilt.x * 46);
+    const holoS = (Math.round(holoV * 100) / 100).toFixed(2), specS = (Math.round((0.03 + Math.abs(st.tilt.x) * 0.1 + st.holo * 0.06) * 100) / 100).toFixed(2);
+    lightEls.forEach((el) => { el.style.setProperty('--lx', lx); el.style.setProperty('--ly', ly); el.style.setProperty('--holo', holoS); el.style.setProperty('--spec', specS); });
 
     // layers
     LAYERS.forEach((L) => {
@@ -145,7 +168,7 @@ export function createDossier(root) {
     // mode from scroll
     if (st.mode !== 'INSPECT' && st.mode !== 'EXPLORE') setMode(st.scroll > 0.02 && st.scroll < 0.98 ? 'SCROLLING' : (st.scroll >= 0.98 ? 'ASSEMBLED' : 'REST'));
 
-    const moving = st.holo > 0.004 || Math.abs(st.tiltT.x - st.tilt.x) > 0.0008 || Math.abs(st.tiltT.y - st.tilt.y) > 0.0008 || Math.abs(st.scrollT - st.scroll) > 0.0004 || st.hold !== st.holdT || st.pulseAt || Math.abs(st.hoverT - st.hover) > 0.002;
+    const moving = st.holo > 0.004 || Math.abs(st.tiltT.x - st.tilt.x) > 0.0008 || Math.abs(st.tiltT.y - st.tilt.y) > 0.0008 || Math.abs(st.tiltV.x) > 0.002 || Math.abs(st.tiltV.y) > 0.002 || Math.abs(st.pressT - st.press) > 0.002 || Math.abs(st.scrollT - st.scroll) > 0.0004 || st.hold !== st.holdT || st.pulseAt || Math.abs(st.hoverT - st.hover) > 0.002;
     if (moving) requestAnimationFrame(frame); else running = false;
   }
   function wake() { if (!running) { running = true; lastFrame = 0; requestAnimationFrame(frame); } }
@@ -163,8 +186,8 @@ export function createDossier(root) {
   const assembled = () => st.scrollT < 0.03 || st.scrollT > 0.97;
   function tiltFrom(e, range = 1) {
     const r = scene.getBoundingClientRect();
-    st.tiltT.x = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1) * range;
-    st.tiltT.y = clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1) * range;
+    st.tiltT.x = rubberband(((e.clientX - r.left) / r.width) * 2 - 1) * range;
+    st.tiltT.y = rubberband(((e.clientY - r.top) / r.height) * 2 - 1) * range;
   }
   function setHold(target, dur, ease) { st.holdFrom = st.hold; st.holdT = target; st.holdStart = performance.now(); st.holdDur = dur; st.holdEase = ease; wake(); }
   function beginInspect() {
@@ -177,7 +200,9 @@ export function createDossier(root) {
   }
   function down(e) {
     if (e.button !== undefined && e.button !== 0) return;
+    if (ptr) return;                                   // a second finger never steals the gesture
     ptr = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), moved: false, held: false };
+    st.pressT = 1;                                     // feedback on the press, not the release
     clearTimeout(holdTimer);
     if (assembled()) holdTimer = setTimeout(() => { if (ptr && !ptr.moved) { ptr.held = true; beginInspect(); try { dossier.setPointerCapture(e.pointerId); } catch { /* ignore */ } } }, HOLD_MS);
     tiltFrom(e);
@@ -198,13 +223,14 @@ export function createDossier(root) {
     if (!ptr || e.pointerId !== ptr.id) return;
     clearTimeout(holdTimer);
     const dur = performance.now() - ptr.t;
+    st.pressT = 0;
     if (ptr.held) endInspect(true);
     else if (!ptr.moved && dur < TAP_MS) { st.pulseAt = performance.now(); setMode(assembled() ? 'REST' : 'SCROLLING'); }
     else setMode(assembled() ? 'REST' : 'SCROLLING');
     if (!fine) { st.tiltT.x = orient.x; st.tiltT.y = orient.y; }
     ptr = null; wake();
   }
-  function cancel(e) { if (!ptr || e.pointerId !== ptr.id) return; clearTimeout(holdTimer); if (ptr.held) endInspect(false); else setMode('REST'); if (!fine) { st.tiltT.x = orient.x; st.tiltT.y = orient.y; } ptr = null; wake(); }
+  function cancel(e) { if (!ptr || e.pointerId !== ptr.id) return; clearTimeout(holdTimer); st.pressT = 0; if (ptr.held) endInspect(false); else setMode('REST'); if (!fine) { st.tiltT.x = orient.x; st.tiltT.y = orient.y; } ptr = null; wake(); }
   dossier.addEventListener('pointerdown', down);
   dossier.addEventListener('pointermove', move);
   dossier.addEventListener('pointerup', up);

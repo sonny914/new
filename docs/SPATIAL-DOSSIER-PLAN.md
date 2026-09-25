@@ -127,3 +127,22 @@ Direction: covert, technological, contemporary. Luxury from depth, material, lig
 - Light values are quantized to half-percent steps so gradient layers repaint only on visible change.
 
 Measured at iPhone size in software-rendered Chromium: 30fps median through a full scrub with the larger object and the light layers, worst frame 83 ms. Those gradient repaints are compositor work on a real GPU; the device pass decides whether the glass plane needs its own compositing layer or a smaller footprint.
+
+---
+
+## v0.3.1 · CRAFT PASS (against emilkowalski/skills)
+
+Audited the controller and stylesheet against Emil Kowalski's design-engineering, animation-review, Apple-design and mobile-native skills. Findings and fixes:
+
+| Before | After | Why |
+| --- | --- | --- |
+| Light variables (`--lx/--ly/--holo/--spec`) set on `.dossier` every frame | Set on the `.holo`, `.holo-edge` and `.spec` elements that read them | A variable on the parent recalculates styles for every child, every frame |
+| Tilt returns by exponential lerp on release | Critically damped spring per axis (response 0.2 s under the finger, 0.42 s after release), semi-implicit Euler in 4 ms substeps | A release continues at the finger's velocity; an interruption re-targets from the live value; no overshoot |
+| Tilt hard-clamped at ±1 | Rubber-band past ±1 | Real things slow before they stop |
+| Tap pulse on `pointerup` | Press breath on `pointerdown` (`press` state feeds separation), pulse on release | Feedback on the press, not the release |
+| Second finger replaced the gesture | `if (ptr) return` in `down` | Multi-touch protection |
+| No `:active` on OPEN THE FILE / the hint | `scale(.97)` at 120–140 ms strong ease-out | Pressables must respond |
+| Ungated `.open:hover` | Behind `(hover: hover) and (pointer: fine)` | Touch fires false hovers on tap |
+| Tap highlight, overscroll, tap delay defaults | `-webkit-tap-highlight-color: transparent`, `overscroll-behavior: none`, `touch-action: manipulation` on controls | The website tells |
+
+Tests: 20 (rubber-band, spring settle/no-overshoot/velocity, spring stability at long frames). Frame times unchanged in software rendering.

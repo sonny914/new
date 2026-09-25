@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { timeline, depthOpacity, layerTransform } from '../assets/lab/dossier.js';
+import { timeline, depthOpacity, layerTransform, rubberband, springStep } from '../assets/lab/dossier.js';
 
 const L = { id: 'front', baseZ: 44, px: 1.4, py: 1.2, holdZ: 210, holdX: 26, holdY: 16, rot: 1.2 };
 const rest = { tilt: { x: 0, y: 0 }, tiltW: 1, sep: 0, camZ: 0, rot: 6 };
@@ -36,4 +36,27 @@ test('tilt moves the front plane more than the back plane, and holding separates
   assert.ok(Math.sign(front.x) !== Math.sign(back.x), 'back plane moves the other way');
   const held = layerTransform(L, { ...rest, sep: 1 });
   assert.equal(held.z, 44 + 210);
+});
+
+test('rubber-band: identity inside the limit, rising resistance past it, never hard-stops', () => {
+  assert.equal(rubberband(0.5), 0.5); assert.equal(rubberband(-1), -1);
+  const a = rubberband(1.5), b = rubberband(3);
+  assert.ok(a > 1 && a < 1.5); assert.ok(b > a && b < 3); assert.ok(b - a < 1.5 - 1);
+});
+
+test('spring: settles on the target without overshoot and carries velocity', () => {
+  let x = 0, v = 0; const dt = 1 / 60;
+  for (let i = 0; i < 120; i++) [x, v] = springStep(x, v, 1, dt);
+  assert.ok(Math.abs(x - 1) < 0.01, 'settles');
+  let over = false; x = 0; v = 0;
+  for (let i = 0; i < 120; i++) { [x, v] = springStep(x, v, 1, dt); if (x > 1.0005) over = true; }
+  assert.equal(over, false, 'critically damped: no overshoot');
+  let x2 = 0, v2 = 4; [x2, v2] = springStep(x2, v2, 0, dt);
+  assert.ok(x2 > 0, 'a release with velocity keeps moving before it returns');
+});
+
+test('spring: stays stable and bounded at long frame times', () => {
+  let x = 0, v = 0;
+  for (let i = 0; i < 60; i++) [x, v] = springStep(x, v, 1, 0.048, 0.2);
+  assert.ok(Math.abs(x - 1) < 0.01 && Math.abs(v) < 0.05, `x=${x} v=${v}`);
 });
