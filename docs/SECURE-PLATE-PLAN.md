@@ -111,3 +111,22 @@ Measured: p50 16.7 ms, p90 16.7 ms, worst 50 ms (software rendering, full scrub 
 - With the camera inside (beat 3) the real path is large and cropped; that is cinematic on purpose but the count sentence sits on the plate's bottom edge on some heights.
 - The laminate reflection at production intensity is still a device call.
 - Jost's italic-less geometry means the quotation marks in the annotation look slightly formal; consider dropping the quotes.
+
+---
+
+## v2.1 · THE SCREEN IS A WINDOW, NOT A CANVAS
+
+Principle from the client: the screen is not a canvas containing interface elements; it is a window into an information volume.
+
+What that changed: nothing is painted on the glass any more. One `perspective` on the whole viewport (origin where the plate sits, so the plate projects exactly as before). The wordmark, the identifier, the status line, the headline, the count and the call to action are `.world` objects with a `data-depth`:
+
+| Object | Depth | Behaviour |
+| --- | --- | --- |
+| Top and bottom HUD | −240 | Parallax against the plate (the laminate is at +64); fade out as the camera enters the plate, return on reassembly |
+| Headline | −200 | Same; appears on the first scroll beat behind the plate's depth |
+| Count | −960 | Sits where the camera arrives at beat three (700 in), so it reads at scale 1 there |
+| Resolution | −120 | In front of the sentences, behind the laminate |
+
+Each world object is scaled by `(P − depth) / P` and offset from the perspective origin by the same factor so that at rest it projects exactly where it lays out (verified: the wordmark lands at 22 × 22 px). Containers between the volume and its objects carry `transform-style: preserve-3d`; a flat container would discard the depth, which was the first bug of this pass.
+
+Measured after the change: p50 16.7 ms, worst 33 ms. 30 tests.

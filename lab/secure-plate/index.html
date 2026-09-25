@@ -18,8 +18,9 @@
 <main class="lab">
   <section class="track" id="track" aria-label="Secure Plate 001">
     <div class="stage" id="stage">
+      <div class="volume" id="volume">
 
-      <header class="hud hud-top">
+      <header class="hud hud-top world" data-depth="-240">
         <span class="wordmark">Quiet Bands</span>
         <span class="mono">Secure / 001</span>
       </header>
@@ -71,22 +72,24 @@
       </div>
 
       <div class="captions" aria-live="polite">
-        <h1 class="cap headline" data-cap="0">The work isn’t always what the system says it is.</h1>
-        <p class="cap count" data-cap="1">Three steps documented. Eight observed.</p>
+        <h1 class="cap headline world" data-depth="-200" data-cap="0">The work isn’t always what the system says it is.</h1>
+        <p class="cap count world" data-depth="-960" data-cap="1">Three steps documented. Eight observed.</p>
       </div>
 
-      <div class="final" id="final">
+      <div class="final world" data-depth="-120" id="final">
         <p class="find">Find out first.</p>
         <a class="access" href="/work/">Access the work <span aria-hidden="true">→</span></a>
       </div>
 
-      <footer class="hud hud-bottom">
+      <footer class="hud hud-bottom world" data-depth="-240">
         <div class="field">
           <span class="field-name">Field intelligence</span>
           <span class="mono">Status / active</span>
         </div>
         <button class="hud-hint" id="hint" type="button" hidden></button>
       </footer>
+
+      </div>
     </div>
   </section>
 </main>

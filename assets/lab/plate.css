@@ -24,6 +24,10 @@ a{color:inherit;text-decoration:none}
 /* ---------- stage ---------- */
 .track{position:relative;height:440vh}
 .stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--room)}
+/* the window: one perspective for everything. Its origin is where the plate sits, so the plate projects exactly as it lays out */
+.volume{position:absolute;inset:0;perspective:var(--P);perspective-origin:50% 46%;transform-style:preserve-3d}
+.world{--dz:1;will-change:transform,opacity;transform-origin:50% 50%}
+.hud.world{opacity:var(--dz)}
 .hud{position:absolute;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:0 22px;z-index:20;pointer-events:none}
 .hud-top{top:calc(22px + env(safe-area-inset-top))}
 .hud-bottom{bottom:calc(22px + env(safe-area-inset-bottom));align-items:flex-end}
@@ -36,7 +40,7 @@ a{color:inherit;text-decoration:none}
 .hud-hint.swap{opacity:0;transition:opacity 160ms var(--ease-out)}
 
 /* ---------- the volume ---------- */
-.scene{position:absolute;left:50%;top:46%;translate:-50% -50%;width:var(--pw);height:calc(var(--pw) * .75);perspective:var(--P);perspective-origin:50% 50%;z-index:10}
+.scene{position:absolute;left:50%;top:46%;translate:-50% -50%;width:var(--pw);height:calc(var(--pw) * .75);transform-style:preserve-3d;z-index:10}
 @media (min-width:820px){ .scene{left:60%} }
 .plate{position:absolute;inset:0;font-size:calc(var(--pw) / 100);transform-style:preserve-3d;will-change:transform;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;outline:none;cursor:grab}
 .plate:focus-visible{outline:1px solid var(--violet);outline-offset:8px}
@@ -78,15 +82,15 @@ a{color:inherit;text-decoration:none}
   background:linear-gradient(104deg,transparent calc(var(--lx) - 5%),rgba(233,230,238,.9) calc(var(--lx) - .5%),rgba(233,230,238,.9) calc(var(--lx) + .5%),transparent calc(var(--lx) + 5%))}
 
 /* ---------- captions: the scroll speaks in two sentences ---------- */
-.captions{position:absolute;inset:0;pointer-events:none;z-index:15}
+.captions{position:absolute;inset:0;pointer-events:none;z-index:15;transform-style:preserve-3d}   /* flat containers would discard the children's depth */
 .cap{position:absolute;left:22px;right:22px;opacity:0;will-change:transform,opacity;color:var(--bone)}
 .headline{bottom:calc(14% + env(safe-area-inset-bottom));font-size:clamp(28px,7.6vw,54px);font-weight:600;line-height:1.02;letter-spacing:-.02em;max-width:11ch}
 .count{bottom:calc(14% + env(safe-area-inset-bottom));font-size:clamp(17px,4.6vw,24px);font-weight:500;color:var(--ash)}
 @media (min-width:820px){ .headline,.count{left:5vw;right:auto;bottom:auto;top:50%;translate:0 -50%} .headline{max-width:12ch} }
 
 /* ---------- resolution ---------- */
-.final{position:absolute;left:22px;right:22px;bottom:calc(14% + env(safe-area-inset-bottom));z-index:16;display:flex;flex-direction:column;align-items:flex-start;gap:18px;opacity:0;pointer-events:none;transform:translate3d(0,8px,0) scale(.98);transition:opacity 300ms var(--ease-out),transform 300ms var(--ease-out)}
-.final.on{opacity:1;pointer-events:auto;transform:none}
+.final{position:absolute;left:22px;right:22px;bottom:calc(14% + env(safe-area-inset-bottom));z-index:16;display:flex;flex-direction:column;align-items:flex-start;gap:18px;opacity:0;pointer-events:none;transition:opacity 300ms var(--ease-out)}
+.final.on{opacity:var(--dz);pointer-events:auto}
 .find{font-size:clamp(36px,11vw,84px);font-weight:600;line-height:.98;letter-spacing:-.025em;color:var(--bone)}
 .access{display:inline-block;font-size:16px;font-weight:500;color:var(--bone);padding:13px 18px;border:1px solid var(--edge);border-radius:2px;transition:transform 140ms var(--ease-out),border-color .3s,color .3s}
 .access:active{transform:scale(.97);color:var(--violet);border-color:var(--violet)}
@@ -95,8 +99,10 @@ a{color:inherit;text-decoration:none}
 
 /* ---------- reduced motion / no JS: the same information as a still, layered composition ---------- */
 html.rm .track,html:not(.js):not(.rm) .track{height:auto}
+html.rm .volume,html:not(.js):not(.rm) .volume{position:relative;inset:auto;perspective:none;transform-style:flat}
+html.rm .world,html:not(.js):not(.rm) .world{transform:none!important;opacity:1!important}
 html.rm .captions,html:not(.js):not(.rm) .captions{position:relative;inset:auto}
-html.rm .stage,html:not(.js):not(.rm) .stage{position:relative;height:auto;overflow:visible;padding:calc(72px + env(safe-area-inset-top)) 22px 64px}
+html.rm .stage,html:not(.js):not(.rm) .stage{position:relative;height:auto;overflow:visible;padding:calc(28px + env(safe-area-inset-top)) 22px 64px}
 html.rm .scene,html:not(.js):not(.rm) .scene{position:relative;left:auto;top:auto;translate:none;width:100%;height:auto;perspective:none;--pw:min(100vw - 44px,680px)}
 html.rm .plate,html:not(.js):not(.rm) .plate{position:relative;inset:auto;transform:none!important;display:grid;gap:14px;cursor:default}
 html.rm .layer,html:not(.js):not(.rm) .layer{position:relative;inset:auto;height:calc(var(--pw) * .75);transform:none!important;opacity:1!important;visibility:visible!important;--e:.7}
@@ -110,3 +116,4 @@ html.rm .cap,html:not(.js):not(.rm) .cap{position:relative;opacity:1;left:auto;r
 html.rm .count,html:not(.js):not(.rm) .count{margin-top:14px}
 html.rm .final,html:not(.js):not(.rm) .final{position:relative;left:auto;right:auto;bottom:auto;top:auto;translate:none;opacity:1;pointer-events:auto;transform:none;margin-top:48px}
 html.rm .hud-bottom,html:not(.js):not(.rm) .hud-bottom{position:relative;bottom:auto;padding:48px 0 0}
+html.rm .hud-top,html:not(.js):not(.rm) .hud-top{position:relative;top:auto;padding:0;margin-bottom:28px}

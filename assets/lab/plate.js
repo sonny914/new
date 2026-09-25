@@ -62,6 +62,14 @@ export function createPlate(root) {
   const nodes = [...root.querySelectorAll('.hidden-node')];
   const real = root.querySelector('#hidden'), documented = root.querySelector('#documented');
   const els = {}; LAYERS.forEach((L) => { els[L.id] = root.querySelector(`[data-layer="${L.id}"]`); });
+  // everything else in the window is an object at a depth too: it parallaxes against the plate and is left behind when the camera enters
+  const volume = root.querySelector('#volume');
+  const world = [...root.querySelectorAll('.world')].map((el) => ({ el, depth: parseFloat(el.dataset.depth) || 0, cx: 0, cy: 0 }));
+  let origin = { x: 0, y: 0 };
+  function measure() {
+    const r = volume.getBoundingClientRect(); origin = { x: r.left + r.width * 0.5, y: r.top + r.height * 0.46 };
+    world.forEach((w) => { const b = w.el.getBoundingClientRect(); w.cx = b.left + b.width / 2 - origin.x; w.cy = b.top + b.height / 2 - origin.y; });
+  }
   const ROT_REST = 3.5, ROT_INSPECT = 5;
   const BOOT_MS = 700;                             // the one self-driven moment: light sweeps the laminate once when the plate powers on
   let holo = 0, born = 0;
@@ -118,11 +126,21 @@ export function createPlate(root) {
       node.style.setProperty('--w', smooth((wake - (order / n) * 0.55) / 0.45).toFixed(3));
     });
 
-    caps.forEach((c, i) => { const k = tl.caps[i]; c.style.opacity = k.toFixed(3); c.style.transform = `translate3d(0, ${((1 - k) * 10).toFixed(1)}px, 0)`; });
+    // world objects: parallax by depth, scaled so they project where they lay out, fading as the camera passes them
+    const camZ = tl.camZ;
+    world.forEach((w) => {
+      const f = (w.depth - PIVOT) / RANGE, comp = (P - w.depth) / P;
+      const x = st.view.x * K * f * viewW + w.cx * (comp - 1), y = st.view.y * K * 0.85 * f * viewW + w.cy * (comp - 1);
+      const z = w.depth + camZ;
+      w.el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, ${z.toFixed(1)}px) scale(${comp.toFixed(4)})`;
+      w.el.style.setProperty('--dz', depthOpacity(z + 200).toFixed(3));
+    });
+    caps.forEach((c, i) => { const k = tl.caps[i]; c.style.opacity = k.toFixed(3); });
     finalEl.classList.toggle('on', tl.final > 0.6);
     return holo > 0.004 || boot < 1;
   }
 
+  measure(); window.addEventListener('resize', measure, { passive: true });
   const engine = createSpatialEngine({ scene, object, track, stage, hint, render, labels: { ask: 'Enter spatial view →', ready: '' } });
   if (hint) {
     // the button exists only for the iOS sensor grant; once granted, or where no grant is needed, there is nothing to say
