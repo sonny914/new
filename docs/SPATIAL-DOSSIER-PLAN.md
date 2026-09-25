@@ -164,3 +164,18 @@ Recon → audit → vet → apply. Findings confirmed at their lines before fixi
 | 7 | LOW | Hint text swapped in place | 160 ms dip through the swap |
 
 Not changed, by design: the 900 ms open (a deliberate phase), the scroll-driven caption windows (scrubbed, not timed), the 30 fps software-rendered figure (GPU compositor work on device).
+
+---
+
+## v0.3.3 · TYPESETTING PASS
+
+Audited against the tracking/leading rules (size-specific tracking, leading inverse to size, hierarchy from weight + size + leading) and the mobile tap-target floor. Four changes:
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| 1 | Photo-plane labels at 6.5–7px and the method list floor at 7.5px sat under the legibility floor on 320px phones | Nothing under 7.5px: lens labels 8px, footer 7.5px, list floor 8px; tracking eased down as size went up |
+| 2 | The hint, which is also the iOS tilt-permission button, was a 25px-tall target | 44px box, visual position unchanged (negative margin) |
+| 3 | Five different tracking values across the 8.5–10px mono labels | One scale: 10px .22em, 9px .24em, 8.5px .26em. Wordmark keeps its brand tracking |
+| 4 | (verified, unchanged) Display captions at 22vw, −.03em, .86 leading; stamp at −.01em; button at +.02em | Already size-specific, left alone |
+
+Not changed, by design: px sizing throughout. The object is a fixed spatial composition tied to the viewport, so it does not scale with the text-size setting; the reduced-motion and no-JS editorial fallback does.
