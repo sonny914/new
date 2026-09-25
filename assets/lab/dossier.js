@@ -20,7 +20,7 @@ const LAYERS = [
   { id: 'acrylic',   baseZ: -120, px: -0.02, py: -0.02, holdZ: -90,  holdX: 6,   holdY: -48, rot: 0.40 },
   { id: 'plate',     baseZ: -60,  px:  0.28, py:  0.22, holdZ: -60,  holdX: 18,  holdY: -40, rot: 0.60 },
   { id: 'photo',     baseZ:  0,   px:  0.55, py:  0.45, holdZ: -10,  holdX: -10, holdY: -64, rot: 0.80 },
-  { id: 'glass',     baseZ:  55,  px:  0.80, py:  0.68, holdZ:  36,  holdX: 14,  holdY: -64, rot: 1.00 },
+  { id: 'glass',     baseZ:  55,  px:  0.80, py:  0.68, holdZ:  36,  holdX: 14,  holdY: -92, rot: 1.00 },
   { id: 'ink',       baseZ:  85,  px:  0.90, py:  0.78, holdZ:  70,  holdX: 16,  holdY: 72,  rot: 1.05 },
   { id: 'text',      baseZ:  105, px:  1.00, py:  0.88, holdZ:  90,  holdX: 8,   holdY: 58,  rot: 1.10 },
   { id: 'front',     baseZ:  135, px:  1.15, py:  1.00, holdZ: 120,  holdX: 6,   holdY: 0,   rot: 1.20 },
