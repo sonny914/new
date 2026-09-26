@@ -1,0 +1,7 @@
+# Impeccable per-developer overrides and caches
+.impeccable/config.local.json
+.impeccable/cache/
+# Claude Code machine-local settings
+.claude/settings.local.json
+# Brand Voice per-user settings
+.claude/brand-voice.local.md
