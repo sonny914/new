@@ -2,355 +2,63 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Quiet Bands</title>
+<meta name="description" content="Quiet Bands. Custom software, Houston, Texas. Before you build it, try to kill it." />
+<meta name="theme-color" content="#0B0A09" />
+<link rel="canonical" href="https://quietbands.com/" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<meta name="theme-color" content="#111111" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Quiet Bands — Software Built Around the Work | Houston Software Development &amp; Technology Consulting</title>
-<meta name="description" content="Quiet Bands is a Houston software development and technology consulting company. We design and develop custom software, internal tools, integrations and automation around real operational problems." />
-<link rel="canonical" href="https://quietbands.com/" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Quiet Bands" />
-<meta property="og:title" content="Quiet Bands — Software built around the work" />
-<meta property="og:description" content="Custom software, internal tools, integrations and automation, designed around real operational problems. Houston." />
+<meta property="og:title" content="Quiet Bands" />
+<meta property="og:description" content="Custom software, Houston, Texas. Before you build it, try to kill it." />
 <meta property="og:url" content="https://quietbands.com/" />
 <meta property="og:image" content="https://quietbands.com/og.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="Quiet Bands — software built around the work." />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Quiet Bands — Software built around the work" />
-<meta name="twitter:description" content="Custom software, internal tools, integrations and automation, designed around real operational problems." />
+<meta name="twitter:title" content="Quiet Bands" />
+<meta name="twitter:description" content="Custom software, Houston, Texas. Before you build it, try to kill it." />
 <meta name="twitter:image" content="https://quietbands.com/og.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Jost:wght@400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/site.css" />
-<link rel="stylesheet" href="/assets/story/scene.css" />
-<link rel="modulepreload" href="/assets/qb.js" />
-<link rel="modulepreload" href="/assets/story/story.js" />
-<link rel="modulepreload" href="/assets/story/engine.js" />
-<script>document.documentElement.classList.add('js');if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('rm');</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://quietbands.com/#org",
-      "name": "Quiet Bands",
-      "legalName": "Quiet Bands LLC",
-      "url": "https://quietbands.com/",
-      "email": "jason@quietbands.com",
-      "founder": { "@type": "Person", "name": "Jay Neil" },
-      "description": "Quiet Bands is a Houston software development and technology consulting company. Custom web applications, internal tools, databases, APIs and integrations, workflow automation, prototypes and AI-assisted systems, designed around real operational problems.",
-      "knowsAbout": ["Custom software development", "Internal tools", "Systems integration", "Workflow automation", "Software prototyping", "AI-assisted workflows"],
-      "address": { "@type": "PostalAddress", "addressLocality": "Houston", "addressRegion": "TX", "addressCountry": "US" }
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://quietbands.com/#site",
-      "url": "https://quietbands.com/",
-      "name": "Quiet Bands",
-      "publisher": { "@id": "https://quietbands.com/#org" }
-    }
-  ]
-}
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/bulb/entry.css?v=2" />
+<script>document.documentElement.classList.add('js');</script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+} }
 </script>
 </head>
 <body>
 
-<header class="nav">
-  <div class="nav-in">
-    <a class="nav-logo" href="/" aria-label="Quiet Bands — home"><svg class="mark" viewBox="0 0 60 30" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="6"/><rect x="0" y="12" width="60" height="6"/><rect x="0" y="24" width="60" height="6"/></svg><span>Quiet Bands</span></a>
-    <nav class="nav-links" aria-label="Main">
-      <a class="nav-link" href="/#work">Work</a>
-      <a class="nav-link" href="/commercial/">Commercial</a>
-      <a class="nav-link" href="/notes/">Notes</a>
-      <a class="nav-link" href="/rd/">R&amp;D</a>
-      <a class="btn" href="/work/"><span class="full">Tell us about the work</span><span class="short">Talk to us</span></a>
-    </nav>
-  </div>
-</header>
-
 <main>
+  <section class="track" id="track" aria-label="Quiet Bands">
+    <div class="stage" id="stage">
+      <canvas id="bulb" aria-hidden="true"></canvas>
 
-<!-- ════════ THE STORY: one stage, seven scenes, seven persistent objects ════════ -->
-<section class="story" aria-label="How Quiet Bands works">
-  <div class="story-stage" data-scene="work">
+      <div class="still" aria-hidden="true">
+        <img src="/assets/bulb/bulb-static.svg?v=2" alt="" width="1200" height="1600" />
+      </div>
 
-    <!-- 01 — THE WORK -->
-    <div class="story-copy" data-scene="work">
-      <p class="eyebrow">Quiet Bands / Houston</p>
-      <h1 class="story-h">Software built<br>around the work.</h1>
-      <p class="story-sub">Quiet Bands designs and develops custom software, internal tools, integrations and automation around real operational problems. We understand the work before we build the software.</p>
-      <p class="story-hint">Scroll to move through the system</p>
-    </div>
+      <nav class="nav" aria-label="Sections">
+        <a href="/rd/#experiments" data-frag="0">Experiments</a>
+        <a href="/rd/#build-log" data-frag="1">Build log</a>
+        <a href="/rd/#work" data-frag="2">Work</a>
+        <a href="/rd/#contact" data-frag="3">Contact</a>
+      </nav>
 
-    <!-- 02 — UNDERSTAND -->
-    <div class="story-copy" data-scene="understand">
-      <p class="eyebrow">02 · Understand</p>
-      <h2 class="story-h">Understand the work<br>before building the software.</h2>
-      <p class="story-mono">Email <span class="a">→</span> Sheet <span class="a">→</span> Decision <span class="a">→</span> Approval <span class="a">→</span> Database <span class="a">→</span> API</p>
-    </div>
-
-    <!-- 03 — FIND THE FRICTION -->
-    <div class="story-copy" data-scene="friction">
-      <p class="eyebrow">03 · Observe</p>
-      <h2 class="story-h">Find the friction.</h2>
-      <p class="story-sub">The same request, re-typed, re-approved, reconciled on Fridays. The rules live in one person's head and an SOP nobody has open.</p>
-    </div>
-
-    <!-- 04 — INTERVENE -->
-    <div class="story-copy" data-scene="intervene">
-      <p class="eyebrow">04 · Intervene</p>
-      <h2 class="story-h">Automate the coordination.<br>Carry the context.<br>Preserve the human.</h2>
-      <p class="story-mono">Build only what the work requires.</p>
-    </div>
-
-    <!-- 05 — THE INTERRUPTION -->
-    <div class="story-copy" data-scene="nothing">
-      <h2 class="story-h">Sometimes<br>the right thing to build<br>is nothing.</h2>
-      <p class="story-sub">We investigate whether something deserves to exist before we build it. If the economics can't support the build, that's a finding, not a failed sale.</p>
-    </div>
-
-    <!-- 06 — PRESSURE TEST -->
-    <div class="story-copy" data-scene="pressure">
-      <p class="eyebrow">06 · R&amp;D</p>
-      <h2 class="story-h">Before you build it,<br>try to kill it.</h2>
-      <p class="story-sub">The Pressure Test. Seven questions about the evidence underneath an idea. Transparent rules, no score, and a next step that may be “not yet”.</p>
-      <a class="arrow-link" href="/rd/pressure-test/" data-door>Pressure-test an idea →</a>
-    </div>
-
-    <!-- 07 — TWO DOORS -->
-    <div class="story-copy" data-scene="doors">
-      <div class="doors">
-        <a class="door" href="/work/" data-door>
-          <span class="n">01</span>
-          <span class="story-h" role="heading" aria-level="2">I have real work.</span>
-          <span class="story-sub">A process that runs on spreadsheets, email and memory. Two systems that should talk and don't. Software you've outgrown.</span>
-          <span class="arrow-link">Tell us about the work →</span>
-        </a>
-        <a class="door" href="/rd/pressure-test/" data-door>
-          <span class="n">02</span>
-          <span class="story-h" role="heading" aria-level="2">I have an idea.</span>
-          <span class="story-sub">Something that may or may not deserve to be built. Seven questions about the evidence, then a next step.</span>
-          <span class="arrow-link">Pressure-test the idea →</span>
-        </a>
+      <div class="mark">
+        <h1>Quiet Bands</h1>
+        <p>Before you build it, try to kill it.</p>
       </div>
     </div>
-
-    <!-- connections -->
-    <svg class="story-links" aria-hidden="true" focusable="false"></svg>
-
-    <!-- the seven objects (and the ghosts they grow in scene 03) -->
-    <div class="story-world" aria-hidden="true">
-
-      <div class="qb-obj" data-obj="email" data-depth="mid" style="--w:220px;--z:5">
-        <span class="qb-tag"></span>
-        <div class="qb-card">
-          <span class="qb-role">Email</span><span class="qb-kind">09:14</span>
-          <b class="qb-title">Sept order change</b>
-          <span class="qb-line">dana@northline.co</span>
-          <span class="qb-line q">“Can we move 40 units to Thursday?”</span>
-        </div>
-      </div>
-
-      <div class="qb-obj" data-obj="sheetGhost" data-depth="near" style="--w:240px;--z:7">
-        <div class="qb-card">
-          <span class="qb-role">Spreadsheet (2)</span><span class="qb-kind">Orders — Sept copy</span>
-          <div class="qb-grid"><span class="h">Order</span><span class="h">Qty</span><span class="h">Ship</span><span>#4470</span><span>120</span><span>Tue</span><span class="hl">#4471</span><span class="hl">40</span><span class="hl">Thu?</span></div>
-        </div>
-      </div>
-      <div class="qb-obj" data-obj="sheet" data-depth="near" style="--w:240px;--z:8">
-        <span class="qb-tag"></span>
-        <div class="qb-card">
-          <span class="qb-role">Spreadsheet</span><span class="qb-kind">Orders — Sept</span>
-          <div class="qb-grid"><span class="h">Order</span><span class="h">Qty</span><span class="h">Ship</span><span>#4470</span><span>120</span><span>Tue</span><span class="hl">#4471</span><span class="hl">40</span><span class="hl">Thu?</span><span>#4472</span><span>60</span><span>Fri</span></div>
-        </div>
-      </div>
-
-      <div class="qb-obj" data-obj="human" data-depth="mid" style="--w:168px;--z:7">
-        <span class="qb-tag"></span>
-        <div class="qb-card">
-          <span class="qb-role">Decision</span>
-          <span class="qb-ring">MO</span>
-          <div><b class="qb-title">M. Ortiz</b><span class="qb-line">Ops lead · decides</span></div>
-        </div>
-      </div>
-
-      <div class="qb-obj" data-obj="approvalQ2" data-depth="far" style="--w:176px;--z:2">
-        <div class="qb-card"><span class="qb-role">Approval</span><span class="qb-kind">#4471</span><span class="qb-stamp">Pending</span></div>
-      </div>
-      <div class="qb-obj" data-obj="approvalQ1" data-depth="far" style="--w:176px;--z:3">
-        <div class="qb-card"><span class="qb-role">Approval</span><span class="qb-kind">#4471</span><span class="qb-stamp">Pending</span></div>
-      </div>
-      <div class="qb-obj" data-obj="approval" data-depth="far" style="--w:176px;--z:4">
-        <span class="qb-tag"></span>
-        <div class="qb-card">
-          <span class="qb-role">Approval</span><span class="qb-kind">#4471</span>
-          <span class="qb-stamp">Pending</span>
-          <span class="qb-line">Waiting 2 days · asked by email</span>
-        </div>
-      </div>
-
-      <div class="qb-obj" data-obj="db" data-depth="far" style="--w:176px;--z:3">
-        <span class="qb-tag"></span>
-        <div class="qb-card">
-          <span class="qb-role">Database</span>
-          <div class="qb-db">
-            <svg viewBox="0 0 26 26" aria-hidden="true"><ellipse cx="13" cy="6" rx="10" ry="3.5" fill="none" stroke="#111" stroke-width="1.4"/><path d="M3 6v14c0 1.9 4.5 3.5 10 3.5s10-1.6 10-3.5V6" fill="none" stroke="#111" stroke-width="1.4"/><path d="M3 13c0 1.9 4.5 3.5 10 3.5s10-1.6 10-3.5" fill="none" stroke="#111" stroke-width="1.4"/></svg>
-            <div><b class="qb-title">orders</b><span class="qb-line">12,408 rows · updated Fri</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="qb-obj" data-obj="doc" data-depth="mid" style="--w:172px;--z:5">
-        <span class="qb-tag"></span>
-        <div class="qb-card">
-          <span class="qb-role">Document</span><span class="qb-kind">p. 4</span>
-          <b class="qb-title">SOP v3 · Change requests</b>
-          <span class="qb-rules"><i></i><i></i><i></i><i></i></span>
-        </div>
-      </div>
-
-      <div class="qb-obj" data-obj="api" data-depth="far" style="--w:216px;--z:2">
-        <span class="qb-tag"></span>
-        <div class="qb-card">
-          <span class="qb-role">API</span>
-          <span class="qb-mono">POST /orders/4471 <b>201</b></span>
-          <span class="qb-line">Fulfilment system · pushed nightly</span>
-        </div>
-      </div>
-
-    </div>
-
-    <p class="story-index" aria-hidden="true"><b>01</b> / 07 · The work</p>
-    <div class="story-note" aria-hidden="true"></div>
-  </div>
-</section>
-
-<!-- ════════ THE RECORD: static reference, after the story resolves ════════ -->
-
-<!-- Production proof -->
-<section class="sec built-sec" id="work" aria-labelledby="b1-h">
-  <div class="wrap sel-grid">
-    <div>
-      <p class="eyebrow">Production proof · In production</p>
-      <h2 class="display" id="b1-h">Frenchies Coffee Bar</h2>
-      <p class="built-caps">Ordering · Loyalty · Payments · Multi-location</p>
-      <p class="built-copy">A Connecticut coffee company running Stratford and Bridgeport needed ordering, rewards and payments that worked at counter speed — without turning the counter into an admin desk. Quiet Bands studied the operation, built the customer-facing layer and the operating system underneath it, and connected it to the Square stack the shop already ran.</p>
-      <p class="pull" style="font-size:clamp(17px,2.2vw,20px)">Great once is hospitality. Great every time is infrastructure.</p>
-      <div class="built-ctas">
-        <a class="btn" href="/work/frenchies/">See the decisions →</a>
-        <a class="arrow-link" href="https://frenchiesapp.com" target="_blank" rel="noopener">Open live product →</a>
-      </div>
-    </div>
-    <div class="comp-sm">
-      <div class="phone p-main" role="img" aria-label="Frenchies app home screen: seasonal specials and order-to-go"><div class="screen"><img class="scr-shot" src="/assets/frenchies/home.png" alt="" aria-hidden="true" loading="lazy" onerror="this.remove()" /><div class="scr-body" aria-hidden="true">
-        <p class="scr-tag">Connecticut's Craft Coffee</p>
-        <p class="scr-h">Coffee, <i>Friends,</i><br>Frenchies.</p>
-        <div class="scr-card"><b>⭐ Frenchies Rewards</b><br>Buy 5, get the 6th free →</div>
-        <p class="scr-label">Seasonal Specials</p>
-        <div class="scr-row"><b>Peach Matcha</b><span class="scr-chip">New</span></div>
-        <div class="scr-row"><b>Costa Rica Roast</b><span class="scr-chip">Single origin</span></div>
-      </div><div class="scr-btn" aria-hidden="true">Order To Go →</div></div></div>
-      <div class="phone p-b" role="img" aria-label="Frenchies app rewards screen: punch cards"><div class="screen"><img class="scr-shot" src="/assets/frenchies/rewards.png" alt="" aria-hidden="true" loading="lazy" onerror="this.remove()" /><div class="scr-body" aria-hidden="true">
-        <p class="scr-tag">Frenchies Rewards</p>
-        <p class="scr-h">Buy 5, get the <i>6th free.</i></p>
-        <div class="punches"><span class="punch f">✓</span><span class="punch f">✓</span><span class="punch f">✓</span><span class="punch"></span><span class="punch star">★</span></div>
-      </div><div class="scr-btn" aria-hidden="true">View Rewards →</div></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- What we design and develop -->
-<section class="sec bone" aria-labelledby="build-h">
-  <div class="wrap">
-    <p class="eyebrow">What we design and develop</p>
-    <h2 class="display" id="build-h">Operational software, shaped by the operation.</h2>
-    <div class="ledger">
-      <div class="ledger-row"><span class="n">01</span><span class="k">Custom web applications<span class="v">Customer-facing and staff-facing, built for the specific job.</span></span></div>
-      <div class="ledger-row"><span class="n">02</span><span class="k">Internal tools<span class="v">The screens your team actually needs, instead of a spreadsheet with rules nobody wrote down.</span></span></div>
-      <div class="ledger-row"><span class="n">03</span><span class="k">Databases<span class="v">A source of truth for the records that currently live in five places.</span></span></div>
-      <div class="ledger-row"><span class="n">04</span><span class="k">APIs and integrations<span class="v">Payments, POS, property, scheduling and vendor systems, connected instead of re-keyed.</span></span></div>
-      <div class="ledger-row"><span class="n">05</span><span class="k">Workflow automation<span class="v">Handoffs, approvals, reconciliation and follow-up that run without a reminder.</span></span></div>
-      <div class="ledger-row"><span class="n">06</span><span class="k">Software prototypes<span class="v">A working version of one flow, to test the outcome before committing to the build.</span></span></div>
-      <div class="ledger-row"><span class="n">07</span><span class="k">AI-assisted systems and workflows<span class="v">Used where it earns its place inside an operation, not as the product.</span></span></div>
-      <div class="ledger-row"><span class="n">08</span><span class="k">Operational software<span class="v">Intake, eligibility, routing, exceptions, reporting: the layer between the promise and the delivery.</span></span></div>
-    </div>
-  </div>
-</section>
-
-<!-- What you buy -->
-<section class="sec" aria-labelledby="buy-h">
-  <div class="wrap">
-    <p class="eyebrow">What you buy</p>
-    <h2 class="display" id="buy-h">Understand the work. Prove the fix. Build the system.</h2>
-    <div class="ladder">
-      <div class="rung">
-        <span class="rung-n">01</span>
-        <div>
-          <h3>Work audit</h3>
-          <p>Find where a high-value process is breaking across people, partners or systems. You get a current-state map, the failure points, the ownership gaps, the evidence, and the numbers that decide whether a build is worth it.</p>
-        </div>
-      </div>
-      <div class="rung">
-        <span class="rung-n">02</span>
-        <div>
-          <h3>Working prototype</h3>
-          <p>Take one high-value break and build the working replacement flow — showing how context, ownership, exceptions and proof actually move through the system.</p>
-        </div>
-      </div>
-      <div class="rung">
-        <span class="rung-n">03</span>
-        <div>
-          <h3>Purpose-built system</h3>
-          <p>Build the real system: intake, eligibility, entitlements, routing, handoffs, staff context, vendor coordination, exception management, reconciliation and reporting.</p>
-        </div>
-      </div>
-    </div>
-    <p class="pull">We price problems, not software. If the economics can't support the build, we should know that before anyone writes code.</p>
-  </div>
-</section>
-
-<!-- What it isn't -->
-<section class="sec bone pad-b" aria-labelledby="isnt-h">
-  <div class="wrap">
-    <p class="eyebrow">To be clear</p>
-    <h2 class="display" id="isnt-h">What this isn't.</h2>
-    <div class="isnt">
-      <div class="isnt-row"><span class="isnt-k">Not a yes machine</span><span class="isnt-v">The Pressure Test is written so it can tell you not to build yet, even though building is what we sell.</span></div>
-      <div class="isnt-row"><span class="isnt-k">Not generic automation</span><span class="isnt-v">The goal isn't to remove the human from the experience. It's to stop making them reconstruct the rules.</span></div>
-      <div class="isnt-row"><span class="isnt-k">Not software for its own sake</span><span class="isnt-v">If the economics don't justify a build, that's a finding, not a failed sale.</span></div>
-      <div class="isnt-row"><span class="isnt-k">Not an AI agent shop</span><span class="isnt-v">Monitoring and agents get used where they earn their place inside an operating system — not as the product.</span></div>
-    </div>
-    <p class="sec-lead" style="margin-top:34px">Or email directly: <a href="mailto:jason@quietbands.com" style="color:var(--brass);font-weight:600">jason@quietbands.com</a>.</p>
-  </div>
-</section>
-
+  </section>
 </main>
 
-<footer>
-  <div class="wrap foot-in">
-    <div>
-      <p class="foot-brand"><svg class="mark" viewBox="0 0 60 30" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="6"/><rect x="0" y="12" width="60" height="6"/><rect x="0" y="24" width="60" height="6"/></svg><span>Quiet Bands</span></p>
-      <p class="foot-tagline">Software built around the work</p>
-      <p class="foot-fact">Quiet Bands is a Houston software development and technology consulting company. We understand the work before we build the software.</p>
-    </div>
-    <nav class="foot-links" aria-label="Footer">
-      <a href="/work/">Tell us about the work</a>
-      <a href="/rd/">R&amp;D: Field Guide &amp; Pressure Test</a>
-      <a href="/work/frenchies/">Frenchies Coffee Bar</a>
-      <a href="/commercial/">Commercial</a>
-      <a href="/resident-experience/">Resident Experience</a>
-      <a href="/notes/">Notes</a>
-      <a href="mailto:jason@quietbands.com">jason@quietbands.com</a>
-    </nav>
-  </div>
-  <div class="wrap foot-legal">© Quiet Bands LLC — Houston, Texas</div>
-</footer>
-
-<script type="module" src="/assets/story/boot.js"></script>
+<script type="module" src="/assets/bulb/entry.js?v=2"></script>
 </body>
 </html>

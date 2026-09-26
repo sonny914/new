@@ -1,0 +1,40 @@
+/* Quiet Bands · Bulb Entry · visual system
+   Near-black ground, cream lines, one family. Orange exists only on the thing under the pointer or the focus.
+   Three modes: html.live (WebGL + scroll), html.rm / html.nogl / html without .js (the still: SVG + four links). */
+:root{
+  --ground:#0B0A09; --line:#E8DCC2; --line-dim:rgba(232,220,194,.55); --text:#F4F1E9; --live:#FF5A1F;
+  --ease-out:cubic-bezier(.23,1,.32,1); --ease-in-out:cubic-bezier(.77,0,.175,1);
+  --gutter:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--ground);color:var(--text);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+body{font-family:'Hubot Sans',system-ui,sans-serif;font-weight:500;font-stretch:100%;background:var(--ground);overflow-x:clip;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none;touch-action:manipulation}
+:focus-visible{outline:1.5px solid var(--live);outline-offset:6px}
+
+/* ---------- live: a sticky window over a scroll track ---------- */
+.track{position:relative}
+html.live .track{height:320vh}
+.stage{position:relative;height:100svh;overflow:hidden;background:var(--ground)}
+html.live .stage{position:sticky;top:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#bulb{display:block;width:100%;height:100%}
+html:not(.live) #bulb{display:none}
+
+/* the two lines: bottom-left, inside the margin, above the home indicator */
+.mark{position:absolute;left:var(--gutter);right:var(--gutter);bottom:calc(var(--gutter) + env(safe-area-inset-bottom));pointer-events:none;will-change:opacity,transform}
+.mark h1{font-size:22px;font-weight:500;letter-spacing:-.005em;line-height:1.1}
+.mark p{margin-top:8px;font-size:15px;font-weight:400;color:var(--line-dim);line-height:1.4;max-width:34ch}
+@media (min-width:761px){ .mark h1{font-size:26px} .mark p{font-size:16px} }
+
+/* ---------- the still: reduced motion, no WebGL, no JS ---------- */
+.still{display:none}
+html:not(.live) .still{display:block;position:absolute;inset:0;padding:calc(var(--gutter) + env(safe-area-inset-top)) var(--gutter) calc(var(--gutter) + env(safe-area-inset-bottom))}
+.still img{display:block;height:min(62svh,520px);width:auto;margin:0 auto}
+html:not(.live) .mark{position:absolute}
+.nav{position:absolute;left:var(--gutter);top:calc(var(--gutter) + env(safe-area-inset-top));display:none;flex-direction:column;gap:2px}
+html:not(.live) .nav{display:flex}
+.nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px 0 0;font-size:15px;color:var(--line);border-bottom:1px solid transparent;transition:color 180ms var(--ease-out),border-color 180ms var(--ease-out)}
+.nav a:active{color:var(--live)}
+@media (hover:hover) and (pointer:fine){ .nav a:hover{color:var(--live)} }
+
+@media (prefers-reduced-motion:reduce){ .nav a{transition:none} }

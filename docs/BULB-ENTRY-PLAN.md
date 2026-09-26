@@ -47,3 +47,42 @@ Reviewed against the generic defaults: "near-black plus one bright accent" is tr
 1. **Target repository.** `sonny914/sonny914.github.io` is empty (no commits, no branches). The site, the Spatial Hero code and `/lab` all live in `sonny914/new`, and the hero branch there (`claude/spatial-dossier-dsmfdl`) is not merged to main. The brief says keep Spatial Hero in `/lab`, which only makes sense building in `sonny914/new` on top of that branch. Recommendation: build there. Say which.
 2. **Existing routes.** "Nothing else navigable" is read as: the other pages stay on disk, unlinked; sitemap and robots get trimmed at Gate 4. Confirm or say remove.
 3. **Emil, resolved.** It is Emil Kowalski's skills repository (emilkowalski/skills), the one the dossier craft pass on the spatial branch audited against. Cloned and read for this plan; the rules above come from it. It is not vendored anywhere yet: at Gate 2 it goes into the target repo with `npx skills add emilkowalski/skills` (the npm registry is reachable from this container; the jsdelivr CDN is not, which only affects local testing).
+
+---
+
+## Gate 2 · whole bulb, cracks, rotation
+
+Built in this repo on `claude/bulb-entry`, on top of the Spatial Hero branch so `/lab` keeps its code. Homepage replaced by the entry (`index.html`); the old story homepage moved to `lab/story-home.html`, unlinked, `noindex` via the existing `/lab/*` header.
+
+### What is on the page
+
+- `tools/bulb.py` bakes `assets/bulb/bulb.glb` (61 KB, brotli on the wire) and `assets/bulb/bulb-static.svg`. Lathe glass (24 longitudes, 10° latitudes), a longer neck, a screw base with four threads and a contact tip, a glass mount with two support wires and one arc of filament, height and diameter dimension marks. Four Voronoi fragments cut with `bisect_plane` (Cell Fracture is not in the bpy wheel; the connected Blender can take over the same script). Crack vertices step sideways on the glass by up to 0.032 so a crack is jagged, the same step on both fragments. 1600 debris seeds lie within 0.10 of a crack.
+- The glass is lines only: the reference and the brief both read as a wireframe you see through, so the shell has no occluding faces. The metal base is solid black under its lines. Fragments carry a 0.022 rim strip on every cut edge, so the glass has thickness where it is broken; the whole-bulb grid is drawn from the unbroken lathe so nothing hints at the cracks before they are drawn.
+- **Cracks develop with the scroll** (your note on the reference): the crack polylines are their own line set, ordered by distance along the crack network from an impact point in the upper right facing the viewer, and drawn by a growing range. At rest a hairline; complete by the end of the turn (t = 0.45); the fragments only take over at separation. Reversible by construction.
+- Scroll map as planned: hold to 0.18, turn 200° to 0.45; the two lines and the dimension marks leave in the first 0.12 of the turn. Fog follows the camera so the far side of the glass sits back.
+- Framing is computed from the object's bounding box: portrait fits the width with a margin and puts the object in the upper two thirds; landscape fits the height and centres the bulb's axis. Camera at 30°.
+- The engine is `assets/lab/spatial-engine.js`, unchanged, with the hero's options; tilt turns the whole bulb a little (0.10 rad per unit of view). The `?debug=1` readout is the hero's.
+- Still fallbacks are in: reduced motion, no WebGL, a failed CDN import and no JS all show the SVG and the four links as a list. Tap targets are 44 px, focus ring in the interactive orange (`#FF5A1F`, to be judged on the phone).
+- `npm test`: 43 pass, including four on the scroll map and the crack term.
+
+### Emil (review-animations) on this gate's motion
+
+| Before | After | Why |
+| --- | --- | --- |
+| Dimension marks rotated with the bulb into stray diagonals | Marks fade in the first 0.12 of the turn | A drawing annotation stops meaning anything once the object turns; movement without purpose |
+| Fog in absolute distances (blank on portrait) | Fog set from the camera distance every frame | Depth cue must follow the camera, or it is a bug, not a cue |
+| Text leaves on the same curve as the rotation | Text leaves on its own short segment (0.18–0.30) | The two lines are an exit: short, ease-out, done before the turn is half way |
+| Hover on the nav links ungated | `@media (hover:hover) and (pointer:fine)` | Touch fires a sticky hover on tap |
+| Nothing else animates on its own | Unchanged | The whole-bulb frame and the turn are scroll-driven; no idle motion at this gate |
+
+Verdict: approve for Gate 2 (no idle motion, all motion scroll-driven and reversible, reduced motion honoured). Two feel checks only a device settles: the tilt gain on the whole bulb, and whether the hairline at rest is visible on an OLED at low brightness.
+
+### Evidence
+
+Headless frames (Playwright, iPhone 393×852 and desktop 1440×900, system fallback font because Google Fonts is blocked in the build container): rest, t = 0.12, t = 0.32 mid-turn, t = 0.45. Real-iPhone evidence comes from the Netlify deploy preview of this branch's pull request, with `?debug=1` for the sensor state.
+
+### Open at this gate
+
+- The safety orange hex is a placeholder until the reference's orange is matched on the phone.
+- The four settled poses, the labels, parallax on the fragments and the debris are Gate 3.
+- Line density: 24 longitudes reads as fine wireframe in these frames; the phone decides whether it is too dense at 1.5× DPR.
