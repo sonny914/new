@@ -2,7 +2,7 @@
    Near-black ground, cream lines, one family. Orange exists only on the thing under the pointer or the focus.
    Three modes: html.live (WebGL + scroll), html.rm / html.nogl / html without .js (the still: SVG + four links). */
 :root{
-  --ground:#0B0A09; --line:#E8DCC2; --line-dim:rgba(232,220,194,.68); --text:#F4F1E9; --live:#FF5A1F;
+  --ground:#000000; --line:#F2EEE5; --line-dim:rgba(242,238,229,.68); --text:#F2EEE5; --live:#FF5A00;
   --ease-out:cubic-bezier(.23,1,.32,1); --ease-in-out:cubic-bezier(.77,0,.175,1);
   --gutter:22px;
 }
@@ -32,7 +32,7 @@ html.nogl #bulb,html:not(.js) #bulb{display:none}
 html.live .nav a,html.rm .nav a{position:absolute;left:0;top:0;opacity:0;pointer-events:none;white-space:nowrap;will-change:transform,opacity;color:var(--text);font-size:16px;
   text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:6px;text-decoration-color:transparent;
   transition:color 180ms var(--ease-out),text-decoration-color 180ms var(--ease-out)}
-html.live .nav a.is-live,html.rm .nav a.is-live{color:var(--live);text-decoration-color:var(--live)}
+/* the label stays flat cream under the pointer: the piece answers, with its fracture light. Keyboard focus keeps its hairline. */
 @media (min-width:761px){ html.live .nav a,html.rm .nav a{font-size:17px} }
 html.live .stage,html.rm .stage{position:sticky;top:0;overflow:hidden}
 html.rm .track{height:100svh}
@@ -51,7 +51,7 @@ html.nogl .settled,html:not(.js) .settled{display:none}
 html.rm .settled{opacity:1;pointer-events:auto}
 
 /* browser surfaces belong to the palette too */
-::selection{background:rgba(232,220,194,.22);color:var(--text)}
+::selection{background:rgba(242,238,229,.22);color:var(--text)}
 
 /* ---------- the still: no WebGL, no JS ---------- */
 .still{display:none}
@@ -61,7 +61,7 @@ html.nogl .still,html:not(.js) .still{display:block;position:absolute;inset:0;pa
 html.nogl .nav,html:not(.js) .nav{display:flex}
 html.live .nav,html.rm .nav{position:absolute;inset:0;pointer-events:none;display:block}
 .nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px 0 0;font-size:15px;color:var(--line);border-bottom:1px solid transparent;transition:color 180ms var(--ease-out),border-color 180ms var(--ease-out)}
-.nav a:active{color:var(--live)}
-@media (hover:hover) and (pointer:fine){ .nav a:hover{color:var(--live)} }
+html.nogl .nav a:active,html:not(.js) .nav a:active{color:var(--live)}
+@media (hover:hover) and (pointer:fine){ html.nogl .nav a:hover,html:not(.js) .nav a:hover{color:var(--live)} }
 
 @media (prefers-reduced-motion:reduce){ .nav a{transition:none} }

@@ -11,10 +11,30 @@ import { createSpatialEngine } from '/assets/lab/spatial-engine.js';
 import { poseAt, labelAt, settledAt, SEPARATION } from './map.js';
 export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js';
 
-export const GROUND = 0x0B0A09;
-export const LINE = 0xF0E7D2;        // the wireframe: a brighter cream than the type's cream, so thin lines hold on black
-export const LINE_NEAR = 0xF7F3EA;   // the settled fragments: ivory, full opacity, no fog
-export const LIVE = 0xFF5A1F;        // interactive only; to be matched to the reference on the phone
+export const GROUND = 0x000000;      // brand black
+export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass, the labels, the rim light
+export const LINE_NEAR = 0xF2EEE5;
+export const LIVE = 0xFF5A00;        // brand orange: the light inside the fracture, and nothing else
+export const WIRE_ALPHA = 0.62;      // the cream grid sits on the glass as a sparse drawing, not a cage: the glass carries the form
+export const EDGE_ALPHA = 0.82;      // the orange fracture line at rest; hover or touch takes it to 1 and adds a second, offset pass
+/* The glass: physically based, transmissive, smoked. One material, cloned per fragment so a piece can fade on its own.
+   Thickness is the volume the refraction sees; attenuation is the smoke. Clearcoat is the polish. Dark tint, no colour. */
+export const GLASS = {
+  color: 0x8C8780, roughness: 0.06, metalness: 0, transmission: 1, ior: 1.5, thickness: 0.16,
+  attenuationColor: 0x1E1B18, attenuationDistance: 0.7, clearcoat: 0.35, clearcoatRoughness: 0.08,
+  envMapIntensity: 1.0, specularIntensity: 1.0,
+};
+/* The unbroken envelope, for the whole bulb at rest: the same profile the bake lathes (tools/bulb.py glass_profile),
+   revolved at runtime so the baked meshes stay byte for byte what they were. r against height, y up. */
+export const LAT_STEP = 10, LONGS = 24, NECK_Y = -1.55, NECK_R = 0.36;
+export function glassProfile() {
+  const pts = [new THREE.Vector2(0, 1)];
+  for (let lat = 90 - LAT_STEP; lat >= -30; lat -= LAT_STEP) { const a = THREE.MathUtils.degToRad(lat); pts.push(new THREE.Vector2(Math.cos(a), Math.sin(a))); }
+  const r0 = Math.cos(THREE.MathUtils.degToRad(-30)), y0 = Math.sin(THREE.MathUtils.degToRad(-30));
+  const smooth = (k) => k * k * (3 - 2 * k);
+  for (let i = 1; i <= 8; i++) { const k = i / 8, e = Math.pow(smooth(k), 0.8); pts.push(new THREE.Vector2(r0 + (NECK_R - r0) * e, y0 + (NECK_Y - y0) * k)); }
+  return pts;
+}
 export const IMPACT = { x: 0.42, y: 0.60, z: 0.86 };   // where the glass was struck: upper right on the face toward the viewer, so the crack at rest reads at 1x. Cracks grow from here.
 
 /* The four settled poses (world units, y up; the camera looks down −z). Hand placed: distinct depths, no grid, no ring,
@@ -138,6 +158,45 @@ export function makeDebris(seedGeometry, count) {
   return points;
 }
 
+/* ---------- the light: an environment nobody sees, three cream emitters on black, prefiltered once ----------
+   A tall narrow strip upper left toward the viewer gives the long rim highlight; a wide low strip behind and to the right
+   gives the far edge its line; a small patch above fills the top of the dome. The background stays black: the environment
+   is reflected by the glass and drawn nowhere. */
+export function makeEnvironment(renderer) {
+  const pm = new THREE.PMREMGenerator(renderer);
+  const env = new THREE.Scene();
+  const emit = (w, h, x, y, z, k) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(LINE).multiplyScalar(k), side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m);
+  };
+  emit(0.5, 8, -5, 2, 3, 2.2);      // key: thin and tall, so its reflection is a line, not a patch
+  emit(7, 0.45, 4, -1, -4, 1.1);    // rim, behind right, low: the far edge
+  emit(1, 1, 0, 7, 1, 0.5);         // a small patch above: the crown of the dome
+  const tex = pm.fromScene(env, 0.03).texture;
+  pm.dispose(); env.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } });
+  return tex;
+}
+
+/** Split a fragment's edges into the grid on the glass and the broken edge. The rim strip meets the surface at a right
+    angle and its inner edge is open, so a high threshold picks exactly the fracture (both lips: that is the thickness).
+    The neck ring is glass meeting the base, not a break: it stays in the grid. Pure. */
+export function splitEdges(geo, neckY = -Infinity) {
+  const all = new THREE.EdgesGeometry(geo, 4), rimAll = new THREE.EdgesGeometry(geo, 60);
+  const k = (a, i) => `${a[i].toFixed(4)},${a[i + 1].toFixed(4)},${a[i + 2].toFixed(4)}`;
+  const rp = rimAll.attributes.position.array, rimOut = [], keys = new Set();
+  for (let i = 0; i < rp.length; i += 6) {
+    if (rp[i + 1] < neckY && rp[i + 4] < neckY) continue;               // the neck ring
+    keys.add(k(rp, i) + '|' + k(rp, i + 3)); keys.add(k(rp, i + 3) + '|' + k(rp, i));
+    for (let n = 0; n < 6; n++) rimOut.push(rp[i + n]);
+  }
+  const ap = all.attributes.position.array, gridOut = [];
+  for (let i = 0; i < ap.length; i += 6) if (!keys.has(k(ap, i) + '|' + k(ap, i + 3))) for (let n = 0; n < 6; n++) gridOut.push(ap[i + n]);
+  all.dispose(); rimAll.dispose();
+  const grid = new THREE.BufferGeometry(); grid.setAttribute('position', new THREE.Float32BufferAttribute(gridOut, 3));
+  const rim = new THREE.BufferGeometry(); rim.setAttribute('position', new THREE.Float32BufferAttribute(rimOut, 3));
+  return { grid, rim };
+}
+
 /* ---------- runtime ---------- */
 export function createEntry(root, opts = {}) {
   const still = !!opts.still;                                          // reduced motion: the settled frame, once, tappable, no drift, no hue
@@ -147,23 +206,30 @@ export function createEntry(root, opts = {}) {
   const mobile = window.matchMedia('(max-width: 760px)');
   const fine = window.matchMedia('(pointer: fine)').matches;
 
+  const flat = /[?&]flat/.test(location.search);                      // ?flat=1: the lines without the glass, to compare cost on a device
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
   renderer.setClearColor(GROUND, 1);
+  renderer.transmissionResolutionScale = mobile.matches ? 0.6 : 0.85;  // the refraction buffer: what the glass sees through itself, at a fraction of the frame
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(GROUND, 6, 10);
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
+  if (!flat) {
+    scene.environment = makeEnvironment(renderer);                    // no point or directional lights: a point light on glass is a hot dot, and a dot is a glow
+  }
 
   const group = new THREE.Group();                                     // the bulb; rotated as one for the turn
   scene.add(group);
 
-  const cream = new THREE.Color(LINE_NEAR), orange = new THREE.Color(LIVE);
-  const lineMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.96, fog: true });
+  const lineMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: flat ? 0.96 : WIRE_ALPHA, fog: true });
   const anchorMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.86, fog: true });   // base + filament: they fade at the settle
-  const crackMat = new THREE.LineBasicMaterial({ color: LINE_NEAR, transparent: true, opacity: 1.0, fog: true });
+  const crackMat = new THREE.LineBasicMaterial({ color: LIVE, transparent: true, opacity: 1.0, fog: false });      // the crack is the fracture light from its first pixel
+  const edgeMat = new THREE.LineBasicMaterial({ color: LIVE, transparent: true, opacity: EDGE_ALPHA, fog: false });
   const dimMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.38, fog: true });
   const occluder = new THREE.MeshBasicMaterial({ color: GROUND, fog: false });
+  const glassMat = new THREE.MeshPhysicalMaterial({ ...GLASS, side: THREE.DoubleSide, transparent: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+  glassMat.color.set(GLASS.color); glassMat.attenuationColor.set(GLASS.attenuationColor);
 
-  const parts = { shells: [], frags: [], wire: null, cracks: null, crackSegs: 0, base: null, baseSolid: null, baseGeom: null, filament: null, dims: null, debris: null, points: null };
+  const parts = { shells: [], frags: [], glass: null, wire: null, cracks: null, crackSegs: 0, base: null, baseSolid: null, baseGeom: null, filament: null, dims: null, debris: null, points: null };
   const box = new THREE.Box3();
   let portrait = false, ratio = 1;
   const camHome = new THREE.Vector3(0, 0, 8);
@@ -203,11 +269,19 @@ export function createEntry(root, opts = {}) {
         const home = geo.boundingSphere.center.clone(); const radius = geo.boundingSphere.radius;
         geo.translate(-home.x, -home.y, -home.z);                     // the fragment's origin is its own centre
         geo.computeBoundingBox(); const bbox = geo.boundingBox.clone();
-        const mat = lineMat.clone(); mat.color.set(LINE_NEAR); mat.opacity = 1;
-        const lines = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 4), mat); lines.name = name; lines.visible = false;
+        const mat = lineMat.clone();
+        const { grid, rim } = splitEdges(geo, NECK_Y + 0.04 - home.y);
+        const piece = new THREE.Group(); piece.name = name; piece.visible = false;
+        const lines = new THREE.LineSegments(grid, mat);                    // the cream grid, on the glass
+        const edge = new THREE.LineSegments(rim, edgeMat.clone());          // the fracture light, both lips
+        const edge2 = new THREE.LineSegments(rim, edgeMat.clone()); edge2.material.opacity = 0; edge2.scale.setScalar(1.012);   // hover: a second pass a pixel out, so the line gains weight without a glow
+        piece.add(lines, edge, edge2);
+        let glass = null;
+        if (!flat) { geo.computeVertexNormals(); glass = new THREE.Mesh(geo, glassMat.clone()); piece.add(glass); }
         const outward = new THREE.Vector3(home.x, home.y * 0.35, home.z).normalize();
-        parts.frags[i] = { i, obj: lines, mat, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
-        parts.shells.push(lines); scene.add(lines);
+        const mats = [mat, edge.material, edge2.material].concat(glass ? [glass.material] : []);
+        parts.frags[i] = { i, obj: piece, mat, edge, edge2, glass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
+        parts.shells.push(piece); scene.add(piece);
       } else if (name === 'shell_wire') {
         parts.wire = new THREE.LineSegments(o.geometry, lineMat); group.add(parts.wire);
       } else if (name === 'cracks') {
@@ -229,6 +303,10 @@ export function createEntry(root, opts = {}) {
       }
     });
     if (parts.debris) { parts.points = makeDebris(parts.debris, mobile.matches ? 600 : 1500); group.add(parts.points); }
+    if (!flat) {                                                        // the whole envelope at rest: one lathe, the bake's own profile
+      const lathe = new THREE.LatheGeometry(glassProfile(), LONGS);
+      parts.glass = new THREE.Mesh(lathe, glassMat); group.add(parts.glass);
+    }
     box.makeEmpty();
     for (const g of [parts.wire && parts.wire.geometry, parts.baseGeom, parts.dims && parts.dims.geometry]) if (g) { g.computeBoundingBox(); box.union(g.boundingBox); }
     frame();
@@ -257,12 +335,14 @@ export function createEntry(root, opts = {}) {
     f.obj.position.lerpVectors(_sepP, _navP, k);
     f.obj.quaternion.slerpQuaternions(_q, f.navQ, k);
     f.obj.scale.setScalar(1 + ((portrait ? NAV_SCALE.portrait : NAV_SCALE.landscape) - 1) * k);
-    // hover / focus: ease forward, lines to orange. Time based, so it is the same at any frame rate.
+    // hover / focus / touch: ease forward as before; the fracture light strengthens on this piece only. Time based.
     const a = 1 - Math.exp(-dt / (HOVER_MS / 3));
     f.hover += (f.hoverT - f.hover) * a; if (Math.abs(f.hoverT - f.hover) < 0.002) f.hover = f.hoverT;
     f.obj.position.z += f.hover * 0.22 * k;
-    f.mat.color.lerpColors(cream, orange, f.hover);
-    f.mat.opacity = 1;
+    f.mat.opacity = flat ? 0.96 : WIRE_ALPHA;
+    f.edge.material.opacity = EDGE_ALPHA + (1 - EDGE_ALPHA) * f.hover;
+    f.edge2.material.opacity = f.hover;
+    if (f.glass) f.glass.material.opacity = 1;
   }
 
   const _c = new THREE.Vector3();
@@ -320,6 +400,7 @@ export function createEntry(root, opts = {}) {
     if (settled) { const k = still ? 1 : settledAt(t); settled.style.opacity = k.toFixed(3); settled.style.pointerEvents = k > 0.5 ? 'auto' : 'none'; }
     if (parts.cracks) { parts.cracks.geometry.setDrawRange(0, Math.round(parts.crackSegs * p.crack) * 2); parts.cracks.visible = !p.broken; }
     if (parts.wire) parts.wire.visible = !p.broken;
+    if (parts.glass) parts.glass.visible = !p.broken;
     anchorMat.opacity = 0.86 * p.anchor; if (parts.baseSolid) parts.baseSolid.visible = p.anchor > 0.5;
     if (parts.filament) parts.filament.visible = p.anchor > 0.004; if (parts.base) parts.base.visible = p.anchor > 0.004;
     // pointer over a fragment (fine pointers): screen-space test against last frame's projection
@@ -333,7 +414,7 @@ export function createEntry(root, opts = {}) {
       moving = true;
     }
     parts.frags.forEach((f) => { if (!f) return; f.obj.visible = p.broken; place(f, p, st.view, p.settle, dt, now); if (f.hover !== f.hoverT) moving = true; });
-    if (selK > 0) parts.frags.forEach((f) => { if (sel && f.i === sel.i) return; f.mat.opacity *= 1 - selK; });
+    if (selK > 0) parts.frags.forEach((f) => { if (sel && f.i === sel.i) return; f.mats.forEach((m) => { m.opacity *= 1 - selK; }); });
     if (parts.points) {
       const u = parts.points.material.uniforms;
       parts.points.visible = p.broken && p.release > 0;
