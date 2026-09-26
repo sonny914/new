@@ -796,7 +796,10 @@ h2.display{font-size:clamp(24px,3.4vw,34px);line-height:1.12}
 .top .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px}
 .top nav{display:flex;flex-wrap:wrap;gap:0 22px;margin-left:auto}
 .top nav a,.top .mark{display:inline-flex;align-items:center;min-height:44px;color:var(--line);font-size:15px;transition:color 180ms var(--ease-out)}
-.top .mark{font-size:22px;font-weight:500;letter-spacing:-.005em;line-height:1}
+.top .mark{font-size:22px;font-weight:500;letter-spacing:-.005em;line-height:1;gap:10px}
+.qb{display:inline-block;width:22px;height:11px;flex:0 0 auto}
+.qb rect{fill:currentColor}
+@media (min-width:761px){ .qb{width:26px;height:13px} }
 @media (min-width:761px){ .top .mark{font-size:26px} }
 @media (hover:hover) and (pointer:fine){ .top nav a:hover,.top .mark:hover,footer.end a:hover{color:var(--live)} }
 .top nav a:active,.top .mark:active,footer.end a:active{color:var(--live)}

@@ -12,7 +12,8 @@ import { poseAt, labelAt, settledAt, SEPARATION } from './map.js';
 export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js';
 
 export const GROUND = 0x0B0A09;
-export const LINE = 0xE8DCC2;
+export const LINE = 0xF0E7D2;        // the wireframe: a brighter cream than the type's cream, so thin lines hold on black
+export const LINE_NEAR = 0xF7F3EA;   // the settled fragments: ivory, full opacity, no fog
 export const LIVE = 0xFF5A1F;        // interactive only; to be matched to the reference on the phone
 export const IMPACT = { x: 0.42, y: 0.60, z: 0.86 };   // where the glass was struck: upper right on the face toward the viewer, so the crack at rest reads at 1x. Cracks grow from here.
 
@@ -155,10 +156,10 @@ export function createEntry(root, opts = {}) {
   const group = new THREE.Group();                                     // the bulb; rotated as one for the turn
   scene.add(group);
 
-  const cream = new THREE.Color(LINE), orange = new THREE.Color(LIVE);
-  const lineMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.86, fog: true });
+  const cream = new THREE.Color(LINE_NEAR), orange = new THREE.Color(LIVE);
+  const lineMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.96, fog: true });
   const anchorMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.86, fog: true });   // base + filament: they fade at the settle
-  const crackMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 1.0, fog: true });
+  const crackMat = new THREE.LineBasicMaterial({ color: LINE_NEAR, transparent: true, opacity: 1.0, fog: true });
   const dimMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.38, fog: true });
   const occluder = new THREE.MeshBasicMaterial({ color: GROUND, fog: false });
 
@@ -202,7 +203,7 @@ export function createEntry(root, opts = {}) {
         const home = geo.boundingSphere.center.clone(); const radius = geo.boundingSphere.radius;
         geo.translate(-home.x, -home.y, -home.z);                     // the fragment's origin is its own centre
         geo.computeBoundingBox(); const bbox = geo.boundingBox.clone();
-        const mat = lineMat.clone();
+        const mat = lineMat.clone(); mat.color.set(LINE_NEAR); mat.opacity = 1;
         const lines = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 4), mat); lines.name = name; lines.visible = false;
         const outward = new THREE.Vector3(home.x, home.y * 0.35, home.z).normalize();
         parts.frags[i] = { i, obj: lines, mat, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
@@ -261,7 +262,7 @@ export function createEntry(root, opts = {}) {
     f.hover += (f.hoverT - f.hover) * a; if (Math.abs(f.hoverT - f.hover) < 0.002) f.hover = f.hoverT;
     f.obj.position.z += f.hover * 0.22 * k;
     f.mat.color.lerpColors(cream, orange, f.hover);
-    f.mat.opacity = 0.86 + 0.14 * f.hover;
+    f.mat.opacity = 1;
   }
 
   const _c = new THREE.Vector3();
@@ -315,7 +316,7 @@ export function createEntry(root, opts = {}) {
     group.rotation.x = st.view.y * 0.06;
     if (mark) { mark.style.opacity = p.text.toFixed(3); mark.style.transform = `translate3d(0, ${((1 - p.text) * 10).toFixed(1)}px, 0)`; }
     dimMat.opacity = 0.38 * p.dims; if (parts.dims) parts.dims.visible = p.dims > 0.004;
-    scene.fog.far = fogFar + 4.0 * p.settle;                            // the settled pieces step out of the haze: depth stays a cue, not a veil
+    scene.fog.far = fogFar + 60 * p.settle;                             // the settled pieces leave the haze entirely: depth is parallax and scale, never dimness
     if (settled) { const k = still ? 1 : settledAt(t); settled.style.opacity = k.toFixed(3); settled.style.pointerEvents = k > 0.5 ? 'auto' : 'none'; }
     if (parts.cracks) { parts.cracks.geometry.setDrawRange(0, Math.round(parts.crackSegs * p.crack) * 2); parts.cracks.visible = !p.broken; }
     if (parts.wire) parts.wire.visible = !p.broken;

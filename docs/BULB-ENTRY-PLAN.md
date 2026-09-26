@@ -200,3 +200,15 @@ Asked for after the polish pass: the nine remaining pages (work, the Frenchies c
 - **The phone mockups** keep their own light surface and dark ink: they are pictures of a product.
 - **Checks.** Every page renders on the ground in the family with no page errors on desktop and phone; every link and button is at least 44 px; the detector across all twelve pages reports only three intentional clip containers on the Frenchies composition and two em-dash counts in existing copy. `npm test`: 49.
 - Not done: the copy itself (the em-dashes, the offer-page wording) and the Frenchies screenshots, which live only on Netlify.
+
+---
+
+## Visual pass: brighter lines, orange only where it is live, the three bands
+
+Asked for after the other pages: the lower fragments and their labels were getting lost against the black.
+
+- **The wireframe is brighter.** The whole bulb's lines go from cream at 0.86 to a lighter cream at 0.96; the cracks and the four fragments are ivory at full opacity. The base and filament keep their 0.86 so the shell stays the subject.
+- **No haze on the settled pieces.** The fog's far limit now leaves entirely as the pieces settle, so Work and Contact, which sit farthest from the camera, read as brightly as Experiments and Build log. Depth stays legible through scale and parallax, never through dimness.
+- **The labels.** Ivory text, one size up (16/17 px), with a hairline underline that is transparent at rest and orange on hover, focus, or touch. The orange is still only under the pointer or the focus; nothing else on the page carries it. The dim caption under the wordmark lifts from .55 to .68.
+- **The Quiet Bands mark.** The three bands from the favicon, drawn in the line colour beside the wordmark: at rest on the entry, in the settled frame, and in the header of /rd/, the 404 and the nine pages. It inherits `currentColor`, so it goes orange with the wordmark on hover.
+- **Checks.** Gate 2, 3 and 4 harnesses hold on both viewports (settled layout, 44 px, no crossings, selection lands on the section). The pages harness renders all twelve pages with no new errors. Asset versions bumped (entry v5, rd.css v3, site.css v2→v3).

@@ -2,7 +2,7 @@
    Near-black ground, cream lines, one family. Orange exists only on the thing under the pointer or the focus.
    Three modes: html.live (WebGL + scroll), html.rm / html.nogl / html without .js (the still: SVG + four links). */
 :root{
-  --ground:#0B0A09; --line:#E8DCC2; --line-dim:rgba(232,220,194,.55); --text:#F4F1E9; --live:#FF5A1F;
+  --ground:#0B0A09; --line:#E8DCC2; --line-dim:rgba(232,220,194,.68); --text:#F4F1E9; --live:#FF5A1F;
   --ease-out:cubic-bezier(.23,1,.32,1); --ease-in-out:cubic-bezier(.77,0,.175,1);
   --gutter:22px;
 }
@@ -22,14 +22,18 @@ html.nogl #bulb,html:not(.js) #bulb{display:none}
 
 /* the two lines: bottom-left, inside the margin, above the home indicator */
 .mark{position:absolute;left:var(--gutter);right:var(--gutter);bottom:calc(var(--gutter) + env(safe-area-inset-bottom));pointer-events:none;will-change:opacity,transform}
-.mark h1{font-size:22px;font-weight:500;letter-spacing:-.005em;line-height:1.1}
+.mark h1{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:500;letter-spacing:-.005em;line-height:1.1}
+.qb{display:inline-block;width:22px;height:11px;flex:0 0 auto}
+.qb rect{fill:currentColor}
 .mark p{margin-top:8px;font-size:15px;font-weight:400;color:var(--line-dim);line-height:1.4;max-width:34ch}
 @media (min-width:761px){ .mark h1{font-size:26px} .mark p{font-size:16px} }
 
 /* ---------- the nav: four labels, one beside each settled fragment ---------- */
-html.live .nav a,html.rm .nav a{position:absolute;left:0;top:0;opacity:0;pointer-events:none;white-space:nowrap;will-change:transform,opacity;
-  transition:color 180ms var(--ease-out)}
-html.live .nav a.is-live,html.rm .nav a.is-live{color:var(--live)}
+html.live .nav a,html.rm .nav a{position:absolute;left:0;top:0;opacity:0;pointer-events:none;white-space:nowrap;will-change:transform,opacity;color:var(--text);font-size:16px;
+  text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:6px;text-decoration-color:transparent;
+  transition:color 180ms var(--ease-out),text-decoration-color 180ms var(--ease-out)}
+html.live .nav a.is-live,html.rm .nav a.is-live{color:var(--live);text-decoration-color:var(--live)}
+@media (min-width:761px){ html.live .nav a,html.rm .nav a{font-size:17px} }
 html.live .stage,html.rm .stage{position:sticky;top:0;overflow:hidden}
 html.rm .track{height:100svh}
 html.rm .stage{position:relative}
@@ -39,7 +43,8 @@ html.rm .mark{display:none}
 /* the settled frame's own two lines: the name, and the one place to write to. They arrive after the labels. */
 .settled{position:absolute;left:var(--gutter);bottom:calc(var(--gutter) + env(safe-area-inset-bottom));opacity:0;pointer-events:none;will-change:opacity}
 html.nogl .settled,html:not(.js) .settled{display:none}
-.settled p{font-size:15px;font-weight:500;color:var(--text);line-height:1.2}
+.settled p{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:500;color:var(--text);line-height:1.2}
+.settled .qb{width:20px;height:10px;color:var(--line)}
 .settled a{display:inline-flex;align-items:center;min-height:44px;font-size:15px;color:var(--line);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px;text-decoration-color:var(--line-dim);transition:color 180ms var(--ease-out),text-decoration-color 180ms var(--ease-out)}
 .settled a:active{color:var(--live);text-decoration-color:var(--live)}
 @media (hover:hover) and (pointer:fine){ .settled a:hover{color:var(--live);text-decoration-color:var(--live)} }

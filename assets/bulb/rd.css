@@ -15,7 +15,10 @@ a{color:inherit;text-decoration:none;touch-action:manipulation}
 @media (min-width:761px){ .mark{font-size:26px} }
 .top nav{display:flex;flex-wrap:wrap;gap:0 22px;margin-left:auto}
 .top nav a,.mark a{display:inline-flex;align-items:center;min-height:44px;color:var(--line);font-size:15px;transition:color 180ms var(--ease-out)}
-.mark a{font-size:inherit;font-weight:inherit;letter-spacing:inherit}
+.mark a{font-size:inherit;font-weight:inherit;letter-spacing:inherit;gap:10px}
+.qb{display:inline-block;width:22px;height:11px;flex:0 0 auto}
+.qb rect{fill:currentColor}
+@media (min-width:761px){ .qb{width:26px;height:13px} }
 .top nav a[aria-current]{color:var(--text)}
 @media (hover:hover) and (pointer:fine){ .top nav a:hover,.mark a:hover,.body a:hover{color:var(--live)} }
 .top nav a:active,.mark a:active,.body a:active{color:var(--live)}
