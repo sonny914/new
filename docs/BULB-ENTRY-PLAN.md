@@ -86,3 +86,41 @@ Headless frames (Playwright, iPhone 393×852 and desktop 1440×900, system fallb
 - The safety orange hex is a placeholder until the reference's orange is matched on the phone.
 - The four settled poses, the labels, parallax on the fragments and the debris are Gate 3.
 - Line density: 24 longitudes reads as fine wireframe in these frames; the phone decides whether it is too dense at 1.5× DPR.
+
+---
+
+## Gate 3 · separation, settle, parallax, particles
+
+Points only for the debris (your call), no shard meshes beyond the four nav fragments.
+
+### What changed on the page
+
+- **Separation (t 0.45–0.70).** At the end of the turn the whole-bulb grid and the crack lines hand over to the four fragments in the same place (each carries its rim strip, so the glass shows thickness where it broke). Each slides out along its own direction by 0.42 units with a small tumble about that axis. The base and the filament stay, then fade once the fragments leave for their poses (0.70–0.85).
+- **Settle (t 0.70–1.0).** An ease-out entrance (out-expo) into four hand-placed poses, one set for portrait, one for landscape, at distinct depths (−1.4 … +0.9), scaled to 0.55 / 0.65 of bulb size so four fit with air. Labels are the real `<a>` elements, anchored to each fragment's projected bounding box on the side with room, arriving staggered (0.03 in t apart) from t = 0.82. 44 px tap height, focusable, focus ring in the interactive orange.
+- **Parallax and drift.** On the settled fragments only: sideways travel by depth from the engine's `view` (0.32 units per unit of view at the nearest depth, half that vertically), and a slow drift of 0.028 units with a 0.03 rad wobble. Drift is noise, not a spring; the springs stay on what the finger and the sensors drive.
+- **Hover / focus / tap.** Fine pointer over a fragment, or hover/focus on its label: the fragment eases forward 0.22 units and its lines go orange, time-based at 180 ms. A tap on a fragment goes where its label goes (the camera move is Gate 4).
+- **Debris.** One `THREE.Points` (1500 desktop, 600 mobile of the 1600 baked seeds) with one shader. Position = seed + velocity × release, released 0.45–0.85, so it reverses. 1.6 px points, alpha ≤ 0.28. Colour: cream-grey head-on; hue from the angle of the same `view` vector as the parallax, spread per point (foil), mixed in only as the view leaves head-on. Points render only after the break.
+- **Reduced motion** now renders the settled frame once in WebGL, tappable, with no drift and the hue uniform pinned to zero; the SVG list remains for no WebGL / no JS.
+
+### Checks
+
+- `npm test`: 47 pass (scroll map: separation, settle, release, anchor, labels).
+- Harness on iPhone 393×852 and desktop 1440×900: separation start, mid-separation, settled at rest, settled tilted both ways, focus on the first label, reduced motion. Layout assertions on the settled frame: every label fully on, ≥ 44 px, inside the window; no label crosses another fragment's box or another label; no two fragment boxes overlap; no fragment clipped. All hold on both viewports.
+- The rest frame at t = 1 with view 0,0 shows the debris as faint cream-grey points; the tilted frames show the colour arrive. Whether the rest frame reads "sparkly" on an OLED is the phone's call; the knobs are `uSize` and the 0.28 alpha in `makeDebris`.
+
+### Emil (review-animations) on this gate's motion
+
+| Before | After | Why |
+| --- | --- | --- |
+| Fragments settled at bulb scale | Scale to 0.55 / 0.65 over the settle | Four nav pieces need air; a settled frame that overlaps is a collision, not a composition |
+| Labels anchored at the bounding-sphere radius | Anchored to the projected bounding box edge, 12 px gap | The label belongs beside the piece, not at a radius the eye cannot see |
+| Drift as a spring | Drift as slow noise; springs only on input | A spring with no input is fake physics |
+| Hover colour via CSS transition on the canvas object | Time-based lerp in the render loop, 180 ms, ease-out shape | Canvas lines have no CSS; the ease has to be the same at any frame rate |
+| Reduced motion: still SVG | Reduced motion: settled fragments rendered once, tappable, no drift, no hue | Gentler, not zero: the nav should still be the nav |
+
+Verdict: approve for Gate 3, with the tilt gains (parallax 0.32, whole-bulb 0.10) and the debris alpha to be judged on the phone. The phone recording of the tilt hue shift is yours to make on the deploy preview.
+
+### Open at this gate
+
+- Gate 4: selection (camera to the fragment, then the section), the R&D page with Lab 001, the link-preview gate (OG image of the bulb, 1200×630, absolute URLs), sitemap and robots trimmed.
+- The settled poses are hand-placed for two aspect classes; a tablet in landscape uses the landscape set.

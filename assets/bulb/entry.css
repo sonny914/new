@@ -18,7 +18,7 @@ html.live .track{height:320vh}
 .stage{position:relative;height:100svh;overflow:hidden;background:var(--ground)}
 html.live .stage{position:sticky;top:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #bulb{display:block;width:100%;height:100%}
-html:not(.live) #bulb{display:none}
+html.nogl #bulb,html:not(.js) #bulb{display:none}
 
 /* the two lines: bottom-left, inside the margin, above the home indicator */
 .mark{position:absolute;left:var(--gutter);right:var(--gutter);bottom:calc(var(--gutter) + env(safe-area-inset-bottom));pointer-events:none;will-change:opacity,transform}
@@ -26,13 +26,23 @@ html:not(.live) #bulb{display:none}
 .mark p{margin-top:8px;font-size:15px;font-weight:400;color:var(--line-dim);line-height:1.4;max-width:34ch}
 @media (min-width:761px){ .mark h1{font-size:26px} .mark p{font-size:16px} }
 
-/* ---------- the still: reduced motion, no WebGL, no JS ---------- */
+/* ---------- the nav: four labels, one beside each settled fragment ---------- */
+html.live .nav a,html.rm .nav a{position:absolute;left:0;top:0;opacity:0;pointer-events:none;white-space:nowrap;will-change:transform,opacity;
+  transition:color 180ms var(--ease-out)}
+html.live .nav a.is-live,html.rm .nav a.is-live{color:var(--live)}
+html.live .stage,html.rm .stage{position:sticky;top:0;overflow:hidden}
+html.rm .track{height:100svh}
+html.rm .stage{position:relative}
+html.rm #bulb{display:block}
+html.rm .mark{display:none}
+
+/* ---------- the still: no WebGL, no JS ---------- */
 .still{display:none}
-html:not(.live) .still{display:block;position:absolute;inset:0;padding:calc(var(--gutter) + env(safe-area-inset-top)) var(--gutter) calc(var(--gutter) + env(safe-area-inset-bottom))}
+html.nogl .still,html:not(.js) .still{display:block;position:absolute;inset:0;padding:calc(var(--gutter) + env(safe-area-inset-top)) var(--gutter) calc(var(--gutter) + env(safe-area-inset-bottom))}
 .still img{display:block;height:min(62svh,520px);width:auto;margin:0 auto}
-html:not(.live) .mark{position:absolute}
-.nav{position:absolute;left:var(--gutter);top:calc(var(--gutter) + env(safe-area-inset-top));display:none;flex-direction:column;gap:2px}
-html:not(.live) .nav{display:flex}
+.nav{position:absolute;left:var(--gutter);top:calc(var(--gutter) + env(safe-area-inset-top));display:flex;flex-direction:column;gap:2px}
+html.nogl .nav,html:not(.js) .nav{display:flex}
+html.live .nav,html.rm .nav{position:absolute;inset:0;pointer-events:none;display:block}
 .nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px 0 0;font-size:15px;color:var(--line);border-bottom:1px solid transparent;transition:color 180ms var(--ease-out),border-color 180ms var(--ease-out)}
 .nav a:active{color:var(--live)}
 @media (hover:hover) and (pointer:fine){ .nav a:hover{color:var(--live)} }
