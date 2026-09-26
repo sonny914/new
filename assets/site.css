@@ -840,3 +840,4 @@ main p a,main li a,.sec-lead a,.quiet a,.built-cap a,.art p a{padding:12px 0;mar
 .crumb a{display:inline-flex;align-items:center;min-height:44px}
 .crumb{align-items:center}
 .f-submit,.btn{min-height:44px}
+.f-input,.f-select,.f-textarea,.f-submit,.btn{line-height:1.4}   /* fields and buttons do not fall back to the browser's leading */
