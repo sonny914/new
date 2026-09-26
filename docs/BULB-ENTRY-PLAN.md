@@ -124,3 +124,43 @@ Verdict: approve for Gate 3, with the tilt gains (parallax 0.32, whole-bulb 0.10
 
 - Gate 4: selection (camera to the fragment, then the section), the R&D page with Lab 001, the link-preview gate (OG image of the bulb, 1200×630, absolute URLs), sitemap and robots trimmed.
 - The settled poses are hand-placed for two aspect classes; a tablet in landscape uses the landscape set.
+
+---
+
+## Gate 4 · selection, the R&D page, the link preview
+
+### Selection
+
+- Choosing a fragment (its label, the fragment itself, or Enter on a focused label) moves the camera to a point in front of it over 480 ms on the stylesheet's strong ease-in-out (`cubic-bezier(.77,0,.175,1)`, evaluated in JS by a small bezier solver so canvas motion and CSS share one curve). The other three fragments, their labels and the debris fade with the move; the chosen one goes orange. At the end the browser goes to the section. A second choice mid-flight retargets from the live camera position. Coming back through the page cache reverses the move (`pageshow`). Modifier-clicks and reduced motion skip the move and navigate directly.
+- Verified headless on both viewports: mid-move the camera is between home and the fragment with the selection active; the page lands on `/rd/#build-log` with that section at the top and the header marking it current.
+
+### The R&D page (`/rd/`)
+
+- Same language as the entry: near-black ground, cream text, Hubot Sans, hairlines, no cards. A header with the wordmark back to the bulb and the four sections as a row; the section in view is marked current. Nothing else moves.
+- Sections are the fragments: Experiments (Lab 001), Build log, Work, Contact. Lab 001 tells Spatial Hero from the lab notes on the spatial branch: thesis, the diagonal problem, the stratum test, the geometry test that failed, why the motion worked, why it was retired, and a closing line that says the measurements were headless and no one was user-tested. Work names the one shipped product the site already documents and says the count is one because one has shipped. Contact is one line to jason@quietbands.com.
+- The old field-guide page moved to `lab/rd-field-guide.html`, unlinked. `/rd/pressure-test/` stays on disk, unlinked. `sitemap.xml` lists `/` and `/rd/` only.
+
+### Link preview
+
+- `og-bulb.png`: 1200×630, the whole bulb with its cracks fully drawn, rendered from the entry's own canvas. Both pages point `og:image` and `twitter:image` at its absolute URL, with width, height and alt. Favicon and apple-touch-icon are the existing files.
+- Not verified live from this container (the preview host is blocked here). Verify on the deploy preview with a link debugger before merge; the URLs only resolve at `quietbands.com`, so the card is fully right only once this is on production.
+
+### Checks
+
+- `npm test`: 48 pass.
+- Gate 4 harness: selection on phone and desktop, landing, header state, every link on `/rd/` ≥ 44 px.
+
+### Emil (review-animations) on this gate's motion
+
+| Before | After | Why |
+| --- | --- | --- |
+| Tap on a fragment navigated after a fixed 120 ms timeout | The camera move is the transition; navigation happens when it lands | Spatial consistency: you go where the camera goes |
+| One easing for everything | Selection on the strong ease-in-out; hover stays ease-out; settle stays out-expo | Moving on screen is not entering |
+| Nothing on `/rd/` animates | Unchanged, plus the current-section mark with no motion | Reading pages do not need motion |
+
+Verdict: approve. Two things only the phone settles: whether 480 ms feels long on a fast tap, and whether the fade of the other three pieces reads as intended or as a glitch under a slow frame.
+
+### What is left for the person
+
+- Real-iPhone pass on the deploy preview across all four gates, the tilt recording, and the link-preview check.
+- Merge when satisfied; the pull request stays a draft until then.

@@ -2,166 +2,125 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Quiet Bands · R&amp;D</title>
+<meta name="description" content="What Quiet Bands has tried, what it found, and what it retired. Experiments, the build log, the work, and one line to write to." />
+<meta name="theme-color" content="#0B0A09" />
+<link rel="canonical" href="https://quietbands.com/rd/" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<meta name="theme-color" content="#111111" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Before You Build It, Try to Kill It — R&amp;D Field Guide &amp; Pressure Test | Quiet Bands</title>
-<meta name="description" content="Building software got easier. Knowing what deserves to be built didn’t. Read the Flighty R&D Field Guide and run the Quiet Bands Pressure Test to investigate the evidence underneath an idea before investing in the build." />
-<link rel="canonical" href="https://quietbands.com/rd/" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Quiet Bands" />
-<meta property="og:title" content="Before you build it, try to kill it." />
-<meta property="og:description" content="The Flighty R&D Field Guide and the Quiet Bands Pressure Test. Investigate the evidence underneath an idea before investing in the build." />
+<meta property="og:title" content="Quiet Bands · R&amp;D" />
+<meta property="og:description" content="What Quiet Bands has tried, what it found, and what it retired." />
 <meta property="og:url" content="https://quietbands.com/rd/" />
-<meta property="og:image" content="https://quietbands.com/og-rd.png" />
+<meta property="og:image" content="https://quietbands.com/og-bulb.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="Before you build it, try to kill it. Flighty.ai R&D Field Guide 001, a Quiet Bands field guide." />
+<meta property="og:image:alt" content="A wireframe lightbulb on black, its glass cracked." />
 <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Quiet Bands · R&amp;D" />
+<meta name="twitter:description" content="What Quiet Bands has tried, what it found, and what it retired." />
+<meta name="twitter:image" content="https://quietbands.com/og-bulb.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Jost:wght@400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/site.css" />
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    { "@type": "BreadcrumbList", "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Quiet Bands", "item": "https://quietbands.com/" },
-      { "@type": "ListItem", "position": 2, "name": "R&D", "item": "https://quietbands.com/rd/" } ] },
-    { "@type": "DigitalDocument", "name": "Flighty.ai R&D Field Guide 001 — Before You Build It, Try to Kill It", "url": "https://quietbands.com/downloads/flighty-rd-field-guide.pdf", "encodingFormat": "application/pdf", "publisher": { "@id": "https://quietbands.com/#org" } }
-  ]
-}
-</script>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/bulb/rd.css?v=1" />
 </head>
-<body data-page-view="rd_page_view">
+<body>
 
-<header class="nav">
-  <div class="nav-in">
-    <a class="nav-logo" href="/" aria-label="Quiet Bands — home"><svg class="mark" viewBox="0 0 60 30" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="6"/><rect x="0" y="12" width="60" height="6"/><rect x="0" y="24" width="60" height="6"/></svg><span>Quiet Bands</span></a>
-    <nav class="nav-links" aria-label="Main">
-      <a class="nav-link" href="/#work">Work</a>
-      <a class="nav-link" href="/commercial/">Commercial</a>
-      <a class="nav-link" href="/notes/">Notes</a>
-      <a class="nav-link" href="/rd/" aria-current="page">R&amp;D</a>
-      <a class="btn" href="/work/"><span class="full">Tell us about the work</span><span class="short">Talk to us</span></a>
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="/">Quiet Bands</a>
+    <nav aria-label="Sections">
+      <a href="#experiments">Experiments</a>
+      <a href="#build-log">Build log</a>
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
     </nav>
   </div>
 </header>
 
 <main>
 
-<!-- 01 — HERO -->
-<section class="hero">
+<section id="experiments">
   <div class="wrap">
-    <p class="attrib rise in"><span>From <b>Flighty.ai</b></span><span class="sep"></span><span>A Quiet Bands R&amp;D process</span></p>
-    <h1 class="display rise in" style="margin-top:26px">Before you build it,<br>try to kill it.</h1>
-    <p class="lede rise in d1">Building software got easier. Knowing what deserves to be built didn’t. Use the Field Guide and the Pressure Test to investigate the evidence underneath an idea before investing in the build.</p>
-    <div class="cta-row rise in d1">
-      <a class="btn" href="/rd/pressure-test/">Pressure-test your idea →</a>
-      <a class="btn btn-ghost" href="#field-guide">Get the Field Guide →</a>
+    <p class="idx">Experiments</p>
+    <h1>Lab 001 · Spatial Hero</h1>
+    <div class="body">
+      <p class="dim">A homepage experiment, September 2026. Retired. The code stays at <a href="/lab/spatial-hero/">/lab/spatial-hero/</a>.</p>
+
+      <h3>The thesis</h3>
+      <p>The screen is a window into a volume. Nothing is painted on the glass; every object has a depth, and you perceive the depths through differential motion, occlusion and scale. The line <em>Request — Complete</em> sits at depth zero and never moves. Six words stand edge-on in it, invisible from the front. Tilt the phone and they turn open and fan out by depth. Return to the front and they close to nothing. The claim was that the hidden steps of a process could be shown, rather than listed.</p>
+
+      <h3>The diagonal problem</h3>
+      <p>A phone in the hand always carries some pitch. Each deeper word moved further down the screen for it, so the six words drew a staircase down a diagonal instead of a row standing in the line. The vertical parallax on the words was removed; they kept one Y origin and separated only by X, depth, scale and occlusion. The same pitch also pushed the wordmark into the rule. That was fixed by lowering the pitch response, not by moving anything, because no placement change fixed it without breaking the composition at rest.</p>
+
+      <h3>The stratum test</h3>
+      <p>Version 1.3 packed the six words onto the rule itself, so that at an angle the hidden language separated along the Request-to-Complete axis, nearer words occluding deeper ones. At full tilt: a band of activity on the line. At six degrees: a row of slivers. At rest: the rule. It worked as a mechanism. Whether it read as a process or as scatter was the open question, and the honest answer was that the words were doing the work.</p>
+
+      <h3>The geometry test that failed</h3>
+      <p>So version 1.4 removed the words and left the surfaces: six empty outlined planes, edge-on in the rule, opening with the angle. If geometry alone could carry "concealed structure", this would show it. It did not. At six degrees the row of small parallelograms read as tabs or pagination. At full tilt the overlapping outlines read as wireframe panels, which is to say cards. In the scroll passage the receding stack read as depth, but as a deck, not as a process. A drawn box is a card. Geometry in that form carried "six things at six depths" and nothing more.</p>
+
+      <h3>Why the motion worked</h3>
+      <p>The input side held up. Tilt, thumb and scroll all wrote one viewing angle; a critically damped spring carried it, so a release kept the finger's velocity and an interruption re-targeted from the live value; past the edge it rubber-banded. Scroll was a dolly, and the camera drifted slightly aside on the way in, so scrolling alone opened the words before any tilt did. The only real bug in the motion was a permission prompt that gave up after one attempt on iOS; a scroll's touch end carries no user activation, and the request had to keep asking until Safari answered. That engine was kept and is what drives the entry you came from.</p>
+
+      <h3>Why it was retired</h3>
+      <p>Because the meaning lived in the words, and the words could not survive the test that mattered: take them away and the object stopped saying anything. A homepage that depends on six specific nouns is a slogan with a parallax effect. The mechanism was sound; the object was not. It was replaced by an object that says the same thing with no words at all, a bulb that breaks into the site.</p>
+      <p class="dim">Measurements quoted in the lab notes were made in headless software rendering, not on a phone. No user testing was done. Treat every judgement above as one person's reading of the frames.</p>
     </div>
   </div>
 </section>
 
-<!-- 02 — FIELD GUIDE -->
-<section class="sec bone" id="field-guide" aria-labelledby="fg-h">
+<section id="build-log">
   <div class="wrap">
-    <p class="eyebrow rise">R&amp;D Field Guide 001</p>
-    <div class="guide">
-      <div class="guide-copy">
-        <h2 class="display rise" id="fg-h">A playbook for investigating an idea before you commit to it.</h2>
-        <p class="sec-lead rise">Not a worksheet. A readable field guide to what evidence matters, what to test, and when to stop researching and start talking to people. The interactive work happens here, in the Pressure Test.</p>
-        <ul class="guide-what rise">
-          <li>What counts as evidence, and what only feels like it</li>
-          <li>The assumptions every idea carries, and how to test each one</li>
-          <li>How to use AI as an investigator, and the moment it starts guessing</li>
-          <li>When research should stop and human conversations should begin</li>
-          <li>What the five evidence states mean, and what each one justifies</li>
-        </ul>
-        <div class="guide-actions rise">
-          <a class="btn" href="/downloads/flighty-rd-field-guide.pdf" data-track="field_guide_download" data-track-props='{"location":"rd-guide"}' target="_blank" rel="noopener">Read / download the Field Guide →</a>
-          <a class="arrow-link" href="/rd/pressure-test/">Or go straight to the Pressure Test →</a>
-        </div>
-        <p class="guide-meta rise">PDF · No form, no email required · Edition 001</p>
-      </div>
-      <a class="doc rise d1" href="/downloads/flighty-rd-field-guide.pdf" data-track="field_guide_download" data-track-props='{"location":"rd-cover"}' target="_blank" rel="noopener" aria-label="Open the Field Guide PDF">
-        <p class="doc-top"><b>Flighty.ai</b><span>R&amp;D Field Guide 001</span></p>
-        <p class="doc-h">Before you build it, try to kill it.</p>
-        <p class="doc-sub">A <b>Quiet Bands</b> field guide</p>
-      </a>
+    <p class="idx">Build log</p>
+    <h2>The bulb entry, as it was built</h2>
+    <div class="body">
+      <ul>
+        <li><time datetime="2026-09-26">26 Sep</time> Gate 1. A five-bullet plan: fracture in Blender, three.js lines, one scroll value, the Spatial Hero engine reused for tilt and touch, stills for reduced motion and no JS.</li>
+        <li><time datetime="2026-09-26">26 Sep</time> Gate 2. The bulb baked as lines: a lathe, a base, a filament mount, dimension marks; four Voronoi fragments with jagged cracks. The cracks grow across the glass from an impact point as you scroll, then the bulb turns. First frames showed the grid pre-cracked by the jitter; the grid now comes from the unbroken lathe.</li>
+        <li><time datetime="2026-09-26">26 Sep</time> Gate 3. Separation, the four pieces settling into the nav at four depths, tilt parallax and a slow drift, and the debris as points that are cream-grey head-on and take colour only off-axis. First settled frames overlapped; the pieces now scale down as they settle. The reduced-motion still rendered a white page for an hour because a mode class collided with a fallback class.</li>
+        <li><time datetime="2026-09-26">26 Sep</time> Gate 4. Choosing a piece moves the camera to it and then to its section. This page. A share image of the bulb.</li>
+      </ul>
+      <p class="dim">What has not been done: no one has watched a stranger use it. The tilt gains and the debris brightness were set from headless frames and one phone.</p>
     </div>
   </div>
 </section>
 
-<!-- 03 — METHOD -->
-<section class="sec" id="method" aria-labelledby="m-h">
+<section id="work">
   <div class="wrap">
-    <p class="eyebrow rise">The method</p>
-    <h2 class="display rise" id="m-h">Six things we look for, in order.</h2>
-    <p class="sec-lead rise">The Pressure Test asks about each one. The review it produces is rule-based and transparent: no score, no percentage, no AI opinion of your idea.</p>
-    <div class="method rise">
-      <div class="method-row"><span class="n">01</span><span class="k">Problem</span><span class="v">What goes wrong, for whom, and <b>how often</b>. A problem that happens rarely rarely deserves software.</span></div>
-      <div class="method-row"><span class="n">02</span><span class="k">Current behavior</span><span class="v">What people do today instead. <b>The workaround is the strongest evidence</b> that a problem is real.</span></div>
-      <div class="method-row"><span class="n">03</span><span class="k">Consequence</span><span class="v">What it costs: time, labor, revenue, errors, risk. <b>No consequence, no reason to change.</b></span></div>
-      <div class="method-row"><span class="n">04</span><span class="k">Evidence</span><span class="v">What you have actually seen, as opposed to assumed. Selections are <b>signals, not proof</b>.</span></div>
-      <div class="method-row"><span class="n">05</span><span class="k">Human validation</span><span class="v">Whether people doing the work have told you any of this themselves. <b>The next answer usually isn’t online.</b></span></div>
-      <div class="method-row"><span class="n">06</span><span class="k">Decision</span><span class="v">One of five outcomes: <b>research more, talk to humans, test manually, explore a build, or park it.</b></span></div>
-    </div>
-    <div class="honest rise">
-      <p>Most ideas that come through here should not be built yet. Quiet Bands builds software for a living, and the review is written so it can still say so.</p>
-      <p>Only ideas with observable evidence, a real workaround, a real cost and real conversations are pointed toward a project conversation. Everything else gets a next experiment instead.</p>
-    </div>
-    <div class="cta-row rise" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:40px">
-      <a class="btn" href="/rd/pressure-test/">Start the Pressure Test →</a>
-      <a class="arrow-link" href="/downloads/flighty-rd-field-guide.pdf" data-track="field_guide_download" data-track-props='{"location":"rd-method"}' target="_blank" rel="noopener">Read the Field Guide first →</a>
+    <p class="idx">Work</p>
+    <h2>Software built around the work</h2>
+    <div class="body">
+      <p>Quiet Bands designs and builds custom software, internal tools, integrations and automation around operational problems, from Houston. The method is to understand the work as it actually runs before deciding whether software belongs in it. Sometimes the finding is that nothing should be built.</p>
+      <dl>
+        <dt>Built 001 · in production</dt>
+        <dd>Frenchies Coffee Bar, Connecticut. Order ahead, rewards and payment for a two-location coffee company, built to run at counter speed without adding work behind the bar or routing regulars through a marketplace built for someone else's economics.</dd>
+      </dl>
+      <p class="dim">One shipped product is listed because one has shipped. The count will change when the count changes.</p>
     </div>
   </div>
 </section>
 
-<!-- 04 — WHO IS BEHIND THIS -->
-<section class="sec pad-b" aria-labelledby="who-h">
+<section id="contact" class="contact">
   <div class="wrap">
-    <p class="eyebrow rise">Who is behind this</p>
-    <h2 class="display rise" id="who-h">Flighty asks the uncomfortable question. Quiet Bands provides the process for answering it.</h2>
-    <p class="sec-lead rise">Flighty.ai is the experiment and content layer, willing to be wrong in public. Quiet Bands is a Houston software development and technology consulting company that designs and builds custom software, internal tools, integrations and automation around real operational problems. If the evidence ever justifies a build, that is where the conversation goes. <a href="/" style="color:var(--brass);font-weight:600">About Quiet Bands →</a></p>
+    <p class="idx">Contact</p>
+    <div class="body">
+      <p>If you have work that runs on spreadsheets, email and memory, write to <a href="mailto:jason@quietbands.com">jason@quietbands.com</a>.</p>
+    </div>
   </div>
 </section>
 
 </main>
 
-<footer>
-  <div class="wrap foot-in">
-    <div>
-      <p class="foot-brand"><svg class="mark" viewBox="0 0 60 30" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="6"/><rect x="0" y="12" width="60" height="6"/><rect x="0" y="24" width="60" height="6"/></svg><span>Quiet Bands</span></p>
-      <p class="foot-tagline">Software built around the work</p>
-      <p class="foot-fact">Quiet Bands is a Houston software development and technology consulting company. We understand the work before we build the software.</p>
-    </div>
-    <nav class="foot-links" aria-label="Footer">
-      <a href="/work/">Tell us about the work</a>
-      <a href="/rd/pressure-test/">Pressure Test</a>
-      <a href="/downloads/flighty-rd-field-guide.pdf" data-track="field_guide_download" data-track-props='{"location":"footer"}' target="_blank" rel="noopener">Field Guide (PDF)</a>
-      <a href="/work/frenchies/">Frenchies Coffee Bar</a>
-      <a href="/commercial/">Commercial</a>
-      <a href="/notes/">Notes</a>
-      <a href="mailto:jason@quietbands.com">jason@quietbands.com</a>
-    </nav>
-  </div>
-  <div class="wrap foot-legal">© Quiet Bands LLC — Houston, Texas</div>
-</footer>
-
 <script>
-  (function(){
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var els = document.querySelectorAll('.rise:not(.in)');
-    if(reduce || !('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return;}
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} });
-    },{threshold:0.12, rootMargin:'0px 0px -40px 0px'});
-    els.forEach(function(e){io.observe(e)});
+  // mark the section in view in the header row; nothing else moves on this page
+  (function () {
+    var links = document.querySelectorAll('.top nav a'); if (!('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (!e.isIntersecting) return; links.forEach(function (a) { if (a.getAttribute('href') === '#' + e.target.id) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); }); }); }, { rootMargin: '-40% 0px -55% 0px' });
+    document.querySelectorAll('main section').forEach(function (s) { io.observe(s); });
   })();
 </script>
-<script type="module" src="/assets/qb.js"></script>
 </body>
 </html>

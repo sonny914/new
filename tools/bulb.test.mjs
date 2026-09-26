@@ -63,3 +63,15 @@ test('labels arrive staggered near the end and are all fully on at 1', () => {
   const t = 0.90;
   assert.ok(labelAt(t, 0) > labelAt(t, 1) && labelAt(t, 1) > labelAt(t, 2) && labelAt(t, 2) > labelAt(t, 3), 'one after another');
 });
+
+test('the selection curve is the strong ease-in-out from the stylesheet: slow at both ends, monotonic', async () => {
+  const src = await import('node:fs').then((fs) => fs.readFileSync(new URL('../assets/bulb/entry.js', import.meta.url), 'utf8'));
+  // entry.js needs the browser import map for three; lift the pure bezier out and evaluate it alone
+  const m = src.match(/export function bezier[\s\S]*?\n}\n/);
+  const bezier = new Function(m[0].replace('export function bezier', 'function bezier') + '; return bezier;')();
+  const ease = bezier(0.77, 0, 0.175, 1);
+  assert.equal(ease(0), 0); assert.equal(ease(1), 1);
+  assert.ok(ease(0.1) < 0.02, 'slow start'); assert.ok(ease(0.9) > 0.98, 'slow end');
+  assert.ok(ease(0.5) > 0.4 && ease(0.5) < 0.62, 'the middle is near the middle');
+  let prev = 0; for (let x = 0; x <= 1.0001; x += 0.01) { const y = ease(x); assert.ok(y >= prev - 1e-9); prev = y; }
+});

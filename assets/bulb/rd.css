@@ -1,0 +1,42 @@
+/* Quiet Bands · R&D page · the same language as the entry: near-black ground, cream lines, one family, orange only where you can act. */
+:root{--ground:#0B0A09;--line:#E8DCC2;--line-dim:rgba(232,220,194,.55);--rule:rgba(232,220,194,.22);--text:#F4F1E9;--live:#FF5A1F;--ease-out:cubic-bezier(.23,1,.32,1);--gutter:22px;--measure:62ch}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--ground);color:var(--text);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{font-family:'Hubot Sans',system-ui,sans-serif;font-weight:400;font-stretch:100%;line-height:1.5;background:var(--ground);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none;touch-action:manipulation}
+:focus-visible{outline:1.5px solid var(--live);outline-offset:4px}
+.wrap{max-width:calc(var(--measure) + 2 * var(--gutter));margin:0 auto;padding:0 var(--gutter)}
+
+/* header: the wordmark back to the bulb, and the four sections as a row of links */
+.top{padding:calc(20px + env(safe-area-inset-top)) 0 18px;border-bottom:1px solid var(--rule)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px}
+.mark{font-size:18px;font-weight:500;letter-spacing:-.005em}
+.top nav{display:flex;flex-wrap:wrap;gap:0 22px;margin-left:auto}
+.top nav a,.mark{display:inline-flex;align-items:center;min-height:44px;color:var(--line);font-size:15px;transition:color 180ms var(--ease-out)}
+.top nav a[aria-current]{color:var(--text)}
+@media (hover:hover) and (pointer:fine){ .top nav a:hover,.mark:hover,.body a:hover{color:var(--live)} }
+.top nav a:active,.mark:active,.body a:active{color:var(--live)}
+
+/* sections: a hairline, a small index, a heading, then prose. No cards, no boxes. */
+section{padding:56px 0 8px}
+section + section{border-top:1px solid var(--rule)}
+.idx{font-size:13px;color:var(--line-dim);letter-spacing:.02em}
+h1,h2{font-weight:500;letter-spacing:-.01em;line-height:1.15;text-wrap:balance}
+h1{font-size:clamp(28px,4.2vw,40px);margin-top:10px}
+h2{font-size:clamp(22px,3vw,28px);margin-top:10px}
+h3{font-size:17px;font-weight:500;margin-top:34px}
+.body{max-width:var(--measure);color:var(--text)}
+.body p{margin-top:14px}
+.body p.dim{color:var(--line-dim)}
+.body a{color:var(--line);border-bottom:1px solid var(--rule);padding:12px 0;margin:-12px 0;transition:color 180ms var(--ease-out),border-color 180ms var(--ease-out)}   /* 44px of hit area without moving the line */
+.body ul{list-style:none;margin-top:14px}
+.body li{padding:10px 0;border-top:1px solid var(--rule)}
+.body li:last-child{border-bottom:1px solid var(--rule)}
+.body li time{display:inline-block;min-width:8ch;color:var(--line-dim);font-size:14px}
+.body dl{margin-top:14px}
+.body dt{color:var(--line-dim);font-size:14px;margin-top:16px}
+.body dd{margin-top:4px}
+.contact{padding:64px 0 calc(64px + env(safe-area-inset-bottom))}
+.contact p{font-size:17px}
+.contact a{color:var(--text);border-bottom:1px solid var(--line-dim)}
+@media (prefers-reduced-motion:reduce){ a{transition:none} }

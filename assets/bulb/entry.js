@@ -36,6 +36,22 @@ export const NAV_SCALE = { portrait: 0.55, landscape: 0.65 };   // a settled fra
 export const PARALLAX = 0.32;        // world units of sideways travel per unit of view for a fragment at the nearest depth
 export const DRIFT = 0.028;          // world units of slow drift on a settled fragment
 export const HOVER_MS = 180;         // the ease of a fragment coming forward under the pointer or the focus (Emil: ease-out, under 300 ms)
+export const SELECT_MS = 480;        // the camera's move to a chosen fragment: on-screen movement, strong ease-in-out, retargetable
+
+/** A CSS cubic-bezier as a function of progress, so canvas motion can use the same curves as the stylesheet. */
+export function bezier(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx, cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const X = (u) => ((ax * u + bx) * u + cx) * u, dX = (u) => (3 * ax * u + 2 * bx) * u + cx, Y = (u) => ((ay * u + by) * u + cy) * u;
+  return (x) => {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    let u = x;
+    for (let i = 0; i < 8; i++) { const d = dX(u); if (Math.abs(d) < 1e-6) break; const e = X(u) - x; if (Math.abs(e) < 1e-6) return Y(u); u -= e / d; }
+    let lo = 0, hi = 1; u = x;
+    while (hi - lo > 1e-6) { u = (lo + hi) / 2; if (X(u) < x) lo = u; else hi = u; }
+    return Y(u);
+  };
+}
+export const EASE_IN_OUT = bezier(0.77, 0, 0.175, 1);
 
 /** Order crack segments by distance along the crack network from the impact point, so a draw range grows them outward.
     Pure: takes a flat position array of line segments (6 floats each), returns the same segments reordered. */
@@ -149,6 +165,8 @@ export function createEntry(root, opts = {}) {
   const parts = { shells: [], frags: [], wire: null, cracks: null, crackSegs: 0, base: null, baseSolid: null, baseGeom: null, filament: null, dims: null, debris: null, points: null };
   const box = new THREE.Box3();
   let portrait = false, ratio = 1;
+  const camHome = new THREE.Vector3(0, 0, 8);
+  let sel = null, selK = 0;                                          // the move to a chosen fragment, then its section
 
   function frame() {
     const w = stage.clientWidth, h = stage.clientHeight;
@@ -169,7 +187,7 @@ export function createEntry(root, opts = {}) {
       vh = size.y * 1.32; z = vh / (2 * tan);
       group.position.set(0, -(box.min.y + box.max.y) / 2 + 0.03 * vh, 0);
     }
-    camera.position.set(0, 0, z);
+    camHome.set(0, 0, z); if (!sel) camera.position.copy(camHome);
     scene.fog.near = z - 1.2; scene.fog.far = z + 2.6;
   }
 
@@ -266,7 +284,7 @@ export function createEntry(root, opts = {}) {
       const pose = (portrait ? POSES.portrait : POSES.landscape)[i];
       const gap = 12;
       const x = pose.side === 'right' ? s.rt + gap : s.l - gap;
-      const op = labelAt(t, i);
+      const op = labelAt(t, i) * (sel && sel.i >= 0 && sel.i !== i ? 1 - selK : 1);
       el.style.opacity = op.toFixed(3);
       el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(s.cy)}px, 0) translate(${pose.side === 'right' ? '0' : '-100%'}, -50%)`;
       el.style.pointerEvents = op > 0.5 ? 'auto' : 'none';
@@ -274,6 +292,20 @@ export function createEntry(root, opts = {}) {
       el.tabIndex = op > 0.5 ? 0 : -1;
       el.classList.toggle('is-live', f.hover > 0.5);
     });
+  }
+
+  function select(i, href, now = performance.now()) {
+    const f = parts.frags[i]; if (!f) { if (href) location.assign(href); return; }
+    const to = new THREE.Vector3();
+    const scale = f.obj.scale.x, dist = (f.radius * scale) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.25;
+    to.set(f.obj.position.x, f.obj.position.y, f.obj.position.z + dist);
+    sel = { i, href, from: camera.position.clone(), to, start: now, done: false };
+    f.hoverT = 1; wake();
+  }
+  function unselect(now = performance.now()) {                         // back: the camera returns the way it came
+    if (!sel) return;
+    sel = { i: -1, href: null, from: camera.position.clone(), to: camHome.clone(), start: now, done: false };
+    parts.frags.forEach((f) => { f.hoverT = 0; f.viaLabel = false; }); wake();
   }
 
   function render(st, dt = 16, now = 0) {
@@ -291,12 +323,20 @@ export function createEntry(root, opts = {}) {
     // pointer over a fragment (fine pointers): screen-space test against last frame's projection
     if (fine && pointer && p.settle > 0.5) parts.frags.forEach((f, i) => { const s = screen[i]; const inside = s && pointer.x >= s.l && pointer.x <= s.rt && pointer.y >= s.t && pointer.y <= s.b; f.hoverT = inside ? 1 : (f.hoverT === 1 && !f.viaLabel ? 0 : f.hoverT); });
     let moving = false;
+    if (sel) {
+      const k = EASE_IN_OUT(Math.min(1, (now - sel.start) / SELECT_MS));
+      camera.position.lerpVectors(sel.from, sel.to, k);
+      selK = sel.i >= 0 ? k : selK * (1 - k);
+      if (k >= 1 && !sel.done) { sel.done = true; if (sel.href) location.assign(sel.href); else sel = null; }
+      moving = true;
+    }
     parts.frags.forEach((f) => { if (!f) return; f.obj.visible = p.broken; place(f, p, st.view, p.settle, dt, now); if (f.hover !== f.hoverT) moving = true; });
+    if (selK > 0) parts.frags.forEach((f) => { if (sel && f.i === sel.i) return; f.mat.opacity *= 1 - selK; });
     if (parts.points) {
       const u = parts.points.material.uniforms;
       parts.points.visible = p.broken && p.release > 0;
       u.uRelease.value = p.release;
-      u.uAlpha.value = 0.28 * Math.min(1, p.release / 0.12);
+      u.uAlpha.value = 0.28 * Math.min(1, p.release / 0.12) * (1 - selK);
       u.uView.value.set(still ? 0 : st.view.x, still ? 0 : st.view.y);
     }
     renderer.render(scene, camera);
@@ -311,7 +351,9 @@ export function createEntry(root, opts = {}) {
     const off = () => { const f = parts.frags[i]; if (f) { f.hoverT = 0; f.viaLabel = false; wake(); } };
     if (fine) { el.addEventListener('pointerenter', on); el.addEventListener('pointerleave', off); }
     el.addEventListener('focus', on); el.addEventListener('blur', off);
+    el.addEventListener('click', (e) => { if (still || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; e.preventDefault(); select(i, el.href); });
   });
+  window.addEventListener('pageshow', (e) => { if (e.persisted && sel) unselect(); });
   if (fine) {
     stage.addEventListener('pointermove', (e) => { const r = stage.getBoundingClientRect(); pointer = { x: e.clientX - r.left, y: e.clientY - r.top }; wake(); }, { passive: true });
     stage.addEventListener('pointerleave', () => { pointer = null; parts.frags.forEach((f) => { if (!f.viaLabel) f.hoverT = 0; }); wake(); });
@@ -320,7 +362,7 @@ export function createEntry(root, opts = {}) {
     if (e.target.closest('a')) return;
     const r = stage.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top;
     const hit = parts.frags.findIndex((f, i) => { const s = screen[i]; return s && labels[i] && labels[i].style.pointerEvents === 'auto' && x >= s.l && x <= s.rt && y >= s.t && y <= s.b; });
-    if (hit >= 0) { const f = parts.frags[hit]; f.hoverT = 1; wake(); setTimeout(() => { location.href = labels[hit].href; }, 120); }
+    if (hit >= 0) { if (still) location.assign(labels[hit].href); else select(hit, labels[hit].href); }
   });
 
   let engine = null, ready;
@@ -343,7 +385,7 @@ export function createEntry(root, opts = {}) {
       tick();
     }
   }
-  return { engine, ready, parts, group, camera, scene, renderer, poseAt, screen, get portrait() { return portrait; } };
+  return { engine, ready, parts, group, camera, scene, renderer, poseAt, screen, select, unselect, get portrait() { return portrait; }, get selecting() { return sel; } };
 }
 
 /* ---------- boot ---------- */
