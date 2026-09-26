@@ -188,3 +188,15 @@ Run as the brief asks: two isolated assessments (a design review, then the detec
 ### Deferred, still in the critique snapshot
 
 The debris spread and per-point hue, the /rd/ sticky header and current-section mark, the pole whorl on the Build log piece, the mobile track height, the no-JS label collision.
+
+---
+
+## The other pages, brought into the language
+
+Asked for after the polish pass: the nine remaining pages (work, the Frenchies case, commercial, small business, resident experience, notes and its two articles, the pressure test) and the 404 now match the entry.
+
+- **One system, re-themed at the source.** `assets/site.css` takes the entry's tokens: near-black ground, ivory text, cream lines and secondary text, orange only under the pointer or the focus. The ivory "bone" canvas is gone; it is the same near-black. Hubot Sans everywhere, display weight 500; every tracked-caps mono label in the old system is sentence case at one size and the secondary colour. Buttons are words with a hairline. Fields are square hairline boxes that go orange on focus. Boxed containers (panel, offer, comparison ledger, figures, success and error states) become hairline sections. The scroll-reveal fade on every section is off. Selection and focus come from the palette.
+- **Header and footer as on /rd/** on every page: the wordmark and the four section links; a footer of the name, the address and the legal line. Eyebrows moved under their headings as quiet lines (the craft floor bans them above). The 404 page is rewritten in the language.
+- **The phone mockups** keep their own light surface and dark ink: they are pictures of a product.
+- **Checks.** Every page renders on the ground in the family with no page errors on desktop and phone; every link and button is at least 44 px; the detector across all twelve pages reports only three intentional clip containers on the Frenchies composition and two em-dash counts in existing copy. `npm test`: 49.
+- Not done: the copy itself (the em-dashes, the offer-page wording) and the Frenchies screenshots, which live only on Netlify.
