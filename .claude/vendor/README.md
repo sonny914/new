@@ -10,6 +10,7 @@ cloud sessions that cannot reach the plugin installers.
 | Marketing | https://github.com/anthropics/knowledge-work-plugins (`marketing`) | 1.2.0 / `da38ec1` | Apache-2.0 | 8 skills, `CONNECTORS.md` |
 | Brand Voice | https://github.com/anthropics/knowledge-work-plugins (`partner-built/brand-voice`) | 1.1.0 / `da38ec1` | MIT | 3 skills, 3 commands, 5 agents, settings example |
 | Superdesign | https://github.com/superdesigndev/superdesign-skill (`skills/superdesign`) | 0.6.0 / `f9f05cd` | MIT | `skills/superdesign/` |
+| Taste Skill (subset) | https://github.com/Leonxlnx/taste-skill (`skills/brandkit`, `skills/imagegen-frontend-web`) | `ce26fc2` | MIT | `skills/brandkit/`, `skills/imagegen-frontend-web/` (image-direction skills only; the code-UI skills overlap Impeccable and were left out) |
 
 Not copied on purpose:
 
