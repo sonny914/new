@@ -25,13 +25,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/bulb/rd.css?v=1" />
+<link rel="stylesheet" href="/assets/bulb/rd.css?v=2" />
 </head>
 <body>
 
 <header class="top">
   <div class="wrap">
-    <a class="mark" href="/">Quiet Bands</a>
+    <h1 class="mark"><a href="/">Quiet Bands</a></h1>
     <nav aria-label="Sections">
       <a href="#experiments">Experiments</a>
       <a href="#build-log">Build log</a>
@@ -45,27 +45,27 @@
 
 <section id="experiments">
   <div class="wrap">
-    <p class="idx">Experiments</p>
-    <h1>Lab 001 · Spatial Hero</h1>
+    <h2>Experiments</h2>
+    <h3>Lab 001 · Spatial Hero</h3>
     <div class="body">
       <p class="dim">A homepage experiment, September 2026. Retired. The code stays at <a href="/lab/spatial-hero/">/lab/spatial-hero/</a>.</p>
 
-      <h3>The thesis</h3>
+      <h4>The thesis</h4>
       <p>The screen is a window into a volume. Nothing is painted on the glass; every object has a depth, and you perceive the depths through differential motion, occlusion and scale. The line <em>Request — Complete</em> sits at depth zero and never moves. Six words stand edge-on in it, invisible from the front. Tilt the phone and they turn open and fan out by depth. Return to the front and they close to nothing. The claim was that the hidden steps of a process could be shown, rather than listed.</p>
 
-      <h3>The diagonal problem</h3>
+      <h4>The diagonal problem</h4>
       <p>A phone in the hand always carries some pitch. Each deeper word moved further down the screen for it, so the six words drew a staircase down a diagonal instead of a row standing in the line. The vertical parallax on the words was removed; they kept one Y origin and separated only by X, depth, scale and occlusion. The same pitch also pushed the wordmark into the rule. That was fixed by lowering the pitch response, not by moving anything, because no placement change fixed it without breaking the composition at rest.</p>
 
-      <h3>The stratum test</h3>
+      <h4>The stratum test</h4>
       <p>Version 1.3 packed the six words onto the rule itself, so that at an angle the hidden language separated along the Request-to-Complete axis, nearer words occluding deeper ones. At full tilt: a band of activity on the line. At six degrees: a row of slivers. At rest: the rule. It worked as a mechanism. Whether it read as a process or as scatter was the open question, and the honest answer was that the words were doing the work.</p>
 
-      <h3>The geometry test that failed</h3>
+      <h4>The geometry test that failed</h4>
       <p>So version 1.4 removed the words and left the surfaces: six empty outlined planes, edge-on in the rule, opening with the angle. If geometry alone could carry "concealed structure", this would show it. It did not. At six degrees the row of small parallelograms read as tabs or pagination. At full tilt the overlapping outlines read as wireframe panels, which is to say cards. In the scroll passage the receding stack read as depth, but as a deck, not as a process. A drawn box is a card. Geometry in that form carried "six things at six depths" and nothing more.</p>
 
-      <h3>Why the motion worked</h3>
+      <h4>Why the motion worked</h4>
       <p>The input side held up. Tilt, thumb and scroll all wrote one viewing angle; a critically damped spring carried it, so a release kept the finger's velocity and an interruption re-targeted from the live value; past the edge it rubber-banded. Scroll was a dolly, and the camera drifted slightly aside on the way in, so scrolling alone opened the words before any tilt did. The only real bug in the motion was a permission prompt that gave up after one attempt on iOS; a scroll's touch end carries no user activation, and the request had to keep asking until Safari answered. That engine was kept and is what drives the entry you came from.</p>
 
-      <h3>Why it was retired</h3>
+      <h4>Why it was retired</h4>
       <p>Because the meaning lived in the words, and the words could not survive the test that mattered: take them away and the object stopped saying anything. A homepage that depends on six specific nouns is a slogan with a parallax effect. The mechanism was sound; the object was not. It was replaced by an object that says the same thing with no words at all, a bulb that breaks into the site.</p>
       <p class="dim">Measurements quoted in the lab notes were made in headless software rendering, not on a phone. No user testing was done. Treat every judgement above as one person's reading of the frames.</p>
     </div>
@@ -74,8 +74,8 @@
 
 <section id="build-log">
   <div class="wrap">
-    <p class="idx">Build log</p>
-    <h2>The bulb entry, as it was built</h2>
+    <h2>Build log</h2>
+    <h3>The bulb entry, as it was built</h3>
     <div class="body">
       <ul>
         <li><time datetime="2026-09-26">26 Sep</time> Gate 1. A five-bullet plan: fracture in Blender, three.js lines, one scroll value, the Spatial Hero engine reused for tilt and touch, stills for reduced motion and no JS.</li>
@@ -90,8 +90,8 @@
 
 <section id="work">
   <div class="wrap">
-    <p class="idx">Work</p>
-    <h2>Software built around the work</h2>
+    <h2>Work</h2>
+    <h3>Software built around the work</h3>
     <div class="body">
       <p>Quiet Bands designs and builds custom software, internal tools, integrations and automation around operational problems, from Houston. The method is to understand the work as it actually runs before deciding whether software belongs in it. Sometimes the finding is that nothing should be built.</p>
       <dl>
@@ -105,7 +105,7 @@
 
 <section id="contact" class="contact">
   <div class="wrap">
-    <p class="idx">Contact</p>
+    <h2>Contact</h2>
     <div class="body">
       <p>If you have work that runs on spreadsheets, email and memory, write to <a href="mailto:jason@quietbands.com">jason@quietbands.com</a>.</p>
     </div>

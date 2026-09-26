@@ -164,3 +164,27 @@ Verdict: approve. Two things only the phone settles: whether 480 ms feels long o
 
 - Real-iPhone pass on the deploy preview across all four gates, the tilt recording, and the link-preview check.
 - Merge when satisfied; the pull request stays a draft until then.
+
+---
+
+## Critique (Impeccable, read-only) and the one polish pass
+
+Run as the brief asks: two isolated assessments (a design review, then the detector with browser evidence), synthesised, snapshot in `.impeccable/critique/` (local, not committed). Score 20/32 on the applicable heuristics, Acceptable. Three P1s: no affordance to scroll and a dead first fifth; the four links hidden from keyboards and screen readers until the settle, and the wordmark missing from the reduced-motion still; Contact the smallest, farthest, dimmest piece with the conversion two hops away. The detector's one finding was a skipped heading level on /rd/. The person chose: the first fifth first, the brief's whole bulb kept with a legible crack, the three P1s plus the heading fix, then the polish pass.
+
+### What the polish pass changed
+
+- **The first fifth.** The hold shrinks to 0.08. The cracks now grow from the first pixel of scroll on an ease-out curve, so the first flick shows the most change. The two lines are the last thing to leave (0.06–0.30) and their fade is the cue that the page answers the scroll; the dimension marks leave at the start of the turn. The crack at rest is longer (`CRACK0` 0.16) and the impact point moved to the face toward the viewer, so it reads at 1x on a phone. The bulb stays whole at rest, per the brief.
+- **Keyboards and screen readers.** The four links stay in the accessibility tree and focusable at all times; focusing one before the settle scrolls the track to its end so the piece is on screen. The reduced-motion still now carries the name and the address.
+- **Contact, depth and fog.** Contact takes a near depth (portrait −0.6, landscape −0.5) and Work a slightly farther one, so the depth order is authored; the fog's far limit lifts as the pieces settle, so the far ones step out of the haze while depth remains a cue. The settled frame gains its own two lines bottom-left, the name with the city and the address as a 44 px link, arriving after the labels.
+- **/rd/ outline.** No eyebrows (the craft floor bans them): the four section names are the h2s, the piece inside a section is its h3, the parts of Lab 001 are h4s, and the header wordmark is the page's h1 at the entry's wordmark size. Detector clean on both pages.
+- **Browser surfaces.** Focus is orange text with a hairline under the word instead of a box; text selection is tinted from the palette.
+
+### Checks after the pass
+
+- `npm test`: 49 pass. Detector: 0 findings on `index.html` and `rd/index.html`.
+- Gate 2, 3 and 4 harnesses: all hold on both viewports, including the settled-layout assertions and the reduced-motion still.
+- Share image re-rendered with the new impact point.
+
+### Deferred, still in the critique snapshot
+
+The debris spread and per-point hue, the /rd/ sticky header and current-section mark, the pole whorl on the Build log piece, the mobile track height, the no-JS label collision.

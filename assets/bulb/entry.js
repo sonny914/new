@@ -8,13 +8,13 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createSpatialEngine } from '/assets/lab/spatial-engine.js';
-import { poseAt, labelAt, SEPARATION } from './map.js';
+import { poseAt, labelAt, settledAt, SEPARATION } from './map.js';
 export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js';
 
 export const GROUND = 0x0B0A09;
 export const LINE = 0xE8DCC2;
 export const LIVE = 0xFF5A1F;        // interactive only; to be matched to the reference on the phone
-export const IMPACT = { x: 0.75, y: 0.75, z: 0.55 };   // where the glass was struck: upper right, facing the viewer. Cracks grow from here.
+export const IMPACT = { x: 0.42, y: 0.60, z: 0.86 };   // where the glass was struck: upper right on the face toward the viewer, so the crack at rest reads at 1x. Cracks grow from here.
 
 /* The four settled poses (world units, y up; the camera looks down −z). Hand placed: distinct depths, no grid, no ring,
    each label on the side that has room. Portrait keeps the lower fifth of the window empty for the thumb. */
@@ -22,14 +22,14 @@ export const POSES = {
   portrait: [
     { p: [-0.55, 1.55, 0.9], r: [0.20, 0.60, -0.10], side: 'right' },
     { p: [0.75, 0.45, 0.3], r: [-0.30, -0.50, 0.20], side: 'left' },
-    { p: [-0.62, -0.50, -0.7], r: [0.25, 0.30, 0.20], side: 'right' },
-    { p: [0.85, -1.66, -1.3], r: [-0.20, 0.80, 0.10], side: 'left' },
+    { p: [-0.62, -0.50, -0.9], r: [0.25, 0.30, 0.20], side: 'right' },
+    { p: [0.85, -1.66, -0.6], r: [-0.20, 0.80, 0.10], side: 'left' },
   ],
   landscape: [
     { p: [-1.9, 0.9, 0.8], r: [0.20, 0.60, -0.10], side: 'left' },
     { p: [1.8, 0.7, 0.2], r: [-0.30, -0.50, 0.20], side: 'right' },
-    { p: [-1.5, -1.0, -0.8], r: [0.40, 0.30, 0.30], side: 'left' },
-    { p: [1.6, -0.9, -1.4], r: [-0.20, 0.80, 0.10], side: 'right' },
+    { p: [-1.5, -1.0, -1.0], r: [0.40, 0.30, 0.30], side: 'left' },
+    { p: [1.6, -0.9, -0.5], r: [-0.20, 0.80, 0.10], side: 'right' },
   ],
 };
 export const NAV_SCALE = { portrait: 0.55, landscape: 0.65 };   // a settled fragment is a nav piece, not the bulb: smaller, so four fit with air between
@@ -141,7 +141,7 @@ export function makeDebris(seedGeometry, count) {
 export function createEntry(root, opts = {}) {
   const still = !!opts.still;                                          // reduced motion: the settled frame, once, tappable, no drift, no hue
   const track = root.getElementById('track'), stage = root.getElementById('stage'), canvas = root.getElementById('bulb');
-  const mark = root.querySelector('.mark');
+  const mark = root.querySelector('.mark'), settled = root.querySelector('.settled');
   const labels = [...root.querySelectorAll('.nav a')];
   const mobile = window.matchMedia('(max-width: 760px)');
   const fine = window.matchMedia('(pointer: fine)').matches;
@@ -166,6 +166,7 @@ export function createEntry(root, opts = {}) {
   const box = new THREE.Box3();
   let portrait = false, ratio = 1;
   const camHome = new THREE.Vector3(0, 0, 8);
+  let fogFar = 10;
   let sel = null, selK = 0;                                          // the move to a chosen fragment, then its section
 
   function frame() {
@@ -188,7 +189,7 @@ export function createEntry(root, opts = {}) {
       group.position.set(0, -(box.min.y + box.max.y) / 2 + 0.03 * vh, 0);
     }
     camHome.set(0, 0, z); if (!sel) camera.position.copy(camHome);
-    scene.fog.near = z - 1.2; scene.fog.far = z + 2.6;
+    scene.fog.near = z - 1.2; scene.fog.far = z + 2.6; fogFar = z + 2.6;
   }
 
   function build(gltf) {
@@ -288,8 +289,6 @@ export function createEntry(root, opts = {}) {
       el.style.opacity = op.toFixed(3);
       el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(s.cy)}px, 0) translate(${pose.side === 'right' ? '0' : '-100%'}, -50%)`;
       el.style.pointerEvents = op > 0.5 ? 'auto' : 'none';
-      el.setAttribute('aria-hidden', op > 0.5 ? 'false' : 'true');
-      el.tabIndex = op > 0.5 ? 0 : -1;
       el.classList.toggle('is-live', f.hover > 0.5);
     });
   }
@@ -316,6 +315,8 @@ export function createEntry(root, opts = {}) {
     group.rotation.x = st.view.y * 0.06;
     if (mark) { mark.style.opacity = p.text.toFixed(3); mark.style.transform = `translate3d(0, ${((1 - p.text) * 10).toFixed(1)}px, 0)`; }
     dimMat.opacity = 0.38 * p.dims; if (parts.dims) parts.dims.visible = p.dims > 0.004;
+    scene.fog.far = fogFar + 4.0 * p.settle;                            // the settled pieces step out of the haze: depth stays a cue, not a veil
+    if (settled) { const k = still ? 1 : settledAt(t); settled.style.opacity = k.toFixed(3); settled.style.pointerEvents = k > 0.5 ? 'auto' : 'none'; }
     if (parts.cracks) { parts.cracks.geometry.setDrawRange(0, Math.round(parts.crackSegs * p.crack) * 2); parts.cracks.visible = !p.broken; }
     if (parts.wire) parts.wire.visible = !p.broken;
     anchorMat.opacity = 0.86 * p.anchor; if (parts.baseSolid) parts.baseSolid.visible = p.anchor > 0.5;
@@ -348,9 +349,10 @@ export function createEntry(root, opts = {}) {
   let wake = () => {};
   labels.forEach((el, i) => {
     const on = () => { const f = parts.frags[i]; if (f) { f.hoverT = 1; f.viaLabel = true; wake(); } };
+    const reveal = () => { if (still || !engine) return; const end = track.offsetHeight - stage.offsetHeight; if (engine.state.scroll < 0.98 && window.scrollY < end - 2) window.scrollTo(0, end); };
     const off = () => { const f = parts.frags[i]; if (f) { f.hoverT = 0; f.viaLabel = false; wake(); } };
     if (fine) { el.addEventListener('pointerenter', on); el.addEventListener('pointerleave', off); }
-    el.addEventListener('focus', on); el.addEventListener('blur', off);
+    el.addEventListener('focus', () => { reveal(); on(); }); el.addEventListener('blur', off);
     el.addEventListener('click', (e) => { if (still || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; e.preventDefault(); select(i, el.href); });
   });
   window.addEventListener('pageshow', (e) => { if (e.persisted && sel) unselect(); });

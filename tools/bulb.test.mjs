@@ -1,9 +1,18 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { poseAt, labelAt, seg, MAP, ROTATION, CRACK0, SEPARATION } from '../assets/bulb/map.js';
+import { poseAt, labelAt, settledAt, seg, MAP, ROTATION, CRACK0, SEPARATION } from '../assets/bulb/map.js';
 
-test('the whole bulb holds still and the text is on until the hold ends', () => {
-  for (const t of [0, 0.05, 0.1, MAP.hold]) { const p = poseAt(t); assert.equal(p.rot, 0); assert.equal(p.text, 1); assert.equal(p.dims, 1); assert.equal(p.broken, false); assert.equal(p.sep, 0); }
+test('the whole bulb holds still through the hold; the text is on at rest and the marks stay until the turn', () => {
+  for (const t of [0, 0.04, MAP.hold]) { const p = poseAt(t); assert.equal(p.rot, 0); assert.equal(p.dims, 1); assert.equal(p.broken, false); assert.equal(p.sep, 0); }
+  assert.equal(poseAt(0).text, 1); assert.equal(poseAt(0.05).text, 1);
+});
+
+test('the first flick is rewarded: the cracks grow fastest at the start, and the text begins to leave before the turn', () => {
+  const first = poseAt(0.05).crack - poseAt(0).crack, later = poseAt(0.40).crack - poseAt(0.35).crack;
+  assert.ok(first > later * 3, 'more crack per scroll at the start than near the end');
+  assert.ok(poseAt(0.12).text < 1 && poseAt(0.12).text > 0, 'the text is leaving during the first fifth');
+  assert.equal(poseAt(0.30).text, 0);
+  assert.ok(CRACK0 >= 0.12, 'a crack at rest, not a hairline');
 });
 
 test('rotation is 0 at the start of its segment, 200° at the end, monotonic between, and never overshoots', () => {
@@ -13,11 +22,11 @@ test('rotation is 0 at the start of its segment, 200° at the end, monotonic bet
   for (let t = 0; t <= 1.0001; t += 0.005) { const r = poseAt(t).rot; assert.ok(r >= prev - 1e-12, `rotation goes backwards at ${t}`); assert.ok(r <= ROTATION + 1e-12); prev = r; }
 });
 
-test('the text and the dimension marks leave together, early in the turn, and stay gone', () => {
-  const gone = MAP.hold + 0.12;
-  assert.equal(poseAt(gone).text, 0); assert.equal(poseAt(gone).dims, 0);
-  assert.ok(poseAt((MAP.hold + gone) / 2).text > 0 && poseAt((MAP.hold + gone) / 2).text < 1);
-  assert.equal(poseAt(1).text, 0);
+test('the dimension marks leave early in the turn and stay gone; the text stays gone too', () => {
+  const gone = MAP.hold + 0.10;
+  assert.equal(poseAt(gone).dims, 0);
+  assert.ok(poseAt((MAP.hold + gone) / 2).dims > 0 && poseAt((MAP.hold + gone) / 2).dims < 1);
+  assert.equal(poseAt(1).text, 0); assert.equal(poseAt(1).dims, 0);
 });
 
 test('segments ease at both ends: zero slope entering and leaving', () => {
@@ -28,12 +37,12 @@ test('segments ease at both ends: zero slope entering and leaving', () => {
 });
 
 test('the cracks start as a hairline at rest, grow with the scroll, and are complete before the glass separates', () => {
-  assert.ok(poseAt(0).crack > 0 && poseAt(0).crack <= 0.06, 'a hairline at rest');
+  assert.ok(poseAt(0).crack > 0 && poseAt(0).crack <= 0.2, 'a short crack at rest, not the network');
   let prev = 0;
   for (let t = 0; t <= 1.0001; t += 0.005) { const c = poseAt(t).crack; assert.ok(c >= prev - 1e-12, `cracks close again at ${t}`); prev = c; }
   assert.ok(Math.abs(poseAt(MAP.rotate).crack - 1) < 1e-12);
   assert.equal(poseAt(MAP.separate).crack, 1);
-  assert.ok(poseAt(0.25).crack > 0.3 && poseAt(0.25).crack < 0.8, 'well under way mid-scroll');
+  assert.ok(poseAt(0.25).crack > 0.5 && poseAt(0.25).crack < 0.95, 'well under way mid-scroll');
   assert.ok(CRACK0 > 0);
 });
 
@@ -62,6 +71,7 @@ test('labels arrive staggered near the end and are all fully on at 1', () => {
   for (let i = 0; i < 4; i++) { assert.equal(labelAt(MAP.separate, i), 0); assert.equal(labelAt(1, i), 1); }
   const t = 0.90;
   assert.ok(labelAt(t, 0) > labelAt(t, 1) && labelAt(t, 1) > labelAt(t, 2) && labelAt(t, 2) > labelAt(t, 3), 'one after another');
+  assert.equal(settledAt(MAP.separate), 0); assert.equal(settledAt(1), 1); assert.ok(settledAt(0.94) > 0 && settledAt(0.94) < 1, 'the wordmark and contact line arrive last');
 });
 
 test('the selection curve is the strong ease-in-out from the stylesheet: slow at both ends, monotonic', async () => {
