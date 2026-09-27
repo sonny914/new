@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { poseAt, labelAt, settledAt, seg, MAP, ROTATION, CRACK0, SEPARATION } from '../assets/bulb/map.js';
 
 test('the whole bulb holds still through the hold; the text is on at rest and the marks stay until the turn', () => {
-  for (const t of [0, 0.04, MAP.hold]) { const p = poseAt(t); assert.equal(p.rot, 0); assert.equal(p.dims, 1); assert.equal(p.broken, false); assert.equal(p.sep, 0); }
+  for (const t of [0, MAP.hold / 2, MAP.hold]) { const p = poseAt(t); assert.equal(p.rot, 0); assert.equal(p.dims, 1); assert.equal(p.broken, false); assert.equal(p.sep, 0); }
   assert.equal(poseAt(0).text, 1); assert.equal(poseAt(0.05).text, 1);
 });
 
@@ -13,7 +13,8 @@ test('the bulb turns before the glass cracks: whole through the first fifth, the
   const first = poseAt(MAP.crack + 0.05).crack - poseAt(MAP.crack).crack, later = poseAt(0.40).crack - poseAt(0.35).crack;
   assert.ok(first > later * 2.5, 'more crack per scroll at the start than near the end');
   assert.ok(poseAt(0.20).text < 1 && poseAt(0.05).text === 1, 'the text begins to leave before the turn is done');
-  assert.ok(CRACK0 >= 0.12, 'a crack at rest, not a hairline');
+  assert.ok(poseAt(0.06).rot > 0, 'the turn starts with the first flick');
+  assert.ok(CRACK0 > 0 && CRACK0 <= 0.08, 'a hairline at rest, not a crack under way');
 });
 
 test('rotation is 0 at the start of its segment, 200° at the end, monotonic between, and never overshoots', () => {

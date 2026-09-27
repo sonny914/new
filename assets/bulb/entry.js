@@ -8,8 +8,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createSpatialEngine } from '/assets/lab/spatial-engine.js';
-import { poseAt, labelAt, settledAt, SEPARATION } from './map.js';
-export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js';
+import { poseAt, labelAt, settledAt, SEPARATION } from './map.js?v=2';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
+export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=2';
 
 export const GROUND = 0x000000;      // brand black
 export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass, the labels, the rim light
@@ -112,11 +112,11 @@ const POINT_VS = `
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
     float lit = uPulse.w * smoothstep(uPulseR, uPulseR * 0.3, distance(p, uPulse.xyz));
-    gl_PointSize = uSize * uRatio * (1.0 + 1.8 * lit);                    /* the lit points swell a little: a soft disc of light, not a change of colour alone */
+    gl_PointSize = uSize * uRatio * (0.7 + 0.7 * aSeed) * (1.0 + 1.8 * lit);   /* sizes vary by seed; the lit points swell a little: a soft disc of light, not a change of colour alone */
     vSeed = aSeed;
   }`;
 const POINT_FS = `
-  precision mediump float;
+  precision highp float;                                          /* the same precision as the vertex stage: uPulse is read in both, and a mismatch fails the link */
   uniform vec2 uView; uniform float uAlpha; uniform vec4 uPulse; uniform float uPulseR;
   varying float vSeed; varying vec3 vPos;
   vec3 hsv(float h, float s, float v) { vec3 k = vec3(1.0, 2.0 / 3.0, 1.0 / 3.0); vec3 p = abs(fract(vec3(h) + k) * 6.0 - 3.0); return v * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), s); }
@@ -167,7 +167,7 @@ export function makeDebris(seedGeometry, count) {
   g.setAttribute('aOff', new THREE.BufferAttribute(off, 3).setUsage(THREE.DynamicDrawUsage));
   const m = new THREE.ShaderMaterial({
     vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false,
-    uniforms: { uRelease: { value: 0 }, uView: { value: new THREE.Vector2() }, uAlpha: { value: 0 }, uSize: { value: 1.6 }, uRatio: { value: 1 }, uPulse: { value: new THREE.Vector4() }, uPulseR: { value: 1 } },
+    uniforms: { uRelease: { value: 0 }, uView: { value: new THREE.Vector2() }, uAlpha: { value: 0 }, uSize: { value: 2.6 }, uRatio: { value: 1 }, uPulse: { value: new THREE.Vector4(0, 0, 0, 0) }, uPulseR: { value: 1 } },   // w = 0: no light until a tap (Vector4 defaults w to 1)
   });
   const points = new THREE.Points(g, m); points.frustumCulled = false; points.visible = false;
   points.userData.flow = { n, off, v: new Float32Array(n * 3), energy: 0 };
@@ -525,7 +525,7 @@ export function createEntry(root, opts = {}) {
       const u = parts.points.material.uniforms;
       parts.points.visible = p.broken && p.release > 0;
       u.uRelease.value = p.release;
-      u.uAlpha.value = 0.28 * Math.min(1, p.release / 0.12) * (1 - selK);
+      u.uAlpha.value = 0.62 * Math.min(1, p.release / 0.12) * (1 - selK);   // the field is thin now, so each point must hold on its own on a phone
       u.uView.value.set(still ? 0 : st.view.x, still ? 0 : st.view.y);
       // the flow: the pointer's velocity fades out 140 ms after its last move; a pulse pushes once and lights for PULSE_MS
       if (flow.pointer && now - flow.pointer.at > 140) flow.pointer = null;

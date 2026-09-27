@@ -272,3 +272,13 @@ Asked for after the studio pass: the glass was cracking before it had turned; th
 - **The flow.** Each point carries an offset with a spring back to its path. Any pointer, mouse or finger, is projected onto the bulb's plane with its velocity; points within 1.45 units follow the velocity and spread from the pointer, weighted by distance and speed, then ease back. Integrated on the CPU only while the pointer moves, a pulse is live, or the field still has energy; nothing runs at rest.
 - **The tap.** A click or tap on empty space (not a fragment, label, link or button) pulses the field: one outward push inside 1.9 units over the first 40% of 900 ms, while the shader lights the same disc cream toward orange, swelling the lit points a little, widening and fading over the 900 ms. A tap on a fragment still selects it.
 - **Checks.** Frames at t 0.12 (turning, whole), 0.30 (cracking after the turn), settled, and posed flow and pulse frames on both viewports; gate 3 and gate 4 hold; `npm test` 49 (the map tests updated for the new sequence). Reduced motion skips the flow.
+
+### The sequence and the field, second pass
+
+Reported from the phone: still cracking before the turn, and no particles.
+
+- **The particles were failing to link.** The points shader declared `uPulseR` at mediump in the fragment stage and highp in the vertex stage; WebGL refuses the program, so nothing drew. Both stages are highp now. The pulse uniform also started with w = 1 (a Vector4 default), a permanent lit disc at the origin; it starts at 0.
+- **The map is versioned.** `entry.js` imports `map.js?v=2`: `/assets/*` is cached for an hour, so a new runtime could run the old sequence. Bump the tag whenever the map changes.
+- **The turn starts with the first flick** (`MAP.hold` 0.03) and the glass stays whole until 0.22, by which point it has turned about 90°. The mark at rest is a hairline (`CRACK0` 0.06), not a crack under way.
+- **The points hold on their own** now that the field is thin: size 2.6 (varied 0.7–1.4 by seed), alpha 0.62.
+- **Checks.** Phone frames at rest, 0.10, 0.20 (whole, turned), 0.32 (cracking), 0.60 (separating, field arriving), settled; gate 3 and gate 4 hold; `npm test` 49; no shader errors.

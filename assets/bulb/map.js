@@ -5,9 +5,9 @@ export const smooth = (k) => { k = clamp(k); return k * k * (3 - 2 * k); };
 export const outExpo = (k) => (k >= 1 ? 1 : 1 - Math.pow(2, -10 * clamp(k)));
 export const outQuad = (k) => { k = clamp(k); return 1 - (1 - k) * (1 - k); };
 
-export const MAP = { hold: 0.08, crack: 0.20, rotate: 0.45, separate: 0.70, settle: 1.0 };   // the hold is short: the first flick is answered by the turn
+export const MAP = { hold: 0.03, crack: 0.22, rotate: 0.45, separate: 0.70, settle: 1.0 };   // the turn starts with the first flick; the glass stays whole until it has clearly turned
 export const ROTATION = Math.PI * 240 / 180;   // 240° about the vertical axis across the rotation segment: a fifth faster than the first cut
-export const CRACK0 = 0.16;                    // at rest the glass already carries a crack at the impact point, legible at 1x on a phone
+export const CRACK0 = 0.06;                    // at rest the glass carries only the mark of the impact: a hairline, not a crack under way
 export const SEPARATION = 0.42;                // how far a fragment slides out along its own direction before it settles
 export const LABEL_STAGGER = 0.03;             // in t, between one label and the next (30–80 ms at a normal scroll)
 
