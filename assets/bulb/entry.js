@@ -17,22 +17,62 @@ export const LINE_NEAR = 0xF2EEE5;
 export const LIVE = 0xFF5A00;        // brand orange: the light inside the fracture, and nothing else
 export const WIRE_ALPHA = 0.38;      // the cream grid sits on the glass as a faint drawing: the glass carries the form
 /* The glass: physically based, transmissive, smoked. One material, cloned per fragment so a piece can fade on its own.
-   Thickness is the volume the refraction sees; attenuation is the smoke. Clearcoat is the polish. Dark tint, no colour. */
+   Thickness is the volume the refraction sees; attenuation is the smoke. Dark tint, no colour. One interface, one lobe:
+   no clearcoat (glass has a single surface; a second lobe doubles every highlight). ior 1.5 gives the real 4% head-on. */
 export const GLASS = {
-  color: 0x6E6A64, roughness: 0.035, metalness: 0, transmission: 1, ior: 1.5, thickness: 0.16,
-  attenuationColor: 0x1E1B18, attenuationDistance: 0.6, clearcoat: 0.4, clearcoatRoughness: 0.04,
+  color: 0x6E6A64, roughness: 0.02, metalness: 0, transmission: 1, ior: 1.5, thickness: 0.16,
+  attenuationColor: 0x1E1B18, attenuationDistance: 0.6,
   envMapIntensity: 1.0, specularIntensity: 1.0,
 };
+/* The inside of the far wall. Light that passes the near wall reflects again off the inner surface behind it: a second,
+   smaller, inverted image of every panel on the opposite side of the bulb, dimmer by what the near wall kept. It is the
+   cue that says hollow glass rather than a black ball. Reflection only; it sits in the refraction buffer the near wall
+   looks through. */
+export const INNER = { color: 0x000000, roughness: 0.02, metalness: 0, ior: 1.5, specularIntensity: 1.0, envMapIntensity: 0.55 };
+export const GLASS_LAT_STEP = 1.5, GLASS_NECK_N = 40, GLASS_LONGS = 160;   // the glass is revolved finely: a highlight bends where a facet does
 /* The unbroken envelope, for the whole bulb at rest: the same profile the bake lathes (tools/bulb.py glass_profile),
    revolved at runtime so the baked meshes stay byte for byte what they were. r against height, y up. */
 export const LAT_STEP = 10, LONGS = 24, NECK_Y = -1.55, NECK_R = 0.36;
-export function glassProfile() {
+export function glassProfile(step = LAT_STEP, neckN = 8) {
   const pts = [new THREE.Vector2(0, 1)];
-  for (let lat = 90 - LAT_STEP; lat >= -30; lat -= LAT_STEP) { const a = THREE.MathUtils.degToRad(lat); pts.push(new THREE.Vector2(Math.cos(a), Math.sin(a))); }
+  for (let lat = 90 - step; lat >= -30 - 1e-9; lat -= step) { const a = THREE.MathUtils.degToRad(lat); pts.push(new THREE.Vector2(Math.cos(a), Math.sin(a))); }
   const r0 = Math.cos(THREE.MathUtils.degToRad(-30)), y0 = Math.sin(THREE.MathUtils.degToRad(-30));
   const smooth = (k) => k * k * (3 - 2 * k);
-  for (let i = 1; i <= 8; i++) { const k = i / 8, e = Math.pow(smooth(k), 0.8); pts.push(new THREE.Vector2(r0 + (NECK_R - r0) * e, y0 + (NECK_Y - y0) * k)); }
+  for (let i = 1; i <= neckN; i++) { const k = i / neckN, e = Math.pow(smooth(k), 0.8); pts.push(new THREE.Vector2(r0 + (NECK_R - r0) * e, y0 + (NECK_Y - y0) * k)); }
   return pts;
+}
+/** The whole envelope as glass: the profile revolved finely, with normals that turn smoothly through the join of the
+    dome and the neck. The profile meets there at an angle (the neck leaves vertically), which a coarse mesh hid; blown
+    glass has no crease, and a crease is exactly what a reflection shows up: the highlight kinks and the far wall's image
+    breaks into steps. Positions are the profile's own, so the glass still sits on the grid; only the shading is smooth.
+    The normal's angle is smoothed along the arc (Gaussian, `sigma` in bulb radii), which leaves the dome's exact sphere
+    normals alone. The profile runs crown to neck; a lathe winds its faces outward only when the points run upward, so it
+    is revolved reversed (else the front faces are the inside of the far wall). */
+export function glassLathe(sigma = 0.1) {
+  const prof = glassProfile(GLASS_LAT_STEP, GLASS_NECK_N), n = prof.length;
+  const s = [0], ang = [];
+  for (let j = 1; j < n; j++) s.push(s[j - 1] + prof[j].distanceTo(prof[j - 1]));
+  for (let j = 0; j < n; j++) {                                        // the outward normal's angle in the (r, y) plane
+    const a = prof[Math.max(0, j - 1)], b = prof[Math.min(n - 1, j + 1)];
+    let t = Math.atan2(b.x - a.x, -(b.y - a.y));                        // normal = (-dy, dr) → angle from +r toward +y
+    if (j) while (t - ang[j - 1] > Math.PI) t -= 2 * Math.PI; if (j) while (t - ang[j - 1] < -Math.PI) t += 2 * Math.PI;
+    ang.push(t);
+  }
+  ang[0] = Math.PI / 2;
+  const sm = ang.map((_, j) => {
+    if (j === 0) return Math.PI / 2;
+    let w = 0, acc = 0;
+    for (let k = 1; k < n; k++) { const d = (s[k] - s[j]) / sigma; if (d * d > 16) continue; const g = Math.exp(-0.5 * d * d); w += g; acc += g * ang[k]; }
+    return acc / w;
+  });
+  const geo = new THREE.LatheGeometry(prof.slice().reverse(), GLASS_LONGS), up = sm.slice().reverse();
+  const nrm = geo.attributes.normal, segs = GLASS_LONGS;
+  for (let i = 0; i <= segs; i++) {
+    const phi = i / segs * Math.PI * 2, sp = Math.sin(phi), cp = Math.cos(phi);
+    for (let j = 0; j < n; j++) { const c = Math.cos(up[j]), y = Math.sin(up[j]); nrm.setXYZ(i * n + j, sp * c, y, cp * c); }
+  }
+  nrm.needsUpdate = true;
+  return geo;
 }
 /* The arrival pose. A lathe turned about its own axis does not change: the silhouette is the same at every angle and
    the reflections are fixed in the world, so a turn about the bulb's axis reads as nothing happening. The bulb therefore
@@ -237,41 +277,50 @@ export function stepFlow(points, dt, ctx) {
 }
 
 /* ---------- the light: a studio nobody sees, prefiltered once ----------
-   Soft-edged panels on black, reflected by the glass and drawn nowhere. Glass returns about 4% of the light head-on and
-   nearly all of it at a grazing angle, and a grazing ray off the silhouette points behind the object. So:
-   - a broad warm-cream softbox, upper left toward the viewer: the long highlight down the lit side;
+   Lit panels on black, reflected by the glass and drawn nowhere. Glass returns about 4% of the light head-on and nearly
+   all of it at a grazing angle, and a grazing ray off the silhouette points behind the object. The panels are HDR (the
+   renderer's tone map rolls their cores off instead of clipping them) and each is lit the way the real thing is:
+   - a broad warm-cream softbox, upper left toward the viewer: a crisp-edged diffuser with a hot centre, so its image on
+     the glass has a shape, a core and a falloff, and bends with the curvature;
    - a tall backlight behind and to the left: the grazing rays off the left silhouette see it, a clean rim on one side;
    - a thin strip behind and to the right: the opposing rim, narrower and dimmer;
-   - a very dim, very soft card behind the camera: the 4% the body returns head-on, so black glass reads against black;
+   - a small window high on the right: the one hard glint a studio always leaves on glass;
+   - a wide scrim overhead and a faint floor: the crown picks up a dim shape and the lower body a faint horizon, which is
+     what tells a black glass shell from a black hole (a soft card in front only ever read as haze);
    - a thin orange streak where the shell around the impact reflects at rest: a restrained bounce near the fracture.
    Nothing is drawn on the mesh; as the bulb turns, its normals sweep through this studio and the light moves with them. */
 export function makeEnvironment(renderer, tiltQ) {
   const pm = new THREE.PMREMGenerator(renderer);
   const env = new THREE.Scene();
-  const feathered = (feather) => {                                       // a soft-edged rectangle as a texture: 1 in the middle, 0 at the border
-    const n = 64, c = document.createElement('canvas'); c.width = c.height = n; const g = c.getContext('2d'); const img = g.createImageData(n, n);
+  // a lit rectangle as a texture: an edge `edge` wide (share of the half-size), and a centre `core` times brighter than the rim
+  const panelTex = (edge, core) => {
+    const n = 128, c = document.createElement('canvas'); c.width = c.height = n; const g = c.getContext('2d'); const img = g.createImageData(n, n);
+    const ss = (k) => k * k * (3 - 2 * k);
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
       const u = Math.abs((x + 0.5) / n * 2 - 1), v = Math.abs((y + 0.5) / n * 2 - 1);
-      const fu = Math.min(1, Math.max(0, (1 - u) / feather)), fv = Math.min(1, Math.max(0, (1 - v) / feather));
-      const k = Math.round(255 * (fu * fu * (3 - 2 * fu)) * (fv * fv * (3 - 2 * fv))); const i = (y * n + x) * 4;
+      const e = ss(Math.min(1, Math.max(0, (1 - u) / edge))) * ss(Math.min(1, Math.max(0, (1 - v) / edge)));
+      const r = Math.min(1, Math.hypot(u * 0.9, v));                    // the diffuser: brightest behind the lamp, falling to the frame
+      const k = Math.round(255 * e * (1 / core + (1 - 1 / core) * (1 - ss(r)))); const i = (y * n + x) * 4;
       img.data[i] = img.data[i + 1] = img.data[i + 2] = k; img.data[i + 3] = 255;
     }
     g.putImageData(img, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.NoColorSpace; return t;
   };
-  const panel = (w, h, pos, color, k, feather) => {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: feathered(feather), color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
+  const panel = (w, h, pos, color, k, edge, core = 1) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: panelTex(edge, core), color: new THREE.Color(color).multiplyScalar(k * core), side: THREE.DoubleSide }));
     m.position.copy(pos); m.lookAt(0, 0, 0); env.add(m);
   };
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
-  panel(3.4, 8.5, V(-5, 2.2, 3.4), LINE, 6.0, 0.35);    // key softbox
-  panel(3.6, 10, V(-2.6, 0.8, -5.2), LINE, 5.0, 0.45);  // backlight: the left rim
-  panel(0.5, 7, V(3.2, -0.4, -5), LINE, 2.4, 0.5);      // opposing rim, thin
-  panel(16, 12, V(0, 0.5, 9), LINE, 0.22, 0.95);        // front card: the body's faint 4%
+  panel(3.4, 8.5, V(-5, 2.2, 3.4), LINE, 3.2, 0.07, 2.6);   // key softbox: crisp frame, hot centre
+  panel(3.6, 10, V(-2.6, 0.8, -5.2), LINE, 3.0, 0.12, 1.6);  // backlight: the left rim
+  panel(0.5, 7, V(3.2, -0.4, -5), LINE, 1.6, 0.25, 1.4);     // opposing rim, thin
+  panel(0.45, 0.8, V(4.6, 4.8, 3.6), LINE, 9.0, 0.2, 1.3);   // the window: one small hard glint
+  panel(9, 5, V(0.5, 7.5, 1.5), LINE, 0.16, 0.25, 1.5);      // overhead scrim: a dim shape on the crown
+  panel(24, 24, V(0, -8, 0), LINE, 0.045, 0.9, 1.0);         // the floor: a faint horizon on the lower body
   // the orange card sits on the reflection of the view ray off the shell at the impact point, in the arrival pose
   const n = new THREE.Vector3(IMPACT.x, IMPACT.y, IMPACT.z).normalize().applyQuaternion(tiltQ || new THREE.Quaternion());
   const d = V(0, 0, -1), r = d.clone().addScaledVector(n, -2 * d.dot(n)).normalize();
   panel(0.22, 1.4, r.multiplyScalar(6), LIVE, 0.9, 0.5);   // a thin streak, not a patch: a patch reflects as a stain in the dome
-  const tex = pm.fromScene(env, 0.004).texture;
+  const tex = pm.fromScene(env, 0.002).texture;
   pm.dispose(); env.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.map.dispose(); o.material.dispose(); } });
   return tex;
 }
@@ -323,6 +372,8 @@ export function createEntry(root, opts = {}) {
   const flat = /[?&]flat/.test(location.search);                      // ?flat=1: the lines without the glass, to compare cost on a device
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
   renderer.setClearColor(GROUND, 1);
+  renderer.toneMapping = THREE.NeutralToneMapping;                    // highlights roll off like film instead of clipping flat; hues kept
+  renderer.toneMappingExposure = 1.0;
   renderer.transmissionResolutionScale = mobile.matches ? 0.6 : 0.85;  // the refraction buffer: what the glass sees through itself, at a fraction of the frame
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(GROUND, 6, 10);
@@ -335,10 +386,10 @@ export function createEntry(root, opts = {}) {
   const group = new THREE.Group();                                     // the bulb; rotated as one for the turn
   scene.add(group);
 
-  const lineMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: flat ? 0.96 : WIRE_ALPHA, fog: true });
-  const anchorMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.86, fog: true });   // base + filament: they fade at the settle
-  const crackMat = new THREE.LineBasicMaterial({ color: LIVE, transparent: true, opacity: 1.0, fog: false });      // the crack is the fracture light from its first pixel
-  const dimMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.38, fog: true });
+  const lineMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: flat ? 0.96 : WIRE_ALPHA, fog: true, toneMapped: false });
+  const anchorMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.86, fog: true, toneMapped: false });   // base + filament: they fade at the settle
+  const crackMat = new THREE.LineBasicMaterial({ color: LIVE, transparent: true, opacity: 1.0, fog: false, toneMapped: false });      // the crack is the fracture light from its first pixel
+  const dimMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.38, fog: true, toneMapped: false });
   const occluder = new THREE.MeshBasicMaterial({ color: GROUND, fog: false });
   const glassMat = new THREE.MeshPhysicalMaterial({ ...GLASS, side: THREE.DoubleSide, transparent: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
   glassMat.color.set(GLASS.color); glassMat.attenuationColor.set(GLASS.attenuationColor);
@@ -420,8 +471,11 @@ export function createEntry(root, opts = {}) {
     });
     if (parts.debris) { parts.points = makeDebris(parts.debris, mobile.matches ? DUST.mobile : DUST.desktop, stage.clientHeight > stage.clientWidth ? SPREAD.portrait : SPREAD.landscape); group.add(parts.points); }
     if (!flat) {                                                        // the whole envelope at rest: one lathe, the bake's own profile
-      const lathe = new THREE.LatheGeometry(glassProfile(), LONGS);
-      parts.glass = new THREE.Mesh(lathe, glassMat); group.add(parts.glass);
+      const lathe = glassLathe();                                      // finer than the grid it carries, no crease at the neck
+      const outer = glassMat.clone(); outer.side = THREE.FrontSide; outer.depthWrite = false;   // the near wall; clear glass hides nothing behind it
+      parts.glass = new THREE.Mesh(lathe, outer); parts.glass.renderOrder = 2; group.add(parts.glass);
+      const inner = new THREE.Mesh(lathe, new THREE.MeshPhysicalMaterial({ ...INNER, side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+      inner.renderOrder = 1; parts.glass.add(inner);                   // the far wall's inner face: reflection only, added to what is behind it
     }
     box.makeEmpty();
     for (const g of [parts.wire && parts.wire.geometry, parts.baseGeom]) if (g) { g.computeBoundingBox(); box.union(g.boundingBox); }   // the bulb only: the dimension marks are no longer part of the arrival

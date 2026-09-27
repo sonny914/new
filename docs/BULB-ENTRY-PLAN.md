@@ -327,3 +327,14 @@ The user supplied the Quiet Bands identity: a mark of two bowls either side of a
 - **Wordmark.** Vectorised from the supplied lockup (potrace, integer coordinates, 845×155, 5.4 KB, 2.2 KB gzipped). 98.5% overlap.
 - **Where.** Every page header now shows mark + wordmark (the wordmark carries the accessible name "Quiet Bands"); the home footer line, and the two lab pages, take the mark only. Both fill with `currentColor`, so hover and page palettes still apply. `assets/brand/` has mark, wordmark and the stacked lockup as files. Favicon, apple-touch-icon and the 192/512 icons: cream mark on black.
 - **Not redone.** The legacy social cards (`og.png`, `og-rd.png`, `og-small-business.png`, `og-resident-experience.png`) and the LinkedIn banner are rasters with the old bands and no source; they need regenerating.
+
+### Light: reflections that behave like glass
+
+Asked for: the reflection of light to work more realistically. What was wrong, and what changed (environment and glass only; geometry positions, motion, camera and composition untouched):
+
+- **Clipped highlights.** There was no tone mapping, so the softbox (6× over white) clipped to a flat grey card. The renderer now uses the neutral tone map: HDR panel cores roll off instead of clipping, and hues are kept. The lines, crack and dust opt out (`toneMapped: false`), so the brand cream and orange are exact.
+- **Faceted glass.** The glass was revolved at the grid's resolution (24 × 10°), so every highlight kinked at a facet. It is now revolved at 160 × 1.5° under the same coarse grid.
+- **A crease at the neck.** The profile meets the neck at an angle; blown glass has none. The glass normals turn smoothly through that join (the angle is Gaussian-smoothed along the arc; the dome keeps exact sphere normals). Positions are the profile's own, so the glass still sits on the grid.
+- **Wound inside out.** The profile runs crown to neck, and a lathe winds outward only when the points run up, so the "front" faces were the inside of the far wall. It is revolved reversed; winding and normals agree and point out (checked on every face).
+- **One interface, one lobe.** Clearcoat (a second highlight glass does not have) is gone. The near wall reflects once; a separate reflection-only pass draws the inside of the far wall (additive, 0.55): the smaller, inverted image of every panel on the opposite side that says hollow glass. The near wall no longer writes depth, so the grid behind it stays drawn.
+- **Panels lit like panels.** Each studio panel is a crisp-edged diffuser with a hot centre, not a blurred blob. The haze card in front is gone; a wide dim scrim overhead, a faint floor and one small hard window high on the right replace it. The key softbox, the two rims and the orange bounce keep their places.
