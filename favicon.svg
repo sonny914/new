@@ -1,7 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Quiet Bands mark: three equal bands, spacing = height. Ink #111111, Brass #FFBE0B -->
-  <rect width="64" height="64" fill="#111111"/>
-  <rect x="14" y="17" width="36" height="6" fill="#FFBE0B"/>
-  <rect x="14" y="29" width="36" height="6" fill="#FFBE0B"/>
-  <rect x="14" y="41" width="36" height="6" fill="#FFBE0B"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Quiet Bands mark: two bowls either side of a stem. Black #000000, Cream #F2EEE5 -->
+  <rect width="64" height="64" rx="12" fill="#000000"/>
+  <path fill="#F2EEE5" transform="translate(10 14.5) scale(0.05346)" d="M307 120H239A236 230 0 0 0 239 580H307V476H239A126 126 0 0 1 239 224H307ZM516 120H584A236 230 0 0 1 584 580H516V476H584A126 126 0 0 0 584 224H516ZM394 0H429A43 43 0 0 1 472 43V615A43 43 0 0 1 429 658H394A43 43 0 0 1 351 615V43A43 43 0 0 1 394 0Z"/>
 </svg>

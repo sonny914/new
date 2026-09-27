@@ -44,9 +44,9 @@ h2.display{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-siz
 .nav{padding:16px 0;border-bottom:1px solid var(--hair-soft);position:sticky;top:0;background:rgba(17,17,17,0.93);backdrop-filter:blur(10px);z-index:100}
 .nav-in{max-width:var(--maxw);margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;gap:20px}
 .nav-logo{display:inline-flex;align-items:center;gap:12px;font-family:'Jost','Instrument Sans',sans-serif;font-size:14px;font-weight:400;letter-spacing:0.32em;text-transform:uppercase;color:var(--ink)}
-.nav-logo .mark{display:block;width:26px;height:13px;flex:0 0 auto}
-.nav-logo .mark rect{fill:var(--brass)}
-.bone .nav-logo .mark rect{fill:var(--brass)}
+.nav-logo .mark{display:block;width:25px;height:20px;flex:0 0 auto}
+.nav-logo .mark path{fill:var(--brass)}
+.bone .nav-logo .mark path{fill:var(--brass)}
 body.bone .nav{background:rgba(244,241,233,0.94);border-bottom-color:var(--hair-soft)}
 .nav-links{display:flex;align-items:center;gap:26px;font-size:14px}
 .nav-link{color:var(--quiet);transition:color 0.2s}
@@ -153,8 +153,8 @@ main > .sec:last-of-type,.sec.pad-b{padding-bottom:var(--sec)}
 footer{margin-top:var(--sec);padding:52px 0 44px;border-top:1px solid var(--hair)}
 .foot-in{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap}
 .foot-brand{display:flex;align-items:center;gap:14px;font-family:'Jost','Instrument Sans',sans-serif;font-size:15px;font-weight:400;letter-spacing:0.32em;text-transform:uppercase;color:var(--ink)}
-.foot-brand .mark{display:block;width:34px;height:17px}
-.foot-brand .mark rect{fill:var(--brass)}
+.foot-brand .mark{display:block;width:30px;height:24px}
+.foot-brand .mark path{fill:var(--brass)}
 .foot-tagline{font-family:'Jost','Instrument Sans',sans-serif;font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:var(--brass);margin-top:10px}
 .foot-fact{margin-top:12px;font-size:14px;color:var(--quiet);max-width:44ch}
 .foot-links{display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--quiet);text-align:right}
@@ -793,13 +793,15 @@ h2.display{font-size:clamp(24px,3.4vw,34px);line-height:1.12}
 .d1,.d2{transition-delay:0s}
 /* header and footer, as on /rd/ */
 .top{padding:calc(20px + env(safe-area-inset-top)) 0 18px;border-bottom:1px solid var(--hair)}
-.top .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px}
 .top nav{display:flex;flex-wrap:wrap;gap:0 22px;margin-left:auto}
 .top nav a,.top .mark{display:inline-flex;align-items:center;min-height:44px;color:var(--line);font-size:15px;transition:color 180ms var(--ease-out)}
 .top .mark{font-size:22px;font-weight:500;letter-spacing:-.005em;line-height:1;gap:10px}
-.qb{display:inline-block;width:22px;height:11px;flex:0 0 auto}
-.qb rect{fill:currentColor}
-@media (min-width:761px){ .qb{width:26px;height:13px} }
+/* the mark (823:658) and the lowercase wordmark (845:155), both drawn in the text colour */
+.qb,.qb-word{display:block;flex:0 0 auto;fill:currentColor}
+.qb{width:28px;height:22px}
+.qb-word{width:109px;height:20px}
+@media (min-width:761px){ .qb{width:32px;height:26px} .qb-word{width:125px;height:23px} }
 @media (min-width:761px){ .top .mark{font-size:26px} }
 @media (hover:hover) and (pointer:fine){ .top nav a:hover,.top .mark:hover,footer.end a:hover{color:var(--live)} }
 .top nav a:active,.top .mark:active,footer.end a:active{color:var(--live)}

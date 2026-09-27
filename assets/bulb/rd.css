@@ -10,15 +10,17 @@ a{color:inherit;text-decoration:none;touch-action:manipulation}
 
 /* header: the wordmark back to the bulb, and the four sections as a row of links */
 .top{padding:calc(20px + env(safe-area-inset-top)) 0 18px;border-bottom:1px solid var(--rule)}
-.top .wrap{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 28px}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px}
 .mark{font-size:22px;font-weight:500;letter-spacing:-.005em;line-height:1}
 @media (min-width:761px){ .mark{font-size:26px} }
 .top nav{display:flex;flex-wrap:wrap;gap:0 22px;margin-left:auto}
 .top nav a,.mark a{display:inline-flex;align-items:center;min-height:44px;color:var(--line);font-size:15px;transition:color 180ms var(--ease-out)}
 .mark a{font-size:inherit;font-weight:inherit;letter-spacing:inherit;gap:10px}
-.qb{display:inline-block;width:22px;height:11px;flex:0 0 auto}
-.qb rect{fill:currentColor}
-@media (min-width:761px){ .qb{width:26px;height:13px} }
+/* the mark (823:658) and the lowercase wordmark (845:155), both drawn in the text colour */
+.qb,.qb-word{display:block;flex:0 0 auto;fill:currentColor}
+.qb{width:28px;height:22px}
+.qb-word{width:109px;height:20px}
+@media (min-width:761px){ .qb{width:32px;height:26px} .qb-word{width:125px;height:23px} }
 .top nav a[aria-current]{color:var(--text)}
 @media (hover:hover) and (pointer:fine){ .top nav a:hover,.mark a:hover,.body a:hover{color:var(--live)} }
 .top nav a:active,.mark a:active,.body a:active{color:var(--live)}
