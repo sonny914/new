@@ -254,3 +254,11 @@ Asked for after the inner-light pass. The chamfer, wall, band and riser are gone
 - **The orange** is a faint emission (0.16) on the bake's own rim faces, the 0.022 strip that already sits just inside every broken edge, in the same glass material. Those faces are perpendicular to the surface, so the orange shows only where a cut turns toward the viewer, never as a continuous outline. Hover, focus or touch raises it to 0.45 on that piece. The rim faces are told from the surface by distance to the lathe profile (threshold 0.015: cut vertices lie on the flat facets up to 0.010 inside the curve; rim vertices sit 0.022 in).
 - The crack that grows at rest stays as it was in the first glass version.
 - **Checks.** One settled desktop frame captured; `npm test` 49; `bulb.glb` unchanged.
+
+### Studio reflections
+
+Asked for after the rollback. The fragments are the first-glass geometry, one glass mesh each, no emission anywhere; geometry, motion, camera and composition unchanged.
+
+- **Glass** darker and clearer: tint `#6E6A64`, roughness 0.035, clearcoat 0.4 at 0.04 roughness.
+- **The studio.** Three feathered panels on black, prefiltered once with near-zero blur, reflected by the glass and drawn nowhere: a broad vertical warm-cream softbox upper left toward the viewer (3.6 × 8.5, intensity 5.5, since glass returns about 4% head-on); a thin opposing rim strip behind right (0.6 × 6.5, 3.2); and a small dim orange panel (1.3 × 1.3, 0.6) placed along the reflection direction of the shell around the impact point, so a restrained orange bounce sits near the fracture. Panel edges are feathered by a canvas texture so reflections have soft edges and a clear centre. Nothing is painted on the mesh: the reflections move over the surface as the bulb turns.
+- **Checks.** Intact bulb captured on desktop and phone; `npm test` 49; `bulb.glb` unchanged.

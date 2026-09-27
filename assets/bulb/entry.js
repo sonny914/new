@@ -16,12 +16,11 @@ export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass,
 export const LINE_NEAR = 0xF2EEE5;
 export const LIVE = 0xFF5A00;        // brand orange: the light inside the fracture, and nothing else
 export const WIRE_ALPHA = 0.38;      // the cream grid sits on the glass as a faint drawing: the glass carries the form
-export const RIM_REST = 0.16, RIM_LIVE = 0.45;   // the orange on the bake's own rim faces just inside the broken edge: a tint that catches at an angle, never a line
 /* The glass: physically based, transmissive, smoked. One material, cloned per fragment so a piece can fade on its own.
    Thickness is the volume the refraction sees; attenuation is the smoke. Clearcoat is the polish. Dark tint, no colour. */
 export const GLASS = {
-  color: 0x8C8780, roughness: 0.06, metalness: 0, transmission: 1, ior: 1.5, thickness: 0.16,
-  attenuationColor: 0x1E1B18, attenuationDistance: 0.7, clearcoat: 0.35, clearcoatRoughness: 0.08,
+  color: 0x6E6A64, roughness: 0.035, metalness: 0, transmission: 1, ior: 1.5, thickness: 0.16,
+  attenuationColor: 0x1E1B18, attenuationDistance: 0.6, clearcoat: 0.4, clearcoatRoughness: 0.04,
   envMapIntensity: 1.0, specularIntensity: 1.0,
 };
 /* The unbroken envelope, for the whole bulb at rest: the same profile the bake lathes (tools/bulb.py glass_profile),
@@ -158,22 +157,34 @@ export function makeDebris(seedGeometry, count) {
   return points;
 }
 
-/* ---------- the light: an environment nobody sees, three cream emitters on black, prefiltered once ----------
-   A tall narrow strip upper left toward the viewer gives the long rim highlight; a wide low strip behind and to the right
-   gives the far edge its line; a small patch above fills the top of the dome. The background stays black: the environment
-   is reflected by the glass and drawn nowhere. */
+/* ---------- the light: a studio nobody sees, prefiltered once ----------
+   Three soft-edged panels on black, reflected by the glass and drawn nowhere. A broad vertical softbox upper left toward
+   the viewer, warm cream, for the long reflection; a thin strip opposite, behind and to the right, for the rim; and a
+   small, dim orange panel placed where the shell around the impact point reflects it, so a restrained orange bounce
+   sits near the fracture and slides over the glass as the bulb turns. The panels are feathered, so their reflections
+   have soft edges and a clear centre; the prefilter blur is near zero, so they stay crisp on the low roughness. */
 export function makeEnvironment(renderer) {
   const pm = new THREE.PMREMGenerator(renderer);
   const env = new THREE.Scene();
-  const emit = (w, h, x, y, z, k) => {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(LINE).multiplyScalar(k), side: THREE.DoubleSide }));
+  const feathered = (feather) => {                                       // a soft-edged rectangle as a texture: 1 in the middle, 0 at the border
+    const n = 64, c = document.createElement('canvas'); c.width = c.height = n; const g = c.getContext('2d'); const img = g.createImageData(n, n);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      const u = Math.abs((x + 0.5) / n * 2 - 1), v = Math.abs((y + 0.5) / n * 2 - 1);
+      const fu = Math.min(1, Math.max(0, (1 - u) / feather)), fv = Math.min(1, Math.max(0, (1 - v) / feather));
+      const k = Math.round(255 * (fu * fu * (3 - 2 * fu)) * (fv * fv * (3 - 2 * fv))); const i = (y * n + x) * 4;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = k; img.data[i + 3] = 255;
+    }
+    g.putImageData(img, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.NoColorSpace; return t;
+  };
+  const panel = (w, h, x, y, z, color, k, feather) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: feathered(feather), color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
     m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m);
   };
-  emit(0.5, 8, -5, 2, 3, 2.2);      // key: thin and tall, so its reflection is a line, not a patch
-  emit(7, 0.45, 4, -1, -4, 1.1);    // rim, behind right, low: the far edge
-  emit(1, 1, 0, 7, 1, 0.5);         // a small patch above: the crown of the dome
-  const tex = pm.fromScene(env, 0.03).texture;
-  pm.dispose(); env.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } });
+  panel(3.6, 8.5, -5, 2.5, 3.5, LINE, 5.5, 0.35);   // softbox: broad, vertical, upper left, toward the viewer. Glass returns ~4% head-on, so the panel is bright
+  panel(0.6, 6.5, 5, -0.5, -3.5, LINE, 3.2, 0.5);   // rim: thin, opposite
+  panel(1.3, 1.3, 3.5, 5, 2.3, LIVE, 0.6, 0.6);     // orange bounce: small and dim, where the glass around the impact reflects it
+  const tex = pm.fromScene(env, 0.004).texture;
+  pm.dispose(); env.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.map.dispose(); o.material.dispose(); } });
   return tex;
 }
 
@@ -241,7 +252,6 @@ export function createEntry(root, opts = {}) {
   const occluder = new THREE.MeshBasicMaterial({ color: GROUND, fog: false });
   const glassMat = new THREE.MeshPhysicalMaterial({ ...GLASS, side: THREE.DoubleSide, transparent: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
   glassMat.color.set(GLASS.color); glassMat.attenuationColor.set(GLASS.attenuationColor);
-  const rimMat = glassMat.clone(); rimMat.emissive.set(LIVE); rimMat.emissiveIntensity = RIM_REST; rimMat.polygonOffset = false;   // the same glass, warmed from inside
 
   const parts = { shells: [], frags: [], glass: null, wire: null, cracks: null, crackSegs: 0, base: null, baseSolid: null, baseGeom: null, filament: null, dims: null, debris: null, points: null };
   const box = new THREE.Box3();
@@ -284,15 +294,15 @@ export function createEntry(root, opts = {}) {
         geo.translate(-home.x, -home.y, -home.z);                     // the fragment's origin is its own centre
         geo.computeBoundingBox(); const bbox = geo.boundingBox.clone();
         const mat = lineMat.clone();
-        const { surface, rim, grid } = splitFragment(geo, home);
+        const { grid } = splitFragment(geo, home);
         const piece = new THREE.Group(); piece.name = name; piece.visible = false;
         const lines = new THREE.LineSegments(grid, mat);                    // the cream grid, on the glass, ending at the break
         piece.add(lines);
-        let glass = null, rimGlass = null;
-        if (!flat) { glass = new THREE.Mesh(surface, glassMat.clone()); rimGlass = new THREE.Mesh(rim, rimMat.clone()); piece.add(glass, rimGlass); }
+        let glass = null;
+        if (!flat) { geo.computeVertexNormals(); glass = new THREE.Mesh(geo, glassMat.clone()); piece.add(glass); }   // the bake's own mesh, one glass, nothing added
         const outward = new THREE.Vector3(home.x, home.y * 0.35, home.z).normalize();
-        const mats = [mat].concat(glass ? [glass.material, rimGlass.material] : []);
-        parts.frags[i] = { i, obj: piece, mat, glass, rimGlass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
+        const mats = [mat].concat(glass ? [glass.material] : []);
+        parts.frags[i] = { i, obj: piece, mat, glass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
         parts.shells.push(piece); scene.add(piece);
       } else if (name === 'shell_wire') {
         parts.wire = new THREE.LineSegments(o.geometry, lineMat); group.add(parts.wire);
@@ -352,7 +362,7 @@ export function createEntry(root, opts = {}) {
     f.hover += (f.hoverT - f.hover) * a; if (Math.abs(f.hoverT - f.hover) < 0.002) f.hover = f.hoverT;
     f.obj.position.z += f.hover * 0.22 * k;
     f.mat.opacity = flat ? 0.96 : WIRE_ALPHA;
-    if (f.glass) { f.glass.material.opacity = 1; f.rimGlass.material.opacity = 1; f.rimGlass.material.emissiveIntensity = RIM_REST + (RIM_LIVE - RIM_REST) * f.hover; }
+    if (f.glass) f.glass.material.opacity = 1;
   }
 
   const _c = new THREE.Vector3();
