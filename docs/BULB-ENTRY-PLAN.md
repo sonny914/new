@@ -226,3 +226,13 @@ One pass, nothing retimed. The geometry, fracture shapes, poses, rotation, scrol
 - **Brand values.** Black `#000000`, cream `#F2EEE5`, orange `#FF5A00`, in the runtime and the entry stylesheet.
 - **Cost.** The refraction buffer is the one addition: the scene minus the glass, rendered once more per frame at 0.6 of the drawing buffer on phones (353×767 at 393×852 @1.5x) and 0.85 on desktop. Draw calls 10 at rest, 29 mid separation, 25 settled; 3.5k to 5.5k triangles. No post-processing, no blur, no bloom. Nothing renders at rest between inputs, as before. `?flat=1` renders the same page without the glass for an A/B on a device.
 - **Checks.** Five frames on both viewports (rest, cracking, mid separation, settled, one piece active); gate 3 layout assertions hold including reduced motion; `npm test` 49.
+
+### The cut, given a body
+
+The orange had been a line painted on the mesh. Now every broken edge has thickness, built at runtime from the fragment's own surface (`buildCut()` in `entry.js`); the crack path on the surface, the fragment meshes' positions and the motion are untouched, and `bulb.glb` is still the committed file.
+
+- **What is dropped.** The bake's rim strip (0.022 straight inward from every open edge) is identified by distance to the lathe profile and left out of the glass mesh.
+- **What is built.** From the surface's open edges, minus the neck ring: a 45° chamfer of dark glass, 0.008 down and in, then a straight inner wall from there to 0.030 below the surface. Per-vertex inward directions are averaged over a vertex's two cut edges, so the strip is continuous around the jittered crack.
+- **Materials.** The wall is unlit brand orange at 0.80 of full, recessed by the chamfer so it reads as light in the thickness, seen refracted through the surface near the edge. The chamfer is the glass material with a low orange emission (0.22), so the exterior lip stays dark with a thin orange reflection. Hover, focus or touch takes the wall to full orange and the lip's emission to 0.55, on that piece only.
+- **The cream grid** is the surface's own edges minus the crack itself, so every line ends at the wall and the lip carries no cream.
+- **Checks.** Five frames on both viewports; gate 3 layout assertions hold including reduced motion; `npm test` 49. Cut quads per fragment: 65 / 56 / 67 / 54.
