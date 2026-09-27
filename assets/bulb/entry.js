@@ -16,12 +16,17 @@ export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass,
 export const LINE_NEAR = 0xF2EEE5;
 export const LIVE = 0xFF5A00;        // brand orange: the light inside the fracture, and nothing else
 export const WIRE_ALPHA = 0.62;      // the cream grid sits on the glass as a sparse drawing, not a cage: the glass carries the form
-/* The broken edge has a body. At every cut a 45° chamfer of dark glass drops from the surface (CHAMFER deep and wide),
-   and below it a straight inner wall (to CUT_DEPTH) carries the orange, unlit, so the light reads as trapped in the
-   thickness and never sits on the surface. The crack path on the surface is untouched: the wall hangs from it. */
+/* The broken edge has a body. At every cut a 45° chamfer drops from the surface (CHAMFER deep and wide) and a straight
+   inner wall runs below it to CUT_DEPTH; both are the same dark glass as the shell, with no emission. The light is a
+   band of unlit orange inside the piece, only ever seen through glass: it lies under the surface along the crack
+   (STRIP_DEPTH below it) and is graded across its width, dim at the lip (STRIP_IN0), full a little way in (STRIP_PEAK),
+   gone deeper in (STRIP_IN1), so it reads as light bleeding from the fracture into the thickness rather than a rim. A
+   short riser at the peak faces the cut, so the wall shows it from the side. It sits inside the silhouette, not on it.
+   The crack path on the surface is untouched. */
 export const CHAMFER = 0.008, CUT_DEPTH = 0.030;
-export const WALL_REST = 0.80;       // the wall's orange at rest, as a fraction of brand orange; hover or touch takes it to 1
-export const LIP_REST = 0.22, LIP_LIVE = 0.55;   // the chamfer's orange emission: a thin reflection on a dark lip
+export const STRIP_DEPTH = 0.017, STRIP_IN0 = 0.004, STRIP_PEAK = 0.014, STRIP_IN1 = 0.048, RISER = 0.006;
+export const STRIP_LIP = 0.30;       // the band's strength at the lip, so the perimeter stays dark
+export const STRIP_REST = 1.0, STRIP_LIVE = 1.6;   // the strip's orange, as a multiple of brand orange: through smoked glass it lands below full; hover or touch pushes it past
 /* The glass: physically based, transmissive, smoked. One material, cloned per fragment so a piece can fade on its own.
    Thickness is the volume the refraction sees; attenuation is the smoke. Clearcoat is the polish. Dark tint, no colour. */
 export const GLASS = {
@@ -185,8 +190,8 @@ export function makeEnvironment(renderer) {
 /** Take a fragment apart into what the pass needs. The bake gave every open edge a strip 0.022 inward; here that strip
     is dropped and the cut rebuilt from the surface's own boundary: a chamfer, then a wall, both hung from the crack path
     on the surface, which does not move. The neck ring is glass meeting the base, not a break: no wall there. Pure.
-    @returns {{ surface, grid, chamfer, wall }} four BufferGeometries: the glass faces, the cream lines (which end at the cut),
-    the dark lip, and the orange wall. */
+    @returns {{ surface, grid, cut, strip }} four BufferGeometries: the glass faces, the cream lines (which end at the cut),
+    the cut's chamfer and wall as one dark glass piece, and the orange strip set back inside it. */
 export function buildCut(geo, home, neckY) {
   const P = geo.attributes.position.array, I = geo.index.array, nv = P.length / 3;
   const prof = glassProfile();
@@ -229,18 +234,25 @@ export function buildCut(geo, home, neckY) {
     }
   }
   for (const v of side.values()) v.normalize();
-  // the strips: chamfer (surface → CHAMFER down and in), wall (chamfer → CUT_DEPTH, straight down)
-  const cp = [], wp = [];
-  const lip = (v, out) => { at(v, out); _n.set(N[v * 3], N[v * 3 + 1], N[v * 3 + 2]); out.addScaledVector(_n, -CHAMFER).addScaledVector(side.get(v), CHAMFER); return out; };
-  const foot = (v, out) => { at(v, out); _n.set(N[v * 3], N[v * 3 + 1], N[v * 3 + 2]); out.addScaledVector(_n, -CUT_DEPTH).addScaledVector(side.get(v), CHAMFER); return out; };
+  // the strips: chamfer (surface → CHAMFER down and in) and wall (chamfer → CUT_DEPTH, straight down) as one glass piece;
+  // the orange strip set back STRIP_IN inside it, STRIP_TOP to STRIP_BOT below the surface
+  const cp = [], sp = [], sc = [];
+  const at2 = (v, out, down, inward) => { at(v, out); _n.set(N[v * 3], N[v * 3 + 1], N[v * 3 + 2]); out.addScaledVector(_n, -down).addScaledVector(side.get(v), inward); return out; };
   const quad = (arr, p0, p1, p2, p3) => { arr.push(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, p0.x, p0.y, p0.z, p2.x, p2.y, p2.z, p3.x, p3.y, p3.z); };
   const A = new THREE.Vector3(), B = new THREE.Vector3(), A1 = new THREE.Vector3(), B1 = new THREE.Vector3(), A2 = new THREE.Vector3(), B2 = new THREE.Vector3();
   for (const [a, b] of cut) {
-    at(a, A); at(b, B); lip(a, A1); lip(b, B1); foot(a, A2); foot(b, B2);
-    quad(cp, A, B, B1, A1); quad(wp, A1, B1, B2, A2);
+    at(a, A); at(b, B); at2(a, A1, CHAMFER, CHAMFER); at2(b, B1, CHAMFER, CHAMFER); at2(a, A2, CUT_DEPTH, CHAMFER); at2(b, B2, CUT_DEPTH, CHAMFER);
+    quad(cp, A, B, B1, A1); quad(cp, A1, B1, B2, A2);
+    const shade = (k0, k1, k2, k3) => { for (const k of [k0, k1, k2, k0, k2, k3]) sc.push(k, k, k); };
+    at2(a, A1, STRIP_DEPTH, STRIP_IN0); at2(b, B1, STRIP_DEPTH, STRIP_IN0); at2(a, A2, STRIP_DEPTH, STRIP_PEAK); at2(b, B2, STRIP_DEPTH, STRIP_PEAK);
+    quad(sp, A1, B1, B2, A2); shade(STRIP_LIP, STRIP_LIP, 1, 1);                                                     // the band: lip → peak
+    at2(a, A1, STRIP_DEPTH, STRIP_PEAK); at2(b, B1, STRIP_DEPTH, STRIP_PEAK); at2(a, A2, STRIP_DEPTH, STRIP_IN1); at2(b, B2, STRIP_DEPTH, STRIP_IN1);
+    quad(sp, A1, B1, B2, A2); shade(1, 1, 0, 0);                                                                     // peak → gone
+    at2(a, A1, STRIP_DEPTH - RISER, STRIP_PEAK); at2(b, B1, STRIP_DEPTH - RISER, STRIP_PEAK); at2(a, A2, STRIP_DEPTH + RISER, STRIP_PEAK); at2(b, B2, STRIP_DEPTH + RISER, STRIP_PEAK);
+    quad(sp, A1, B1, B2, A2); shade(0.7, 0.7, 0.7, 0.7);                                                             // the riser at the peak, facing the cut
   }
-  const chamfer = new THREE.BufferGeometry(); chamfer.setAttribute('position', new THREE.Float32BufferAttribute(cp, 3)); chamfer.computeVertexNormals();
-  const wall = new THREE.BufferGeometry(); wall.setAttribute('position', new THREE.Float32BufferAttribute(wp, 3));
+  const cutGeo = new THREE.BufferGeometry(); cutGeo.setAttribute('position', new THREE.Float32BufferAttribute(cp, 3)); cutGeo.computeVertexNormals();
+  const strip = new THREE.BufferGeometry(); strip.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3)); strip.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
   // the cream grid: the surface's edges, minus the crack itself (the lip is dark glass, not a line)
   const all = new THREE.EdgesGeometry(surface, 4);
   const pk = (v) => `${P[v * 3].toFixed(4)},${P[v * 3 + 1].toFixed(4)},${P[v * 3 + 2].toFixed(4)}`;
@@ -250,7 +262,7 @@ export function buildCut(geo, home, neckY) {
   for (let i = 0; i < ap.length; i += 6) if (!crackKeys.has(sk(i) + '|' + sk(i + 3))) for (let n = 0; n < 6; n++) gp.push(ap[i + n]);
   all.dispose();
   const grid = new THREE.BufferGeometry(); grid.setAttribute('position', new THREE.Float32BufferAttribute(gp, 3));
-  return { surface, grid, chamfer, wall };
+  return { surface, grid, cut: cutGeo, strip };
 }
 
 /* ---------- runtime ---------- */
@@ -279,12 +291,11 @@ export function createEntry(root, opts = {}) {
   const lineMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: flat ? 0.96 : WIRE_ALPHA, fog: true });
   const anchorMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.86, fog: true });   // base + filament: they fade at the settle
   const crackMat = new THREE.LineBasicMaterial({ color: LIVE, transparent: true, opacity: 1.0, fog: false });      // the crack is the fracture light from its first pixel
-  const wallMat = new THREE.MeshBasicMaterial({ color: LIVE, side: THREE.DoubleSide, transparent: true, fog: false, toneMapped: false });   // unlit: the light in the cut
+  const stripMat = new THREE.MeshBasicMaterial({ color: LIVE, vertexColors: true, side: THREE.DoubleSide, transparent: true, fog: false, toneMapped: false });   // unlit, graded by vertex: the light inside the cut
   const dimMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.38, fog: true });
   const occluder = new THREE.MeshBasicMaterial({ color: GROUND, fog: false });
   const glassMat = new THREE.MeshPhysicalMaterial({ ...GLASS, side: THREE.DoubleSide, transparent: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
   glassMat.color.set(GLASS.color); glassMat.attenuationColor.set(GLASS.attenuationColor);
-  const lipMat = glassMat.clone(); lipMat.emissive.set(LIVE); lipMat.emissiveIntensity = LIP_REST; lipMat.polygonOffset = false;   // the chamfer: dark glass with a thin orange reflection
 
   const parts = { shells: [], frags: [], glass: null, wire: null, cracks: null, crackSegs: 0, base: null, baseSolid: null, baseGeom: null, filament: null, dims: null, debris: null, points: null };
   const box = new THREE.Box3();
@@ -327,16 +338,16 @@ export function createEntry(root, opts = {}) {
         geo.translate(-home.x, -home.y, -home.z);                     // the fragment's origin is its own centre
         geo.computeBoundingBox(); const bbox = geo.boundingBox.clone();
         const mat = lineMat.clone();
-        const { surface, grid, chamfer, wall } = buildCut(geo, home, NECK_Y + 0.04 - home.y);
+        const { surface, grid, cut, strip } = buildCut(geo, home, NECK_Y + 0.04 - home.y);
         const piece = new THREE.Group(); piece.name = name; piece.visible = false;
         const lines = new THREE.LineSegments(grid, mat);                    // the cream grid, on the glass, ending at the cut
-        const cutWall = new THREE.Mesh(wall, wallMat.clone());              // the light, recessed a chamfer below the surface
-        piece.add(lines, cutWall);
-        let glass = null, lip = null;
-        if (!flat) { glass = new THREE.Mesh(surface, glassMat.clone()); lip = new THREE.Mesh(chamfer, lipMat.clone()); piece.add(glass, lip); }
+        const light = new THREE.Mesh(strip, stripMat.clone());              // the light, set back inside the thickness
+        piece.add(lines, light);
+        let glass = null, cutGlass = null;
+        if (!flat) { glass = new THREE.Mesh(surface, glassMat.clone()); cutGlass = new THREE.Mesh(cut, glassMat.clone()); cutGlass.material.polygonOffset = false; piece.add(glass, cutGlass); }
         const outward = new THREE.Vector3(home.x, home.y * 0.35, home.z).normalize();
-        const mats = [mat, cutWall.material].concat(glass ? [glass.material, lip.material] : []);
-        parts.frags[i] = { i, obj: piece, mat, wall: cutWall, glass, lip, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
+        const mats = [mat, light.material].concat(glass ? [glass.material, cutGlass.material] : []);
+        parts.frags[i] = { i, obj: piece, mat, strip: light, glass, cutGlass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
         parts.shells.push(piece); scene.add(piece);
       } else if (name === 'shell_wire') {
         parts.wire = new THREE.LineSegments(o.geometry, lineMat); group.add(parts.wire);
@@ -396,8 +407,8 @@ export function createEntry(root, opts = {}) {
     f.hover += (f.hoverT - f.hover) * a; if (Math.abs(f.hoverT - f.hover) < 0.002) f.hover = f.hoverT;
     f.obj.position.z += f.hover * 0.22 * k;
     f.mat.opacity = flat ? 0.96 : WIRE_ALPHA;
-    f.wall.material.color.set(LIVE).multiplyScalar(WALL_REST + (1 - WALL_REST) * f.hover); f.wall.material.opacity = 1;
-    if (f.glass) { f.glass.material.opacity = 1; f.lip.material.opacity = 1; f.lip.material.emissiveIntensity = LIP_REST + (LIP_LIVE - LIP_REST) * f.hover; }
+    f.strip.material.color.set(LIVE).multiplyScalar(STRIP_REST + (STRIP_LIVE - STRIP_REST) * f.hover); f.strip.material.opacity = 1;
+    if (f.glass) { f.glass.material.opacity = 1; f.cutGlass.material.opacity = 1; }
   }
 
   const _c = new THREE.Vector3();

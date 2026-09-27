@@ -236,3 +236,11 @@ The orange had been a line painted on the mesh. Now every broken edge has thickn
 - **Materials.** The wall is unlit brand orange at 0.80 of full, recessed by the chamfer so it reads as light in the thickness, seen refracted through the surface near the edge. The chamfer is the glass material with a low orange emission (0.22), so the exterior lip stays dark with a thin orange reflection. Hover, focus or touch takes the wall to full orange and the lip's emission to 0.55, on that piece only.
 - **The cream grid** is the surface's own edges minus the crack itself, so every line ends at the wall and the lip carries no cream.
 - **Checks.** Five frames on both viewports; gate 3 layout assertions hold including reduced motion; `npm test` 49. Cut quads per fragment: 65 / 56 / 67 / 54.
+
+### The light moved inside the glass
+
+Asked for after the cut pass: the whole cut face had been emissive, which read as an outline after separation.
+
+- **The cut is dark glass.** Chamfer and wall are one piece in the shell's own material, no emission. The exposed perimeter carries no orange.
+- **The light is a band under the surface**, unlit brand orange, lying 0.017 below the glass along the crack and only ever seen through it: through the surface from the front, refracted and smoked; through the wall from the cut side, by way of a short riser at the band's peak. It is graded across its width by vertex colour: 0.30 at the lip, full at 0.014 in, nothing by 0.048 in, so it reads as light bleeding from the fracture into the thickness rather than a rim. Hover, focus or touch takes the band past full (×1.6; the refraction buffer is half-float, so it survives the smoke), on that piece only.
+- **Checks.** Five frames on both viewports; gate 3 layout assertions hold including reduced motion; `npm test` 49. Nothing locked moved; `bulb.glb` unchanged.
