@@ -8,8 +8,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createSpatialEngine } from '/assets/lab/spatial-engine.js';
-import { poseAt, labelAt, settledAt, SEPARATION } from './map.js?v=2';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
-export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=2';
+import { poseAt, labelAt, settledAt, seg, SEPARATION } from './map.js?v=3';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
+export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=3';
 
 export const GROUND = 0x000000;      // brand black
 export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass, the labels, the rim light
@@ -34,6 +34,16 @@ export function glassProfile() {
   for (let i = 1; i <= 8; i++) { const k = i / 8, e = Math.pow(smooth(k), 0.8); pts.push(new THREE.Vector2(r0 + (NECK_R - r0) * e, y0 + (NECK_Y - y0) * k)); }
   return pts;
 }
+/* The arrival pose. A lathe turned about its own axis does not change: the silhouette is the same at every angle and
+   the reflections are fixed in the world, so a turn about the bulb's axis reads as nothing happening. The bulb therefore
+   leans: crown to the upper right and a little toward the camera, a three-quarter view. The scroll turns it about the
+   world's vertical, so the lean itself swings round and the light slides over the glass. The pivot is the centre of the
+   bulb's bounding sphere, so it turns in place. */
+export const TILT = { x: 0.34, z: -0.46 };
+export const FRAME = { portrait: { fill: 0.9, y: 0.575 }, landscape: { fill: 0.8, x: 0.14, y: 0.52 } };
+/* The settled composition was placed for a camera framing the bulb with its dimension marks: this span. As the pieces
+   settle the camera eases from the arrival framing to this one, so the nav keeps its measured layout. */
+export const SETTLED_SPAN = { portrait: 2.94, landscape: 4.73 };   // world units across (portrait) or up (landscape) at z = 0   // sphere diameter as a share of the short side's span; centre as a share of the window
 export const IMPACT = { x: 0.42, y: 0.60, z: 0.86 };   // where the glass was struck: upper right on the face toward the viewer, so the crack at rest reads at 1x. Cracks grow from here.
 
 /* The four settled poses (world units, y up; the camera looks down −z). Hand placed: distinct depths, no grid, no ring,
@@ -101,43 +111,42 @@ export function orderCracks(pos, origin) {
   return out;
 }
 
-/* ---------- the debris: one Points object, one shader. Position = seed + velocity × release; colour from the view angle. ---------- */
+/* ---------- the debris: dust, not confetti ----------
+   One Points object, one shader. At rest every point is a tiny, dim, warm-cream mote; sizes and brightness vary a little
+   by seed so the field has depth without sparkle. Nothing flashes and nothing changes hue with the view. The only colour
+   is heat: a point that the pointer or a tap has set moving warms toward brand orange in proportion to its speed, and
+   cools back to cream as its spring returns it home. Heat is written by the flow integrator, so a still field is cream. */
 const POINT_VS = `
-  attribute vec3 aVel; attribute float aSeed; attribute vec3 aOff;
-  uniform float uRelease; uniform float uSize; uniform float uRatio; uniform vec4 uPulse; uniform float uPulseR;
-  varying float vSeed; varying vec3 vPos;
+  attribute vec3 aVel; attribute float aSeed; attribute vec3 aOff; attribute float aHeat;
+  uniform float uRelease; uniform float uSize; uniform float uRatio;
+  varying float vSeed; varying float vHeat;
   void main() {
     vec3 p = position + aVel * uRelease * (0.85 + 0.5 * aSeed) + aOff;   /* aOff: the flow, integrated on the CPU only while something moves */
-    vPos = p;
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
-    float lit = uPulse.w * smoothstep(uPulseR, uPulseR * 0.3, distance(p, uPulse.xyz));
-    gl_PointSize = uSize * uRatio * (0.7 + 0.7 * aSeed) * (1.0 + 1.8 * lit);   /* sizes vary by seed; the lit points swell a little: a soft disc of light, not a change of colour alone */
-    vSeed = aSeed;
+    gl_PointSize = uSize * uRatio * (0.55 + 0.75 * aSeed * aSeed) * (1.0 + 0.5 * aHeat);   /* most points are the smallest size; a few are a little larger */
+    vSeed = aSeed; vHeat = aHeat;
   }`;
 const POINT_FS = `
-  precision highp float;                                          /* the same precision as the vertex stage: uPulse is read in both, and a mismatch fails the link */
-  uniform vec2 uView; uniform float uAlpha; uniform vec4 uPulse; uniform float uPulseR;
-  varying float vSeed; varying vec3 vPos;
-  vec3 hsv(float h, float s, float v) { vec3 k = vec3(1.0, 2.0 / 3.0, 1.0 / 3.0); vec3 p = abs(fract(vec3(h) + k) * 6.0 - 3.0); return v * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), s); }
+  precision highp float;
+  uniform float uAlpha;
+  varying float vSeed; varying float vHeat;
   void main() {
-    if (length(gl_PointCoord - 0.5) > 0.5) discard;
-    float m = clamp(length(uView), 0.0, 1.0);                       /* how far off head-on the view is */
-    float hue = fract(atan(uView.y, uView.x) / 6.2831853 + vSeed * 1.7 + m * 0.35);
-    vec3 foil = hsv(hue, 0.85, 1.0);
-    vec3 rest = vec3(0.78, 0.75, 0.70);                             /* cream-grey: what the foil is when you look straight at it */
-    vec3 col = mix(rest, foil, smoothstep(0.06, 0.55, m));
-    float lit = uPulse.w * smoothstep(uPulseR, uPulseR * 0.3, distance(vPos, uPulse.xyz));   /* the tap: a soft disc of light, cream toward orange */
-    col = mix(col, mix(vec3(0.95, 0.93, 0.90), vec3(1.0, 0.35, 0.0), 0.5 + 0.5 * vSeed), lit);
-    gl_FragColor = vec4(col, min(1.0, uAlpha * (0.72 + 0.28 * m) + lit * 0.7));
+    vec2 c = gl_PointCoord - 0.5; float r = length(c);
+    if (r > 0.5) discard;
+    float soft = smoothstep(0.5, 0.2, r);                            /* a soft round mote, no hard disc edge */
+    vec3 cream = vec3(0.949, 0.933, 0.898), orange = vec3(1.0, 0.353, 0.0);
+    vec3 col = mix(cream, orange, vHeat);
+    float a = uAlpha * (0.45 + 0.55 * vSeed) + 0.45 * vHeat;         /* dim, varied by seed; warmer points are brighter while they move */
+    gl_FragColor = vec4(col, min(1.0, a) * soft);
   }`;
 
 /* The debris is two populations in one buffer: a share seeded on the cracks (the bake's `debris` points, which leave the
    glass along their own outward velocity as the release runs), and the rest spread through the whole hero volume, so the
    field reads as one organic scatter, a little denser at the fracture, with no emitter edges. */
 export const CRACK_SHARE = 0.4;
-export const SPREAD = { x: 3.4, y: 3.0, z: 1.3 };
-export function makeDebris(seedGeometry, count) {
+export const SPREAD = { landscape: { x: 3.4, y: 3.0, z: 1.3 }, portrait: { x: 1.7, y: 3.6, z: 1.1 } };   // the ambient share fills the window's own shape, so a narrow phone does not spend half its motes off-screen
+export function makeDebris(seedGeometry, count, spread = SPREAD.landscape) {
   const src = seedGeometry.attributes.position.array;
   const nCrack = Math.min(Math.round(count * CRACK_SHARE), src.length / 3), n = count;
   const pos = new Float32Array(n * 3), vel = new Float32Array(n * 3), seed = new Float32Array(n), off = new Float32Array(n * 3);
@@ -155,7 +164,7 @@ export function makeDebris(seedGeometry, count) {
       vel[i * 3] = (ox + jx) * speed; vel[i * 3 + 1] = (0.15 + jy) * speed; vel[i * 3 + 2] = (oz + jz) * speed;
     } else {
       // the ambient share: anywhere in the hero volume, drifting a little as it arrives
-      pos[i * 3] = (rnd() * 2 - 1) * SPREAD.x; pos[i * 3 + 1] = (rnd() * 2 - 1) * SPREAD.y; pos[i * 3 + 2] = (rnd() * 2 - 1) * SPREAD.z;
+      pos[i * 3] = (rnd() * 2 - 1) * spread.x; pos[i * 3 + 1] = (rnd() * 2 - 1) * spread.y; pos[i * 3 + 2] = (rnd() * 2 - 1) * spread.z;
       vel[i * 3] = (rnd() - 0.5) * 0.3; vel[i * 3 + 1] = (rnd() - 0.5) * 0.3; vel[i * 3 + 2] = (rnd() - 0.5) * 0.3;
     }
     seed[i] = rnd();
@@ -165,31 +174,39 @@ export function makeDebris(seedGeometry, count) {
   g.setAttribute('aVel', new THREE.BufferAttribute(vel, 3));
   g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
   g.setAttribute('aOff', new THREE.BufferAttribute(off, 3).setUsage(THREE.DynamicDrawUsage));
+  const heat = new Float32Array(n);
+  g.setAttribute('aHeat', new THREE.BufferAttribute(heat, 1).setUsage(THREE.DynamicDrawUsage));
   const m = new THREE.ShaderMaterial({
     vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false,
-    uniforms: { uRelease: { value: 0 }, uView: { value: new THREE.Vector2() }, uAlpha: { value: 0 }, uSize: { value: 2.6 }, uRatio: { value: 1 }, uPulse: { value: new THREE.Vector4(0, 0, 0, 0) }, uPulseR: { value: 1 } },   // w = 0: no light until a tap (Vector4 defaults w to 1)
+    uniforms: { uRelease: { value: 0 }, uAlpha: { value: 0 }, uSize: { value: DUST_SIZE }, uRatio: { value: 1 } },
   });
   const points = new THREE.Points(g, m); points.frustumCulled = false; points.visible = false;
-  points.userData.flow = { n, off, v: new Float32Array(n * 3), energy: 0 };
+  points.userData.flow = { n, off, heat, v: new Float32Array(n * 3), energy: 0, hot: false };
   return points;
 }
 
 /* ---------- the flow: the field answers the pointer and a tap on empty space ----------
-   Integrated on the CPU per frame, only while the pointer is moving, a pulse is live, or the field still has energy.
+   Integrated on the CPU per frame, only while the pointer is moving, a push is live, or the field still has energy.
    Each point carries an offset from its own path with a spring back to zero (FLOW_K) and damping (FLOW_C). Under the
-   pointer, points within FLOW_R follow its velocity and spread a little from it, weighted by distance; faster movement
-   pushes harder. A pulse is one outward impulse inside PULSE_R that decays over PULSE_MS, while the shader lights the
-   same disc. Nothing runs at rest. */
-export const FLOW_K = 4.0, FLOW_C = 2.6, FLOW_R = 1.45, FLOW_FOLLOW = 5.0, FLOW_SPREAD = 0.9, FLOW_VMAX = 14;
-export const PULSE_R = 1.9, PULSE_PUSH = 70, PULSE_MS = 900;
+   pointer, points within FLOW_R follow its velocity and part a little around it; faster movement pushes harder, and the
+   influence stays local. A tap is one gentle outward push inside PULSE_R over the first part of PULSE_MS: it moves the
+   motes that are already there and adds none. Each point's heat is its speed, eased, so colour follows motion only. */
+export const DUST = { desktop: 375, mobile: 150 };   // a quarter of the old field: atmosphere, not confetti
+export const DUST_SIZE = 1.35, DUST_ALPHA = 0.3;
+export const FLOW_K = 4.0, FLOW_C = 2.8, FLOW_R = 1.0, FLOW_FOLLOW = 4.5, FLOW_SPREAD = 0.45, FLOW_VMAX = 12;
+export const PULSE_R = 1.2, PULSE_PUSH = 34, PULSE_MS = 900;
+export const HEAT_SPEED = 0.55;                     // speed (units/s) at which a mote is fully orange
 export function stepFlow(points, dt, ctx) {
   const F = points.userData.flow; if (!F) return false;
-  const { n, off, v } = F;
+  const { n, off, v, heat } = F;
   const P = points.geometry.attributes.position.array, V = points.geometry.attributes.aVel.array, S = points.geometry.attributes.aSeed.array;
   const rel = points.material.uniforms.uRelease.value;
   const ptr = ctx.pointer, pulse = ctx.pulse;
   const active = !!ptr && ptr.speed > 0.02, live = !!pulse && pulse.k > 0.001;
-  if (!active && !live && F.energy < 1e-5) return false;
+  if (!active && !live && F.energy < 1e-5) {
+    if (F.hot) { heat.fill(0); off.fill(0); v.fill(0); F.hot = false; points.geometry.attributes.aHeat.needsUpdate = true; points.geometry.attributes.aOff.needsUpdate = true; }
+    return false;
+  }
   let energy = 0;
   for (let i = 0; i < n; i++) {
     const i3 = i * 3, g = rel * (0.85 + 0.5 * S[i]);
@@ -198,30 +215,37 @@ export function stepFlow(points, dt, ctx) {
     if (active) {
       const dx = px - ptr.x, dy = py - ptr.y, dz = pz - ptr.z, d = Math.sqrt(dx * dx + dy * dy + dz * dz);
       if (d < FLOW_R) {
-        const w = (1 - d / FLOW_R) ** 2, sp = ptr.speed * FLOW_SPREAD * w / (d + 0.05);
+        const w = (1 - d / FLOW_R) ** 2, sp = ptr.speed * FLOW_SPREAD * w / (d + 0.08);
         ax += ptr.vx * FLOW_FOLLOW * w + dx * sp; ay += ptr.vy * FLOW_FOLLOW * w + dy * sp; az += ptr.vz * FLOW_FOLLOW * w + dz * sp;
       }
     }
     if (live) {
       const dx = px - pulse.x, dy = py - pulse.y, dz = pz - pulse.z, d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-      if (d < PULSE_R) { const w = (1 - d / PULSE_R) * pulse.k * PULSE_PUSH / (d + 0.08); ax += dx * w; ay += dy * w; az += dz * w; }
+      if (d < PULSE_R) { const w = (1 - d / PULSE_R) ** 2 * pulse.k * PULSE_PUSH / (d + 0.15); ax += dx * w; ay += dy * w; az += dz * w; }
     }
     v[i3] += ax * dt; v[i3 + 1] += ay * dt; v[i3 + 2] += az * dt;
     off[i3] += v[i3] * dt; off[i3 + 1] += v[i3 + 1] * dt; off[i3 + 2] += v[i3 + 2] * dt;
-    energy += v[i3] * v[i3] + v[i3 + 1] * v[i3 + 1] + v[i3 + 2] * v[i3 + 2] + off[i3] * off[i3] + off[i3 + 1] * off[i3 + 1] + off[i3 + 2] * off[i3 + 2];
+    const sp2 = v[i3] * v[i3] + v[i3 + 1] * v[i3 + 1] + v[i3 + 2] * v[i3 + 2];
+    const target = Math.min(1, Math.sqrt(sp2) / HEAT_SPEED);
+    heat[i] += (target - heat[i]) * (target > heat[i] ? 0.5 : 0.08);   // warms quickly, cools slowly back to cream
+    energy += sp2 + off[i3] * off[i3] + off[i3 + 1] * off[i3 + 1] + off[i3 + 2] * off[i3 + 2] + heat[i] * heat[i] * 0.01;
   }
-  F.energy = energy / n;
+  F.energy = energy / n; F.hot = true;
   points.geometry.attributes.aOff.needsUpdate = true;
+  points.geometry.attributes.aHeat.needsUpdate = true;
   return true;
 }
 
 /* ---------- the light: a studio nobody sees, prefiltered once ----------
-   Three soft-edged panels on black, reflected by the glass and drawn nowhere. A broad vertical softbox upper left toward
-   the viewer, warm cream, for the long reflection; a thin strip opposite, behind and to the right, for the rim; and a
-   small, dim orange panel placed where the shell around the impact point reflects it, so a restrained orange bounce
-   sits near the fracture and slides over the glass as the bulb turns. The panels are feathered, so their reflections
-   have soft edges and a clear centre; the prefilter blur is near zero, so they stay crisp on the low roughness. */
-export function makeEnvironment(renderer) {
+   Soft-edged panels on black, reflected by the glass and drawn nowhere. Glass returns about 4% of the light head-on and
+   nearly all of it at a grazing angle, and a grazing ray off the silhouette points behind the object. So:
+   - a broad warm-cream softbox, upper left toward the viewer: the long highlight down the lit side;
+   - a tall backlight behind and to the left: the grazing rays off the left silhouette see it, a clean rim on one side;
+   - a thin strip behind and to the right: the opposing rim, narrower and dimmer;
+   - a very dim, very soft card behind the camera: the 4% the body returns head-on, so black glass reads against black;
+   - a thin orange streak where the shell around the impact reflects at rest: a restrained bounce near the fracture.
+   Nothing is drawn on the mesh; as the bulb turns, its normals sweep through this studio and the light moves with them. */
+export function makeEnvironment(renderer, tiltQ) {
   const pm = new THREE.PMREMGenerator(renderer);
   const env = new THREE.Scene();
   const feathered = (feather) => {                                       // a soft-edged rectangle as a texture: 1 in the middle, 0 at the border
@@ -234,13 +258,19 @@ export function makeEnvironment(renderer) {
     }
     g.putImageData(img, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.NoColorSpace; return t;
   };
-  const panel = (w, h, x, y, z, color, k, feather) => {
+  const panel = (w, h, pos, color, k, feather) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: feathered(feather), color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
-    m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m);
+    m.position.copy(pos); m.lookAt(0, 0, 0); env.add(m);
   };
-  panel(3.6, 8.5, -5, 2.5, 3.5, LINE, 5.5, 0.35);   // softbox: broad, vertical, upper left, toward the viewer. Glass returns ~4% head-on, so the panel is bright
-  panel(0.6, 6.5, 5, -0.5, -3.5, LINE, 3.2, 0.5);   // rim: thin, opposite
-  panel(1.3, 1.3, 3.5, 5, 2.3, LIVE, 0.6, 0.6);     // orange bounce: small and dim, where the glass around the impact reflects it
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  panel(3.4, 8.5, V(-5, 2.2, 3.4), LINE, 6.0, 0.35);    // key softbox
+  panel(3.6, 10, V(-2.6, 0.8, -5.2), LINE, 5.0, 0.45);  // backlight: the left rim
+  panel(0.5, 7, V(3.2, -0.4, -5), LINE, 2.4, 0.5);      // opposing rim, thin
+  panel(16, 12, V(0, 0.5, 9), LINE, 0.22, 0.95);        // front card: the body's faint 4%
+  // the orange card sits on the reflection of the view ray off the shell at the impact point, in the arrival pose
+  const n = new THREE.Vector3(IMPACT.x, IMPACT.y, IMPACT.z).normalize().applyQuaternion(tiltQ || new THREE.Quaternion());
+  const d = V(0, 0, -1), r = d.clone().addScaledVector(n, -2 * d.dot(n)).normalize();
+  panel(0.22, 1.4, r.multiplyScalar(6), LIVE, 0.9, 0.5);   // a thin streak, not a patch: a patch reflects as a stain in the dome
   const tex = pm.fromScene(env, 0.004).texture;
   pm.dispose(); env.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.map.dispose(); o.material.dispose(); } });
   return tex;
@@ -284,7 +314,8 @@ export function splitFragment(geo, home) {
 export function createEntry(root, opts = {}) {
   const still = !!opts.still;                                          // reduced motion: the settled frame, once, tappable, no drift, no hue
   const track = root.getElementById('track'), stage = root.getElementById('stage'), canvas = root.getElementById('bulb');
-  const mark = root.querySelector('.mark'), settled = root.querySelector('.settled');
+  const hero = root.querySelector('.hero'), settled = root.querySelector('.settled');
+  const cue = root.querySelector('.cue'), cueMark = cue && cue.querySelector('.cue-rule i'), cueRule = cue && cue.querySelector('.cue-rule');
   const labels = [...root.querySelectorAll('.nav a')];
   const mobile = window.matchMedia('(max-width: 760px)');
   const fine = window.matchMedia('(pointer: fine)').matches;
@@ -296,8 +327,9 @@ export function createEntry(root, opts = {}) {
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(GROUND, 6, 10);
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
+  const TILT_Q = new THREE.Quaternion().setFromEuler(new THREE.Euler(TILT.x, 0, TILT.z, 'ZXY'));
   if (!flat) {
-    scene.environment = makeEnvironment(renderer);                    // no point or directional lights: a point light on glass is a hot dot, and a dot is a glow
+    scene.environment = makeEnvironment(renderer, TILT_Q);            // no point or directional lights: a point light on glass is a hot dot, and a dot is a glow
   }
 
   const group = new THREE.Group();                                     // the bulb; rotated as one for the turn
@@ -313,7 +345,9 @@ export function createEntry(root, opts = {}) {
 
   const parts = { shells: [], frags: [], glass: null, wire: null, cracks: null, crackSegs: 0, base: null, baseSolid: null, baseGeom: null, filament: null, dims: null, debris: null, points: null };
   const box = new THREE.Box3();
-  let portrait = false, ratio = 1;
+  const sphere = { c: new THREE.Vector3(), r: 1 };                     // the bulb's bounding sphere in its own space: the pivot and the framing
+  const anchor = new THREE.Vector3();                                  // where the sphere's centre sits in the world
+  let portrait = false, ratio = 1, cueW = 0, zArrive = 8, zSettle = 8;
   const camHome = new THREE.Vector3(0, 0, 8);
   let fogFar = 10;
   let sel = null, selK = 0;                                          // the move to a chosen fragment, then its section
@@ -327,18 +361,20 @@ export function createEntry(root, opts = {}) {
     if (parts.points) parts.points.material.uniforms.uRatio.value = ratio;
     if (box.isEmpty()) return;
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const size = new THREE.Vector3(); box.getSize(size);
     portrait = h > w;
-    let z, vh;
+    const D = 2 * sphere.r;
+    let z, vh, vw;
     if (portrait) {
-      const vw = size.x * 1.18; vh = vw / camera.aspect; z = vh / (2 * tan);
-      group.position.set(-(box.min.x + box.max.x) / 2, 0.38 * vh - box.max.y, 0);
+      vw = D / FRAME.portrait.fill; vh = vw / camera.aspect; z = vh / (2 * tan);
+      anchor.set(0, vh * (0.5 - FRAME.portrait.y), 0);
     } else {
-      vh = size.y * 1.32; z = vh / (2 * tan);
-      group.position.set(0, -(box.min.y + box.max.y) / 2 + 0.03 * vh, 0);
+      vh = D / FRAME.landscape.fill; vw = vh * camera.aspect; z = vh / (2 * tan);
+      anchor.set(vw * FRAME.landscape.x, vh * (0.5 - FRAME.landscape.y), 0);
     }
+    if (cueRule) cueW = cueRule.getBoundingClientRect().width;
+    zArrive = z; zSettle = (portrait ? SETTLED_SPAN.portrait / camera.aspect : SETTLED_SPAN.landscape) / (2 * tan);
     camHome.set(0, 0, z); if (!sel) camera.position.copy(camHome);
-    scene.fog.near = z - 1.2; scene.fog.far = z + 2.6; fogFar = z + 2.6;
+    scene.fog.near = z - 0.75 * sphere.r; scene.fog.far = z + 1.6 * sphere.r; fogFar = scene.fog.far;
   }
 
   function build(gltf) {
@@ -382,17 +418,21 @@ export function createEntry(root, opts = {}) {
         parts.debris = o.geometry;
       }
     });
-    if (parts.debris) { parts.points = makeDebris(parts.debris, mobile.matches ? 600 : 1500); group.add(parts.points); }
+    if (parts.debris) { parts.points = makeDebris(parts.debris, mobile.matches ? DUST.mobile : DUST.desktop, stage.clientHeight > stage.clientWidth ? SPREAD.portrait : SPREAD.landscape); group.add(parts.points); }
     if (!flat) {                                                        // the whole envelope at rest: one lathe, the bake's own profile
       const lathe = new THREE.LatheGeometry(glassProfile(), LONGS);
       parts.glass = new THREE.Mesh(lathe, glassMat); group.add(parts.glass);
     }
     box.makeEmpty();
-    for (const g of [parts.wire && parts.wire.geometry, parts.baseGeom, parts.dims && parts.dims.geometry]) if (g) { g.computeBoundingBox(); box.union(g.boundingBox); }
+    for (const g of [parts.wire && parts.wire.geometry, parts.baseGeom]) if (g) { g.computeBoundingBox(); box.union(g.boundingBox); }   // the bulb only: the dimension marks are no longer part of the arrival
+    box.getCenter(sphere.c); sphere.r = 0;
+    for (const g of [parts.wire && parts.wire.geometry, parts.baseGeom]) if (g) { const a = g.attributes.position.array; for (let i = 0; i < a.length; i += 3) sphere.r = Math.max(sphere.r, Math.hypot(a[i] - sphere.c.x, a[i + 1] - sphere.c.y, a[i + 2] - sphere.c.z)); }
+    if (parts.dims) parts.dims.visible = false;
     frame();
   }
 
   /* ---------- per frame ---------- */
+  const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _pc = new THREE.Vector3(), _X = new THREE.Vector3(1, 0, 0), _Y = new THREE.Vector3(0, 1, 0);
   const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _sepP = new THREE.Vector3(), _navP = new THREE.Vector3();
   const screen = [];                                                   // per fragment: centre and radius in CSS px, for the labels and the pointer
   let pointer = null, clock = 0;
@@ -498,10 +538,20 @@ export function createEntry(root, opts = {}) {
     const t = st.scroll;
     const p = poseAt(t);
     clock = now / 1000;
-    group.rotation.y = p.rot + st.view.x * 0.10;
-    group.rotation.x = st.view.y * 0.06;
-    if (mark) { mark.style.opacity = p.text.toFixed(3); mark.style.transform = `translate3d(0, ${((1 - p.text) * 10).toFixed(1)}px, 0)`; }
-    dimMat.opacity = 0.38 * p.dims; if (parts.dims) parts.dims.visible = p.dims > 0.004;
+    camHome.set(0, 0, zArrive + (zSettle - zArrive) * p.settle); if (!sel) camera.position.copy(camHome);   // the camera eases to the settled framing with the pieces
+    // the pose: the arrival lean, turned about the world's vertical by the scroll, nudged by tilt; pivot at the sphere's centre
+    _qa.setFromAxisAngle(_Y, p.rot + st.view.x * 0.10); _qb.setFromAxisAngle(_X, st.view.y * 0.06);
+    group.quaternion.copy(_qb).multiply(_qa).multiply(TILT_Q);
+    group.position.copy(anchor).sub(_pc.copy(sphere.c).applyQuaternion(group.quaternion));
+    if (hero) {   // the headline is gone before it has travelled far enough to slide under the header, and never lingers as a grey half-state
+      const k = Math.max(0, 1 - (1 - p.text) * 1.7);
+      hero.style.opacity = k.toFixed(3); hero.style.transform = `translate3d(0, ${(-(1 - p.text) * 24).toFixed(1)}px, 0)`; hero.style.visibility = k < 0.002 ? 'hidden' : '';
+    }
+    if (cue) {
+      const k = 1 - seg(t, 0.74, 0.84);                                 // the cue is the page's progress until the pieces become the navigation
+      cue.style.opacity = k.toFixed(3); cue.style.visibility = k < 0.002 ? 'hidden' : '';
+      if (cueMark) cueMark.style.transform = `translate3d(${(Math.max(0, Math.min(1, t)) * Math.max(0, cueW - 2)).toFixed(1)}px, 0, 0)`;
+    }
     scene.fog.far = fogFar + 60 * p.settle;                             // the settled pieces leave the haze entirely: depth is parallax and scale, never dimness
     if (settled) { const k = still ? 1 : settledAt(t); settled.style.opacity = k.toFixed(3); settled.style.pointerEvents = k > 0.5 ? 'auto' : 'none'; }
     if (parts.cracks) { parts.cracks.geometry.setDrawRange(0, Math.round(parts.crackSegs * p.crack) * 2); parts.cracks.visible = !p.broken; }
@@ -525,16 +575,13 @@ export function createEntry(root, opts = {}) {
       const u = parts.points.material.uniforms;
       parts.points.visible = p.broken && p.release > 0;
       u.uRelease.value = p.release;
-      u.uAlpha.value = 0.62 * Math.min(1, p.release / 0.12) * (1 - selK);   // the field is thin now, so each point must hold on its own on a phone
-      u.uView.value.set(still ? 0 : st.view.x, still ? 0 : st.view.y);
-      // the flow: the pointer's velocity fades out 140 ms after its last move; a pulse pushes once and lights for PULSE_MS
+      u.uAlpha.value = DUST_ALPHA * Math.min(1, p.release / 0.12) * (1 - selK);
+      // the flow: the pointer's velocity fades out 140 ms after its last move; a tap pushes once, gently, then lets go
       if (flow.pointer && now - flow.pointer.at > 140) flow.pointer = null;
       if (flow.pulse) {
         const uP = Math.min(1, (now - flow.pulse.born) / PULSE_MS);
-        flow.pulse.k = Math.max(0, 1 - uP * 2.5);                     // the push is over in the first 40%; the light outlasts it
-        u.uPulse.value.set(flow.pulse.x, flow.pulse.y, flow.pulse.z, (1 - uP) * (1 - uP));
-        u.uPulseR.value = 0.5 + 1.9 * uP;                             // the light widens as it fades
-        if (uP >= 1) { flow.pulse = null; u.uPulse.value.w = 0; } else moving = true;
+        flow.pulse.k = Math.max(0, 1 - uP * 2.5);
+        if (uP >= 1) flow.pulse = null; else moving = true;
       }
       if (!still && parts.points.visible && stepFlow(parts.points, Math.min(0.05, dt / 1000), flow)) moving = true;
     }
@@ -591,7 +638,7 @@ export function createEntry(root, opts = {}) {
       tick();
     }
   }
-  return { engine, ready, parts, group, camera, scene, renderer, poseAt, screen, select, unselect, flow, stepFlow, toLocal, renderOnce: () => renderer.render(scene, camera), get portrait() { return portrait; }, get selecting() { return sel; } };
+  return { engine, ready, parts, group, camera, scene, renderer, poseAt, screen, select, unselect, flow, stepFlow, toLocal, renderOnce: () => renderer.render(scene, camera), renderAt: (t, vx = 0, vy = 0) => render({ scroll: t, view: { x: vx, y: vy } }, 16, performance.now()), get portrait() { return portrait; }, get selecting() { return sel; } };
 }
 
 /* ---------- boot ---------- */

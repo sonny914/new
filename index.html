@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Quiet Bands</title>
-<meta name="description" content="Quiet Bands. Custom software, Houston, Texas. Before you build it, try to kill it." />
+<meta name="description" content="Quiet Bands. Custom software, built around the work. Houston, Texas." />
 <meta name="theme-color" content="#000000" />
 <link rel="canonical" href="https://quietbands.com/" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/bulb/entry.css?v=6" />
+<link rel="stylesheet" href="/assets/bulb/entry.css?v=7" />
 <script>document.documentElement.classList.add('js');</script>
 <script type="importmap">
 { "imports": {
@@ -35,6 +35,23 @@
 </script>
 </head>
 <body>
+
+<header class="top">
+  <a class="brand" href="/"><svg class="qb" viewBox="0 0 60 30" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="6"/><rect x="0" y="12" width="60" height="6"/><rect x="0" y="24" width="60" height="6"/></svg><span>Quiet Bands</span></a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <nav aria-label="Menu">
+    <ul>
+      <li><a href="/rd/#experiments">Experiments</a></li>
+      <li><a href="/rd/#build-log">Build log</a></li>
+      <li><a href="/rd/#work">Work</a></li>
+      <li><a href="/rd/#contact">Contact</a></li>
+    </ul>
+    <p><a href="mailto:jason@quietbands.com">jason@quietbands.com</a></p>
+  </nav>
+</div>
 
 <main>
   <section class="track" id="track" aria-label="Quiet Bands">
@@ -52,9 +69,13 @@
         <a href="/rd/#contact" data-frag="3">Contact</a>
       </nav>
 
-      <div class="mark">
-        <h1><svg class="qb" viewBox="0 0 60 30" aria-hidden="true" focusable="false"><rect x="0" y="0" width="60" height="6"/><rect x="0" y="12" width="60" height="6"/><rect x="0" y="24" width="60" height="6"/></svg><span>Quiet Bands</span></h1>
-        <p>Before you build it, try to kill it.</p>
+      <div class="hero">
+        <h1><span>Custom software.</span> <span>Built around the work.</span></h1>
+      </div>
+
+      <div class="cue" aria-hidden="true">
+        <span class="cue-label"><span class="cue-fine">Scroll</span><span class="cue-touch">Swipe up</span></span>
+        <span class="cue-rule"><i></i></span>
       </div>
 
       <div class="settled">
@@ -65,6 +86,7 @@
   </section>
 </main>
 
-<script type="module" src="/assets/bulb/entry.js?v=12"></script>
+<script type="module" src="/assets/bulb/entry.js?v=14"></script>
+<script type="module" src="/assets/bulb/menu.js?v=1"></script>
 </body>
 </html>

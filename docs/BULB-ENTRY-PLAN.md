@@ -282,3 +282,39 @@ Reported from the phone: still cracking before the turn, and no particles.
 - **The turn starts with the first flick** (`MAP.hold` 0.03) and the glass stays whole until 0.22, by which point it has turned about 90°. The mark at rest is a hairline (`CRACK0` 0.06), not a crack under way.
 - **The points hold on their own** now that the field is thin: size 2.6 (varied 0.7–1.4 by seed), alpha 0.62.
 - **Checks.** Phone frames at rest, 0.10, 0.20 (whole, turned), 0.32 (cracking), 0.60 (separating, field arriving), settled; gate 3 and gate 4 hold; `npm test` 49; no shader errors.
+
+---
+
+## Reference pass: the anime.js v4 homepage recording
+
+The user shared a phone recording of the anime.js v4 homepage as the reference for presentation and sequence: arrival on a lit object with the headline top left and a scroll ruler at the bottom; the object turns; it opens into an exploded view along its own axis while the camera re-frames; labels arrive on leader lines as the pieces settle; the next section follows.
+
+### What was preventing it (audit of the code, not the look)
+
+- **The turn was invisible by construction.** The bulb stood upright and turned about its own axis. A lathe is the same at every angle about that axis, and the reflections come from a world-fixed environment, so only the grid lines slid. The first visible change on scroll was the crack, which is why it read as "cracking before the spin".
+- **A flat, dead-on view.** The camera looked straight at an upright bulb: a 2D silhouette with no three-quarter form for the turn to reveal. The reference's object leans across the frame.
+- **Framing included the dimension marks.** The bounding box unioned the marks, so the bulb was framed smaller than the window allowed and pushed up to make room for text at the bottom.
+- **Glass with no value structure.** Fully transmissive glass on black shows black; the old environment gave a few small highlights and nothing on the silhouette. The reference reads because one side of the object is lit hard and the rest is dark.
+- **No arrival.** The wordmark and one line sat small at the bottom; no headline, no cue, no menu.
+- **Confetti.** The points shader coloured each point from the tilt angle (a rainbow that flickered with every gyro reading), at 1500/600 points, up to ~5 device px, alpha 0.62.
+
+No animation library was needed: the scroll pose was already a pure function of t; the problems were pose, framing, light and composition.
+
+### Stage 1: arrival and the intact turn
+
+- **Pose.** The bulb leans (`TILT` x 0.34, z −0.46: crown to the upper right and toward the camera). The scroll turns it about the world vertical, so the lean swings round and the light slides over the glass. The pivot is the centre of the bulb's bounding sphere, so it turns in place.
+- **Turn.** Scrubbed, not eased in: `turnCurve` tracks the scroll from the first pixel and slows only into the break. 18° by 4% of the track, 83° by 12%, 152° at the first new crack (22%). The track is 400vh (was 320vh), so the whole turn gets about two-thirds of a screen of scroll.
+- **Framing.** By the bounding sphere, not a box: 90% of the width on a phone with the centre at 57.5% down; 80% of the height on desktop, centre offset 14% right. The dimension marks are out of the composition. As the pieces settle, the camera eases from this framing to the span the settled layout was measured for, so the nav keeps its layout (gate 3 boxes unchanged).
+- **Light.** A studio in the environment map only: key softbox upper left front; a tall backlight behind left, which the grazing rays off the left silhouette see (a clean rim on one side); a thin opposing strip behind right; a very dim, very soft card behind the camera for the body's 4% head-on return, so black glass reads against black; a thin orange streak on the impact point's reflection. Glass darker and clearer (tint `#6E6A64`, roughness 0.035, clearcoat 0.4 at 0.04).
+- **Arrival composition.** Fixed header: the three-band mark and Quiet Bands (link home) left, Menu right (always there; becomes Close). Headline top left, "Custom software. Built around the work.", one family, 560 weight, 88% width. It leaves as the page would scroll it away (fade and 56 px up over 0.5–13%). Scroll cue at the bottom: "Scroll" / "Swipe up" over a ruler that is also the page's progress; its one orange mark is where you are. The cue fades as the pieces become the navigation.
+- **Menu.** `assets/bulb/menu.js`, no dependencies: full-screen black list of the four sections and the address; Escape closes; focus moves in and back; the page is inert behind it.
+- **Particles.** A quarter of the count (375 desktop, 150 phone). Tiny, dim, warm-cream motes with a little size and brightness variation; no hue from the view, no pulse light, nothing flashes. Heat is speed: a mote the pointer or a tap sets moving warms toward orange and cools back to cream as its spring returns it. Pointer influence radius 0.85 (was 1.45). A tap gives one gentle push inside 1.1 and adds nothing.
+- **Not yet reworked.** Cracking, separation, the exploded composition, labels, and the selection transition keep their current behaviour until this stage is approved.
+
+### Critique of stage 1 (Impeccable, read-only)
+
+Design review scored the arrival 18/28 (three heuristics n/a on an experience surface). Detector: one advisory, the ruler's repeating-gradient ticks, judged a false positive (the ruler is a real progress instrument).
+
+- **Fixed in this pass.** On the phone the headline slid up under the fixed header while half faded. It now finishes fading within 24 px of travel and never holds a grey half-state.
+- **Fixed before the review read it.** The orange reflection card read as a stain; it is now a thin streak.
+- **Put to the user, not changed.** The three-band mark beside "Quiet Bands", top left, can read as a hamburger icon next to the Menu button. The arrival has no line saying what or where (a subline such as "A Houston software studio." or the old line "Before you build it, try to kill it." would fill the reference's subline slot). The crack at rest turns away from the camera during the turn. Hubot Sans should be self-hosted so the headline never falls back.

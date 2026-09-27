@@ -4,8 +4,9 @@
 :root{
   --ground:#000000; --line:#F2EEE5; --line-dim:rgba(242,238,229,.68); --text:#F2EEE5; --live:#FF5A00;
   --ease-out:cubic-bezier(.23,1,.32,1); --ease-in-out:cubic-bezier(.77,0,.175,1);
-  --gutter:22px;
+  --gutter:22px; --line-faint:rgba(242,238,229,.3);
 }
+@media (min-width:761px){ :root{--gutter:40px} }
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:var(--ground);color:var(--text);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 body{font-family:'Hubot Sans',system-ui,sans-serif;font-weight:500;font-stretch:100%;background:var(--ground);overflow-x:clip;-webkit-font-smoothing:antialiased}
@@ -14,19 +15,55 @@ a{color:inherit;text-decoration:none;touch-action:manipulation}
 
 /* ---------- live: a sticky window over a scroll track ---------- */
 .track{position:relative}
-html.live .track{height:320vh}
+html.live .track{height:400vh}   /* a longer track: the turn gets about two-thirds of a screen of scroll to itself */
 .stage{position:relative;height:100svh;overflow:hidden;background:var(--ground)}
 html.live .stage{position:sticky;top:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #bulb{display:block;width:100%;height:100%}
 html.nogl #bulb,html:not(.js) #bulb{display:none}
 
-/* the two lines: bottom-left, inside the margin, above the home indicator */
-.mark{position:absolute;left:var(--gutter);right:var(--gutter);bottom:calc(var(--gutter) + env(safe-area-inset-bottom));pointer-events:none;will-change:opacity,transform}
-.mark h1{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:500;letter-spacing:-.005em;line-height:1.1}
+/* ---------- the header: the mark and the name, and a Menu that is always there ---------- */
+.top{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(8px + env(safe-area-inset-top)) calc(var(--gutter) - 2px) 8px var(--gutter);pointer-events:none}
+.top > *{pointer-events:auto}
+.brand{display:inline-flex;align-items:center;gap:10px;min-height:44px;font-size:17px;font-weight:600;letter-spacing:-.01em;color:var(--text)}
 .qb{display:inline-block;width:22px;height:11px;flex:0 0 auto}
 .qb rect{fill:currentColor}
-.mark p{margin-top:8px;font-size:15px;font-weight:400;color:var(--line-dim);line-height:1.4;max-width:34ch}
-@media (min-width:761px){ .mark h1{font-size:26px} .mark p{font-size:16px} }
+.menu-btn{min-height:44px;min-width:44px;padding:0 2px 0 14px;background:none;border:0;color:var(--text);font:inherit;font-size:16px;font-weight:500;cursor:pointer;
+  transition:color 180ms var(--ease-out),transform 160ms var(--ease-out)}
+.menu-btn:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){ .brand:hover,.menu-btn:hover{color:var(--live)} .brand{transition:color 180ms var(--ease-out)} }
+
+/* the menu: the four sections and the address, large, on black */
+.menu{position:fixed;inset:0;z-index:15;background:var(--ground);overflow:auto;overscroll-behavior:contain;opacity:0;transition:opacity 200ms var(--ease-out)}
+.menu.open{opacity:1}
+.menu nav{min-height:100%;display:flex;flex-direction:column;justify-content:center;gap:32px;padding:calc(88px + env(safe-area-inset-top)) var(--gutter) calc(40px + env(safe-area-inset-bottom))}
+.menu ul{list-style:none;display:flex;flex-direction:column;gap:4px}
+.menu li a{display:inline-flex;align-items:center;min-height:56px;font-size:clamp(34px,9vw,64px);font-weight:560;font-stretch:90%;letter-spacing:-.025em;line-height:1;
+  transform:translate3d(0,10px,0);transition:transform 260ms var(--ease-out),color 180ms var(--ease-out)}
+.menu.open li a{transform:none}
+.menu.open li:nth-child(2) a{transition-delay:30ms,0ms} .menu.open li:nth-child(3) a{transition-delay:60ms,0ms} .menu.open li:nth-child(4) a{transition-delay:90ms,0ms}
+.menu p a{display:inline-flex;align-items:center;min-height:44px;font-size:16px;color:var(--line-dim)}
+.menu a:active{color:var(--live)}
+@media (hover:hover) and (pointer:fine){ .menu a:hover{color:var(--live)} }
+html.menu-open{overflow:hidden}
+
+/* ---------- the arrival: one headline, top left, above the bulb; it leaves as the page would scroll it away ---------- */
+.hero{position:absolute;left:var(--gutter);right:var(--gutter);top:calc(76px + env(safe-area-inset-top));pointer-events:none;will-change:opacity,transform}
+.hero h1{font-size:clamp(38px,10.6vw,76px);font-weight:560;font-stretch:88%;line-height:.98;letter-spacing:-.028em;color:var(--text);max-width:13em;text-wrap:balance}
+.hero h1 span{display:block}
+@media (min-width:761px){ .hero{top:calc(112px + env(safe-area-inset-top));right:auto;max-width:min(44vw,640px)} .hero h1{font-size:clamp(48px,5.4vw,84px)} }
+
+/* the cue: a ruler that is also the page's progress; its one orange mark is where you are */
+.cue{position:absolute;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(420px,calc(100% - 2 * var(--gutter)));
+  display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:none}
+.cue-label{font-size:14px;font-weight:450;color:var(--line-dim)}
+.cue-touch{display:none}
+@media (pointer:coarse){ .cue-touch{display:inline} .cue-fine{display:none} }
+.cue-rule{position:relative;display:block;width:100%;height:12px;
+  background:
+    repeating-linear-gradient(90deg,var(--line-faint) 0 1px,transparent 1px 40px) left center/100% 12px no-repeat,
+    repeating-linear-gradient(90deg,rgba(242,238,229,.16) 0 1px,transparent 1px 8px) left center/100% 6px no-repeat}
+.cue-rule i{position:absolute;left:0;top:-2px;width:2px;height:16px;background:var(--live);will-change:transform}
 
 /* ---------- the nav: four labels, one beside each settled fragment ---------- */
 html.live .nav a,html.rm .nav a{position:absolute;left:0;top:0;opacity:0;pointer-events:none;white-space:nowrap;will-change:transform,opacity;color:var(--text);font-size:16px;
@@ -38,7 +75,7 @@ html.live .stage,html.rm .stage{position:sticky;top:0;overflow:hidden}
 html.rm .track{height:100svh}
 html.rm .stage{position:relative}
 html.rm #bulb{display:block}
-html.rm .mark{display:none}
+html.rm .hero,html.rm .cue,html.nogl .cue,html:not(.js) .cue{display:none}
 
 /* the settled frame's own two lines: the name, and the one place to write to. They arrive after the labels. */
 .settled{position:absolute;left:var(--gutter);bottom:calc(var(--gutter) + env(safe-area-inset-bottom));opacity:0;pointer-events:none;will-change:opacity}
@@ -56,12 +93,12 @@ html.rm .settled{opacity:1;pointer-events:auto}
 /* ---------- the still: no WebGL, no JS ---------- */
 .still{display:none}
 html.nogl .still,html:not(.js) .still{display:block;position:absolute;inset:0;padding:calc(var(--gutter) + env(safe-area-inset-top)) var(--gutter) calc(var(--gutter) + env(safe-area-inset-bottom))}
-.still img{display:block;height:min(62svh,520px);width:auto;margin:0 auto}
-.nav{position:absolute;left:var(--gutter);top:calc(var(--gutter) + env(safe-area-inset-top));display:flex;flex-direction:column;gap:2px}
+.still img{display:block;height:min(50svh,480px);width:auto;margin:clamp(150px,24svh,240px) auto 0}   /* below the headline, above the section list */
+.nav{position:absolute;left:var(--gutter);bottom:calc(var(--gutter) + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:2px}
 html.nogl .nav,html:not(.js) .nav{display:flex}
 html.live .nav,html.rm .nav{position:absolute;inset:0;pointer-events:none;display:block}
 .nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px 0 0;font-size:15px;color:var(--line);border-bottom:1px solid transparent;transition:color 180ms var(--ease-out),border-color 180ms var(--ease-out)}
 html.nogl .nav a:active,html:not(.js) .nav a:active{color:var(--live)}
 @media (hover:hover) and (pointer:fine){ html.nogl .nav a:hover,html:not(.js) .nav a:hover{color:var(--live)} }
 
-@media (prefers-reduced-motion:reduce){ .nav a{transition:none} }
+@media (prefers-reduced-motion:reduce){ .nav a,.menu,.menu li a,.menu-btn{transition:none} .menu li a{transform:none} }

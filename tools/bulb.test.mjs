@@ -4,7 +4,7 @@ import { poseAt, labelAt, settledAt, seg, MAP, ROTATION, CRACK0, SEPARATION } fr
 
 test('the whole bulb holds still through the hold; the text is on at rest and the marks stay until the turn', () => {
   for (const t of [0, MAP.hold / 2, MAP.hold]) { const p = poseAt(t); assert.equal(p.rot, 0); assert.equal(p.dims, 1); assert.equal(p.broken, false); assert.equal(p.sep, 0); }
-  assert.equal(poseAt(0).text, 1); assert.equal(poseAt(0.05).text, 1);
+  assert.equal(poseAt(0).text, 1);
 });
 
 test('the bulb turns before the glass cracks: whole through the first fifth, then the cracks run fastest at their start', () => {
@@ -12,8 +12,9 @@ test('the bulb turns before the glass cracks: whole through the first fifth, the
   assert.ok(poseAt(MAP.crack).rot > ROTATION * 0.2, 'a clearly visible turn before the first new crack');
   const first = poseAt(MAP.crack + 0.05).crack - poseAt(MAP.crack).crack, later = poseAt(0.40).crack - poseAt(0.35).crack;
   assert.ok(first > later * 2.5, 'more crack per scroll at the start than near the end');
-  assert.ok(poseAt(0.20).text < 1 && poseAt(0.05).text === 1, 'the text begins to leave before the turn is done');
-  assert.ok(poseAt(0.06).rot > 0, 'the turn starts with the first flick');
+  assert.ok(poseAt(0.03).text < 1 && poseAt(MAP.crack).text === 0, 'the headline answers the first flick and is gone before the glass cracks');
+  assert.ok(poseAt(MAP.hold + 0.02).rot > Math.PI / 30, 'the turn tracks the scroll from the first flick: more than 6° after 2% of the track');
+  assert.ok(poseAt(MAP.crack).rot > Math.PI / 2, 'at least a quarter turn, whole, before the first new crack');
   assert.ok(CRACK0 > 0 && CRACK0 <= 0.08, 'a hairline at rest, not a crack under way');
 });
 
