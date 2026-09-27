@@ -103,20 +103,22 @@ export function orderCracks(pos, origin) {
 
 /* ---------- the debris: one Points object, one shader. Position = seed + velocity × release; colour from the view angle. ---------- */
 const POINT_VS = `
-  attribute vec3 aVel; attribute float aSeed;
-  uniform float uRelease; uniform float uSize; uniform float uRatio;
-  varying float vSeed;
+  attribute vec3 aVel; attribute float aSeed; attribute vec3 aOff;
+  uniform float uRelease; uniform float uSize; uniform float uRatio; uniform vec4 uPulse; uniform float uPulseR;
+  varying float vSeed; varying vec3 vPos;
   void main() {
-    vec3 p = position + aVel * uRelease * (0.85 + 0.5 * aSeed);
+    vec3 p = position + aVel * uRelease * (0.85 + 0.5 * aSeed) + aOff;   /* aOff: the flow, integrated on the CPU only while something moves */
+    vPos = p;
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
-    gl_PointSize = uSize * uRatio;
+    float lit = uPulse.w * smoothstep(uPulseR, uPulseR * 0.3, distance(p, uPulse.xyz));
+    gl_PointSize = uSize * uRatio * (1.0 + 1.8 * lit);                    /* the lit points swell a little: a soft disc of light, not a change of colour alone */
     vSeed = aSeed;
   }`;
 const POINT_FS = `
   precision mediump float;
-  uniform vec2 uView; uniform float uAlpha;
-  varying float vSeed;
+  uniform vec2 uView; uniform float uAlpha; uniform vec4 uPulse; uniform float uPulseR;
+  varying float vSeed; varying vec3 vPos;
   vec3 hsv(float h, float s, float v) { vec3 k = vec3(1.0, 2.0 / 3.0, 1.0 / 3.0); vec3 p = abs(fract(vec3(h) + k) * 6.0 - 3.0); return v * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), s); }
   void main() {
     if (length(gl_PointCoord - 0.5) > 0.5) discard;
@@ -125,36 +127,92 @@ const POINT_FS = `
     vec3 foil = hsv(hue, 0.85, 1.0);
     vec3 rest = vec3(0.78, 0.75, 0.70);                             /* cream-grey: what the foil is when you look straight at it */
     vec3 col = mix(rest, foil, smoothstep(0.06, 0.55, m));
-    gl_FragColor = vec4(col, uAlpha * (0.72 + 0.28 * m));
+    float lit = uPulse.w * smoothstep(uPulseR, uPulseR * 0.3, distance(vPos, uPulse.xyz));   /* the tap: a soft disc of light, cream toward orange */
+    col = mix(col, mix(vec3(0.95, 0.93, 0.90), vec3(1.0, 0.35, 0.0), 0.5 + 0.5 * vSeed), lit);
+    gl_FragColor = vec4(col, min(1.0, uAlpha * (0.72 + 0.28 * m) + lit * 0.7));
   }`;
 
+/* The debris is two populations in one buffer: a share seeded on the cracks (the bake's `debris` points, which leave the
+   glass along their own outward velocity as the release runs), and the rest spread through the whole hero volume, so the
+   field reads as one organic scatter, a little denser at the fracture, with no emitter edges. */
+export const CRACK_SHARE = 0.4;
+export const SPREAD = { x: 3.4, y: 3.0, z: 1.3 };
 export function makeDebris(seedGeometry, count) {
   const src = seedGeometry.attributes.position.array;
-  const n = Math.min(count, src.length / 3);
-  const pos = new Float32Array(n * 3), vel = new Float32Array(n * 3), seed = new Float32Array(n);
+  const nCrack = Math.min(Math.round(count * CRACK_SHARE), src.length / 3), n = count;
+  const pos = new Float32Array(n * 3), vel = new Float32Array(n * 3), seed = new Float32Array(n), off = new Float32Array(n * 3);
   let s = 12345;
   const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
   for (let i = 0; i < n; i++) {
-    const x = src[i * 3], y = src[i * 3 + 1], z = src[i * 3 + 2];
-    pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
-    // outward from the bulb's axis, a little up, a little sideways: debris leaves the crack, it does not fall
-    const r = Math.hypot(x, z) || 1;
-    const ox = x / r, oz = z / r;
-    const jx = (rnd() - 0.5) * 0.7, jy = (rnd() - 0.3) * 0.6, jz = (rnd() - 0.5) * 0.7;
-    const speed = 0.35 + rnd() * 0.75;
-    vel[i * 3] = (ox + jx) * speed; vel[i * 3 + 1] = (0.15 + jy) * speed; vel[i * 3 + 2] = (oz + jz) * speed;
+    if (i < nCrack) {
+      const x = src[i * 3], y = src[i * 3 + 1], z = src[i * 3 + 2];
+      pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+      // outward from the bulb's axis, a little up, a little sideways: debris leaves the crack, it does not fall
+      const r = Math.hypot(x, z) || 1;
+      const ox = x / r, oz = z / r;
+      const jx = (rnd() - 0.5) * 0.7, jy = (rnd() - 0.3) * 0.6, jz = (rnd() - 0.5) * 0.7;
+      const speed = 0.35 + rnd() * 0.75;
+      vel[i * 3] = (ox + jx) * speed; vel[i * 3 + 1] = (0.15 + jy) * speed; vel[i * 3 + 2] = (oz + jz) * speed;
+    } else {
+      // the ambient share: anywhere in the hero volume, drifting a little as it arrives
+      pos[i * 3] = (rnd() * 2 - 1) * SPREAD.x; pos[i * 3 + 1] = (rnd() * 2 - 1) * SPREAD.y; pos[i * 3 + 2] = (rnd() * 2 - 1) * SPREAD.z;
+      vel[i * 3] = (rnd() - 0.5) * 0.3; vel[i * 3 + 1] = (rnd() - 0.5) * 0.3; vel[i * 3 + 2] = (rnd() - 0.5) * 0.3;
+    }
     seed[i] = rnd();
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('aVel', new THREE.BufferAttribute(vel, 3));
   g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+  g.setAttribute('aOff', new THREE.BufferAttribute(off, 3).setUsage(THREE.DynamicDrawUsage));
   const m = new THREE.ShaderMaterial({
     vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false,
-    uniforms: { uRelease: { value: 0 }, uView: { value: new THREE.Vector2() }, uAlpha: { value: 0 }, uSize: { value: 1.6 }, uRatio: { value: 1 } },
+    uniforms: { uRelease: { value: 0 }, uView: { value: new THREE.Vector2() }, uAlpha: { value: 0 }, uSize: { value: 1.6 }, uRatio: { value: 1 }, uPulse: { value: new THREE.Vector4() }, uPulseR: { value: 1 } },
   });
   const points = new THREE.Points(g, m); points.frustumCulled = false; points.visible = false;
+  points.userData.flow = { n, off, v: new Float32Array(n * 3), energy: 0 };
   return points;
+}
+
+/* ---------- the flow: the field answers the pointer and a tap on empty space ----------
+   Integrated on the CPU per frame, only while the pointer is moving, a pulse is live, or the field still has energy.
+   Each point carries an offset from its own path with a spring back to zero (FLOW_K) and damping (FLOW_C). Under the
+   pointer, points within FLOW_R follow its velocity and spread a little from it, weighted by distance; faster movement
+   pushes harder. A pulse is one outward impulse inside PULSE_R that decays over PULSE_MS, while the shader lights the
+   same disc. Nothing runs at rest. */
+export const FLOW_K = 4.0, FLOW_C = 2.6, FLOW_R = 1.45, FLOW_FOLLOW = 5.0, FLOW_SPREAD = 0.9, FLOW_VMAX = 14;
+export const PULSE_R = 1.9, PULSE_PUSH = 70, PULSE_MS = 900;
+export function stepFlow(points, dt, ctx) {
+  const F = points.userData.flow; if (!F) return false;
+  const { n, off, v } = F;
+  const P = points.geometry.attributes.position.array, V = points.geometry.attributes.aVel.array, S = points.geometry.attributes.aSeed.array;
+  const rel = points.material.uniforms.uRelease.value;
+  const ptr = ctx.pointer, pulse = ctx.pulse;
+  const active = !!ptr && ptr.speed > 0.02, live = !!pulse && pulse.k > 0.001;
+  if (!active && !live && F.energy < 1e-5) return false;
+  let energy = 0;
+  for (let i = 0; i < n; i++) {
+    const i3 = i * 3, g = rel * (0.85 + 0.5 * S[i]);
+    const px = P[i3] + V[i3] * g + off[i3], py = P[i3 + 1] + V[i3 + 1] * g + off[i3 + 1], pz = P[i3 + 2] + V[i3 + 2] * g + off[i3 + 2];
+    let ax = -FLOW_K * off[i3] - FLOW_C * v[i3], ay = -FLOW_K * off[i3 + 1] - FLOW_C * v[i3 + 1], az = -FLOW_K * off[i3 + 2] - FLOW_C * v[i3 + 2];
+    if (active) {
+      const dx = px - ptr.x, dy = py - ptr.y, dz = pz - ptr.z, d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (d < FLOW_R) {
+        const w = (1 - d / FLOW_R) ** 2, sp = ptr.speed * FLOW_SPREAD * w / (d + 0.05);
+        ax += ptr.vx * FLOW_FOLLOW * w + dx * sp; ay += ptr.vy * FLOW_FOLLOW * w + dy * sp; az += ptr.vz * FLOW_FOLLOW * w + dz * sp;
+      }
+    }
+    if (live) {
+      const dx = px - pulse.x, dy = py - pulse.y, dz = pz - pulse.z, d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (d < PULSE_R) { const w = (1 - d / PULSE_R) * pulse.k * PULSE_PUSH / (d + 0.08); ax += dx * w; ay += dy * w; az += dz * w; }
+    }
+    v[i3] += ax * dt; v[i3 + 1] += ay * dt; v[i3 + 2] += az * dt;
+    off[i3] += v[i3] * dt; off[i3 + 1] += v[i3 + 1] * dt; off[i3 + 2] += v[i3 + 2] * dt;
+    energy += v[i3] * v[i3] + v[i3 + 1] * v[i3 + 1] + v[i3 + 2] * v[i3 + 2] + off[i3] * off[i3] + off[i3 + 1] * off[i3 + 1] + off[i3 + 2] * off[i3 + 2];
+  }
+  F.energy = energy / n;
+  points.geometry.attributes.aOff.needsUpdate = true;
+  return true;
 }
 
 /* ---------- the light: a studio nobody sees, prefiltered once ----------
@@ -338,6 +396,34 @@ export function createEntry(root, opts = {}) {
   const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _sepP = new THREE.Vector3(), _navP = new THREE.Vector3();
   const screen = [];                                                   // per fragment: centre and radius in CSS px, for the labels and the pointer
   let pointer = null, clock = 0;
+  // the flow's inputs, in the bulb group's own space: the pointer with its velocity, and a pulse
+  const flow = { pointer: null, pulse: null, lastP: null, lastT: 0 };
+  const _fp = new THREE.Vector3(), _fd = new THREE.Vector3();
+  function toLocal(cx, cy, out) {                                     // stage CSS px → the point on the world z = 0 plane → group space
+    const w = stage.clientWidth || 1, h = stage.clientHeight || 1;
+    _fd.set(cx / w * 2 - 1, -(cy / h) * 2 + 1, 0.5).unproject(camera).sub(camera.position).normalize();
+    const k = -camera.position.z / (_fd.z || -1e-6);
+    out.copy(camera.position).addScaledVector(_fd, k);
+    return group.worldToLocal(out);
+  }
+  function feedPointer(cx, cy, now) {
+    if (still || !parts.points || !parts.points.visible) return;
+    const p = toLocal(cx, cy, new THREE.Vector3());
+    if (flow.lastP) {
+      const dt = Math.min(0.1, Math.max(0.008, (now - flow.lastT) / 1000));
+      const vx = (p.x - flow.lastP.x) / dt, vy = (p.y - flow.lastP.y) / dt, vz = (p.z - flow.lastP.z) / dt;
+      const sp = Math.hypot(vx, vy, vz), c = sp > FLOW_VMAX ? FLOW_VMAX / sp : 1;
+      const prev = flow.pointer;
+      flow.pointer = { x: p.x, y: p.y, z: p.z, vx: vx * c, vy: vy * c, vz: vz * c, speed: sp * c, at: now };
+      if (prev) { flow.pointer.vx = prev.vx * 0.4 + flow.pointer.vx * 0.6; flow.pointer.vy = prev.vy * 0.4 + flow.pointer.vy * 0.6; flow.pointer.vz = prev.vz * 0.4 + flow.pointer.vz * 0.6; flow.pointer.speed = Math.hypot(flow.pointer.vx, flow.pointer.vy, flow.pointer.vz); }
+    }
+    flow.lastP = p; flow.lastT = now; wake();
+  }
+  function pulseAt(cx, cy, now) {
+    if (still || !parts.points || !parts.points.visible) return;
+    const p = toLocal(cx, cy, new THREE.Vector3());
+    flow.pulse = { x: p.x, y: p.y, z: p.z, k: 1, born: now }; wake();
+  }
 
   function place(f, p, view, k, dt, now) {
     const pose = (portrait ? POSES.portrait : POSES.landscape)[f.i];
@@ -441,6 +527,16 @@ export function createEntry(root, opts = {}) {
       u.uRelease.value = p.release;
       u.uAlpha.value = 0.28 * Math.min(1, p.release / 0.12) * (1 - selK);
       u.uView.value.set(still ? 0 : st.view.x, still ? 0 : st.view.y);
+      // the flow: the pointer's velocity fades out 140 ms after its last move; a pulse pushes once and lights for PULSE_MS
+      if (flow.pointer && now - flow.pointer.at > 140) flow.pointer = null;
+      if (flow.pulse) {
+        const uP = Math.min(1, (now - flow.pulse.born) / PULSE_MS);
+        flow.pulse.k = Math.max(0, 1 - uP * 2.5);                     // the push is over in the first 40%; the light outlasts it
+        u.uPulse.value.set(flow.pulse.x, flow.pulse.y, flow.pulse.z, (1 - uP) * (1 - uP));
+        u.uPulseR.value = 0.5 + 1.9 * uP;                             // the light widens as it fades
+        if (uP >= 1) { flow.pulse = null; u.uPulse.value.w = 0; } else moving = true;
+      }
+      if (!still && parts.points.visible && stepFlow(parts.points, Math.min(0.05, dt / 1000), flow)) moving = true;
     }
     renderer.render(scene, camera);
     placeLabels(t, p.settle);                                          // after the render, so the camera's matrices are this frame's
@@ -462,11 +558,17 @@ export function createEntry(root, opts = {}) {
     stage.addEventListener('pointermove', (e) => { const r = stage.getBoundingClientRect(); pointer = { x: e.clientX - r.left, y: e.clientY - r.top }; wake(); }, { passive: true });
     stage.addEventListener('pointerleave', () => { pointer = null; parts.frags.forEach((f) => { if (!f.viaLabel) f.hoverT = 0; }); wake(); });
   }
-  stage.addEventListener('click', (e) => {                            // a tap on a fragment goes where its label goes (Gate 4 adds the camera move)
-    if (e.target.closest('a')) return;
+  // the field: every pointer, mouse or finger, feeds the flow; leaving or lifting ends it
+  stage.addEventListener('pointermove', (e) => { const r = stage.getBoundingClientRect(); feedPointer(e.clientX - r.left, e.clientY - r.top, e.timeStamp || performance.now()); }, { passive: true });
+  stage.addEventListener('pointerdown', (e) => { const r = stage.getBoundingClientRect(); flow.lastP = null; feedPointer(e.clientX - r.left, e.clientY - r.top, e.timeStamp || performance.now()); }, { passive: true });
+  const endFlow = () => { flow.pointer = null; flow.lastP = null; };
+  stage.addEventListener('pointerleave', endFlow); stage.addEventListener('pointerup', endFlow); stage.addEventListener('pointercancel', endFlow);
+  stage.addEventListener('click', (e) => {                            // a tap on a fragment goes where its label goes; a tap on empty space pulses the field
+    if (e.target.closest('a,button')) return;
     const r = stage.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top;
     const hit = parts.frags.findIndex((f, i) => { const s = screen[i]; return s && labels[i] && labels[i].style.pointerEvents === 'auto' && x >= s.l && x <= s.rt && y >= s.t && y <= s.b; });
     if (hit >= 0) { if (still) location.assign(labels[hit].href); else select(hit, labels[hit].href); }
+    else pulseAt(x, y, e.timeStamp || performance.now());
   });
 
   let engine = null, ready;
@@ -489,7 +591,7 @@ export function createEntry(root, opts = {}) {
       tick();
     }
   }
-  return { engine, ready, parts, group, camera, scene, renderer, poseAt, screen, select, unselect, get portrait() { return portrait; }, get selecting() { return sel; } };
+  return { engine, ready, parts, group, camera, scene, renderer, poseAt, screen, select, unselect, flow, stepFlow, toLocal, renderOnce: () => renderer.render(scene, camera), get portrait() { return portrait; }, get selecting() { return sel; } };
 }
 
 /* ---------- boot ---------- */

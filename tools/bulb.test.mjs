@@ -7,11 +7,12 @@ test('the whole bulb holds still through the hold; the text is on at rest and th
   assert.equal(poseAt(0).text, 1); assert.equal(poseAt(0.05).text, 1);
 });
 
-test('the first flick is rewarded: the cracks grow fastest at the start, and the text begins to leave before the turn', () => {
-  const first = poseAt(0.05).crack - poseAt(0).crack, later = poseAt(0.40).crack - poseAt(0.35).crack;
-  assert.ok(first > later * 3, 'more crack per scroll at the start than near the end');
-  assert.ok(poseAt(0.12).text < 1 && poseAt(0.12).text > 0, 'the text is leaving during the first fifth');
-  assert.equal(poseAt(0.30).text, 0);
+test('the bulb turns before the glass cracks: whole through the first fifth, then the cracks run fastest at their start', () => {
+  for (const t of [0, 0.10, MAP.crack]) assert.ok(Math.abs(poseAt(t).crack - CRACK0) < 1e-12, `the crack at rest only, at ${t}`);
+  assert.ok(poseAt(MAP.crack).rot > ROTATION * 0.2, 'a clearly visible turn before the first new crack');
+  const first = poseAt(MAP.crack + 0.05).crack - poseAt(MAP.crack).crack, later = poseAt(0.40).crack - poseAt(0.35).crack;
+  assert.ok(first > later * 2.5, 'more crack per scroll at the start than near the end');
+  assert.ok(poseAt(0.20).text < 1 && poseAt(0.05).text === 1, 'the text begins to leave before the turn is done');
   assert.ok(CRACK0 >= 0.12, 'a crack at rest, not a hairline');
 });
 
@@ -42,7 +43,7 @@ test('the cracks start as a hairline at rest, grow with the scroll, and are comp
   for (let t = 0; t <= 1.0001; t += 0.005) { const c = poseAt(t).crack; assert.ok(c >= prev - 1e-12, `cracks close again at ${t}`); prev = c; }
   assert.ok(Math.abs(poseAt(MAP.rotate).crack - 1) < 1e-12);
   assert.equal(poseAt(MAP.separate).crack, 1);
-  assert.ok(poseAt(0.25).crack > 0.5 && poseAt(0.25).crack < 0.95, 'well under way mid-scroll');
+  assert.ok(poseAt(0.33).crack > 0.5 && poseAt(0.33).crack < 0.95, 'well under way mid-turn');
   assert.ok(CRACK0 > 0);
 });
 

@@ -5,8 +5,8 @@ export const smooth = (k) => { k = clamp(k); return k * k * (3 - 2 * k); };
 export const outExpo = (k) => (k >= 1 ? 1 : 1 - Math.pow(2, -10 * clamp(k)));
 export const outQuad = (k) => { k = clamp(k); return 1 - (1 - k) * (1 - k); };
 
-export const MAP = { hold: 0.08, rotate: 0.45, separate: 0.70, settle: 1.0 };   // the hold is short: the first flick must be rewarded
-export const ROTATION = Math.PI * 200 / 180;   // 200° about the vertical axis across the rotation segment
+export const MAP = { hold: 0.08, crack: 0.20, rotate: 0.45, separate: 0.70, settle: 1.0 };   // the hold is short: the first flick is answered by the turn
+export const ROTATION = Math.PI * 240 / 180;   // 240° about the vertical axis across the rotation segment: a fifth faster than the first cut
 export const CRACK0 = 0.16;                    // at rest the glass already carries a crack at the impact point, legible at 1x on a phone
 export const SEPARATION = 0.42;                // how far a fragment slides out along its own direction before it settles
 export const LABEL_STAGGER = 0.03;             // in t, between one label and the next (30–80 ms at a normal scroll)
@@ -18,7 +18,7 @@ export function poseAt(t) {
   const rot = seg(t, MAP.hold, MAP.rotate) * ROTATION;
   const dims = 1 - seg(t, MAP.hold, MAP.hold + 0.10);          // the dimension marks leave as the bulb starts to turn
   const text = 1 - seg(t, 0.06, 0.30);                          // the two lines are the last thing to leave: their fade is the cue that the page answers the scroll
-  const crack = CRACK0 + (1 - CRACK0) * outQuad(t / MAP.rotate);   // the cracks run from the first pixel of scroll, fast at first; complete before separation
+  const crack = CRACK0 + (1 - CRACK0) * outQuad((clamp(t) - MAP.crack) / (MAP.rotate - MAP.crack));   // the glass is whole through the first fifth: the turn is seen first, then the cracks run, fast at first, complete before separation
   const broken = t >= MAP.rotate;                     // from here the four fragments are the glass
   const sep = seg(t, MAP.rotate, MAP.separate);        // fragments slide out along the cracks
   const settle = outExpo((clamp(t) - MAP.separate) / (MAP.settle - MAP.separate));   // an entrance: ease-out into the four poses
