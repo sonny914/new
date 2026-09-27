@@ -244,3 +244,13 @@ Asked for after the cut pass: the whole cut face had been emissive, which read a
 - **The cut is dark glass.** Chamfer and wall are one piece in the shell's own material, no emission. The exposed perimeter carries no orange.
 - **The light is a band under the surface**, unlit brand orange, lying 0.017 below the glass along the crack and only ever seen through it: through the surface from the front, refracted and smoked; through the wall from the cut side, by way of a short riser at the band's peak. It is graded across its width by vertex colour: 0.30 at the lip, full at 0.014 in, nothing by 0.048 in, so it reads as light bleeding from the fracture into the thickness rather than a rim. Hover, focus or touch takes the band past full (×1.6; the refraction buffer is half-float, so it survives the smoke), on that piece only.
 - **Checks.** Five frames on both viewports; gate 3 layout assertions hold including reduced motion; `npm test` 49. Nothing locked moved; `bulb.glb` unchanged.
+
+### Rollback to the first glass version, with three changes
+
+Asked for after the inner-light pass. The chamfer, wall, band and riser are gone; no geometry is added or moved. The fragments are the bake's own meshes with their original silhouettes.
+
+- **Grid** at 0.38 on the glass.
+- **No orange lines** on the pieces: the fracture-edge line passes of the first glass version are removed with the rest.
+- **The orange** is a faint emission (0.16) on the bake's own rim faces, the 0.022 strip that already sits just inside every broken edge, in the same glass material. Those faces are perpendicular to the surface, so the orange shows only where a cut turns toward the viewer, never as a continuous outline. Hover, focus or touch raises it to 0.45 on that piece. The rim faces are told from the surface by distance to the lathe profile (threshold 0.015: cut vertices lie on the flat facets up to 0.010 inside the curve; rim vertices sit 0.022 in).
+- The crack that grows at rest stays as it was in the first glass version.
+- **Checks.** One settled desktop frame captured; `npm test` 49; `bulb.glb` unchanged.

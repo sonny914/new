@@ -15,18 +15,8 @@ export const GROUND = 0x000000;      // brand black
 export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass, the labels, the rim light
 export const LINE_NEAR = 0xF2EEE5;
 export const LIVE = 0xFF5A00;        // brand orange: the light inside the fracture, and nothing else
-export const WIRE_ALPHA = 0.62;      // the cream grid sits on the glass as a sparse drawing, not a cage: the glass carries the form
-/* The broken edge has a body. At every cut a 45° chamfer drops from the surface (CHAMFER deep and wide) and a straight
-   inner wall runs below it to CUT_DEPTH; both are the same dark glass as the shell, with no emission. The light is a
-   band of unlit orange inside the piece, only ever seen through glass: it lies under the surface along the crack
-   (STRIP_DEPTH below it) and is graded across its width, dim at the lip (STRIP_IN0), full a little way in (STRIP_PEAK),
-   gone deeper in (STRIP_IN1), so it reads as light bleeding from the fracture into the thickness rather than a rim. A
-   short riser at the peak faces the cut, so the wall shows it from the side. It sits inside the silhouette, not on it.
-   The crack path on the surface is untouched. */
-export const CHAMFER = 0.008, CUT_DEPTH = 0.030;
-export const STRIP_DEPTH = 0.017, STRIP_IN0 = 0.004, STRIP_PEAK = 0.014, STRIP_IN1 = 0.048, RISER = 0.006;
-export const STRIP_LIP = 0.30;       // the band's strength at the lip, so the perimeter stays dark
-export const STRIP_REST = 1.0, STRIP_LIVE = 1.6;   // the strip's orange, as a multiple of brand orange: through smoked glass it lands below full; hover or touch pushes it past
+export const WIRE_ALPHA = 0.38;      // the cream grid sits on the glass as a faint drawing: the glass carries the form
+export const RIM_REST = 0.16, RIM_LIVE = 0.45;   // the orange on the bake's own rim faces just inside the broken edge: a tint that catches at an angle, never a line
 /* The glass: physically based, transmissive, smoked. One material, cloned per fragment so a piece can fade on its own.
    Thickness is the volume the refraction sees; attenuation is the smoke. Clearcoat is the polish. Dark tint, no colour. */
 export const GLASS = {
@@ -187,15 +177,14 @@ export function makeEnvironment(renderer) {
   return tex;
 }
 
-/** Take a fragment apart into what the pass needs. The bake gave every open edge a strip 0.022 inward; here that strip
-    is dropped and the cut rebuilt from the surface's own boundary: a chamfer, then a wall, both hung from the crack path
-    on the surface, which does not move. The neck ring is glass meeting the base, not a break: no wall there. Pure.
-    @returns {{ surface, grid, cut, strip }} four BufferGeometries: the glass faces, the cream lines (which end at the cut),
-    the cut's chamfer and wall as one dark glass piece, and the orange strip set back inside it. */
-export function buildCut(geo, home, neckY) {
+/** Take a fragment apart: the bake gave every open edge a strip 0.022 inward (the thickness at the break). Faces of that
+    strip are told from the surface by distance to the lathe profile. Nothing is added or moved.
+    @returns {{ surface, rim, grid }} the surface faces, the rim faces (same vertices, their own index), and the cream lines:
+    the surface's edges above 4°, minus the break itself, so the grid ends at the edge and the silhouette is the glass. Pure. */
+export function splitFragment(geo, home) {
   const P = geo.attributes.position.array, I = geo.index.array, nv = P.length / 3;
   const prof = glassProfile();
-  const distToProfile = (r, y) => {                                     // distance in the (radius, height) plane to the lathe profile
+  const distToProfile = (r, y) => {
     let best = Infinity;
     for (let i = 1; i < prof.length; i++) {
       const ax = prof[i - 1].x, ay = prof[i - 1].y, bx = prof[i].x, by = prof[i].y;
@@ -205,64 +194,21 @@ export function buildCut(geo, home, neckY) {
     }
     return best;
   };
-  const off = new Uint8Array(nv);                                      // 1: a vertex of the bake's rim strip, below the surface
-  for (let v = 0; v < nv; v++) off[v] = distToProfile(Math.hypot(P[v * 3] + home.x, P[v * 3 + 2] + home.z), P[v * 3 + 1] + home.y) > 0.008 ? 1 : 0;
-  const surfIdx = [];
-  for (let i = 0; i < I.length; i += 3) if (!off[I[i]] && !off[I[i + 1]] && !off[I[i + 2]]) surfIdx.push(I[i], I[i + 1], I[i + 2]);
-  const surface = new THREE.BufferGeometry();
-  surface.setAttribute('position', geo.attributes.position); surface.setIndex(surfIdx); surface.computeVertexNormals();
-  const N = surface.attributes.normal.array;
-  // the surface's open edges: each with its one face's third vertex, so the cut knows which way is into the piece
-  const edges = new Map();
-  const ek = (a, b) => (a < b ? a + '_' + b : b + '_' + a);
-  for (let i = 0; i < surfIdx.length; i += 3) for (let e = 0; e < 3; e++) {
-    const a = surfIdx[i + e], b = surfIdx[i + (e + 1) % 3], c = surfIdx[i + (e + 2) % 3], key = ek(a, b);
-    if (edges.has(key)) edges.delete(key); else edges.set(key, [a, b, c]);
-  }
-  const cut = [...edges.values()].filter(([a, b]) => !(P[a * 3 + 1] < neckY && P[b * 3 + 1] < neckY));   // the crack, not the neck ring
-  // per cut vertex: an inward side (into the piece, along the surface), averaged over its two cut edges, so the strip is continuous
-  const side = new Map(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _n = new THREE.Vector3(), _s = new THREE.Vector3();
-  const at = (v, out) => out.set(P[v * 3], P[v * 3 + 1], P[v * 3 + 2]);
-  for (const [a, b, c] of cut) {
-    at(a, _a); at(b, _b); at(c, _c);
-    const dir = _b.clone().sub(_a).normalize();
-    _s.copy(_c).sub(_a); _s.addScaledVector(dir, -_s.dot(dir));          // toward the third vertex, minus the along-edge part
-    for (const v of [a, b]) {
-      _n.set(N[v * 3], N[v * 3 + 1], N[v * 3 + 2]);
-      const t = _s.clone(); t.addScaledVector(_n, -t.dot(_n)).normalize();
-      if (!side.has(v)) side.set(v, new THREE.Vector3()); side.get(v).add(t);
-    }
-  }
-  for (const v of side.values()) v.normalize();
-  // the strips: chamfer (surface → CHAMFER down and in) and wall (chamfer → CUT_DEPTH, straight down) as one glass piece;
-  // the orange strip set back STRIP_IN inside it, STRIP_TOP to STRIP_BOT below the surface
-  const cp = [], sp = [], sc = [];
-  const at2 = (v, out, down, inward) => { at(v, out); _n.set(N[v * 3], N[v * 3 + 1], N[v * 3 + 2]); out.addScaledVector(_n, -down).addScaledVector(side.get(v), inward); return out; };
-  const quad = (arr, p0, p1, p2, p3) => { arr.push(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, p0.x, p0.y, p0.z, p2.x, p2.y, p2.z, p3.x, p3.y, p3.z); };
-  const A = new THREE.Vector3(), B = new THREE.Vector3(), A1 = new THREE.Vector3(), B1 = new THREE.Vector3(), A2 = new THREE.Vector3(), B2 = new THREE.Vector3();
-  for (const [a, b] of cut) {
-    at(a, A); at(b, B); at2(a, A1, CHAMFER, CHAMFER); at2(b, B1, CHAMFER, CHAMFER); at2(a, A2, CUT_DEPTH, CHAMFER); at2(b, B2, CUT_DEPTH, CHAMFER);
-    quad(cp, A, B, B1, A1); quad(cp, A1, B1, B2, A2);
-    const shade = (k0, k1, k2, k3) => { for (const k of [k0, k1, k2, k0, k2, k3]) sc.push(k, k, k); };
-    at2(a, A1, STRIP_DEPTH, STRIP_IN0); at2(b, B1, STRIP_DEPTH, STRIP_IN0); at2(a, A2, STRIP_DEPTH, STRIP_PEAK); at2(b, B2, STRIP_DEPTH, STRIP_PEAK);
-    quad(sp, A1, B1, B2, A2); shade(STRIP_LIP, STRIP_LIP, 1, 1);                                                     // the band: lip → peak
-    at2(a, A1, STRIP_DEPTH, STRIP_PEAK); at2(b, B1, STRIP_DEPTH, STRIP_PEAK); at2(a, A2, STRIP_DEPTH, STRIP_IN1); at2(b, B2, STRIP_DEPTH, STRIP_IN1);
-    quad(sp, A1, B1, B2, A2); shade(1, 1, 0, 0);                                                                     // peak → gone
-    at2(a, A1, STRIP_DEPTH - RISER, STRIP_PEAK); at2(b, B1, STRIP_DEPTH - RISER, STRIP_PEAK); at2(a, A2, STRIP_DEPTH + RISER, STRIP_PEAK); at2(b, B2, STRIP_DEPTH + RISER, STRIP_PEAK);
-    quad(sp, A1, B1, B2, A2); shade(0.7, 0.7, 0.7, 0.7);                                                             // the riser at the peak, facing the cut
-  }
-  const cutGeo = new THREE.BufferGeometry(); cutGeo.setAttribute('position', new THREE.Float32BufferAttribute(cp, 3)); cutGeo.computeVertexNormals();
-  const strip = new THREE.BufferGeometry(); strip.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3)); strip.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
-  // the cream grid: the surface's edges, minus the crack itself (the lip is dark glass, not a line)
-  const all = new THREE.EdgesGeometry(surface, 4);
-  const pk = (v) => `${P[v * 3].toFixed(4)},${P[v * 3 + 1].toFixed(4)},${P[v * 3 + 2].toFixed(4)}`;
-  const crackKeys = new Set(); for (const [a, b] of cut) { crackKeys.add(pk(a) + '|' + pk(b)); crackKeys.add(pk(b) + '|' + pk(a)); }
+  const off = new Uint8Array(nv);
+  for (let v = 0; v < nv; v++) off[v] = distToProfile(Math.hypot(P[v * 3] + home.x, P[v * 3 + 2] + home.z), P[v * 3 + 1] + home.y) > 0.015 ? 1 : 0;   // cut vertices lie on the flat facets, up to 0.010 inside the curve; rim vertices sit 0.022 in
+  const si = [], ri = [];
+  for (let i = 0; i < I.length; i += 3) (off[I[i]] || off[I[i + 1]] || off[I[i + 2]] ? ri : si).push(I[i], I[i + 1], I[i + 2]);
+  const surface = new THREE.BufferGeometry(); surface.setAttribute('position', geo.attributes.position); surface.setIndex(si); surface.computeVertexNormals();
+  const rim = new THREE.BufferGeometry(); rim.setAttribute('position', geo.attributes.position); rim.setIndex(ri); rim.computeVertexNormals();
+  const all = new THREE.EdgesGeometry(surface, 4), sharp = new THREE.EdgesGeometry(geo, 60);   // the break: the rim's creases and its open edge
+  const k = (a, i) => `${a[i].toFixed(4)},${a[i + 1].toFixed(4)},${a[i + 2].toFixed(4)}`;
+  const keys = new Set(); const rp = sharp.attributes.position.array;
+  for (let i = 0; i < rp.length; i += 6) { keys.add(k(rp, i) + '|' + k(rp, i + 3)); keys.add(k(rp, i + 3) + '|' + k(rp, i)); }
   const ap = all.attributes.position.array, gp = [];
-  const sk = (i) => `${ap[i].toFixed(4)},${ap[i + 1].toFixed(4)},${ap[i + 2].toFixed(4)}`;
-  for (let i = 0; i < ap.length; i += 6) if (!crackKeys.has(sk(i) + '|' + sk(i + 3))) for (let n = 0; n < 6; n++) gp.push(ap[i + n]);
-  all.dispose();
+  for (let i = 0; i < ap.length; i += 6) if (!keys.has(k(ap, i) + '|' + k(ap, i + 3))) for (let n = 0; n < 6; n++) gp.push(ap[i + n]);
+  all.dispose(); sharp.dispose();
   const grid = new THREE.BufferGeometry(); grid.setAttribute('position', new THREE.Float32BufferAttribute(gp, 3));
-  return { surface, grid, cut: cutGeo, strip };
+  return { surface, rim, grid };
 }
 
 /* ---------- runtime ---------- */
@@ -291,11 +237,11 @@ export function createEntry(root, opts = {}) {
   const lineMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: flat ? 0.96 : WIRE_ALPHA, fog: true });
   const anchorMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.86, fog: true });   // base + filament: they fade at the settle
   const crackMat = new THREE.LineBasicMaterial({ color: LIVE, transparent: true, opacity: 1.0, fog: false });      // the crack is the fracture light from its first pixel
-  const stripMat = new THREE.MeshBasicMaterial({ color: LIVE, vertexColors: true, side: THREE.DoubleSide, transparent: true, fog: false, toneMapped: false });   // unlit, graded by vertex: the light inside the cut
   const dimMat = new THREE.LineBasicMaterial({ color: LINE, transparent: true, opacity: 0.38, fog: true });
   const occluder = new THREE.MeshBasicMaterial({ color: GROUND, fog: false });
   const glassMat = new THREE.MeshPhysicalMaterial({ ...GLASS, side: THREE.DoubleSide, transparent: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
   glassMat.color.set(GLASS.color); glassMat.attenuationColor.set(GLASS.attenuationColor);
+  const rimMat = glassMat.clone(); rimMat.emissive.set(LIVE); rimMat.emissiveIntensity = RIM_REST; rimMat.polygonOffset = false;   // the same glass, warmed from inside
 
   const parts = { shells: [], frags: [], glass: null, wire: null, cracks: null, crackSegs: 0, base: null, baseSolid: null, baseGeom: null, filament: null, dims: null, debris: null, points: null };
   const box = new THREE.Box3();
@@ -338,16 +284,15 @@ export function createEntry(root, opts = {}) {
         geo.translate(-home.x, -home.y, -home.z);                     // the fragment's origin is its own centre
         geo.computeBoundingBox(); const bbox = geo.boundingBox.clone();
         const mat = lineMat.clone();
-        const { surface, grid, cut, strip } = buildCut(geo, home, NECK_Y + 0.04 - home.y);
+        const { surface, rim, grid } = splitFragment(geo, home);
         const piece = new THREE.Group(); piece.name = name; piece.visible = false;
-        const lines = new THREE.LineSegments(grid, mat);                    // the cream grid, on the glass, ending at the cut
-        const light = new THREE.Mesh(strip, stripMat.clone());              // the light, set back inside the thickness
-        piece.add(lines, light);
-        let glass = null, cutGlass = null;
-        if (!flat) { glass = new THREE.Mesh(surface, glassMat.clone()); cutGlass = new THREE.Mesh(cut, glassMat.clone()); cutGlass.material.polygonOffset = false; piece.add(glass, cutGlass); }
+        const lines = new THREE.LineSegments(grid, mat);                    // the cream grid, on the glass, ending at the break
+        piece.add(lines);
+        let glass = null, rimGlass = null;
+        if (!flat) { glass = new THREE.Mesh(surface, glassMat.clone()); rimGlass = new THREE.Mesh(rim, rimMat.clone()); piece.add(glass, rimGlass); }
         const outward = new THREE.Vector3(home.x, home.y * 0.35, home.z).normalize();
-        const mats = [mat, light.material].concat(glass ? [glass.material, cutGlass.material] : []);
-        parts.frags[i] = { i, obj: piece, mat, strip: light, glass, cutGlass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
+        const mats = [mat].concat(glass ? [glass.material, rimGlass.material] : []);
+        parts.frags[i] = { i, obj: piece, mat, glass, rimGlass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
         parts.shells.push(piece); scene.add(piece);
       } else if (name === 'shell_wire') {
         parts.wire = new THREE.LineSegments(o.geometry, lineMat); group.add(parts.wire);
@@ -407,8 +352,7 @@ export function createEntry(root, opts = {}) {
     f.hover += (f.hoverT - f.hover) * a; if (Math.abs(f.hoverT - f.hover) < 0.002) f.hover = f.hoverT;
     f.obj.position.z += f.hover * 0.22 * k;
     f.mat.opacity = flat ? 0.96 : WIRE_ALPHA;
-    f.strip.material.color.set(LIVE).multiplyScalar(STRIP_REST + (STRIP_LIVE - STRIP_REST) * f.hover); f.strip.material.opacity = 1;
-    if (f.glass) { f.glass.material.opacity = 1; f.cutGlass.material.opacity = 1; }
+    if (f.glass) { f.glass.material.opacity = 1; f.rimGlass.material.opacity = 1; f.rimGlass.material.emissiveIntensity = RIM_REST + (RIM_LIVE - RIM_REST) * f.hover; }
   }
 
   const _c = new THREE.Vector3();
