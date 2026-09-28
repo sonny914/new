@@ -105,6 +105,10 @@ export const POSES = {
 export const NAV_SCALE = { portrait: 0.55, landscape: 0.65 };   // a settled fragment is a nav piece, not the bulb: smaller, so four fit with air between
 export const PARALLAX = 0.32;        // world units of sideways travel per unit of view for a fragment at the nearest depth
 export const DRIFT = 0.028;          // world units of slow drift on a settled fragment
+/* Tilt turns each settled piece a little about its own centre, as an object turns when you move around it. Sliding a
+   piece (parallax) never moves its reflections: those follow the surface's facing, so without a turn the light sits
+   still on the glass however the phone is held. Radians per unit of view; the reflections move about twice as far. */
+export const TILT_TURN = { yaw: 0.42, pitch: 0.28 };
 export const HOVER_MS = 180;         // the ease of a fragment coming forward under the pointer or the focus (Emil: ease-out, under 300 ms)
 export const SELECT_MS = 480;        // the camera's move to a chosen fragment: on-screen movement, strong ease-in-out, retargetable
 
@@ -488,7 +492,7 @@ export function createEntry(root, opts = {}) {
   /* ---------- per frame ---------- */
   const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _pc = new THREE.Vector3(), _X = new THREE.Vector3(1, 0, 0), _Y = new THREE.Vector3(0, 1, 0);
   const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _sepP = new THREE.Vector3(), _navP = new THREE.Vector3();
-  const _qRef = new THREE.Quaternion(), _qTum = new THREE.Quaternion(), _UP = new THREE.Vector3(0, 1, 0);
+  const _qRef = new THREE.Quaternion(), _qTum = new THREE.Quaternion(), _qTilt = new THREE.Quaternion(), _eTilt = new THREE.Euler(), _UP = new THREE.Vector3(0, 1, 0);
   /* Turn a piece from its separated orientation to its settled one without ever switching direction. A shortest-path
      slerp flips hemisphere whenever the two orientations pass 180° apart, and the separated one keeps moving (the tumble,
      tilt and pointer all feed it), so a piece could jump part of a turn in one frame. The direction is chosen once, from
@@ -547,6 +551,7 @@ export function createEntry(root, opts = {}) {
     f.navQ.setFromEuler(_e);
     _qRef.setFromAxisAngle(_UP, TURN).multiply(TILT_Q).multiply(_qTum.setFromAxisAngle(f.outward, 0.35 * seg(SETTLE.from, SEQ.rotate, SEQ.separate)));
     if (_qRef.dot(f.navQ) < 0) f.navQ.set(-f.navQ.x, -f.navQ.y, -f.navQ.z, -f.navQ.w);   // the same orientation, on the reference's side
+    f.navQ.premultiply(_qTilt.setFromEuler(_eTilt.set(view.y * TILT_TURN.pitch * k, view.x * TILT_TURN.yaw * k, 0, 'YXZ')));   // after the side is fixed, so tilt never flips it
     f.obj.position.lerpVectors(_sepP, _navP, k);
     turnToward(f.obj.quaternion, _q, f.navQ, k);
     f.obj.scale.setScalar(1 + ((portrait ? NAV_SCALE.portrait : NAV_SCALE.landscape) - 1) * k);
@@ -607,7 +612,7 @@ export function createEntry(root, opts = {}) {
     clock = now / 1000;
     camHome.set(0, 0, zArrive + (zSettle - zArrive) * p.settle); if (!sel) camera.position.copy(camHome);   // the camera eases to the settled framing with the pieces
     // the pose: the arrival lean, turned about the world's vertical by the scroll, nudged by tilt; pivot at the sphere's centre
-    _qa.setFromAxisAngle(_Y, p.rot + st.view.x * 0.10); _qb.setFromAxisAngle(_X, st.view.y * 0.06);
+    _qa.setFromAxisAngle(_Y, p.rot + st.view.x * TILT_TURN.yaw * 0.5); _qb.setFromAxisAngle(_X, st.view.y * TILT_TURN.pitch * 0.5);   // half the settled turn: the whole bulb fills the frame, so less turn reads as much
     group.quaternion.copy(_qb).multiply(_qa).multiply(TILT_Q);
     group.position.copy(anchor).sub(_pc.copy(sphere.c).applyQuaternion(group.quaternion));
     if (hero) {   // the headline is gone before it has travelled far enough to slide under the header, and never lingers as a grey half-state

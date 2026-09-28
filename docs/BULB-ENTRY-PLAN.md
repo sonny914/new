@@ -348,3 +348,11 @@ Reported on a phone: at the break "it stops feeling smooth and gets real snappy"
 - **Fix 2: a rotation flip.** Once the settle overlapped the tumble, a piece jumped part of a turn in one frame at 57.5%. The shortest-path slerp from the separated orientation to the settled one flips direction when the two pass 180° apart, and the separated orientation keeps moving (tumble, tilt and pointer all feed it), so tilting a phone during the settle could trigger it before this change too. The direction is now chosen once, from the separated pose with the view at rest, and kept (`turnToward`).
 - **Not the cause: render cost.** After the break the scene is lighter than before it (about 5.5k triangles against 77k for the intact glass), so there are no dropped frames there.
 - `map.js` is imported as `?v=4` and `entry.js` as `?v=16`, so phones fetch the new timing past the one-hour asset cache.
+
+### Tilt moves the light
+
+Reported on a phone, settled view: tilting does not move the lighting.
+
+- **Cause.** Tilt only slid the settled pieces sideways (parallax). Reflections of a distant studio follow the surface's facing, not its position, so the highlights sat still on the glass however the phone was held. The intact bulb did turn with tilt, but by about 6°, too little to read.
+- **Fix.** Tilt now turns each settled piece about its own centre (`TILT_TURN`: up to 0.42 rad of yaw and 0.28 of pitch at full tilt, scaled in with the settle); the reflections travel about twice that. It is applied after the turning direction is fixed, so tilt can never flip a piece mid-settle. The intact bulb turns half as much (it fills the frame).
+- **Also check on the phone.** iOS only sends tilt after permission, and the page asks on the first tap (a scroll cannot ask). In an in-app browser motion data may never arrive. `?debug=1` shows `sensor live` once tilt is flowing.
