@@ -11,7 +11,11 @@ export const MAP = { hold: 0.02, crack: 0.22, rotate: 0.45, separate: 0.70, sett
 export const ROTATION = Math.PI * 240 / 180;   // 240° about the vertical axis across the rotation segment: a fifth faster than the first cut
 export const CRACK0 = 0.06;                    // at rest the glass carries only the mark of the impact: a hairline, not a crack under way
 export const SEPARATION = 0.42;                // how far a fragment slides out along its own direction before it settles
-export const LABEL_STAGGER = 0.03;             // in t, between one label and the next (30–80 ms at a normal scroll)
+export const LABEL_STAGGER = 0.03;
+/* The settle overlaps the separation, so the bulb opens as one continuous move. It starts at rest while the pieces are
+   still sliding out and eases into the final poses: no stop at the hand-over and no lunge after it (an ease-out that
+   starts at full speed here moved the pieces 250x faster in one step than the step before). */
+export const SETTLE = { from: 0.52, to: 0.96 };             // in t, between one label and the next (30–80 ms at a normal scroll)
 
 /** Progress through one segment: linear inside, eased at both ends. */
 export function seg(t, a, b) { return smooth((clamp(t) - a) / (b - a)); }
@@ -23,7 +27,7 @@ export function poseAt(t) {
   const crack = CRACK0 + (1 - CRACK0) * outQuad((clamp(t) - MAP.crack) / (MAP.rotate - MAP.crack));   // the glass is whole through the first fifth: the turn is seen first, then the cracks run, fast at first, complete before separation
   const broken = t >= MAP.rotate;                     // from here the four fragments are the glass
   const sep = seg(t, MAP.rotate, MAP.separate);        // fragments slide out along the cracks
-  const settle = outExpo((clamp(t) - MAP.separate) / (MAP.settle - MAP.separate));   // an entrance: ease-out into the four poses
+  const settle = seg(t, SETTLE.from, SETTLE.to);       // one continuous move with the separation: starts and ends at rest
   const release = seg(t, MAP.rotate, 0.85);            // the debris leaves the cracks
   const anchor = 1 - seg(t, MAP.separate, 0.85);       // the base and the filament fade once the fragments leave for their poses
   return { rot, text, dims, crack, broken, sep, settle, release, anchor };

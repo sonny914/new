@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { poseAt, labelAt, settledAt, seg, MAP, ROTATION, CRACK0, SEPARATION } from '../assets/bulb/map.js';
+import { poseAt, labelAt, settledAt, seg, MAP, ROTATION, CRACK0, SEPARATION, SETTLE } from '../assets/bulb/map.js';
 
 test('the whole bulb holds still through the hold; the text is on at rest and the marks stay until the turn', () => {
   for (const t of [0, MAP.hold / 2, MAP.hold]) { const p = poseAt(t); assert.equal(p.rot, 0); assert.equal(p.dims, 1); assert.equal(p.broken, false); assert.equal(p.sep, 0); }
@@ -57,12 +57,15 @@ test('the glass breaks only once the turn is complete; separation runs to the se
   for (let t = 0; t <= 1.0001; t += 0.005) { const s = poseAt(t).sep; assert.ok(s >= prev - 1e-12); prev = s; }
 });
 
-test('the settle is an ease-out entrance: fast away from the separated pose, slow into the final one, complete at 1', () => {
-  assert.equal(poseAt(MAP.separate).settle, 0);
+test('the bulb opens as one continuous move: the settle overlaps the separation and never jumps in speed', () => {
+  assert.equal(poseAt(SETTLE.from).settle, 0);
   assert.ok(poseAt(1).settle > 0.999);
-  const early = poseAt(MAP.separate + 0.06).settle - poseAt(MAP.separate).settle;
-  const late = poseAt(1).settle - poseAt(1 - 0.06).settle;
-  assert.ok(early > late * 4, 'most of the movement happens early');
+  assert.ok(SETTLE.from > MAP.rotate && SETTLE.from < MAP.separate, 'the pieces start for their poses while still sliding out');
+  const step = 0.005; let prev = poseAt(0).settle, prevD = 0, maxD = 0, maxJump = 0;
+  for (let t = step; t <= 1.0001; t += step) { const s = poseAt(t).settle, d = s - prev; assert.ok(d >= -1e-12); maxD = Math.max(maxD, d); maxJump = Math.max(maxJump, Math.abs(d - prevD)); prev = s; prevD = d; }
+  const mean = step / (SETTLE.to - SETTLE.from);
+  assert.ok(maxD < mean * 1.6, 'no lunge: the fastest step is close to the average');
+  assert.ok(maxJump < mean * 0.2, 'speed changes gradually from step to step');
 });
 
 test('the debris leaves only after the break, and the base fades only once the fragments leave for their poses', () => {

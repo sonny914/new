@@ -8,8 +8,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createSpatialEngine } from '/assets/lab/spatial-engine.js';
-import { poseAt, labelAt, settledAt, seg, SEPARATION } from './map.js?v=3';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
-export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=3';
+import { poseAt, labelAt, settledAt, seg, SEPARATION, ROTATION as TURN, SETTLE, MAP as SEQ } from './map.js?v=4';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
+export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=4';
 
 export const GROUND = 0x000000;      // brand black
 export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass, the labels, the rim light
@@ -488,6 +488,17 @@ export function createEntry(root, opts = {}) {
   /* ---------- per frame ---------- */
   const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _pc = new THREE.Vector3(), _X = new THREE.Vector3(1, 0, 0), _Y = new THREE.Vector3(0, 1, 0);
   const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _sepP = new THREE.Vector3(), _navP = new THREE.Vector3();
+  const _qRef = new THREE.Quaternion(), _qTum = new THREE.Quaternion(), _UP = new THREE.Vector3(0, 1, 0);
+  /* Turn a piece from its separated orientation to its settled one without ever switching direction. A shortest-path
+     slerp flips hemisphere whenever the two orientations pass 180° apart, and the separated one keeps moving (the tumble,
+     tilt and pointer all feed it), so a piece could jump part of a turn in one frame. The direction is chosen once, from
+     the separated pose with the view at rest, and kept. */
+  function turnToward(out, a, b, k) {
+    let c = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+    if (c > 0.9995 || c < -0.9995) return out.slerpQuaternions(a, b, k);
+    const th = Math.acos(Math.min(1, Math.max(-1, c))), sn = Math.sin(th), wa = Math.sin((1 - k) * th) / sn, wb = Math.sin(k * th) / sn;
+    return out.set(a.x * wa + b.x * wb, a.y * wa + b.y * wb, a.z * wa + b.z * wb, a.w * wa + b.w * wb).normalize();
+  }
   const screen = [];                                                   // per fragment: centre and radius in CSS px, for the labels and the pointer
   let pointer = null, clock = 0;
   // the flow's inputs, in the bulb group's own space: the pointer with its velocity, and a pulse
@@ -534,8 +545,10 @@ export function createEntry(root, opts = {}) {
       pose.p[2]);
     _e.set(pose.r[0] + (still ? 0 : 0.03 * k * Math.sin(clock * 0.19 + f.i)), pose.r[1] + (still ? 0 : 0.03 * k * Math.cos(clock * 0.17 + f.i * 0.7)), pose.r[2]);
     f.navQ.setFromEuler(_e);
+    _qRef.setFromAxisAngle(_UP, TURN).multiply(TILT_Q).multiply(_qTum.setFromAxisAngle(f.outward, 0.35 * seg(SETTLE.from, SEQ.rotate, SEQ.separate)));
+    if (_qRef.dot(f.navQ) < 0) f.navQ.set(-f.navQ.x, -f.navQ.y, -f.navQ.z, -f.navQ.w);   // the same orientation, on the reference's side
     f.obj.position.lerpVectors(_sepP, _navP, k);
-    f.obj.quaternion.slerpQuaternions(_q, f.navQ, k);
+    turnToward(f.obj.quaternion, _q, f.navQ, k);
     f.obj.scale.setScalar(1 + ((portrait ? NAV_SCALE.portrait : NAV_SCALE.landscape) - 1) * k);
     // hover / focus / touch: ease forward as before; the fracture light strengthens on this piece only. Time based.
     const a = 1 - Math.exp(-dt / (HOVER_MS / 3));
