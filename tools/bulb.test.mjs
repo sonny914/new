@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { poseAt, labelAt, settledAt, seg, MAP, ROTATION, CRACK0, SEPARATION, SETTLE } from '../assets/bulb/map.js';
+import { poseAt, labelAt, settledAt, seg, MAP, ROTATION, CRACK0, SEPARATION, SETTLE, GLOW_OUT } from '../assets/bulb/map.js';
 
 test('the whole bulb holds still through the hold; the text is on at rest and the marks stay until the turn', () => {
   for (const t of [0, MAP.hold / 2, MAP.hold]) { const p = poseAt(t); assert.equal(p.rot, 0); assert.equal(p.dims, 1); assert.equal(p.broken, false); assert.equal(p.sep, 0); }
@@ -66,6 +66,14 @@ test('the bulb opens as one continuous move: the settle overlaps the separation 
   const mean = step / (SETTLE.to - SETTLE.from);
   assert.ok(maxD < mean * 1.6, 'no lunge: the fastest step is close to the average');
   assert.ok(maxJump < mean * 0.2, 'speed changes gradually from step to step');
+});
+
+test('the crack light hands over to the pieces at full strength and fades while they separate', () => {
+  assert.equal(poseAt(MAP.rotate - 0.001).glow, 1); assert.equal(poseAt(MAP.rotate).glow, 1);
+  assert.ok(poseAt(MAP.rotate).crack > 0.999, 'the crack is fully drawn at the hand-over');
+  assert.ok(GLOW_OUT > MAP.rotate && GLOW_OUT < MAP.separate, 'gone before the pieces finish separating');
+  assert.equal(poseAt(GLOW_OUT).glow, 0);
+  let prev = 1; for (let t = MAP.rotate; t <= GLOW_OUT + 1e-9; t += 0.005) { const g = poseAt(t).glow; assert.ok(g <= prev + 1e-12 && prev - g < 0.06); prev = g; }
 });
 
 test('the debris leaves only after the break, and the base fades only once the fragments leave for their poses', () => {

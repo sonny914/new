@@ -15,7 +15,10 @@ export const LABEL_STAGGER = 0.03;
 /* The settle overlaps the separation, so the bulb opens as one continuous move. It starts at rest while the pieces are
    still sliding out and eases into the final poses: no stop at the hand-over and no lunge after it (an ease-out that
    starts at full speed here moved the pieces 250x faster in one step than the step before). */
-export const SETTLE = { from: 0.52, to: 0.96 };             // in t, between one label and the next (30–80 ms at a normal scroll)
+export const SETTLE = { from: 0.52, to: 0.96 };
+/* The orange of the crack does not switch off at the break: each piece carries its own broken edge in the same light
+   and lets it go while it slides out, done a little past the middle of the separation. */
+export const GLOW_OUT = 0.60;             // in t, between one label and the next (30–80 ms at a normal scroll)
 
 /** Progress through one segment: linear inside, eased at both ends. */
 export function seg(t, a, b) { return smooth((clamp(t) - a) / (b - a)); }
@@ -30,7 +33,8 @@ export function poseAt(t) {
   const settle = seg(t, SETTLE.from, SETTLE.to);       // one continuous move with the separation: starts and ends at rest
   const release = seg(t, MAP.rotate, 0.85);            // the debris leaves the cracks
   const anchor = 1 - seg(t, MAP.separate, 0.85);       // the base and the filament fade once the fragments leave for their poses
-  return { rot, text, dims, crack, broken, sep, settle, release, anchor };
+  const glow = 1 - seg(t, MAP.rotate, GLOW_OUT);       // the crack light: full at the break, carried by the pieces, gone as they part
+  return { rot, text, dims, crack, broken, sep, settle, release, anchor, glow };
 }
 
 /** Label i (0..3) opacity at t: they arrive one after another near the end of the settle. */

@@ -356,3 +356,10 @@ Reported on a phone, settled view: tilting does not move the lighting.
 - **Cause.** Tilt only slid the settled pieces sideways (parallax). Reflections of a distant studio follow the surface's facing, not its position, so the highlights sat still on the glass however the phone was held. The intact bulb did turn with tilt, but by about 6°, too little to read.
 - **Fix.** Tilt now turns each settled piece about its own centre (`TILT_TURN`: up to 0.42 rad of yaw and 0.28 of pitch at full tilt, scaled in with the settle); the reflections travel about twice that. It is applied after the turning direction is fixed, so tilt can never flip a piece mid-settle. The intact bulb turns half as much (it fills the frame).
 - **Also check on the phone.** iOS only sends tilt after permission, and the page asks on the first tap (a scroll cannot ask). In an in-app browser motion data may never arrive. `?debug=1` shows `sensor live` once tilt is flowing.
+
+### The crack light hands over to the pieces
+
+Reported on a phone: right at the break the orange just goes away; it should fade as the pieces separate.
+
+- **Cause.** At 45% the crack lines were switched off in one frame, and the four pieces had no orange of their own. A second jump hid behind it: the pieces' glass wrote depth, so everything behind it (the back of the crack, the filament, the far grid) vanished in the same frame, while the intact glass hid nothing.
+- **Fix.** Each piece now carries its own orange: its broken edge (surface edges that meet the break strip) plus every crack segment that lies on it, dead-end cracks included (assigned to the nearest piece once, at load). At the break it is drawn at full strength, so 44% and 45% match; it fades out over 45–60% as the pieces slide apart (`GLOW_OUT`, tested). The pieces' glass no longer writes depth, as the intact bulb's did not.

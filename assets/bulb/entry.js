@@ -8,8 +8,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createSpatialEngine } from '/assets/lab/spatial-engine.js';
-import { poseAt, labelAt, settledAt, seg, SEPARATION, ROTATION as TURN, SETTLE, MAP as SEQ } from './map.js?v=4';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
-export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=4';
+import { poseAt, labelAt, settledAt, seg, SEPARATION, ROTATION as TURN, SETTLE, MAP as SEQ } from './map.js?v=5';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
+export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=5';
 
 export const GROUND = 0x000000;      // brand black
 export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass, the labels, the rim light
@@ -360,7 +360,19 @@ export function splitFragment(geo, home) {
   for (let i = 0; i < ap.length; i += 6) if (!keys.has(k(ap, i) + '|' + k(ap, i + 3))) for (let n = 0; n < 6; n++) gp.push(ap[i + n]);
   all.dispose(); sharp.dispose();
   const grid = new THREE.BufferGeometry(); grid.setAttribute('position', new THREE.Float32BufferAttribute(gp, 3));
-  return { surface, rim, grid };
+  // the break on the outer glass: surface edges used by one surface face only, both ends touching the break strip.
+  // Keyed by position, so duplicated vertices at seams do not read as borders; the neck's open rim never touches the strip.
+  const pk = (v) => `${P[v * 3].toFixed(4)},${P[v * 3 + 1].toFixed(4)},${P[v * 3 + 2].toFixed(4)}`;
+  const onStrip = new Set(); for (const v of ri) onStrip.add(pk(v));
+  const uses = new Map();
+  for (let i = 0; i < si.length; i += 3) for (let e = 0; e < 3; e++) {
+    const a = si[i + e], b = si[i + (e + 1) % 3], ka = pk(a), kb = pk(b), key = ka < kb ? ka + '|' + kb : kb + '|' + ka;
+    const u = uses.get(key); if (u) u.n++; else uses.set(key, { n: 1, a, b });
+  }
+  const ep = [];
+  for (const { n, a, b } of uses.values()) if (n === 1 && onStrip.has(pk(a)) && onStrip.has(pk(b))) ep.push(P[a * 3], P[a * 3 + 1], P[a * 3 + 2], P[b * 3], P[b * 3 + 1], P[b * 3 + 2]);
+  const edge = new THREE.BufferGeometry(); edge.setAttribute('position', new THREE.Float32BufferAttribute(ep, 3));
+  return { surface, rim, grid, edge };
 }
 
 /* ---------- runtime ---------- */
@@ -432,6 +444,33 @@ export function createEntry(root, opts = {}) {
     scene.fog.near = z - 0.75 * sphere.r; scene.fog.far = z + 1.6 * sphere.r; fogFar = scene.fog.far;
   }
 
+  /* Every crack segment rides out on the piece it lies on, so the frame after the break draws exactly the light the frame
+     before it did, dead-end cracks included (they split nothing, so no piece's broken edge carries them). Nearest piece by
+     its vertices, through a coarse spatial hash; once, at load. */
+  function carryCracks() {
+    const C = 0.08, cell = (x, y, z) => `${Math.floor(x / C)},${Math.floor(y / C)},${Math.floor(z / C)}`, hash = new Map();
+    parts.frags.forEach((f) => {
+      if (!f) return; const a = f.glass ? f.glass.geometry.attributes.position.array : null; if (!a) return;
+      for (let v = 0; v < a.length; v += 3) { const x = a[v] + f.home.x, y = a[v + 1] + f.home.y, z = a[v + 2] + f.home.z, k = cell(x, y, z); let b = hash.get(k); if (!b) hash.set(k, (b = [])); b.push(x, y, z, f.i); }
+    });
+    const src = parts.cracks.geometry.attributes.position.array, out = parts.frags.map(() => []);
+    for (let s = 0; s < src.length; s += 6) {
+      const mx = (src[s] + src[s + 3]) / 2, my = (src[s + 1] + src[s + 4]) / 2, mz = (src[s + 2] + src[s + 5]) / 2;
+      const cx = Math.floor(mx / C), cy = Math.floor(my / C), cz = Math.floor(mz / C); let best = Infinity, who = -1;
+      for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+        const b = hash.get(`${cx + dx},${cy + dy},${cz + dz}`); if (!b) continue;
+        for (let n = 0; n < b.length; n += 4) { const d = (b[n] - mx) ** 2 + (b[n + 1] - my) ** 2 + (b[n + 2] - mz) ** 2; if (d < best) { best = d; who = b[n + 3]; } }
+      }
+      const f = parts.frags[who]; if (!f) continue;
+      out[who].push(src[s] - f.home.x, src[s + 1] - f.home.y, src[s + 2] - f.home.z, src[s + 3] - f.home.x, src[s + 4] - f.home.y, src[s + 5] - f.home.z);
+    }
+    parts.frags.forEach((f, i) => {
+      if (!f || !out[i].length) return;
+      const e = f.edgeLines.geometry.attributes.position.array, all = new Float32Array(e.length + out[i].length); all.set(e); all.set(out[i], e.length);
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(all, 3)); f.edgeLines.geometry.dispose(); f.edgeLines.geometry = g;
+    });
+  }
+
   function build(gltf) {
     gltf.scene.traverse((o) => {
       if (!o.isMesh && !o.isLineSegments && !o.isPoints) return;
@@ -443,15 +482,17 @@ export function createEntry(root, opts = {}) {
         geo.translate(-home.x, -home.y, -home.z);                     // the fragment's origin is its own centre
         geo.computeBoundingBox(); const bbox = geo.boundingBox.clone();
         const mat = lineMat.clone();
-        const { grid } = splitFragment(geo, home);
+        const { grid, edge } = splitFragment(geo, home);
         const piece = new THREE.Group(); piece.name = name; piece.visible = false;
         const lines = new THREE.LineSegments(grid, mat);                    // the cream grid, on the glass, ending at the break
+        const edgeMat = crackMat.clone();                                     // the crack's light, carried out by the piece and let go as it separates
+        const edgeLines = new THREE.LineSegments(edge, edgeMat); piece.add(edgeLines);
         piece.add(lines);
         let glass = null;
-        if (!flat) { geo.computeVertexNormals(); glass = new THREE.Mesh(geo, glassMat.clone()); piece.add(glass); }   // the bake's own mesh, one glass, nothing added
+        if (!flat) { geo.computeVertexNormals(); glass = new THREE.Mesh(geo, glassMat.clone()); glass.material.depthWrite = false; piece.add(glass); }   // clear glass hides nothing behind it, as the whole bulb did the frame before   // the bake's own mesh, one glass, nothing added
         const outward = new THREE.Vector3(home.x, home.y * 0.35, home.z).normalize();
         const mats = [mat].concat(glass ? [glass.material] : []);
-        parts.frags[i] = { i, obj: piece, mat, glass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
+        parts.frags[i] = { i, obj: piece, mat, edgeMat, edgeLines, glass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
         parts.shells.push(piece); scene.add(piece);
       } else if (name === 'shell_wire') {
         parts.wire = new THREE.LineSegments(o.geometry, lineMat); group.add(parts.wire);
@@ -473,6 +514,7 @@ export function createEntry(root, opts = {}) {
         parts.debris = o.geometry;
       }
     });
+    if (parts.cracks) carryCracks();
     if (parts.debris) { parts.points = makeDebris(parts.debris, mobile.matches ? DUST.mobile : DUST.desktop, stage.clientHeight > stage.clientWidth ? SPREAD.portrait : SPREAD.landscape); group.add(parts.points); }
     if (!flat) {                                                        // the whole envelope at rest: one lathe, the bake's own profile
       const lathe = glassLathe();                                      // finer than the grid it carries, no crease at the neck
@@ -560,6 +602,7 @@ export function createEntry(root, opts = {}) {
     f.hover += (f.hoverT - f.hover) * a; if (Math.abs(f.hoverT - f.hover) < 0.002) f.hover = f.hoverT;
     f.obj.position.z += f.hover * 0.22 * k;
     f.mat.opacity = flat ? 0.96 : WIRE_ALPHA;
+    f.edgeMat.opacity = p.glow; f.edgeMat.visible = p.glow > 0.002;   // the crack's orange hands over to the pieces at the break and fades as they part
     if (f.glass) f.glass.material.opacity = 1;
   }
 
