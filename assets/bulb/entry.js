@@ -102,7 +102,8 @@ export const POSES = {
     { p: [1.6, -0.9, -0.5], r: [-0.20, 0.80, 0.10], side: 'right' },
   ],
 };
-export const NAV_SCALE = { portrait: 0.55, landscape: 0.65 };   // a settled fragment is a nav piece, not the bulb: smaller, so four fit with air between
+export const NAV_SCALE = { portrait: 0.55, landscape: 0.65 };
+export const SETTLED_R = { portrait: 0.8, landscape: 1.05 };   // a piece's bounding sphere against what shows on screen; landscape pieces sit turned further, so they need the whole sphere and a little more   // a settled fragment is a nav piece, not the bulb: smaller, so four fit with air between
 export const PARALLAX = 0.32;        // world units of sideways travel per unit of view for a fragment at the nearest depth
 export const DRIFT = 0.028;          // world units of slow drift on a settled fragment
 /* Tilt turns each settled piece a little about its own centre, as an object turns when you move around it. Sliding a
@@ -417,7 +418,7 @@ export function createEntry(root, opts = {}) {
   const box = new THREE.Box3();
   const sphere = { c: new THREE.Vector3(), r: 1 };                     // the bulb's bounding sphere in its own space: the pivot and the framing
   const anchor = new THREE.Vector3();                                  // where the sphere's centre sits in the world
-  let portrait = false, ratio = 1, cueW = 0, zArrive = 8, zSettle = 8;
+  let portrait = false, ratio = 1, cueW = 0, zArrive = 8, zSettle = 8, ySettle = 0;
   const camHome = new THREE.Vector3(0, 0, 8);
   let fogFar = 10;
   let sel = null, selK = 0;                                          // the move to a chosen fragment, then its section
@@ -442,9 +443,29 @@ export function createEntry(root, opts = {}) {
       anchor.set(vw * FRAME.landscape.x, vh * (0.5 - FRAME.landscape.y), 0);
     }
     if (cueRule) cueW = cueRule.getBoundingClientRect().width;
-    zArrive = z; zSettle = (portrait ? SETTLED_SPAN.portrait / camera.aspect : SETTLED_SPAN.landscape) / (2 * tan);
+    zArrive = z; fitSettled(w, h, tan);
     camHome.set(0, 0, z); if (!sel) camera.position.copy(camHome);
     scene.fog.near = z - 0.75 * sphere.r; scene.fog.far = z + 1.6 * sphere.r; fogFar = scene.fog.far;
+  }
+
+  /* The settled framing: the pieces keep their hand-placed layout, scaled to the window's width (portrait) or height
+     (landscape) as measured, but never into the band the header and the settled text use. A short window (an in-app
+     browser, a phone with its toolbars down) pulls the camera back and centres the four pieces between the two, so the
+     text's height, which does not scale, can never be landed on. */
+  function fitSettled(w, h, tan) {
+    const top = root.querySelector('.top'), headB = top ? top.getBoundingClientRect().bottom : 60;
+    const textT = settled ? settled.getBoundingClientRect().top - (stage.getBoundingClientRect().top) : h;
+    const bandT = headB + 12, bandB = Math.max(bandT + 120, textT - 18);
+    const poses = portrait ? POSES.portrait : POSES.landscape, scale = portrait ? NAV_SCALE.portrait : NAV_SCALE.landscape;
+    let H = portrait ? SETTLED_SPAN.portrait / camera.aspect : SETTLED_SPAN.landscape;   // visible height at z = 0
+    const H0 = H; let yc = 0;
+    for (let n = 0; n < 4; n++) {                                        // the depth of each piece changes its size on screen with the distance
+      const z = H / (2 * tan); let yT = -Infinity, yB = Infinity;
+      poses.forEach((ps, i) => { const f = parts.frags[i]; const r = (f ? f.radius : 0.5) * scale * (portrait ? SETTLED_R.portrait : SETTLED_R.landscape), k = z / (z - ps.p[2]); yT = Math.max(yT, (ps.p[1] + r) * k); yB = Math.min(yB, (ps.p[1] - r) * k); });
+      H = Math.max(H0, (yT - yB) * h / (bandB - bandT)); yc = (yT + yB) / 2;
+    }
+    zSettle = H / (2 * tan);
+    ySettle = yc - (0.5 - (bandT + bandB) / 2 / h) * H;                  // the pieces' centre on the band's centre
   }
 
   /* Every crack segment rides out on the piece it lies on, so the frame after the break draws exactly the light the frame
@@ -665,7 +686,7 @@ export function createEntry(root, opts = {}) {
       parts.frags.forEach((f, i) => { if (f) f.litT = i === live ? 1 : 0; });
       if (fine) stage.classList.toggle('is-pointing', hi >= 0 && !!pointer && p.settle > 0.5); }
     clock = now / 1000;
-    camHome.set(0, 0, zArrive + (zSettle - zArrive) * p.settle); if (!sel) camera.position.copy(camHome);   // the camera eases to the settled framing with the pieces
+    camHome.set(0, ySettle * p.settle, zArrive + (zSettle - zArrive) * p.settle); if (!sel) camera.position.copy(camHome);   // the camera eases to the settled framing with the pieces
     // the pose: the arrival lean, turned about the world's vertical by the scroll, nudged by tilt; pivot at the sphere's centre
     _qa.setFromAxisAngle(_Y, p.rot + st.view.x * TILT_TURN.yaw * 0.5); _qb.setFromAxisAngle(_X, st.view.y * TILT_TURN.pitch * 0.5);   // half the settled turn: the whole bulb fills the frame, so less turn reads as much
     group.quaternion.copy(_qb).multiply(_qa).multiply(TILT_Q);
@@ -775,6 +796,7 @@ export function createEntry(root, opts = {}) {
       tick();
     }
   }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { frame(); wake(); });   // the settled text's height is known once its face is in
   return { engine, ready, parts, group, camera, scene, renderer, poseAt, screen, select, unselect, flow, stepFlow, toLocal, renderOnce: () => renderer.render(scene, camera), renderAt: (t, vx = 0, vy = 0) => render({ scroll: t, view: { x: vx, y: vy } }, 16, performance.now()), get portrait() { return portrait; }, get selecting() { return sel; } };
 }
 
