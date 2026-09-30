@@ -8,8 +8,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createSpatialEngine } from '/assets/lab/spatial-engine.js';
-import { poseAt, labelAt, settledAt, seg, SEPARATION, ROTATION as TURN, SETTLE, MAP as SEQ } from './map.js?v=5';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
-export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=5';
+import { poseAt, labelAt, settledAt, captionAt, seg, SEPARATION, ROTATION as TURN, SETTLE, MAP as SEQ } from './map.js?v=6';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
+export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=6';
 
 export const GROUND = 0x000000;      // brand black
 export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass, the labels, the rim light
@@ -380,6 +380,9 @@ export function createEntry(root, opts = {}) {
   const still = !!opts.still;                                          // reduced motion: the settled frame, once, tappable, no drift, no hue
   const track = root.getElementById('track'), stage = root.getElementById('stage'), canvas = root.getElementById('bulb');
   const hero = root.querySelector('.hero'), settled = root.querySelector('.settled');
+  const say = root.querySelector('.say'), saySetup = say && say.querySelector('.say-setup'), sayKill = say && say.querySelector('.say-kill');
+  const why = settled && settled.querySelector('.why'), hint = settled && settled.querySelector('.hint');
+  const settledRest = settled ? [...settled.children].filter((el) => el !== why) : [];
   const cue = root.querySelector('.cue'), cueMark = cue && cue.querySelector('.cue-rule i'), cueRule = cue && cue.querySelector('.cue-rule');
   const labels = [...root.querySelectorAll('.nav a')];
   const mobile = window.matchMedia('(max-width: 760px)');
@@ -492,7 +495,7 @@ export function createEntry(root, opts = {}) {
         if (!flat) { geo.computeVertexNormals(); glass = new THREE.Mesh(geo, glassMat.clone()); glass.material.depthWrite = false; piece.add(glass); }   // clear glass hides nothing behind it, as the whole bulb did the frame before   // the bake's own mesh, one glass, nothing added
         const outward = new THREE.Vector3(home.x, home.y * 0.35, home.z).normalize();
         const mats = [mat].concat(glass ? [glass.material] : []);
-        parts.frags[i] = { i, obj: piece, mat, edgeMat, edgeLines, glass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
+        parts.frags[i] = { i, obj: piece, mat, edgeMat, edgeLines, glass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, lit: 0, litT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
         parts.shells.push(piece); scene.add(piece);
       } else if (name === 'shell_wire') {
         parts.wire = new THREE.LineSegments(o.geometry, lineMat); group.add(parts.wire);
@@ -602,7 +605,11 @@ export function createEntry(root, opts = {}) {
     f.hover += (f.hoverT - f.hover) * a; if (Math.abs(f.hoverT - f.hover) < 0.002) f.hover = f.hoverT;
     f.obj.position.z += f.hover * 0.22 * k;
     f.mat.opacity = flat ? 0.96 : WIRE_ALPHA;
-    f.edgeMat.opacity = p.glow; f.edgeMat.visible = p.glow > 0.002;   // the crack's orange hands over to the pieces at the break and fades as they part
+    // the live piece: the one under the pointer, the focus or the finger, or Work when none is. Its broken edges take the
+    // crack's orange back, the one moment the visitor acts; the others stay cream. The crack light at the break still wins.
+    f.lit += (f.litT - f.lit) * (still ? 1 : a); if (Math.abs(f.litT - f.lit) < 0.002) f.lit = f.litT;   // the still renders once: no ease
+    const e = Math.max(p.glow, f.lit * labelAt(p.t, f.i));
+    f.edgeMat.opacity = e; f.edgeMat.visible = e > 0.002;
     if (f.glass) f.glass.material.opacity = 1;
   }
 
@@ -631,7 +638,7 @@ export function createEntry(root, opts = {}) {
       el.style.opacity = op.toFixed(3);
       el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(s.cy)}px, 0) translate(${pose.side === 'right' ? '0' : '-100%'}, -50%)`;
       el.style.pointerEvents = op > 0.5 ? 'auto' : 'none';
-      el.classList.toggle('is-live', f.hover > 0.5);
+      el.classList.toggle('is-live', f.lit > 0.5 && op > 0.5);
     });
   }
 
@@ -651,24 +658,39 @@ export function createEntry(root, opts = {}) {
 
   function render(st, dt = 16, now = 0) {
     const t = st.scroll;
-    const p = poseAt(t);
+    const p = poseAt(t); p.t = t;
+    // one live piece at a time: the pointed, focused or chosen one, else the first (Work), which takes the orange the ruler lets go
+    { const hi = parts.frags.reduce((b, f, i) => (f && f.hoverT > 0 && (b < 0 || f.hoverT > parts.frags[b].hoverT) ? i : b), -1);
+      const live = sel && sel.i >= 0 ? sel.i : hi >= 0 ? hi : 0;
+      parts.frags.forEach((f, i) => { if (f) f.litT = i === live ? 1 : 0; });
+      if (fine) stage.classList.toggle('is-pointing', hi >= 0 && !!pointer && p.settle > 0.5); }
     clock = now / 1000;
     camHome.set(0, 0, zArrive + (zSettle - zArrive) * p.settle); if (!sel) camera.position.copy(camHome);   // the camera eases to the settled framing with the pieces
     // the pose: the arrival lean, turned about the world's vertical by the scroll, nudged by tilt; pivot at the sphere's centre
     _qa.setFromAxisAngle(_Y, p.rot + st.view.x * TILT_TURN.yaw * 0.5); _qb.setFromAxisAngle(_X, st.view.y * TILT_TURN.pitch * 0.5);   // half the settled turn: the whole bulb fills the frame, so less turn reads as much
     group.quaternion.copy(_qb).multiply(_qa).multiply(TILT_Q);
     group.position.copy(anchor).sub(_pc.copy(sphere.c).applyQuaternion(group.quaternion));
-    if (hero) {   // the headline is gone before it has travelled far enough to slide under the header, and never lingers as a grey half-state
+    if (hero && !still) {   // the headline is gone before it has travelled far enough to slide under the header, and never lingers as a grey half-state
       const k = Math.max(0, 1 - (1 - p.text) * 1.7);
       hero.style.opacity = k.toFixed(3); hero.style.transform = `translate3d(0, ${(-(1 - p.text) * 24).toFixed(1)}px, 0)`; hero.style.visibility = k < 0.002 ? 'hidden' : '';
+    }
+    if (say && !still) {   // the studio's line, said while the page does it; it leaves upward the way the headline did
+      const c = captionAt(t);
+      saySetup.style.opacity = c.setup.toFixed(3); sayKill.style.opacity = c.kill.toFixed(3);
+      sayKill.style.transform = `translate3d(0, ${((1 - Math.min(1, c.kill / 0.999)) * 10).toFixed(1)}px, 0)`;
+      say.style.transform = `translate3d(0, ${(-c.lift * 24).toFixed(1)}px, 0)`;
+      say.style.visibility = c.setup + c.kill < 0.002 ? 'hidden' : 'visible';
+      if (why) why.style.opacity = c.why.toFixed(3);
+      if (hint) hint.style.opacity = c.hint.toFixed(3);
     }
     if (cue) {
       const k = 1 - seg(t, 0.74, 0.84);                                 // the cue is the page's progress until the pieces become the navigation
       cue.style.opacity = k.toFixed(3); cue.style.visibility = k < 0.002 ? 'hidden' : '';
+      if (cueMark) cueMark.style.opacity = (k * k).toFixed(3);         // the orange mark goes first: it hands its colour to the live piece, never left alone on a faded ruler
       if (cueMark) cueMark.style.transform = `translate3d(${(Math.max(0, Math.min(1, t)) * Math.max(0, cueW - 2)).toFixed(1)}px, 0, 0)`;
     }
     scene.fog.far = fogFar + 60 * p.settle;                             // the settled pieces leave the haze entirely: depth is parallax and scale, never dimness
-    if (settled) { const k = still ? 1 : settledAt(t); settled.style.opacity = k.toFixed(3); settled.style.pointerEvents = k > 0.5 ? 'auto' : 'none'; }
+    if (settled) { const k = still ? 1 : settledAt(t); settledRest.forEach((el) => { el.style.opacity = k.toFixed(3); }); settled.style.pointerEvents = k > 0.5 ? 'auto' : 'none'; }
     if (parts.cracks) { parts.cracks.geometry.setDrawRange(0, Math.round(parts.crackSegs * p.crack) * 2); parts.cracks.visible = !p.broken; }
     if (parts.wire) parts.wire.visible = !p.broken;
     if (parts.glass) parts.glass.visible = !p.broken;

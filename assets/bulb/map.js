@@ -41,3 +41,19 @@ export function poseAt(t) {
 export function labelAt(t, i) { const a = 0.82 + i * LABEL_STAGGER; return seg(t, a, a + 0.08); }
 /** The settled frame's own wordmark and contact line: after the labels. */
 export function settledAt(t) { return seg(t, 0.90, 0.98); }
+
+/* The studio's line, said by the page while it does it. "Before you build it," arrives as the cracks start to run;
+   "try to kill it." lands on the break itself, in the crack's orange; both leave before the pieces reach the corner
+   the headline used. The explanation comes in at the bottom while the pieces part and stays as the settled frame's
+   first line; the hint that the pieces are the way in arrives with the labels. */
+export const SAY = { setup: [0.17, 0.24], kill: [0.415, 0.455], out: [0.56, 0.63], why: [0.60, 0.70], hint: [0.86, 0.94] };
+export function captionAt(t) {
+  const out = 1 - seg(t, SAY.out[0], SAY.out[1]);
+  return {
+    setup: seg(t, SAY.setup[0], SAY.setup[1]) * out,
+    kill: seg(t, SAY.kill[0], SAY.kill[1]) * out,
+    lift: 1 - out,                                   // 0..1 as the pair leaves, for the upward drift
+    why: seg(t, SAY.why[0], SAY.why[1]),
+    hint: seg(t, SAY.hint[0], SAY.hint[1]),
+  };
+}

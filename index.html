@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Quiet Bands</title>
-<meta name="description" content="Quiet Bands. Custom software, built around the work. Houston, Texas." />
+<meta name="description" content="Quiet Bands. Custom software, built around the work, in Houston, Texas. Before you build it, try to kill it." />
 <meta name="theme-color" content="#000000" />
 <link rel="canonical" href="https://quietbands.com/" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/bulb/entry.css?v=8" />
+<link rel="stylesheet" href="/assets/bulb/entry.css?v=9" />
 <script>document.documentElement.classList.add('js');</script>
 <script type="importmap">
 { "imports": {
@@ -44,9 +44,9 @@
 <div class="menu" id="menu" hidden>
   <nav aria-label="Menu">
     <ul>
-      <li><a href="/rd/#experiments">Experiments</a></li>
-      <li><a href="/rd/#build-log">Build log</a></li>
       <li><a href="/rd/#work">Work</a></li>
+      <li><a href="/rd/#method">Method</a></li>
+      <li><a href="/rd/#experiments">Experiments</a></li>
       <li><a href="/rd/#contact">Contact</a></li>
     </ul>
     <p><a href="mailto:jason@quietbands.com">jason@quietbands.com</a></p>
@@ -59,18 +59,22 @@
       <canvas id="bulb" aria-hidden="true"></canvas>
 
       <div class="still" aria-hidden="true">
-        <img src="/assets/bulb/bulb-static.svg?v=2" alt="" width="1200" height="1600" />
+        <img src="/assets/bulb/bulb-static.svg?v=3" alt="" width="1200" height="1600" />
       </div>
 
       <nav class="nav" aria-label="Sections">
-        <a href="/rd/#experiments" data-frag="0">Experiments</a>
-        <a href="/rd/#build-log" data-frag="1">Build log</a>
-        <a href="/rd/#work" data-frag="2">Work</a>
+        <a href="/rd/#work" data-frag="0">Work</a>
+        <a href="/rd/#method" data-frag="1">Method</a>
+        <a href="/rd/#experiments" data-frag="2">Experiments</a>
         <a href="/rd/#contact" data-frag="3">Contact</a>
       </nav>
 
       <div class="hero">
         <h1><span>Custom software.</span> <span>Built around the work.</span></h1>
+      </div>
+
+      <div class="say">
+        <p><span class="say-setup">Before you build it,</span> <span class="say-kill">try to kill it.</span></p>
       </div>
 
       <div class="cue" aria-hidden="true">
@@ -79,14 +83,15 @@
       </div>
 
       <div class="settled">
-        <p><svg class="qb" viewBox="0 0 823 658" aria-hidden="true" focusable="false"><path d="M307 120H239A236 230 0 0 0 239 580H307V476H239A126 126 0 0 1 239 224H307ZM516 120H584A236 230 0 0 1 584 580H516V476H584A126 126 0 0 0 584 224H516ZM394 0H429A43 43 0 0 1 472 43V615A43 43 0 0 1 429 658H394A43 43 0 0 1 351 615V43A43 43 0 0 1 394 0Z"/></svg><span>Quiet Bands, Houston.</span></p>
+        <p class="why">We pressure-test every idea before anything gets built. <span class="hint">Each piece is a way in.</span></p>
+        <p class="name"><svg class="qb" viewBox="0 0 823 658" aria-hidden="true" focusable="false"><path d="M307 120H239A236 230 0 0 0 239 580H307V476H239A126 126 0 0 1 239 224H307ZM516 120H584A236 230 0 0 1 584 580H516V476H584A126 126 0 0 0 584 224H516ZM394 0H429A43 43 0 0 1 472 43V615A43 43 0 0 1 429 658H394A43 43 0 0 1 351 615V43A43 43 0 0 1 394 0Z"/></svg><span>Quiet Bands, Houston.</span></p>
         <a href="mailto:jason@quietbands.com">jason@quietbands.com</a>
       </div>
     </div>
   </section>
 </main>
 
-<script type="module" src="/assets/bulb/entry.js?v=18"></script>
+<script type="module" src="/assets/bulb/entry.js?v=19"></script>
 <script type="module" src="/assets/bulb/menu.js?v=1"></script>
 </body>
 </html>

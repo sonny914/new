@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { poseAt, labelAt, settledAt, seg, MAP, ROTATION, CRACK0, SEPARATION, SETTLE, GLOW_OUT } from '../assets/bulb/map.js';
+import { poseAt, labelAt, settledAt, captionAt, seg, MAP, ROTATION, CRACK0, SEPARATION, SETTLE, GLOW_OUT, SAY } from '../assets/bulb/map.js';
 
 test('the whole bulb holds still through the hold; the text is on at rest and the marks stay until the turn', () => {
   for (const t of [0, MAP.hold / 2, MAP.hold]) { const p = poseAt(t); assert.equal(p.rot, 0); assert.equal(p.dims, 1); assert.equal(p.broken, false); assert.equal(p.sep, 0); }
@@ -98,4 +98,27 @@ test('the selection curve is the strong ease-in-out from the stylesheet: slow at
   assert.ok(ease(0.1) < 0.02, 'slow start'); assert.ok(ease(0.9) > 0.98, 'slow end');
   assert.ok(ease(0.5) > 0.4 && ease(0.5) < 0.62, 'the middle is near the middle');
   let prev = 0; for (let x = 0; x <= 1.0001; x += 0.01) { const y = ease(x); assert.ok(y >= prev - 1e-9); prev = y; }
+});
+
+test('the page says the line while it does it: the setup as the cracks run, "try to kill it." on the break, gone before the settle', () => {
+  const at = captionAt;
+  assert.equal(at(0).setup, 0); assert.equal(at(0).kill, 0);
+  assert.equal(at(MAP.crack - 0.05).setup, 0, 'nothing is said while the headline is still leaving');
+  assert.ok(at(MAP.crack + 0.03).setup > 0.9, 'the setup is up as the cracks start to run');
+  assert.ok(at(0.40).kill === 0, 'the payoff waits for the break');
+  assert.ok(at(MAP.rotate).kill > 0.9, 'the payoff is on at the break itself');
+  assert.ok(at(MAP.rotate).setup > 0.99, 'and the setup is still there to be read with it');
+  assert.ok(SAY.kill[1] <= MAP.rotate + 0.01 && MAP.rotate - SAY.kill[0] <= 0.04, 'the payoff lands on the break: fully up by it, begun only just before');
+  assert.equal(at(SAY.out[1]).setup, 0); assert.equal(at(SAY.out[1]).kill, 0);
+  assert.ok(SAY.out[1] < SETTLE.from + 0.12, 'gone before the pieces travel far toward their poses');
+  assert.equal(at(1).kill, 0, 'not said again in the settled frame');
+});
+
+test('the explanation arrives while the pieces part and stays; the hint that they are the way in comes with the labels', () => {
+  assert.equal(captionAt(MAP.rotate).why, 0);
+  assert.ok(SAY.why[0] >= SAY.out[0], 'the explanation follows the line, it does not talk over it');
+  assert.ok(captionAt(0.72).why === 1 && captionAt(1).why === 1);
+  assert.ok(SAY.why[1] < 0.82, 'read before the labels start to arrive');
+  assert.equal(captionAt(0.84).hint, 0); assert.equal(captionAt(1).hint, 1);
+  assert.ok(SAY.hint[0] >= 0.82, 'the hint waits for the first label');
 });

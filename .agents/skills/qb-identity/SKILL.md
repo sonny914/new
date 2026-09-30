@@ -11,7 +11,8 @@ description: Quiet Bands brand identity and 3D glass lighting rules for this sit
 - **Wordmark:** lowercase "quiet bands" in a heavy geometric sans. It is the supplied vector, never typeset, and never title case.
 - **Files:** `assets/brand/mark.svg` (viewBox 823×658), `wordmark.svg` (845×155) and `lockup.svg` (mark stacked over wordmark). Inline copies use `fill: currentColor`, so hover and palette follow the text colour.
 - **Header lockup:** mark then wordmark, 10px gap, both centred. The wordmark carries `role="img" aria-label="Quiet Bands"`; the mark is `aria-hidden`. Sizes: mark 25×20 / wordmark 93×17 on the home header; 28×22 / 109×20 on inner pages, 32×26 / 125×23 at ≥761px.
-- **Colours:** black `#000000` ground, cream `#F2EEE5` lines and type, orange `#FF5A00` for the one live accent only (the break, the active item). Never a second accent.
+- **Colours:** black `#000000` ground, cream `#F2EEE5` lines and type, orange `#FF5A00` for the one live accent only: the break, the words that name it ("try to kill it."), and the one live item (the settled piece that is pointed at, focused or tapped, Work at rest). Never a second accent.
+- **The line:** "Before you build it, try to kill it." It is the studio's line and the reason the bulb breaks; the home page says it at the break.
 - **Icons:** cream mark on black. Favicon: 64 box, rounded 12, mark 44 wide. App icons: full bleed, mark 58% of the width.
 - **Retired:** brass `#FFBE0B`/`#B38A3D`, ink `#111111`/`#0E0F10`, bone `#F6F4EE`. The legacy share cards (`og.png`, `og-rd.png`, `og-small-business.png`, `og-resident-experience.png`) and the LinkedIn banner still show the old bands and must be redrawn, not patched.
 
