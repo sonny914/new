@@ -1,0 +1,59 @@
+/* Quiet Bands · Bulb Entry · the scroll map. Pure functions of t (0..1); nothing here touches the DOM or WebGL,
+   so `npm test` covers it in Node. Every pose is a function of t, so the sequence reverses by construction. */
+export const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+export const smooth = (k) => { k = clamp(k); return k * k * (3 - 2 * k); };
+export const outExpo = (k) => (k >= 1 ? 1 : 1 - Math.pow(2, -10 * clamp(k)));
+export const outQuad = (k) => { k = clamp(k); return 1 - (1 - k) * (1 - k); };
+/** The turn: scrubbed, so it tracks the scroll from its first pixel (no ease-in), and it slows only as it hands over to the break. */
+export const turnCurve = (k) => { k = clamp(k); return 1 - Math.pow(1 - k, 1.6); };
+
+export const MAP = { hold: 0.02, crack: 0.22, rotate: 0.45, separate: 0.70, settle: 1.0 };   // the turn starts with the first flick; the glass stays whole until it has clearly turned
+export const ROTATION = Math.PI * 240 / 180;   // 240° about the vertical axis across the rotation segment: a fifth faster than the first cut
+export const CRACK0 = 0.06;                    // at rest the glass carries only the mark of the impact: a hairline, not a crack under way
+export const SEPARATION = 0.42;                // how far a fragment slides out along its own direction before it settles
+export const LABEL_STAGGER = 0.03;
+/* The settle overlaps the separation, so the bulb opens as one continuous move. It starts at rest while the pieces are
+   still sliding out and eases into the final poses: no stop at the hand-over and no lunge after it (an ease-out that
+   starts at full speed here moved the pieces 250x faster in one step than the step before). */
+export const SETTLE = { from: 0.52, to: 0.96 };
+/* The orange of the crack does not switch off at the break: each piece carries its own broken edge in the same light
+   and lets it go while it slides out, done a little past the middle of the separation. */
+export const GLOW_OUT = 0.60;             // in t, between one label and the next (30–80 ms at a normal scroll)
+
+/** Progress through one segment: linear inside, eased at both ends. */
+export function seg(t, a, b) { return smooth((clamp(t) - a) / (b - a)); }
+
+export function poseAt(t) {
+  const rot = turnCurve((clamp(t) - MAP.hold) / (MAP.rotate - MAP.hold)) * ROTATION;
+  const dims = 1 - seg(t, MAP.hold, MAP.hold + 0.10);          // the dimension marks leave as the bulb starts to turn
+  const text = 1 - seg(t, 0.005, 0.13);                         // the headline leaves as the page would scroll it away: it answers the first flick, and the turn has the stage to itself
+  const crack = CRACK0 + (1 - CRACK0) * outQuad((clamp(t) - MAP.crack) / (MAP.rotate - MAP.crack));   // the glass is whole through the first fifth: the turn is seen first, then the cracks run, fast at first, complete before separation
+  const broken = t >= MAP.rotate;                     // from here the four fragments are the glass
+  const sep = seg(t, MAP.rotate, MAP.separate);        // fragments slide out along the cracks
+  const settle = seg(t, SETTLE.from, SETTLE.to);       // one continuous move with the separation: starts and ends at rest
+  const release = seg(t, MAP.rotate, 0.85);            // the debris leaves the cracks
+  const anchor = 1 - seg(t, MAP.separate, 0.85);       // the base and the filament fade once the fragments leave for their poses
+  const glow = 1 - seg(t, MAP.rotate, GLOW_OUT);       // the crack light: full at the break, carried by the pieces, gone as they part
+  return { rot, text, dims, crack, broken, sep, settle, release, anchor, glow };
+}
+
+/** Label i (0..3) opacity at t: they arrive one after another near the end of the settle. */
+export function labelAt(t, i) { const a = 0.82 + i * LABEL_STAGGER; return seg(t, a, a + 0.08); }
+/** The settled frame's own wordmark and contact line: after the labels. */
+export function settledAt(t) { return seg(t, 0.90, 0.98); }
+
+/* The studio's line, said by the page while it does it. "Before you build it," arrives as the cracks start to run;
+   "try to kill it." lands on the break itself, in the crack's orange; both leave before the pieces reach the corner
+   the headline used. The explanation comes in at the bottom while the pieces part and stays as the settled frame's
+   first line; the hint that the pieces are the way in arrives with the labels. */
+export const SAY = { setup: [0.17, 0.24], kill: [0.415, 0.455], out: [0.56, 0.63], why: [0.60, 0.70], hint: [0.86, 0.94] };
+export function captionAt(t) {
+  const out = 1 - seg(t, SAY.out[0], SAY.out[1]);
+  return {
+    setup: seg(t, SAY.setup[0], SAY.setup[1]) * out,
+    kill: seg(t, SAY.kill[0], SAY.kill[1]) * out,
+    lift: 1 - out,                                   // 0..1 as the pair leaves, for the upward drift
+    why: seg(t, SAY.why[0], SAY.why[1]),
+    hint: seg(t, SAY.hint[0], SAY.hint[1]),
+  };
+}

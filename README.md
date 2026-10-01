@@ -223,3 +223,7 @@ tools/story.test.mjs     unit tests for the engine's pure functions (`npm test`)
 ```
 
 To change the choreography, edit poses in `story.js`; the engine needs no changes. Every other route, `qb.js`, `triage.js`, `pressure-test.js`, `intake.js` and the Netlify function are untouched by the rebuild.
+
+## Lab: Spatial Dossier v0.1 (`/lab/spatial-dossier/`)
+
+Isolated technical prototype for the street-luxury × dossier × technology direction: one layered object in real CSS 3D, touch parallax, press-and-hold inspection, scroll travel between planes, and a striped lenticular that flips the workflow diagram between how it looks and what actually happens. Plan and report: `docs/SPATIAL-DOSSIER-PLAN.md`. Files: `assets/lab/dossier.css`, `assets/lab/dossier.js`, `assets/lab/grain.png`; tests in `tools/dossier.test.mjs`. `/lab/*` is served `noindex`. Nothing on the production homepage or in the funnel is touched.

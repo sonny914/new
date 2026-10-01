@@ -1,0 +1,61 @@
+/* Quiet Bands · R&D page · the same language as the entry: near-black ground, cream lines, one family, orange only where you can act. */
+:root{--ground:#000000;--line:#F2EEE5;--line-dim:rgba(242,238,229,.62);--rule:rgba(242,238,229,.22);--text:#F2EEE5;--live:#FF5A00;--ease-out:cubic-bezier(.23,1,.32,1);--gutter:22px;--measure:62ch}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--ground);color:var(--text);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+::selection{background:rgba(242,238,229,.22);color:var(--text)}
+body{font-family:'Hubot Sans',system-ui,sans-serif;font-weight:400;font-stretch:100%;line-height:1.5;background:var(--ground);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none;touch-action:manipulation}
+:focus-visible{outline:none;color:var(--live);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px;text-decoration-color:var(--live)}
+.wrap{max-width:calc(var(--measure) + 2 * var(--gutter));margin:0 auto;padding:0 var(--gutter)}
+
+/* header: the wordmark back to the bulb, and the four sections as a row of links */
+.top{padding:calc(20px + env(safe-area-inset-top)) 0 18px;border-bottom:1px solid var(--rule)}
+.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 28px}
+.mark{font-size:22px;font-weight:500;letter-spacing:-.005em;line-height:1}
+@media (min-width:761px){ .mark{font-size:26px} }
+.top nav{display:flex;flex-wrap:wrap;gap:0 22px;margin-left:auto}
+.top nav a,.mark a{display:inline-flex;align-items:center;min-height:44px;color:var(--line);font-size:15px;transition:color 180ms var(--ease-out)}
+.top nav a{padding:0 8px;margin:0 -8px}   /* 44px wide even for Work; the row's spacing is unchanged */
+.mark a{font-size:inherit;font-weight:inherit;letter-spacing:inherit;gap:10px}
+/* the mark (823:658) and the lowercase wordmark (845:155), both drawn in the text colour */
+.qb,.qb-word{display:block;flex:0 0 auto;fill:currentColor}
+.qb{width:28px;height:22px}
+.qb-word{width:109px;height:20px}
+@media (min-width:761px){ .qb{width:32px;height:26px} .qb-word{width:125px;height:23px} }
+.top nav a[aria-current]{color:var(--text)}
+@media (hover:hover) and (pointer:fine){ .top nav a:hover,.mark a:hover,.body a:hover{color:var(--live)} }
+.top nav a:active,.mark a:active,.body a:active{color:var(--live)}
+
+/* sections: a hairline, a small index, a heading, then prose. No cards, no boxes. */
+section{padding:56px 0 8px}
+section + section{border-top:1px solid var(--rule)}
+h2,h3{font-weight:500;letter-spacing:-.01em;line-height:1.15;text-wrap:balance}
+h2{font-size:clamp(28px,4.2vw,40px)}                 /* the section: Work, Method, Experiments, Contact */
+h3{font-size:clamp(20px,2.6vw,26px);margin-top:12px;color:var(--line)}   /* the piece inside it */
+h4{font-size:18px;font-weight:500;margin-top:34px}   /* the parts of a piece */
+.body{max-width:var(--measure);color:var(--text)}
+.body p{margin-top:14px}
+.body p.dim{color:var(--line-dim)}
+.body a{color:var(--line);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--line-dim);padding:13px 0;margin:-13px 0;transition:color 180ms var(--ease-out),text-decoration-color 180ms var(--ease-out)}   /* the underline sits on the word; the padding is 44px of hit area that moves nothing */
+@media (hover:hover) and (pointer:fine){ .body a:hover{text-decoration-color:var(--live)} }
+.body ul{list-style:none;margin-top:14px}
+.body li{padding:10px 0;border-top:1px solid var(--rule)}
+.body li:last-child{border-bottom:1px solid var(--rule)}
+.body li time{display:inline-block;min-width:8ch;color:var(--line-dim);font-size:14px}
+.body dl{margin-top:14px}
+.body dt{color:var(--line-dim);font-size:14px;margin-top:16px}
+.body dd{margin-top:4px}
+.contact{padding:64px 0 calc(64px + env(safe-area-inset-bottom))}
+.contact p{font-size:17px}
+.contact{min-height:62svh}   /* the last section is tall enough for its link to land it at the top */
+.contact a{color:var(--text)}
+.body ol{list-style:none;margin-top:14px;counter-reset:q}
+.body ol li{padding:10px 0 10px 3.2ch;border-top:1px solid var(--rule);position:relative;counter-increment:q}
+.body ol li:last-child{border-bottom:1px solid var(--rule)}
+.body ol li::before{content:counter(q,decimal-leading-zero);position:absolute;left:0;top:12px;color:var(--line-dim);font-size:14px}
+.body ol b{font-weight:500}
+.body p.go{display:flex;flex-wrap:wrap;gap:20px 24px;margin-top:22px}   /* stacked on a phone, each link keeps its own 44px */
+/* a piece on the entry fades the page to the ground before it comes here, so the section arrives out of black */
+@media (prefers-reduced-motion:no-preference){ body{animation:arrive 320ms var(--ease-out) both} }
+@keyframes arrive{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){ a{transition:none} }
