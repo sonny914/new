@@ -83,6 +83,10 @@ html.live .nav a,html.rm .nav a{position:absolute;left:0;top:0;opacity:0;pointer
 html.live .nav a.is-live,html.rm .nav a.is-live{color:var(--live)}
 html.live .nav a:focus-visible,html.rm .nav a:focus-visible{color:var(--live);text-decoration-color:var(--live)}
 html.live .stage.is-pointing{cursor:pointer}
+/* a black halo the width of a stroke: invisible on the ground, it keeps a label clear when tilt carries a lit edge behind it */
+html.live .nav a,html.rm .nav a,html.live .settled,html.rm .settled{text-shadow:0 0 2px var(--ground),0 0 8px var(--ground)}
+/* the hit area runs past the word on both sides, across the gap to its piece: every label is a 44px target however short */
+html.live .nav a::after,html.rm .nav a::after{content:'';position:absolute;inset:0 -14px}
 @media (min-width:761px){ html.live .nav a,html.rm .nav a{font-size:17px} }
 html.live .stage,html.rm .stage{position:sticky;top:0;overflow:hidden}
 html.rm .track{height:100svh}

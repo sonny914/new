@@ -377,3 +377,11 @@ Answers to the critique's three questions: say the studio's line at the break, a
 ### The settled text is never landed on
 
 Reported on a phone in an in-app browser: the Contact piece and its label sat on the settled text ("…gets built.Contact…"). The pieces were framed to the window's width alone, so a shorter window (browser bars, an in-app browser) put the lowest piece where the text is, and the text's height does not scale. The settled framing now measures the header and the top of the text and fits the four pieces between them (`fitSettled`): on a short window the camera pulls back and centres them in that band. Checked at 393×852, 393×700, 393×640, 375×553, 1440×900 and 1280×620: no piece or label on the text or under the header; gates 3 and 4 hold.
+
+### Polish only: label contrast, tap targets, the move into a section
+
+Signed off as reading as Quiet Bands; the concept and the motion are frozen. Three refinements, nothing redesigned.
+
+- **Label contrast.** Measured against what is actually behind each label in the settled frame (393×852, 375×553, 1440×900): every label and line of settled text passes AA. The lowest is the live label's orange on black, 6.0:1; cream labels are 8.8:1 at worst, where a lit edge drifts behind Contact on the SE. The labels and settled text now carry a black halo the width of a stroke: invisible on the ground, it keeps a label clear when tilt carries a lit edge behind it.
+- **Tap targets.** Every label's hit area runs 14 px past the word on both sides, across most of the gap to its piece, so even "Work" is a 44 px target and a tap between a label and its piece goes where both go. On `/rd/` the header's "Work" was 38 px wide (now 54; the row's spacing is unchanged), and the two stacked links under Method overlapped by 22 px on a phone (row gap 4 → 20 px; each now owns 44 px).
+- **Into the section.** The camera's move to a chosen piece now ends in black: the stage and the header fade to the ground over the back 60% of the 480 ms move, and `/rd/` fades in out of black (320 ms, skipped under reduced motion). Back reverses the fade along with the camera. Gate 4 still lands on `/rd/#method` with the section at the top.

@@ -421,7 +421,8 @@ export function createEntry(root, opts = {}) {
   let portrait = false, ratio = 1, cueW = 0, zArrive = 8, zSettle = 8, ySettle = 0;
   const camHome = new THREE.Vector3(0, 0, 8);
   let fogFar = 10;
-  let sel = null, selK = 0;                                          // the move to a chosen fragment, then its section
+  let sel = null, selK = 0, veilK = 0;                               // the move to a chosen fragment, then its section
+  const head = root.querySelector('.top');                            // faded with the stage, so the section arrives out of black, not out of a cut
 
   function frame() {
     const w = stage.clientWidth, h = stage.clientHeight;
@@ -673,7 +674,7 @@ export function createEntry(root, opts = {}) {
   }
   function unselect(now = performance.now()) {                         // back: the camera returns the way it came
     if (!sel) return;
-    sel = { i: -1, href: null, from: camera.position.clone(), to: camHome.clone(), start: now, done: false };
+    sel = { i: -1, href: null, from: camera.position.clone(), to: camHome.clone(), start: now, done: false, v0: veilK };
     parts.frags.forEach((f) => { f.hoverT = 0; f.viaLabel = false; }); wake();
   }
 
@@ -724,6 +725,10 @@ export function createEntry(root, opts = {}) {
       const k = EASE_IN_OUT(Math.min(1, (now - sel.start) / SELECT_MS));
       camera.position.lerpVectors(sel.from, sel.to, k);
       selK = sel.i >= 0 ? k : selK * (1 - k);
+      // the page goes to the ground over the back half of the move, so the section loads out of black; back reverses it
+      veilK = sel.i >= 0 ? seg(k, 0.4, 1) : (sel.v0 || 0) * (1 - k);
+      const o = veilK > 0.001 ? (1 - veilK).toFixed(3) : '';
+      stage.style.opacity = o; if (head) head.style.opacity = o;
       if (k >= 1 && !sel.done) { sel.done = true; if (sel.href) location.assign(sel.href); else sel = null; }
       moving = true;
     }

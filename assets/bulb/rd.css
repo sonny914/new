@@ -15,6 +15,7 @@ a{color:inherit;text-decoration:none;touch-action:manipulation}
 @media (min-width:761px){ .mark{font-size:26px} }
 .top nav{display:flex;flex-wrap:wrap;gap:0 22px;margin-left:auto}
 .top nav a,.mark a{display:inline-flex;align-items:center;min-height:44px;color:var(--line);font-size:15px;transition:color 180ms var(--ease-out)}
+.top nav a{padding:0 8px;margin:0 -8px}   /* 44px wide even for Work; the row's spacing is unchanged */
 .mark a{font-size:inherit;font-weight:inherit;letter-spacing:inherit;gap:10px}
 /* the mark (823:658) and the lowercase wordmark (845:155), both drawn in the text colour */
 .qb,.qb-word{display:block;flex:0 0 auto;fill:currentColor}
@@ -53,5 +54,8 @@ h4{font-size:18px;font-weight:500;margin-top:34px}   /* the parts of a piece */
 .body ol li:last-child{border-bottom:1px solid var(--rule)}
 .body ol li::before{content:counter(q,decimal-leading-zero);position:absolute;left:0;top:12px;color:var(--line-dim);font-size:14px}
 .body ol b{font-weight:500}
-.body p.go{display:flex;flex-wrap:wrap;gap:4px 24px;margin-top:22px}
+.body p.go{display:flex;flex-wrap:wrap;gap:20px 24px;margin-top:22px}   /* stacked on a phone, each link keeps its own 44px */
+/* a piece on the entry fades the page to the ground before it comes here, so the section arrives out of black */
+@media (prefers-reduced-motion:no-preference){ body{animation:arrive 320ms var(--ease-out) both} }
+@keyframes arrive{from{opacity:0}}
 @media (prefers-reduced-motion:reduce){ a{transition:none} }
