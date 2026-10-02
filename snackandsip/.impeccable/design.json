@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-02T20:40:00Z",
+  "title": "Design System: Snack & Sip",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "primary", "displayName": "Plum Ink", "canonical": "oklch(19.9% 0.070 307)", "tonalRamp": ["oklch(15% 0.070 307)", "oklch(25% 0.070 307)", "oklch(38% 0.070 307)", "oklch(50% 0.070 307)", "oklch(62% 0.070 307)", "oklch(75% 0.070 307)", "oklch(87% 0.070 307)", "oklch(95% 0.070 307)"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "oklch(100% 0 0)", "tonalRamp": ["oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(38% 0 0)", "oklch(50% 0 0)", "oklch(62% 0 0)", "oklch(75% 0 0)", "oklch(87% 0 0)", "oklch(95% 0 0)"] },
+      "peach": { "role": "primary", "displayName": "Peach", "canonical": "oklch(78.8% 0.134 48)", "tonalRamp": ["oklch(15% 0.134 48)", "oklch(25% 0.134 48)", "oklch(38% 0.134 48)", "oklch(50% 0.134 48)", "oklch(62% 0.134 48)", "oklch(75% 0.134 48)", "oklch(87% 0.134 48)", "oklch(95% 0.134 48)"] },
+      "berry": { "role": "secondary", "displayName": "Strawberry", "canonical": "oklch(68.4% 0.212 10)", "tonalRamp": ["oklch(15% 0.212 10)", "oklch(25% 0.212 10)", "oklch(38% 0.212 10)", "oklch(50% 0.212 10)", "oklch(62% 0.212 10)", "oklch(75% 0.212 10)", "oklch(87% 0.212 10)", "oklch(95% 0.212 10)"] },
+      "mango": { "role": "secondary", "displayName": "Mango", "canonical": "oklch(84.7% 0.161 83)", "tonalRamp": ["oklch(15% 0.161 83)", "oklch(25% 0.161 83)", "oklch(38% 0.161 83)", "oklch(50% 0.161 83)", "oklch(62% 0.161 83)", "oklch(75% 0.161 83)", "oklch(87% 0.161 83)", "oklch(95% 0.161 83)"] },
+      "sky": { "role": "secondary", "displayName": "Cotton-Candy Sky", "canonical": "oklch(77.6% 0.134 235)", "tonalRamp": ["oklch(15% 0.134 235)", "oklch(25% 0.134 235)", "oklch(38% 0.134 235)", "oklch(50% 0.134 235)", "oklch(62% 0.134 235)", "oklch(75% 0.134 235)", "oklch(87% 0.134 235)", "oklch(95% 0.134 235)"] },
+      "coco": { "role": "secondary", "displayName": "Coconut Cream", "canonical": "oklch(94.1% 0.020 88)", "tonalRamp": ["oklch(15% 0.020 88)", "oklch(25% 0.020 88)", "oklch(38% 0.020 88)", "oklch(50% 0.020 88)", "oklch(62% 0.020 88)", "oklch(75% 0.020 88)", "oklch(87% 0.020 88)", "oklch(95% 0.020 88)"] },
+      "cola": { "role": "secondary", "displayName": "Cola", "canonical": "oklch(32.3% 0.052 40)", "tonalRamp": ["oklch(15% 0.052 40)", "oklch(25% 0.052 40)", "oklch(38% 0.052 40)", "oklch(50% 0.052 40)", "oklch(62% 0.052 40)", "oklch(75% 0.052 40)", "oklch(87% 0.052 40)", "oklch(95% 0.052 40)"] },
+      "ice": { "role": "secondary", "displayName": "Violet Ice", "canonical": "oklch(52.4% 0.240 289)", "tonalRamp": ["oklch(15% 0.240 289)", "oklch(25% 0.240 289)", "oklch(38% 0.240 289)", "oklch(50% 0.240 289)", "oklch(62% 0.240 289)", "oklch(75% 0.240 289)", "oklch(87% 0.240 289)", "oklch(95% 0.240 289)"] },
+      "sticker-cream": { "role": "neutral", "displayName": "Sticker Cream", "canonical": "oklch(97.0% 0.022 70)", "tonalRamp": ["oklch(15% 0.022 70)", "oklch(25% 0.022 70)", "oklch(38% 0.022 70)", "oklch(50% 0.022 70)", "oklch(62% 0.022 70)", "oklch(75% 0.022 70)", "oklch(87% 0.022 70)", "oklch(95% 0.022 70)"] },
+      "open-green": { "role": "tertiary", "displayName": "Open Green", "canonical": "oklch(65.2% 0.164 152)", "tonalRamp": ["oklch(15% 0.164 152)", "oklch(25% 0.164 152)", "oklch(38% 0.164 152)", "oklch(50% 0.164 152)", "oklch(62% 0.164 152)", "oklch(75% 0.164 152)", "oklch(87% 0.164 152)", "oklch(95% 0.164 152)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The hero wordmark \"Snack & Sip\" only." },
+      "headline": { "displayName": "Headline", "purpose": "One drink name per slide, balanced; the find slide steps down to clamp(2rem, 9.5vw, 2.8rem)." },
+      "title": { "displayName": "Title", "purpose": "Sticker headings (Where, Hours) with an 18px stroke icon in front." },
+      "body": { "displayName": "Body", "purpose": "Slide copy at max 34ch; hero copy 1.1rem at 30ch; sticker address 1.05rem/1.4." },
+      "label": { "displayName": "Label", "purpose": "Pills, badges, brand link, footer. Badge 0.85rem, chip 0.92rem, button 1.02rem. Sentence case." }
+    },
+    "shadows": [
+      { "name": "lift", "value": "0 14px 28px rgba(30,10,46,.3)", "purpose": "Every pinned control: Directions button and hours chip." },
+      { "name": "cup-drop", "value": "drop-shadow(0 26px 30px rgba(30,10,46,.28))", "purpose": "Filter on the vector cup on every drink slide." },
+      { "name": "sticker", "value": "0 18px 34px rgba(0,0,0,.3)", "purpose": "Address and hours stickers on the plum find slide, paired with outline: 4px solid #fff." },
+      { "name": "stage-frame", "value": "0 40px 90px rgba(0,0,0,.35)", "purpose": "The phone column on desktop (min-width 760px) only." },
+      { "name": "hero-scrim", "value": "linear-gradient(0deg, #1e0a2e 0%, rgba(30,10,46,.75) 36%, rgba(30,10,46,0) 70%)", "purpose": "Plum fade over the hero media so white type stays legible." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(.16,1,.3,1)", "purpose": "The one easing curve: stage color change and button lift." },
+      { "name": "stage-tint", "value": "background .7s var(--ease)", "purpose": "html and body background cross-fading to the slide in view." },
+      { "name": "button-lift", "value": "transform .35s var(--ease), background .5s, color .5s", "purpose": "Primary button hover rise and its color following the slide." },
+      { "name": "parallax-depths", "value": "bubbles 30, media 40, cup 70, copy -24", "purpose": "translate3d px per viewport-height of offset from center; off under prefers-reduced-motion." },
+      { "name": "scroll-snap", "value": "scroll-snap-type: y proximity", "purpose": "Each slide snaps into view on touch and inside the desktop stage." }
+    ],
+    "breakpoints": [
+      { "name": "stage", "value": "760px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Directions Button (on dark stage)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action, pinned bottom-left of the column. Peach on plum stages; fill and text follow the slide via --btn/--btn-ink.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z\"/><circle cx=\"12\" cy=\"9.5\" r=\"2.5\"/></svg>Directions<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></a>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:.55em;min-height:54px;padding:0 1.2em;border-radius:999px;background:var(--btn,#ff9e6b);color:var(--btn-ink,#1e0a2e);font:700 1.02rem/1.5 Figtree,system-ui,sans-serif;text-decoration:none;box-shadow:0 14px 28px rgba(30,10,46,.3);transition:transform .35s cubic-bezier(.16,1,.3,1),background .5s,color .5s}.ds-btn-primary svg{width:20px;height:20px}.ds-btn-primary:hover{transform:translateY(-2px)}.ds-btn-primary:active{transform:translateY(1px) scale(.98)}.ds-btn-primary:focus-visible{outline:3px solid #fff;outline-offset:3px}"
+    },
+    {
+      "name": "Directions Button (on bright stage)",
+      "kind": "button",
+      "refersTo": "button-primary-on-bright",
+      "description": "The same button as it renders on peach, strawberry, mango, sky and coconut slides: plum fill, paper text.",
+      "html": "<a class=\"ds-btn-primary-bright\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z\"/><circle cx=\"12\" cy=\"9.5\" r=\"2.5\"/></svg>Directions<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></a>",
+      "css": ".ds-btn-primary-bright{display:inline-flex;align-items:center;justify-content:center;gap:.55em;min-height:54px;padding:0 1.2em;border-radius:999px;background:#1e0a2e;color:#fff;font:700 1.02rem/1.5 Figtree,system-ui,sans-serif;text-decoration:none;box-shadow:0 14px 28px rgba(30,10,46,.3);transition:transform .35s cubic-bezier(.16,1,.3,1),background .5s,color .5s}.ds-btn-primary-bright svg{width:20px;height:20px}.ds-btn-primary-bright:hover{transform:translateY(-2px)}.ds-btn-primary-bright:active{transform:translateY(1px) scale(.98)}.ds-btn-primary-bright:focus-visible{outline:3px solid #fff;outline-offset:3px}"
+    },
+    {
+      "name": "Hours Chip",
+      "kind": "chip",
+      "refersTo": "chip-status",
+      "description": "Live open/closed status pinned beside the Directions button; green dot when open, strawberry when closed. Links to the hours sticker.",
+      "html": "<a class=\"ds-chip\" href=\"#\" data-state=\"open\"><i></i><span>Open till 8 PM</span></a> <a class=\"ds-chip\" href=\"#\" data-state=\"closed\"><i></i><span>Closed, opens tomorrow 11 AM</span></a>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:.5em;min-height:54px;padding:0 1.1em;border-radius:999px;background:#fff;color:#1e0a2e;font:700 .92rem/1.5 Figtree,system-ui,sans-serif;text-decoration:none;box-shadow:0 14px 28px rgba(30,10,46,.3);white-space:nowrap}.ds-chip i{width:9px;height:9px;border-radius:50%;background:#1cab5a;flex:none}.ds-chip[data-state=\"closed\"] i{background:#ff4f7b}.ds-chip:focus-visible{outline:3px solid #fff;outline-offset:3px}"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Plum pill under a drink's copy marking the signature item; filled star in front.",
+      "html": "<span class=\"ds-badge\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"m12 2 2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7L12 2Z\"/></svg>Popular</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:.4em;padding:.42em .9em;border-radius:999px;background:#1e0a2e;color:#fff;font:700 .85rem/1.5 Figtree,system-ui,sans-serif;letter-spacing:.01em}.ds-badge svg{width:14px;height:14px}"
+    },
+    {
+      "name": "Sticker",
+      "kind": "card",
+      "refersTo": "sticker",
+      "description": "Cream, tilted, white-outlined card for address and hours on the plum find slide; the hours variant carries a tabular table with a today marker.",
+      "html": "<div class=\"ds-sticker\" style=\"--tilt:-2.5deg\"><h3><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/></svg>Hours</h3><table class=\"ds-hours\"><tr><td>Monday</td><td>Closed</td></tr><tr class=\"now\"><td>Tuesday to Saturday</td><td>11 AM to 8 PM</td></tr><tr><td>Sunday</td><td>12 PM to 6 PM</td></tr></table><p><a href=\"#\">11200 Broadway St., Suite 1370</a></p></div>",
+      "css": ".ds-sticker{background:#fff3e6;color:#1e0a2e;border-radius:22px;padding:18px 20px;outline:4px solid #fff;box-shadow:0 18px 34px rgba(0,0,0,.3);transform:rotate(var(--tilt,0deg));font:400 1.05rem/1.4 Figtree,system-ui,sans-serif;max-width:390px}.ds-sticker h3{font:800 1rem/1.2 Unbounded,sans-serif;letter-spacing:-.01em;display:flex;align-items:center;gap:.5em;margin:0 0 .5rem}.ds-sticker h3 svg{width:18px;height:18px;flex:none}.ds-sticker p{margin:.6rem 0 0}.ds-sticker a{color:inherit;text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:2px;text-decoration-color:#ff9e6b}.ds-hours{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}.ds-hours td{padding:.4em 0;border-top:1px solid rgba(30,10,46,.14)}.ds-hours tr:first-child td{border-top:0}.ds-hours td:last-child{text-align:right;font-weight:700;white-space:nowrap;padding-left:1em}.ds-hours tr.now td:first-child::after{content:\"today\";margin-left:.5em;padding-left:.9em;font-size:.75em;font-weight:700;background:radial-gradient(circle at .3em 55%,#ff4f7b .25em,transparent .3em)}"
+    },
+    {
+      "name": "Progress Segments",
+      "kind": "nav",
+      "refersTo": "progress",
+      "description": "Nine 3px pills across the top of the column, one per slide; each fills from the left as its slide scrolls in. Segment color is paper, plum on the coconut slide.",
+      "html": "<div class=\"ds-progress\"><span style=\"--p:1\"></span><span style=\"--p:.6\"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>",
+      "css": ".ds-progress{display:flex;gap:4px;padding:12px 14px 0;width:min(100%,430px);background:#1e0a2e;border-radius:12px 12px 0 0}.ds-progress span{flex:1;height:3px;border-radius:3px;background:color-mix(in oklch,var(--seg,#fff) 35%,transparent);overflow:hidden}.ds-progress span::after{content:\"\";display:block;height:100%;width:100%;background:var(--seg,#fff);transform:scaleX(var(--p,0));transform-origin:left}"
+    },
+    {
+      "name": "Brand Link",
+      "kind": "nav",
+      "refersTo": "brand",
+      "description": "Logo tile and name top-left of the hero; the only persistent wordmark on phones.",
+      "html": "<a class=\"ds-brand\" href=\"#\"><svg viewBox=\"0 0 64 64\" width=\"34\" height=\"34\"><rect width=\"64\" height=\"64\" rx=\"18\" fill=\"#2b1034\"/><path d=\"M18 22h28l-4 28q-10 5-20 0z\" fill=\"#ff9a6b\"/><path d=\"M18 22h28l-1 7H19z\" fill=\"#ffc98a\"/><rect x=\"36\" y=\"8\" width=\"5\" height=\"18\" rx=\"2.5\" fill=\"#ff4f7b\" transform=\"rotate(12 38 17)\"/><circle cx=\"26\" cy=\"38\" r=\"3\" fill=\"#fff\" opacity=\".8\"/><circle cx=\"38\" cy=\"43\" r=\"2.4\" fill=\"#fff\" opacity=\".8\"/></svg>Snack &amp; Sip</a>",
+      "css": ".ds-brand{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;background:#1e0a2e;border-radius:999px;color:#fff;font:700 .95rem/1.5 Figtree,system-ui,sans-serif;text-decoration:none}.ds-brand svg{width:34px;height:34px;border-radius:10px}.ds-brand:focus-visible{outline:3px solid #fff;outline-offset:3px}"
+    },
+    {
+      "name": "Drenched Slide",
+      "kind": "custom",
+      "refersTo": "slide",
+      "description": "The signature unit: one drink, one full-bleed color, a tinted vector cup top-right, bubbles, and a single Unbounded headline anchored bottom-left.",
+      "html": "<section class=\"ds-slide\" style=\"--c:#ff9e6b\"><div class=\"ds-bubbles\"><i style=\"left:8%;top:14%;width:14px;height:14px\"></i><i style=\"left:30%;top:70%;width:9px;height:9px\"></i><i style=\"left:84%;top:62%;width:18px;height:18px\"></i></div><svg class=\"ds-cup\" viewBox=\"0 0 220 300\" aria-hidden=\"true\"><rect class=\"straw\" x=\"128\" y=\"4\" width=\"16\" height=\"120\" rx=\"8\" transform=\"rotate(12 136 64)\"/><path class=\"liq\" d=\"M34 86h152l-18 182c-1 10-9 18-19 18H71c-10 0-18-8-19-18L34 86Z\"/><g fill=\"#fff\" opacity=\".55\"><rect x=\"62\" y=\"118\" width=\"46\" height=\"46\" rx=\"10\" transform=\"rotate(14 85 141)\"/><rect x=\"118\" y=\"150\" width=\"42\" height=\"42\" rx=\"10\" transform=\"rotate(-9 139 171)\"/><rect x=\"78\" y=\"200\" width=\"44\" height=\"44\" rx=\"10\" transform=\"rotate(-5 100 222)\"/></g><path class=\"glass\" d=\"M34 86h152l-18 182c-1 10-9 18-19 18H71c-10 0-18-8-19-18L34 86Z\"/><path fill=\"#fff\" opacity=\".35\" d=\"M52 100l10 170h8L60 100Z\"/><ellipse class=\"lid\" cx=\"110\" cy=\"86\" rx=\"80\" ry=\"12\"/></svg><div class=\"ds-copy\"><h2>Peach<br>Thriller</h2><p>Our popular peach lemonade. Peach, lemon, lots of ice.</p></div></section>",
+      "css": ".ds-slide{position:relative;width:min(100%,430px);min-height:520px;overflow:clip;display:grid;grid-template-rows:1fr auto;padding:64px 22px 36px;background:var(--c);color:#1e0a2e;font:400 1.05rem/1.5 Figtree,system-ui,sans-serif;isolation:isolate}.ds-slide h2{font:800 clamp(2.1rem,10.5vw,3.1rem)/.98 Unbounded,Figtree,sans-serif;letter-spacing:-.025em;text-wrap:balance;margin:0}.ds-slide p{max-width:34ch;margin:.6rem 0 0}.ds-copy{position:relative;z-index:3;align-self:end}.ds-bubbles{position:absolute;inset:0;pointer-events:none;z-index:0}.ds-bubbles i{position:absolute;border-radius:50%;background:#fff;opacity:.35}.ds-cup{position:absolute;right:-6%;top:9%;width:66%;max-width:300px;filter:drop-shadow(0 26px 30px rgba(30,10,46,.28))}.ds-cup .liq{fill:color-mix(in oklch,var(--c) 70%,#1e0a2e)}.ds-cup .lid{fill:color-mix(in oklch,var(--c) 45%,#fff)}.ds-cup .glass{fill:rgba(255,255,255,.18)}.ds-cup .straw{fill:#1e0a2e}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Flavor Reel",
+    "overview": "Snack & Sip reads like a story reel, not a cafe landing page. The whole site is a single phone-width column (430px) of full-height slides; each slide is one drink, and the slide is drenched edge to edge in that drink's color. There is no white page behind anything: the stage itself (the html background, the desktop surround, even the browser theme-color) tints to whatever slide is in view, so the color is the room, not a card inside it. Text is one of two inks only, plum on bright slides and white on dark ones, which keeps nine wildly different backgrounds feeling like one voice.\n\nDensity is low and the hierarchy is blunt: one oversized Unbounded headline per slide, one or two lines of Figtree, a vector cup, and nothing else. The type is wide, rounded and heavy on purpose; it has to hold its own against saturated color at phone scale. Everything interactive is a pill, everything that floats carries the same plum-tinted lift shadow, and the two actions that matter (Directions, live hours) never scroll away.",
+    "keyCharacteristics": [
+      "Full-bleed drenched color per slide; no neutral page behind it",
+      "Two text inks only: plum (`ink`) on bright, white (`paper`) on dark",
+      "Unbounded 800 display, tight (-0.025em) and nearly solid (0.98 line-height), paired with Figtree body",
+      "Every control is a 54px-tall pill with the same lift shadow",
+      "Flat vector cups built from one SVG symbol, re-tinted per slide by `color-mix`",
+      "Progress segments on top, pinned action bar on the bottom, parallax layers in between"
+    ],
+    "rules": [
+      { "name": "The Two Inks Rule", "body": "Text is `ink` on bright stages and `paper` on dark stages (hero, cola, ice, find). No third text color, no tinted text, no gray.", "section": "colors" },
+      { "name": "The Stage Follows the Slide Rule", "body": "The page background, the desktop surround, the primary button fill and the browser theme-color all take the color of the slide in view. A new slide ships with its own `data-c` color and its own `--btn`/`--btn-ink` pair.", "section": "colors" },
+      { "name": "The Derived Liquid Rule", "body": "Cup liquid is `color-mix(in oklch, slide-color 70%, ink)` and the lid is `color-mix(in oklch, slide-color 45%, #fff)`. Only explicitly cream or cola drinks override those with their own liquid hex.", "section": "colors" },
+      { "name": "The One Headline Rule", "body": "Each slide carries exactly one Unbounded line. Unbounded never appears in body copy, pills or tables; those are Figtree 700.", "section": "typography" },
+      { "name": "The Numbers Line Up Rule", "body": "The hours table sets `font-variant-numeric: tabular-nums` with the time column right-aligned and bold.", "section": "typography" },
+      { "name": "The Plum Shadow Rule", "body": "Shadows under controls and cups are tinted with `ink` (`rgba(30,10,46,…)`), never neutral black; only the sticker and desktop frame use black because they sit on the plum stage.", "section": "elevation" },
+      { "name": "The Floating Only Rule", "body": "Slides, copy and bubbles carry no shadow. If it is not a pill, a cup or a sticker, it is flat.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do give every new slide its own full-bleed stage color and declare it on `data-c` so the page, surround and theme-color follow it.",
+      "Do keep text to the two inks: plum on bright stages, white on dark.",
+      "Do set every control as a 54px pill with the plum lift shadow (`0 14px 28px rgba(30,10,46,.3)`).",
+      "Do use Unbounded 800 at 0.98 line-height and -0.025em for the single headline per slide, Figtree 700 for every label.",
+      "Do build new cups and icons as SVG symbols tinted by CSS fills, icons in a 2px round-capped stroke.",
+      "Do keep Directions and hours pinned and reachable from every slide, and turn parallax off under `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "Don't introduce a neutral page background, cards on white, or a gray text tone; the slide color is the surface.",
+      "Don't use uppercase labels, eyebrows or kickers above headlines; the slide name is the only heading.",
+      "Don't use Unbounded below title size or in running copy, pills or tables.",
+      "Don't add a hard, neutral-black shadow under a control; shadows that float over color are plum-tinted.",
+      "Don't add a third pinned action or a top navigation bar; the chrome is the progress strip and the two-item bar."
+    ]
+  }
+}
