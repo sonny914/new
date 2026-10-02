@@ -3,26 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Snack &amp; Sip | Lemonades, Dirty Sodas &amp; Snow Cones at Pearland Town Center</title>
-<meta name="description" content="Snack &amp; Sip at Pearland Town Center, Pearland TX: flavored lemonades including the Peach Thriller, dirty sodas and snow cones. Open Tuesday to Sunday, next to Great American Cookies.">
-<meta name="theme-color" content="#1e0a2e">
+<title>Snack &amp; Sip | Lemonades, Dirty Sodas &amp; Snow Cones, Pearland Town Center</title>
+<meta name="description" content="Snack &amp; Sip at Pearland Town Center, Pearland TX: fresh lemonades, dirty sodas, dirty energy drinks and snow cones. Tue to Sat 11 to 8, Sun 12 to 6. Next to Great American Cookies.">
+<meta name="theme-color" content="#1e1815">
+<meta name="color-scheme" content="light">
 <link rel="canonical" href="https://snackandsip.netlify.app/">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="brand/icon-192.png">
+<link rel="apple-touch-icon" href="brand/icon-180.png">
+<link rel="manifest" href="manifest.json">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Snack &amp; Sip">
 <meta property="og:title" content="Snack &amp; Sip | Pearland Town Center">
-<meta property="og:description" content="Flavored lemonades, dirty sodas and snow cones. Next to Great American Cookies, near the pavilion.">
+<meta property="og:description" content="Fresh lemonades, dirty sodas, dirty energy and snow cones. Next to Great American Cookies, near the pavilion.">
 <meta property="og:url" content="https://snackandsip.netlify.app/">
 <meta property="og:image" content="https://snackandsip.netlify.app/img/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preload" href="fonts/unbounded.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/figtree.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="fonts/fonts.css">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"CafeOrCoffeeShop","name":"Snack & Sip","url":"https://snackandsip.netlify.app/","image":"https://snackandsip.netlify.app/img/og.jpg","servesCuisine":"Lemonades, dirty sodas, snow cones, snacks",
+{"@context":"https://schema.org","@type":"CafeOrCoffeeShop","name":"Snack & Sip","url":"https://snackandsip.netlify.app/","image":"https://snackandsip.netlify.app/img/og.jpg","logo":"https://snackandsip.netlify.app/brand/logo.png","servesCuisine":"Lemonades, dirty sodas, energy drinks, snow cones, snacks",
 "address":{"@type":"PostalAddress","streetAddress":"11200 Broadway St., Suite 1370","addressLocality":"Pearland","addressRegion":"TX","postalCode":"77584","addressCountry":"US"},
 "openingHoursSpecification":[
 {"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Wednesday","Thursday","Friday","Saturday"],"opens":"11:00","closes":"20:00"},
@@ -30,111 +33,114 @@
 </script>
 <style>
 :root{
-  --ink:#1e0a2e;--paper:#fff;
-  --peach:#ff9e6b;--berry:#ff4f7b;--mango:#ffc233;--sky:#4fc3ff;--coco:#f1ebdd;--cola:#4a2a1f;--ice:#6e3be8;
-  --stage:var(--ink);--btn:var(--peach);--btn-ink:var(--ink);
+  --yellow:#ffc81f;--yellow-deep:#f0b60c;--orange:#f4661b;--orange-deep:#c94d0c;--charcoal:#1e1815;--ink:#100c0a;--cream:#fffdf7;--green:#1c8f3c;
+  --stage:var(--charcoal);--seg:#fff;--fg:var(--cream);
   --col:430px;--bar:84px;--ease:cubic-bezier(.16,1,.3,1);
 }
 *{box-sizing:border-box;margin:0}
 html{scroll-snap-type:y proximity;scroll-behavior:smooth;background:var(--stage);transition:background .7s var(--ease)}
 body{font:400 1rem/1.5 Figtree,system-ui,sans-serif;color:var(--ink);background:var(--stage);transition:background .7s var(--ease);-webkit-font-smoothing:antialiased;overflow-x:clip}
-::selection{background:var(--ink);color:var(--peach)}
-:focus-visible{outline:3px solid var(--paper);outline-offset:3px;border-radius:999px}
+::selection{background:var(--ink);color:var(--yellow)}
+:focus-visible{outline:3px solid var(--orange);outline-offset:3px;border-radius:999px}
 html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.45);border-radius:8px}
 .phone{width:min(100%,var(--col));margin-inline:auto;position:relative}
-.slide{position:relative;min-height:100svh;scroll-snap-align:start;overflow:clip;display:grid;grid-template-rows:1fr auto;padding:64px 22px calc(var(--bar) + 22px);background:var(--c);color:var(--fg,var(--ink));isolation:isolate}
-.slide h2,.slide h1{font-family:Unbounded,Figtree,sans-serif;font-weight:800;line-height:.98;letter-spacing:-.025em;text-wrap:balance}
+.slide{position:relative;min-height:100svh;scroll-snap-align:start;overflow:clip;display:grid;grid-template-rows:1fr auto;align-content:end;padding:64px 22px calc(var(--bar) + 22px);background:var(--c);color:var(--fg);isolation:isolate}
+.slide h1,.slide h2{font-family:Anton,Impact,sans-serif;font-weight:400;line-height:.95;letter-spacing:.005em;text-transform:uppercase;text-wrap:balance}
+.slide h2{font-size:clamp(2.6rem,12.5vw,3.6rem)}
 .slide .copy{position:relative;z-index:3;align-self:end;will-change:transform}
 .slide p{max-width:34ch;font-size:1.05rem}
-.slide .copy p{margin-top:.6rem}
-.badge{display:inline-flex;align-items:center;gap:.4em;margin-top:.9rem;padding:.42em .9em;border-radius:999px;background:var(--ink);color:var(--paper);font-weight:700;font-size:.85rem;letter-spacing:.01em}
-.badge svg{width:14px;height:14px}
+.slide .copy p{margin-top:.5rem}
+.from{display:inline-flex;align-items:baseline;gap:.35em;margin-top:.9rem;font-weight:700;font-size:.95rem}
+.from b{font-family:Anton,sans-serif;font-weight:400;font-size:1.5rem;letter-spacing:.01em;color:var(--orange)}
+.yellow .from b,.cream .from b,.orange .from b,.blue .from b{color:var(--ink)}
 .layer{position:absolute;inset:0;pointer-events:none;will-change:transform}
-.cup{position:absolute;right:-6%;top:9%;width:66%;max-width:300px;filter:drop-shadow(0 26px 30px rgba(30,10,46,.28))}
-.cup.cone{right:0;top:7%;width:60%}
-.bubbles{z-index:0}
-.bubbles i{position:absolute;border-radius:50%;background:var(--paper);opacity:.35}
+.bubbles i{position:absolute;border-radius:50%;background:#fff;opacity:.3}
+.dark .bubbles i{background:var(--yellow);opacity:.35}
+/* lineup of cups */
+.lineup{position:relative;z-index:2;align-self:center;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:18px 10px;padding:12px 0 24px;will-change:transform}
+.lineup figure{flex:0 0 calc(33.3% - 10px);display:flex;flex-direction:column;align-items:center;gap:8px;transform:rotate(var(--rot,0deg))}
+.lineup svg{width:100%;max-width:150px;filter:drop-shadow(0 18px 22px rgba(16,12,10,.35))}
+.lineup figcaption{font-size:.78rem;font-weight:700;line-height:1.15;text-align:center;text-wrap:balance}
+.lineup.n4 figure{flex-basis:calc(42% - 10px)}.lineup.n4 svg{max-width:170px}
+.lineup.n1 figure{flex-basis:100%}.lineup.n1 svg{max-width:230px}
+.straw{fill:#7cb342}.lidc{fill:#fff}.rim{fill:#e2402c}
+/* themes */
+.dark{--c:var(--charcoal);--fg:var(--cream);--seg:var(--yellow)}
+.yellow{--c:var(--yellow);--fg:var(--ink);--seg:var(--ink)}
+.orange{--c:var(--orange);--fg:var(--cream);--seg:var(--ink)}
+.cream{--c:var(--cream);--fg:var(--ink);--seg:var(--ink)}
+.blue{--c:#38c0f0;--fg:var(--ink);--seg:var(--ink)}
 /* hero */
-.hero{--c:var(--ink);--fg:var(--paper);padding-top:0}
+.hero{padding-top:0;--c:var(--charcoal)}
 .hero .media{position:absolute;inset:-5% 0;z-index:0}
 .hero .media>*{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hero .scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(0deg,var(--ink) 0%,rgba(30,10,46,.75) 36%,rgba(30,10,46,0) 70%)}
-.hero h1{font-size:clamp(2.75rem,15.5vw,4.4rem)}
-.hero .copy p{font-size:1.1rem;max-width:30ch}
-.hero .copy p strong{font-weight:700}
-.brand{position:absolute;top:28px;left:22px;z-index:4;display:flex;align-items:center;gap:10px;color:var(--paper);font-weight:700;text-decoration:none;font-size:.95rem}
-.brand img{width:34px;height:34px;border-radius:10px}
-/* drink slides */
-.peach{--c:var(--peach);--btn:var(--ink);--btn-ink:var(--paper)}
-.berry{--c:var(--berry)}
-.mango{--c:var(--mango)}
-.sky{--c:var(--sky)}
-.coco{--c:var(--coco);--seg:var(--ink)}
-.berry,.mango,.sky,.coco{--btn:var(--ink);--btn-ink:var(--paper)}
-.cola{--c:var(--cola);--fg:var(--paper)}
-.ice{--c:var(--ice);--fg:var(--paper)}
-.slide h2{font-size:clamp(2.1rem,10.5vw,3.1rem)}
-.liq{fill:var(--liq,color-mix(in oklch,var(--c) 70%,var(--ink)))}
-.lid{fill:var(--lid,color-mix(in oklch,var(--c) 45%,#fff))}
-.glass{fill:rgba(255,255,255,.18)}
-.straw{fill:var(--straw,var(--ink))}
-.coco{--liq:#f6e7cf;--lid:#fff;--straw:var(--berry)}
-.cola,.ice{--straw:var(--berry)}
-.cola{--liq:#2a1510}
-/* final */
-.find{--c:var(--ink);--fg:var(--paper);--btn:var(--peach);--btn-ink:var(--ink);grid-template-rows:auto auto auto 1fr;gap:24px}
-.find footer{align-self:end}
-.find h2{font-size:clamp(2rem,9.5vw,2.8rem)}
-.sticker{background:#fff3e6;color:var(--ink);border-radius:22px;padding:18px 20px;outline:4px solid #fff;box-shadow:0 18px 34px rgba(0,0,0,.3);transform:rotate(var(--tilt,0deg));position:relative}
+.hero .scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(0deg,var(--charcoal) 0%,rgba(30,24,21,.8) 32%,rgba(30,24,21,0) 62%)}
+.hero h1{font-size:clamp(3.4rem,18vw,5.2rem)}
+.hero .copy p{font-size:1.1rem;max-width:28ch}
+.hero .copy p strong{font-weight:700;color:var(--yellow)}
+.brand{position:absolute;top:28px;left:22px;z-index:4;display:flex;align-items:center;gap:10px;color:var(--cream);font-weight:700;text-decoration:none;font-size:.95rem}
+.brand img{width:36px;height:36px;border-radius:50%}
+.cue{display:inline-flex;align-items:center;gap:.5em;margin-top:1.1rem;font-size:.85rem;font-weight:700;color:var(--yellow)}
+.cue svg{width:18px;height:18px;animation:bob 1.8s var(--ease) infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+/* syrup shelf */
+.shelf{display:flex;gap:3px;margin-top:1rem;height:8px;border-radius:4px;overflow:hidden;max-width:300px}
+.shelf i{flex:1}
+/* find */
+.find{--c:var(--charcoal);--fg:var(--cream);--seg:var(--yellow);grid-template-rows:auto auto auto 1fr;gap:24px}
+.find h2{font-size:clamp(2.6rem,12vw,3.4rem)}
+.find footer{align-self:end;font-size:.9rem;color:rgba(255,253,247,.85);padding-bottom:4px}
+.sticker{background:var(--cream);color:var(--ink);border-radius:22px;padding:18px 20px;outline:4px solid var(--yellow);box-shadow:0 18px 34px rgba(0,0,0,.35);transform:rotate(var(--tilt,0deg));position:relative}
 .sticker+.sticker{margin-top:-16px;z-index:1}
-
-.sticker h3{font-family:Unbounded,sans-serif;font-weight:800;font-size:1rem;letter-spacing:-.01em;display:flex;align-items:center;gap:.5em;margin-bottom:.5rem}
+.sticker h3{font-family:Anton,sans-serif;font-weight:400;font-size:1.1rem;letter-spacing:.03em;text-transform:uppercase;display:flex;align-items:center;gap:.5em;margin-bottom:.5rem}
 .sticker h3 svg{width:18px;height:18px;flex:none}
 .sticker address{font-style:normal;font-size:1.05rem;line-height:1.4}
-.sticker a{color:inherit;text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:2px;text-decoration-color:var(--peach)}
+.sticker address a{display:inline-block;color:inherit;text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:2px;text-decoration-color:var(--orange)}
 .hours{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.hours td{padding:.4em 0;border-top:1px solid rgba(30,10,46,.14)}
+.hours td{padding:.4em 0;border-top:1px solid rgba(16,12,10,.14)}
 .hours tr:first-child td{border-top:0}
 .hours td:last-child{text-align:right;font-weight:700;white-space:nowrap;padding-left:1em}
-.hours tr.now td{color:var(--ink)}
-.hours tr.now td:first-child::after{content:"today";margin-left:.5em;padding-left:.9em;font-size:.75em;font-weight:700;color:var(--ink);background:radial-gradient(circle at .3em 55%,var(--berry) .25em,transparent .3em)}
-.find p.about{max-width:36ch}
-.find footer{font-size:.85rem;color:rgba(255,255,255,.72);padding-bottom:4px}
-.find footer a{color:var(--paper)}
+.hours tr.now td:first-child{white-space:nowrap}
+.hours tr.now td:first-child::after{content:"today";margin-left:.5em;padding-left:.9em;font-size:.75em;font-weight:700;background:radial-gradient(circle at .3em 55%,var(--orange) .25em,transparent .3em)}
 /* chrome */
-.progress,.bar{position:fixed;left:50%;translate:-50% 0;width:min(100%,var(--col));z-index:10;padding:0 14px;pointer-events:none}
+.progress,.bar,.chip{position:fixed;z-index:10;pointer-events:none}
+.progress,.bar{left:50%;translate:-50% 0;width:min(100%,var(--col));padding:0 14px}
 .progress{top:0;display:flex;gap:4px;padding-top:12px}
-.progress span{flex:1;height:3px;border-radius:3px;background:color-mix(in oklch,var(--seg,#fff) 35%,transparent);overflow:hidden}
-.progress span::after{content:"";display:block;height:100%;width:100%;background:var(--seg,#fff);transform:scaleX(var(--p,0));transform-origin:left}
+.progress span{flex:1;height:3px;border-radius:3px;background:color-mix(in oklch,var(--seg) 35%,transparent);overflow:hidden}
+.progress span::after{content:"";display:block;height:100%;width:100%;background:var(--seg);transform:scaleX(var(--p,0));transform-origin:left}
+.chip{top:26px;right:max(16px,50% - var(--col)/2 + 16px);pointer-events:auto;display:inline-flex;align-items:center;gap:.45em;height:38px;padding:0 .9em;border-radius:999px;background:var(--cream);color:var(--ink);font-weight:700;font-size:.85rem;text-decoration:none;box-shadow:0 10px 22px rgba(0,0,0,.28);white-space:nowrap;max-width:calc(100% - 140px);overflow:hidden;text-overflow:ellipsis}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none}
+.chip[data-state="closed"] i{background:var(--orange-deep)}
 .bar{bottom:0;display:flex;gap:10px;align-items:stretch;padding-bottom:max(16px,env(safe-area-inset-bottom))}
 .bar>*{pointer-events:auto}
-.btn{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:.55em;min-height:54px;padding:0 1.2em;border-radius:999px;background:var(--btn);color:var(--btn-ink);font-weight:700;font-size:1.02rem;text-decoration:none;box-shadow:0 14px 28px rgba(30,10,46,.3);transition:transform .35s var(--ease),background .5s,color .5s}
+.btn{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:54px;padding:0 1em;border-radius:999px;font-weight:700;font-size:1rem;text-decoration:none;box-shadow:0 14px 28px rgba(0,0,0,.3);transition:transform .35s var(--ease)}
 .btn:hover{transform:translateY(-2px)}
 .btn:active{transform:translateY(1px) scale(.98)}
-.btn svg{width:20px;height:20px}
-.chip{display:inline-flex;align-items:center;gap:.5em;min-height:54px;padding:0 1.1em;border-radius:999px;background:var(--paper);color:var(--ink);font-weight:700;font-size:.92rem;text-decoration:none;box-shadow:0 14px 28px rgba(30,10,46,.3);white-space:nowrap}
-.chip i{width:9px;height:9px;border-radius:50%;background:#1cab5a;flex:none}
-.chip[data-state="closed"] i{background:var(--berry)}
-.chip svg{width:18px;height:18px}
+.btn svg{width:20px;height:20px;flex:none}
+.btn.order{background:var(--orange);color:var(--cream)}
+.btn.dir{background:var(--cream);color:var(--ink)}
 /* desktop stage */
+.wordmark{display:none}
 @media (min-width:760px){
   html{scroll-snap-type:none;overflow:hidden}
-  .phone{margin:28px auto;height:calc(100svh - 56px);overflow-y:auto;scroll-snap-type:y proximity;scrollbar-width:none;border-radius:34px;box-shadow:0 40px 90px rgba(0,0,0,.35)}
+  .phone{margin:28px auto;height:min(calc(100svh - 56px),900px);overflow-y:auto;scroll-snap-type:y proximity;scrollbar-width:none;border-radius:34px;box-shadow:0 40px 90px rgba(0,0,0,.45)}
   .phone::-webkit-scrollbar{display:none}
-  .slide{min-height:calc(100svh - 56px)}
-  .hero .media{inset:-5% 0}
+  .slide{min-height:min(calc(100svh - 56px),900px)}
   .progress{top:28px;padding-inline:26px}
-  .bar{bottom:28px;padding-inline:26px;padding-bottom:16px}
-  .wordmark{position:fixed;left:40px;bottom:36px;z-index:5;color:rgba(255,255,255,.9);font:800 clamp(1rem,2vw,1.4rem)/1.1 Unbounded,sans-serif;letter-spacing:-.02em;max-width:220px;text-wrap:balance}
-  .wordmark small{display:block;font:600 .85rem/1.4 Figtree,sans-serif;color:rgba(255,255,255,.75);margin-top:.4em}
+  .chip{top:54px}
+  .bar{bottom:max(44px,100svh - 912px);padding-inline:26px;padding-bottom:16px}
+  .wordmark{display:block;position:fixed;left:40px;bottom:36px;z-index:5;color:rgba(255,253,247,.92);font:400 clamp(1.4rem,2.4vw,2rem)/1.3 Anton,sans-serif;text-transform:uppercase;letter-spacing:.02em;max-width:240px}
+  .wordmark small{display:block;font:600 .85rem/1.45 Figtree,sans-serif;text-transform:none;letter-spacing:0;color:rgba(255,253,247,.8);margin-top:.3em}
+  .wordmark img{width:64px;height:64px;border-radius:50%;display:block;margin-bottom:12px}
 }
-.wordmark{display:none}
-@media (min-width:760px){.wordmark{display:block}}
+@media (max-height:700px){.find p.about{display:none}.lineup svg{max-width:110px}}
 @media (prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  .layer,.copy{transform:none!important}
-  .btn,html,body{transition:none}
+  html{scroll-behavior:auto;scroll-snap-type:none}
+  .phone{scroll-snap-type:none}
+  .layer,.copy,.lineup{transform:none!important}
+  .cue svg{animation:none}
+  .btn{transition:none}
 }
 </style>
 </head>
@@ -142,140 +148,154 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
-  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
-  <symbol id="i-star" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7L12 2Z"/></symbol>
-  <symbol id="cup" viewBox="0 0 220 300">
-    <rect class="straw" x="128" y="4" width="16" height="120" rx="8" transform="rotate(12 136 64)"/>
-    <path class="liq" d="M34 86h152l-18 182c-1 10-9 18-19 18H71c-10 0-18-8-19-18L34 86Z"/>
-    <g fill="#fff" opacity=".55"><rect x="62" y="118" width="46" height="46" rx="10" transform="rotate(14 85 141)"/><rect x="118" y="150" width="42" height="42" rx="10" transform="rotate(-9 139 171)"/><rect x="78" y="200" width="44" height="44" rx="10" transform="rotate(-5 100 222)"/></g>
-    <g fill="#fff" opacity=".8"><circle cx="70" cy="252" r="4"/><circle cx="150" cy="238" r="3"/><circle cx="104" cy="178" r="3"/><circle cx="160" cy="118" r="4"/></g>
-    <path class="glass" d="M34 86h152l-18 182c-1 10-9 18-19 18H71c-10 0-18-8-19-18L34 86Z"/>
-    <path fill="#fff" opacity=".35" d="M52 100l10 170h8L60 100Z"/>
-    <ellipse class="lid" cx="110" cy="86" rx="80" ry="12"/>
+  <!-- cup: liquid colours come from --a/--b on the <svg> -->
+  <symbol id="cup" viewBox="0 0 120 150">
+    <rect class="straw" x="66" y="2" width="9" height="60" rx="4.5" transform="rotate(12 70 32)"/>
+    <path d="M14 36h92l-9 100c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 36Z" fill="none"/>
+    <g fill="#fff" opacity=".45"><rect x="30" y="52" width="22" height="22" rx="6" transform="rotate(14 41 63)"/><rect x="62" y="70" width="20" height="20" rx="6" transform="rotate(-9 72 80)"/><rect x="40" y="96" width="22" height="22" rx="6" transform="rotate(-5 51 107)"/></g>
+    <path d="M14 36h92l-9 100c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 36Z" fill="rgba(255,255,255,.14)"/>
+    <path fill="#fff" opacity=".3" d="M24 44l6 86h5l-6-86Z"/>
+    <ellipse cx="60" cy="36" rx="48" ry="7" fill="#fff" opacity=".9"/>
+    <ellipse cx="60" cy="36" rx="44" ry="5" fill="#fff" opacity=".6"/>
   </symbol>
-  <symbol id="cone" viewBox="0 0 220 300">
-    <path fill="#fff" d="M60 150h100l-42 142c-2 6-10 6-12 0L60 150Z"/>
-    <path fill="#fff" opacity=".6" d="M60 150h100l-6 22H66Z"/>
-    <g class="liq"><circle cx="110" cy="118" r="70"/><circle cx="64" cy="128" r="36"/><circle cx="156" cy="128" r="36"/><circle cx="84" cy="78" r="34"/><circle cx="138" cy="78" r="34"/><circle cx="110" cy="62" r="30"/></g>
-    <g fill="#fff" opacity=".3"><circle cx="84" cy="78" r="12"/><circle cx="110" cy="62" r="10"/><circle cx="64" cy="128" r="12"/></g>
-    <path fill="#fff" opacity=".35" d="M60 150c20 14 80 14 100 0v10H60Z"/>
-    <rect class="straw" x="130" y="30" width="14" height="110" rx="7" transform="rotate(18 137 85)"/>
+  <symbol id="cup-lid" viewBox="0 0 120 150">
+    <rect class="straw" x="66" y="0" width="9" height="56" rx="4.5" transform="rotate(12 70 28)"/>
+    <path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="none"/>
+    <path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="rgba(255,255,255,.14)"/>
+    <path fill="#fff" opacity=".3" d="M24 48l6 82h5l-6-82Z"/>
+    <path class="lidc" d="M16 30c8-10 26-14 44-14s36 4 44 14l2 10H14Z"/>
+    <rect x="10" y="38" width="100" height="6" rx="3" fill="#fff"/>
+  </symbol>
+  <symbol id="cone" viewBox="0 0 120 150">
+    <path fill="#fff" d="M32 76h56l-24 70c-1.2 3.2-6.8 3.2-8 0L32 76Z"/>
+    <g fill="none"><circle cx="60" cy="58" r="36"/><circle cx="34" cy="62" r="18"/><circle cx="86" cy="62" r="18"/><circle cx="46" cy="36" r="18"/><circle cx="74" cy="36" r="18"/><circle cx="60" cy="26" r="16"/></g>
+    <g fill="#fff" opacity=".35"><circle cx="46" cy="36" r="6"/><circle cx="60" cy="26" r="5"/><circle cx="34" cy="62" r="6"/></g>
+    <rect class="straw" x="74" y="8" width="7" height="50" rx="3.5" transform="rotate(18 77 33)"/>
   </symbol>
 </svg>
 
-<div class="progress" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="progress" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+<a class="chip" href="#visit" id="hoursChip" data-state="closed" aria-live="polite"><i></i><span>Hours</span></a>
+<nav class="bar" aria-label="Order, directions and hours">
+  <a class="btn order" href="order/"><svg><use href="#i-bag"/></svg>Order ahead</a>
+  <a class="btn dir" href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener"><svg><use href="#i-pin"/></svg>Directions</a>
+</nav>
 
 <main class="phone" id="top">
-  <section class="slide hero" id="hero" data-c="#1e0a2e" aria-label="Snack and Sip">
+  <section class="slide hero dark" id="hero" data-c="#1e1815" aria-labelledby="h-hero">
     <div class="media layer" data-depth="40">
       <img class="poster" src="img/poster.jpg" alt="" width="1600" height="900" fetchpriority="high" decoding="async">
       <video autoplay muted loop playsinline preload="metadata" poster="img/poster.jpg" aria-hidden="true"><source src="media/hero.mp4" type="video/mp4"></video>
     </div>
     <div class="scrim"></div>
-    <a class="brand" href="#top"><img src="logo.svg" alt="" width="34" height="34">Snack &amp; Sip</a>
+    <a class="brand" href="#top"><img src="brand/logo.png" alt="" width="36" height="36">Snack &amp; Sip</a>
     <div class="copy" data-depth="-24">
-      <h1>Snack<br>&amp; Sip</h1>
-      <p><strong>Pearland Town Center</strong> &middot; next to Great American Cookies, near the pavilion. Flavored lemonades, dirty sodas and snow cones.</p>
+      <h1 id="h-hero">Snack<br>&amp; Sip</h1>
+      <p><strong>Pearland Town Center</strong> &middot; next to Great American Cookies, near the pavilion.</p>
+      <span class="cue" aria-hidden="true"><svg><use href="#i-down"/></svg>Lemonades, dirty sodas, energy, snow cones</span>
     </div>
   </section>
 
-  <section class="slide peach" data-c="#ff9e6b">
-    <div class="layer bubbles" data-depth="30"><i style="left:8%;top:14%;width:14px;height:14px"></i><i style="left:30%;top:70%;width:9px;height:9px"></i><i style="left:84%;top:62%;width:18px;height:18px"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+  <section class="slide yellow" data-c="#ffc81f" aria-labelledby="h-byo">
+    <div class="layer bubbles" data-depth="30"><i style="left:8%;top:14%;width:14px;height:14px"></i><i style="left:84%;top:60%;width:18px;height:18px"></i></div>
+    <div class="lineup n1" data-depth="60">
+      <figure><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-byo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a18"/><stop offset="1" stop-color="#38c0f0"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-byo)"/><use href="#cup-lid"/><image href="brand/logo.png" x="36" y="70" width="48" height="48" clip-path="circle(24px at 60px 94px)"/></svg></figure>
+    </div>
     <div class="copy" data-depth="-24">
-      <h2>Peach<br>Thriller</h2>
-      <p>Our popular peach lemonade. Peach, lemon, lots of ice.</p>
-      <span class="badge"><svg><use href="#i-star"/></svg>Popular</span>
+      <h2 id="h-byo">Create your own</h2>
+      <p>Any base, up to three syrups, a pur&eacute;e, cream on top. Sixteen syrups on the wall.</p>
+      <div class="shelf" aria-hidden="true"><i style="background:#ff3b4e"></i><i style="background:#e0245e"></i><i style="background:#7b3fa0"></i><i style="background:#3b6fe0"></i><i style="background:#38c0f0"></i><i style="background:#ff5a6e"></i><i style="background:#d4172b"></i><i style="background:#ffa61f"></i><i style="background:#ff9a5a"></i><i style="background:#ffd028"></i><i style="background:#ffe066"></i><i style="background:#f5ead7"></i><i style="background:#8fd14f"></i><i style="background:#a98ce8"></i><i style="background:#e0407a"></i><i style="background:#f3e3c3"></i></div>
+      <span class="from">from <b>$7</b></span>
     </div>
   </section>
 
-  <section class="slide berry" data-c="#ff4f7b">
-    <div class="layer bubbles" data-depth="30"><i style="left:12%;top:20%;width:10px;height:10px"></i><i style="left:76%;top:76%;width:16px;height:16px"></i><i style="left:50%;top:8%;width:8px;height:8px"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/><g transform="translate(52 74) rotate(-20)"><path d="M0 0c-14 0-24 12-22 26 2 16 12 28 22 36 10-8 20-20 22-36C24 12 14 0 0 0Z" fill="#ff2d5e"/><path d="M-10-4 0-16l10 12-10 2Z" fill="#2fb872"/><g fill="#ffd9b0"><circle cx="-6" cy="14" r="2"/><circle cx="6" cy="10" r="2"/><circle cx="0" cy="28" r="2"/></g></g></svg>
+  <section class="slide cream" data-c="#fffdf7" aria-labelledby="h-lem">
+    <div class="layer bubbles" data-depth="30"><i style="left:10%;top:70%;width:12px;height:12px;background:#ffc81f;opacity:.6"></i><i style="left:80%;top:12%;width:18px;height:18px;background:#ffc81f;opacity:.6"></i></div>
+    <div class="lineup" data-depth="60">
+      <figure style="--rot:-4deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-l1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe066"/><stop offset="1" stop-color="#ffd84d"/></linearGradient></defs><path d="M14 36h92l-9 100c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 36Z" fill="url(#g-l1)"/><use href="#cup"/></svg><figcaption>Freshly Squeezed</figcaption></figure>
+      <figure style="--rot:-2deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-l2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd84d"/><stop offset="1" stop-color="#ff3b4e"/></linearGradient></defs><path d="M14 36h92l-9 100c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 36Z" fill="url(#g-l2)"/><use href="#cup"/></svg><figcaption>Flavored</figcaption></figure>
+      <figure><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-l3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6f91"/><stop offset="1" stop-color="#ff9a5a"/></linearGradient></defs><path d="M14 36h92l-9 100c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 36Z" fill="url(#g-l3)"/><use href="#cup"/></svg><figcaption>Pink Peach</figcaption></figure>
+      <figure style="--rot:2deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-l4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38c0f0"/><stop offset="1" stop-color="#ffd84d"/></linearGradient></defs><path d="M14 36h92l-9 100c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 36Z" fill="url(#g-l4)"/><use href="#cup"/></svg><figcaption>Blue Raspberry</figcaption></figure>
+      <figure style="--rot:4deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-l5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2402c"/><stop offset="1" stop-color="#ffd84d"/></linearGradient></defs><path d="M14 36h92l-9 100c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 36Z" fill="url(#g-l5)"/><use href="#cup"/><ellipse cx="60" cy="36" rx="50" ry="8" fill="none" class="rim" stroke="#e2402c" stroke-width="4"/></svg><figcaption>Chamoy &amp; Taj&iacute;n</figcaption></figure>
+    </div>
     <div class="copy" data-depth="-24">
-      <h2>Strawberry Lemonade</h2>
-      <p>Bright, sweet and pink all the way down.</p>
+      <h2 id="h-lem">Lemonades</h2>
+      <p>Freshly squeezed, 30 oz. Plain, flavored, Pink Peach, Blue Raspberry, or rimmed with chamoy and Taj&iacute;n.</p>
+      <span class="from">from <b>$7</b></span>
     </div>
   </section>
 
-  <section class="slide mango" data-c="#ffc233">
-    <div class="layer bubbles" data-depth="30"><i style="left:6%;top:30%;width:12px;height:12px"></i><i style="left:40%;top:78%;width:10px;height:10px"></i><i style="left:88%;top:18%;width:14px;height:14px"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+  <section class="slide orange" data-c="#f4661b" aria-labelledby="h-dirty">
+    <div class="layer bubbles" data-depth="30"><i style="left:12%;top:20%;width:10px;height:10px"></i><i style="left:76%;top:76%;width:16px;height:16px"></i></div>
+    <div class="lineup n3" data-depth="60">
+      <figure style="--rot:-3deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-d1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3e3c3"/><stop offset="1" stop-color="#ff3b4e"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-d1)"/><use href="#cup-lid"/></svg><figcaption>Dirty Dream</figcaption></figure>
+      <figure><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-d2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe066"/><stop offset="1" stop-color="#ff3b4e"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-d2)"/><use href="#cup-lid"/></svg><figcaption>Berry Banana</figcaption></figure>
+      <figure style="--rot:3deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-d3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a5a"/><stop offset="1" stop-color="#7a2e1e"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-d3)"/><use href="#cup-lid"/></svg><figcaption>Dr. Peach</figcaption></figure>
+    </div>
     <div class="copy" data-depth="-24">
-      <h2>Mango Lemonade</h2>
-      <p>Tropical and tart. Built for a Texas afternoon.</p>
+      <h2 id="h-dirty">Dirty Sodas</h2>
+      <p>Creamed and loaded, 24 oz. Dirty Dream, Berry Banana, Dr. Peach, or build your own.</p>
+      <span class="from">from <b>$8</b></span>
     </div>
   </section>
 
-  <section class="slide sky" data-c="#4fc3ff">
-    <div class="layer bubbles" data-depth="30"><i style="left:14%;top:10%;width:16px;height:16px"></i><i style="left:66%;top:72%;width:10px;height:10px"></i><i style="left:36%;top:46%;width:7px;height:7px"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/><g fill="#dff3ff"><circle cx="54" cy="56" r="22"/><circle cx="80" cy="40" r="26"/><circle cx="108" cy="54" r="20"/><circle cx="76" cy="70" r="24"/></g><g fill="#fff" opacity=".7"><circle cx="68" cy="44" r="8"/><circle cx="96" cy="60" r="6"/></g></svg>
+  <section class="slide dark" data-c="#1e1815" aria-labelledby="h-energy">
+    <div class="layer bubbles" data-depth="30"><i style="left:14%;top:12%;width:14px;height:14px"></i><i style="left:70%;top:72%;width:10px;height:10px"></i><i style="left:88%;top:30%;width:18px;height:18px"></i></div>
+    <div class="lineup n4" data-depth="60">
+      <figure style="--rot:-4deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-e1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa61f"/><stop offset="1" stop-color="#ff5fa2"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-e1)"/><use href="#cup-lid"/></svg><figcaption>Mango Dragon</figcaption></figure>
+      <figure style="--rot:-1deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-e2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f5ead7"/><stop offset="1" stop-color="#9be04f"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-e2)"/><use href="#cup-lid"/></svg><figcaption>Key Lime Mango</figcaption></figure>
+      <figure style="--rot:1deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-e3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a5a"/><stop offset="1" stop-color="#ff3b4e"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-e3)"/><use href="#cup-lid"/></svg><figcaption>Peach Thrill</figcaption></figure>
+      <figure style="--rot:4deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-e4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7bc7ff"/><stop offset="1" stop-color="#8e7bff"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-e4)"/><use href="#cup-lid"/></svg><figcaption>Electric Berry</figcaption></figure>
+    </div>
     <div class="copy" data-depth="-24">
-      <h2>Blue Cotton Candy Lemonade</h2>
-      <p>The one that turns heads across the food court.</p>
+      <h2 id="h-energy">Dirty Energy</h2>
+      <p>Red Bull and Alani builds, 24 oz, with fruit, glitter and cream. The Peach Thrill is the one people ask for.</p>
+      <span class="from">from <b>$10</b></span>
     </div>
   </section>
 
-  <section class="slide coco" data-c="#f1ebdd">
-    <div class="layer bubbles" data-depth="30"><i style="left:10%;top:22%;width:12px;height:12px;background:var(--ink);opacity:.12"></i><i style="left:70%;top:70%;width:18px;height:18px;background:var(--ink);opacity:.12"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/><g fill="#fff" stroke="#e8d9bf" stroke-width="2"><path d="M54 74c10-10 26-8 30 6-14 4-26 2-30-6Z"/><path d="M150 84c-8-12 2-26 16-22-2 14-8 22-16 22Z"/><path d="M96 62c12-6 26 2 24 16-14 0-22-6-24-16Z"/></g></svg>
+  <section class="slide blue" data-c="#38c0f0" aria-labelledby="h-snow">
+    <div class="layer bubbles" data-depth="30"><i style="left:12%;top:18%;width:14px;height:14px"></i><i style="left:74%;top:66%;width:10px;height:10px"></i></div>
+    <div class="lineup n3" data-depth="60">
+      <figure style="--rot:-4deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-s1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5a6e"/><stop offset="1" stop-color="#d4172b"/></linearGradient></defs><g fill="url(#g-s1)"><circle cx="60" cy="58" r="36"/><circle cx="34" cy="62" r="18"/><circle cx="86" cy="62" r="18"/><circle cx="46" cy="36" r="18"/><circle cx="74" cy="36" r="18"/><circle cx="60" cy="26" r="16"/></g><use href="#cone"/></svg><figcaption>Cherry</figcaption></figure>
+      <figure><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-s2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7bc7ff"/><stop offset="1" stop-color="#38c0f0"/></linearGradient></defs><g fill="url(#g-s2)"><circle cx="60" cy="58" r="36"/><circle cx="34" cy="62" r="18"/><circle cx="86" cy="62" r="18"/><circle cx="46" cy="36" r="18"/><circle cx="74" cy="36" r="18"/><circle cx="60" cy="26" r="16"/></g><use href="#cone"/></svg><figcaption>Blue Raspberry</figcaption></figure>
+      <figure style="--rot:4deg"><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-s3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a98ce8"/><stop offset="1" stop-color="#7b3fa0"/></linearGradient></defs><g fill="url(#g-s3)"><circle cx="60" cy="58" r="36"/><circle cx="34" cy="62" r="18"/><circle cx="86" cy="62" r="18"/><circle cx="46" cy="36" r="18"/><circle cx="74" cy="36" r="18"/><circle cx="60" cy="26" r="16"/></g><use href="#cone"/></svg><figcaption>Grape</figcaption></figure>
+    </div>
     <div class="copy" data-depth="-24">
-      <h2>Coconut Lemonade</h2>
-      <p>Creamy, cool, a little bit beach.</p>
+      <h2 id="h-snow">Snow Cones</h2>
+      <p>Shaved ice, 8 oz. Cherry, grape, blue raspberry, strawberry, peach or watermelon.</p>
+      <span class="from">from <b>$5</b></span>
     </div>
   </section>
 
-  <section class="slide cola" data-c="#4a2a1f">
-    <div class="layer bubbles" data-depth="30"><i style="left:20%;top:12%;width:12px;height:12px"></i><i style="left:60%;top:80%;width:9px;height:9px"></i><i style="left:86%;top:40%;width:16px;height:16px"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/><path d="M36 92c20-12 40 10 60 0s40-12 60 0 24 18 24 18H34s-8-10 2-18Z" fill="#fff6ea"/><ellipse cx="110" cy="86" rx="80" ry="12" fill="#fff" opacity=".9"/></svg>
-    <div class="copy" data-depth="-24">
-      <h2>Dirty Sodas</h2>
-      <p>Your soda, dressed up with syrups and cream. Pick a base, pick a flavor.</p>
-    </div>
-  </section>
-
-  <section class="slide ice" data-c="#6e3be8">
-    <div class="layer bubbles" data-depth="30"><i style="left:12%;top:18%;width:14px;height:14px"></i><i style="left:74%;top:66%;width:10px;height:10px"></i><i style="left:44%;top:84%;width:7px;height:7px"></i></div>
-    <svg class="layer cup cone" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cone"/></svg>
-    <div class="copy" data-depth="-24">
-      <h2>Snow Cones</h2>
-      <p>Shaved ice, any syrup on the shelf. The classic cool-down.</p>
-    </div>
-  </section>
-
-  <section class="slide find" id="visit" data-c="#1e0a2e">
+  <section class="slide find" id="visit" data-c="#1e1815" aria-labelledby="h-find">
     <div class="copy" style="align-self:start">
-      <h2>Come find us</h2>
-      <p class="about">A drink and snack stop inside Pearland Town Center. Grab a cup, grab a snack, keep strolling.</p>
+      <h2 id="h-find">Come find us</h2>
+      <p class="about">Inside Pearland Town Center. Grab a cup, grab a snack, keep strolling.</p>
     </div>
       <div class="sticker" style="--tilt:-2.5deg">
         <h3><svg><use href="#i-pin"/></svg>Where</h3>
-        <address><a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">11200 Broadway St., Suite 1370<br>Pearland, TX 77584</a><br><span style="font-size:.95rem">Next to Great American Cookies, near the pavilion.</span></address>
+        <address><a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">11200 Broadway St., Suite 1370, Pearland, TX 77584</a><br><span style="font-size:.95rem">Next to Great American Cookies, near the pavilion.</span></address>
       </div>
       <div class="sticker" style="--tilt:1.5deg">
         <h3><svg><use href="#i-clock"/></svg>Hours</h3>
         <table class="hours">
           <tr data-d="1"><td>Monday</td><td>Closed</td></tr>
-          <tr data-d="2,3,4,5,6"><td>Tuesday to Saturday</td><td>11 AM to 8 PM</td></tr>
+          <tr data-d="2,3,4,5,6"><td>Tue to Sat</td><td>11 AM to 8 PM</td></tr>
           <tr data-d="0"><td>Sunday</td><td>12 PM to 6 PM</td></tr>
         </table>
       </div>
-    <footer>Snack &amp; Sip &middot; Pearland Town Center &middot; <a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">Directions</a></footer>
+    <footer>Snack &amp; Sip &middot; Pearland Town Center</footer>
   </section>
 </main>
-
-<div class="bar">
-  <a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener"><svg><use href="#i-pin"/></svg>Directions<svg><use href="#i-arrow"/></svg></a>
-  <a class="chip" href="#visit" id="hoursChip" data-state="closed"><i></i><span>Hours</span></a>
-</div>
-<p class="wordmark">Snack &amp; Sip<small>Pearland Town Center<br>Tue to Sat 11 to 8 &middot; Sun 12 to 6</small></p>
+<p class="wordmark"><img src="brand/logo.png" alt="">Snack &amp; Sip<small>Pearland Town Center<br>Tue to Sat 11 to 8 &middot; Sun 12 to 6</small></p>
 
 <script>
 (()=>{
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-  /* video */
   const v=$('video'), poster=$('.poster');
   if(v){
     v.addEventListener('canplay',()=>{poster.style.visibility='hidden'},{once:true});
@@ -283,9 +303,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
     if(reduce){v.removeAttribute('autoplay');v.pause();v.remove()}
     else{const p=v.play();p&&p.catch&&p.catch(()=>{})}
   }
-  /* hours (America/Chicago) */
   const chip=$('#hoursChip'), hrs={0:[12,18],2:[11,20],3:[11,20],4:[11,20],5:[11,20],6:[11,20]};
-  const names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const fmt=h=>h>12?`${h-12} PM`:h===12?'12 PM':`${h} AM`;
   try{
     const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',weekday:'short',hour:'numeric',minute:'numeric',hour12:false}).formatToParts(new Date());
@@ -294,12 +312,11 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
     const now=(+g('hour')%24)+(+g('minute'))/60;
     const t=hrs[d];let txt,state='closed';
     if(t&&now>=t[0]&&now<t[1]){state='open';txt=`Open till ${fmt(t[1])}`}
-    else if(t&&now<t[0]){txt=`Opens ${fmt(t[0])} today`}
-    else{let n=(d+1)%7,i=0;while(!hrs[n]&&i<7){n=(n+1)%7;i++}txt=`Closed, opens ${n===(d+1)%7?'tomorrow':names[n]} ${fmt(hrs[n][0])}`}
+    else if(t&&now<t[0]){txt=`Opens ${fmt(t[0])}`}
+    else{let n=(d+1)%7,i=0;while(!hrs[n]&&i<7){n=(n+1)%7;i++}txt=`Closed · opens ${fmt(hrs[n][0])}`}
     chip.dataset.state=state;chip.querySelector('span').textContent=txt;
     $$('.hours tr').forEach(r=>{if(r.dataset.d.split(',').map(Number).includes(d))r.classList.add('now')});
-  }catch(e){chip.querySelector('span').textContent='Hours'}
-  /* stage colour + progress + parallax */
+  }catch(e){chip.querySelector('span').textContent='Hours';chip.removeAttribute('data-state')}
   const slides=$$('.slide'), segs=$$('.progress span'), root=document.documentElement, theme=$('meta[name=theme-color]');
   const mq=matchMedia('(min-width:760px)'), phone=$('.phone');
   let io;
@@ -307,8 +324,6 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
     if(!e.isIntersecting)return;
     const s=e.target, cs=getComputedStyle(s);
     root.style.setProperty('--stage',s.dataset.c);
-    root.style.setProperty('--btn',cs.getPropertyValue('--btn'));
-    root.style.setProperty('--btn-ink',cs.getPropertyValue('--btn-ink'));
     root.style.setProperty('--seg',cs.getPropertyValue('--seg')||'#fff');
     theme.content=s.dataset.c;
   }),{root:mq.matches?phone:null,threshold:.55});slides.forEach(s=>io.observe(s))};
