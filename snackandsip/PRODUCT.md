@@ -7,7 +7,7 @@
 web
 
 ## Stack
-Static HTML/CSS/JS, no build step (existing page in `snackandsip/`). Hosting target undecided.
+Static HTML/CSS/JS, no build step (existing page in `snackandsip/`). Live site: https://snackandsip.netlify.app (confirmed by owner; how it is linked to a repo is still unknown).
 
 ## Users
 People at or near Pearland Town Center (TX) on their phones, deciding whether to walk over for a drink or snack; also people arriving from social media (Instagram/TikTok) who need to see the drinks and get excited fast. Confirmed by owner: walk-ins plus social discovery.
