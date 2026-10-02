@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-02T22:20:00Z",
+  "title": "Design System: Snack & Sip",
+  "extensions": {
+    "colorMeta": {
+      "yellow": { "role": "primary", "displayName": "Lemon Yellow", "canonical": "oklch(85.8% 0.170 88)", "surfaces": ["index.html", "order/index.html"], "tonalRamp": ["oklch(15% 0.170 88)", "oklch(25% 0.170 88)", "oklch(38% 0.170 88)", "oklch(50% 0.170 88)", "oklch(62% 0.170 88)", "oklch(75% 0.170 88)", "oklch(87% 0.170 88)", "oklch(95% 0.170 88)"] },
+      "yellow-deep": { "role": "primary", "displayName": "Deep Lemon", "canonical": "oklch(80.7% 0.164 85)", "surfaces": ["index.html", "order/index.html"], "tonalRamp": ["oklch(15% 0.164 85)", "oklch(25% 0.164 85)", "oklch(38% 0.164 85)", "oklch(50% 0.164 85)", "oklch(62% 0.164 85)", "oklch(75% 0.164 85)", "oklch(87% 0.164 85)", "oklch(95% 0.164 85)"] },
+      "ink": { "role": "primary", "displayName": "Ink", "canonical": "oklch(15.9% 0.008 48)", "surfaces": ["index.html", "order/index.html"], "tonalRamp": ["oklch(15% 0.008 48)", "oklch(25% 0.008 48)", "oklch(38% 0.008 48)", "oklch(50% 0.008 48)", "oklch(62% 0.008 48)", "oklch(75% 0.008 48)", "oklch(87% 0.008 48)", "oklch(95% 0.008 48)"] },
+      "orange": { "role": "secondary", "displayName": "Orange", "canonical": "oklch(68.0% 0.191 43)", "surfaces": ["index.html", "order/index.html"], "tonalRamp": ["oklch(15% 0.191 43)", "oklch(25% 0.191 43)", "oklch(38% 0.191 43)", "oklch(50% 0.191 43)", "oklch(62% 0.191 43)", "oklch(75% 0.191 43)", "oklch(87% 0.191 43)", "oklch(95% 0.191 43)"] },
+      "orange-deep": { "role": "secondary", "displayName": "Deep Orange (text-price, closed)", "canonical": "oklch(58.0% 0.171 42)", "surfaces": ["index.html", "order/index.html"], "tonalRamp": ["oklch(15% 0.171 42)", "oklch(25% 0.171 42)", "oklch(38% 0.171 42)", "oklch(50% 0.171 42)", "oklch(62% 0.171 42)", "oklch(75% 0.171 42)", "oklch(87% 0.171 42)", "oklch(95% 0.171 42)"] },
+      "charcoal": { "role": "secondary", "displayName": "Charcoal", "canonical": "oklch(21.5% 0.011 48)", "surfaces": ["index.html", "order/index.html"], "tonalRamp": ["oklch(15% 0.011 48)", "oklch(25% 0.011 48)", "oklch(38% 0.011 48)", "oklch(50% 0.011 48)", "oklch(62% 0.011 48)", "oklch(75% 0.011 48)", "oklch(87% 0.011 48)", "oklch(95% 0.011 48)"] },
+      "blue": { "role": "tertiary", "displayName": "Pool Blue", "canonical": "oklch(75.7% 0.131 227)", "surfaces": ["index.html"], "tonalRamp": ["oklch(15% 0.131 227)", "oklch(25% 0.131 227)", "oklch(38% 0.131 227)", "oklch(50% 0.131 227)", "oklch(62% 0.131 227)", "oklch(75% 0.131 227)", "oklch(87% 0.131 227)", "oklch(95% 0.131 227)"] },
+      "lime": { "role": "tertiary", "displayName": "Straw Lime", "canonical": "oklch(70.5% 0.155 131)", "surfaces": ["index.html", "order/index.html"], "tonalRamp": ["oklch(15% 0.155 131)", "oklch(25% 0.155 131)", "oklch(38% 0.155 131)", "oklch(50% 0.155 131)", "oklch(62% 0.155 131)", "oklch(75% 0.155 131)", "oklch(87% 0.155 131)", "oklch(95% 0.155 131)"] },
+      "rim-red": { "role": "tertiary", "displayName": "Rim Red", "canonical": "oklch(60.8% 0.202 31)", "surfaces": ["index.html"], "tonalRamp": ["oklch(15% 0.202 31)", "oklch(25% 0.202 31)", "oklch(38% 0.202 31)", "oklch(50% 0.202 31)", "oklch(62% 0.202 31)", "oklch(75% 0.202 31)", "oklch(87% 0.202 31)", "oklch(95% 0.202 31)"] },
+      "green": { "role": "tertiary", "displayName": "Open Green", "canonical": "oklch(57.1% 0.156 148)", "surfaces": ["index.html", "order/index.html"], "tonalRamp": ["oklch(15% 0.156 148)", "oklch(25% 0.156 148)", "oklch(38% 0.156 148)", "oklch(50% 0.156 148)", "oklch(62% 0.156 148)", "oklch(75% 0.156 148)", "oklch(87% 0.156 148)", "oklch(95% 0.156 148)"] },
+      "cream": { "role": "neutral", "displayName": "Cream", "canonical": "oklch(99.4% 0.008 91)", "surfaces": ["index.html", "order/index.html"], "tonalRamp": ["oklch(15% 0.008 91)", "oklch(25% 0.008 91)", "oklch(38% 0.008 91)", "oklch(50% 0.008 91)", "oklch(62% 0.008 91)", "oklch(75% 0.008 91)", "oklch(87% 0.008 91)", "oklch(95% 0.008 91)"] },
+      "surface-secondary": { "role": "neutral", "displayName": "Warm Inset", "canonical": "oklch(97.8% 0.024 86)", "surfaces": ["order/index.html"], "tonalRamp": ["oklch(15% 0.024 86)", "oklch(25% 0.024 86)", "oklch(38% 0.024 86)", "oklch(50% 0.024 86)", "oklch(62% 0.024 86)", "oklch(75% 0.024 86)", "oklch(87% 0.024 86)", "oklch(95% 0.024 86)"] },
+      "surface-control": { "role": "neutral", "displayName": "Control Cream", "canonical": "oklch(95.4% 0.021 86)", "surfaces": ["order/index.html"], "tonalRamp": ["oklch(15% 0.021 86)", "oklch(25% 0.021 86)", "oklch(38% 0.021 86)", "oklch(50% 0.021 86)", "oklch(62% 0.021 86)", "oklch(75% 0.021 86)", "oklch(87% 0.021 86)", "oklch(95% 0.021 86)"] },
+      "topping-selected": { "role": "neutral", "displayName": "Selected Cream", "canonical": "oklch(95.9% 0.042 85)", "surfaces": ["order/index.html"], "tonalRamp": ["oklch(15% 0.042 85)", "oklch(25% 0.042 85)", "oklch(38% 0.042 85)", "oklch(50% 0.042 85)", "oklch(62% 0.042 85)", "oklch(75% 0.042 85)", "oklch(87% 0.042 85)", "oklch(95% 0.042 85)"] },
+      "text-secondary": { "role": "neutral", "displayName": "Warm Gray", "canonical": "oklch(44.4% 0.014 59)", "surfaces": ["order/index.html"], "tonalRamp": ["oklch(15% 0.014 59)", "oklch(25% 0.014 59)", "oklch(38% 0.014 59)", "oklch(50% 0.014 59)", "oklch(62% 0.014 59)", "oklch(75% 0.014 59)", "oklch(87% 0.014 59)", "oklch(95% 0.014 59)"] },
+      "text-muted": { "role": "neutral", "displayName": "Faint Gray", "canonical": "oklch(50.0% 0.017 57)", "surfaces": ["order/index.html"], "tonalRamp": ["oklch(15% 0.017 57)", "oklch(25% 0.017 57)", "oklch(38% 0.017 57)", "oklch(50% 0.017 57)", "oklch(62% 0.017 57)", "oklch(75% 0.017 57)", "oklch(87% 0.017 57)", "oklch(95% 0.017 57)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The front page hero wordmark \"Snack & Sip\" only. Anton uppercase." },
+      "headline": { "displayName": "Headline", "purpose": "One per front-page slide, the category name, balanced; the find slide steps down to clamp(2.6rem, 12vw, 3.4rem)." },
+      "headline-app": { "displayName": "Headline (order app)", "purpose": "Feature card title and sheet drink name at 32px (34px from 430px, 27px under 360px). Empty state 23px, ticket number 68px, order total 25px." },
+      "title": { "displayName": "Title", "purpose": "Order app item names, event titles, cart lines (15.5px); loyalty line 19px/-0.02em. Front page sticker headings are Anton 1.1rem uppercase +0.03em instead." },
+      "price": { "displayName": "Price", "purpose": "Every price in Anton. Order app list 18px in text-price, cart line 17px, feature 22px yellow, button amount yellow. Front page \"from $\" figure 1.5rem, orange on dark slides, ink on bright." },
+      "body": { "displayName": "Body", "purpose": "Front page slide copy 1.05rem max 34ch (hero 1.1rem, 28ch). Order app notes 12.5 to 14px in text-secondary, two-line clamp on cards." },
+      "label": { "displayName": "Label", "purpose": "Front page pills, chip, cue, brand link, cup captions (0.78rem). Order app chips and ghost buttons 14.5px 700, status 13px 600. Sentence case." },
+      "label-caps": { "displayName": "Label, caps (order app)", "purpose": "Category blurbs, choice group labels, size line (11px, text-price), demo flag (10px, +0.14em). Section and form labels only." }
+    },
+    "shadows": [
+      { "name": "bar-lift", "value": "0 14px 28px rgba(0,0,0,.3)", "purpose": "Front page: the two pinned bar buttons." },
+      { "name": "chip-lift", "value": "0 10px 22px rgba(0,0,0,.28)", "purpose": "Front page: the fixed hours chip." },
+      { "name": "cup-drop", "value": "drop-shadow(0 18px 22px rgba(16,12,10,.35))", "purpose": "Front page: filter on every cup in a lineup." },
+      { "name": "sticker", "value": "0 18px 34px rgba(0,0,0,.35)", "purpose": "Front page: address and hours stickers, paired with outline: 4px solid var(--yellow)." },
+      { "name": "stage-frame", "value": "0 40px 90px rgba(0,0,0,.45)", "purpose": "Front page: the phone column on desktop (min-width 760px) only." },
+      { "name": "hero-scrim", "value": "linear-gradient(0deg, #1e1815 0%, rgba(30,24,21,.8) 32%, rgba(30,24,21,0) 62%)", "purpose": "Front page: charcoal fade over the hero media so cream type stays legible." },
+      { "name": "e1", "value": "0 1px 2px rgba(90,60,10,.07), 0 6px 16px rgba(90,60,10,.07)", "purpose": "Order app: item cards and the loyalty card at rest." },
+      { "name": "e2", "value": "0 2px 6px rgba(90,60,10,.10), 0 18px 38px rgba(90,60,10,.14)", "purpose": "Order app: feature card, cart button, item cards on hover." },
+      { "name": "sheet", "value": "0 -18px 50px rgba(60,40,10,.28)", "purpose": "Order app: the bottom sheet, behind an rgba(16,12,10,.48) scrim with backdrop-filter: blur(3px)." },
+      { "name": "swatch-inset", "value": "inset 0 -7px 13px rgba(0,0,0,.17), inset 0 6px 10px rgba(255,255,255,.5)", "purpose": "Order app: gloss on syrup and purée dots; selected adds 0 0 0 3px var(--surface), 0 0 0 6px var(--ink)." },
+      { "name": "pip-inset", "value": "inset 0 -3px 5px rgba(0,0,0,.20), inset 0 2px 4px rgba(255,255,255,.5)", "purpose": "Order app: the 14px color pip inside option pills." }
+    ],
+    "motion": [
+      { "name": "ease-front", "value": "cubic-bezier(.16,1,.3,1)", "purpose": "Front page: the one easing curve for stage tint, button lift and the cue bob." },
+      { "name": "ease-app", "value": "cubic-bezier(.2,.85,.25,1)", "purpose": "Order app: default easing for every transition and the sheet, scrim, pour and bump animations." },
+      { "name": "ease-spring", "value": "cubic-bezier(.3,1.5,.5,1)", "purpose": "Order app: overshoot for the swatch scale and the topping checkbox tick." },
+      { "name": "stage-tint", "value": "background .7s var(--ease)", "purpose": "Front page: html and body background cross-fading to the slide in view (data-c)." },
+      { "name": "button-lift", "value": "transform .35s var(--ease)", "purpose": "Front page: bar button hover rise of 2px; active translateY(1px) scale(.98)." },
+      { "name": "cue-bob", "value": "bob 1.8s var(--ease) infinite (translateY 0 to 5px)", "purpose": "Front page: the down arrow in the hero cue." },
+      { "name": "parallax-depths", "value": "bubbles 30, media 40, lineup 60, copy -24", "purpose": "Front page: translate3d px per viewport-height of offset from center; off under prefers-reduced-motion, which also removes scroll snap." },
+      { "name": "scroll-snap", "value": "scroll-snap-type: y proximity", "purpose": "Front page: each slide snaps into view on the root (phone) or inside .phone (desktop stage)." },
+      { "name": "sheet-slide", "value": "transform .34s var(--ease); scrim opacity .24s", "purpose": "Order app: bottom sheet enters from translateY(101%)." },
+      { "name": "cartbar-slide", "value": "transform .32s var(--ease)", "purpose": "Order app: cart bar enters from translateY(150%)." },
+      { "name": "pour", "value": "pour .4s var(--ease) (opacity 0, translateY(8px) scale(.96) to none)", "purpose": "Order app: the sheet cup pours in; liquid and bits recolor over .48s." },
+      { "name": "loyalty-fill", "value": "width 1.1s var(--ease)", "purpose": "Order app: the punch-card track fills." },
+      { "name": "count-bump", "value": "bump .42s var(--ease) (scale 1 to 1.28 at 40%)", "purpose": "Order app: cart count badge when an item is added." },
+      { "name": "press", "value": "transform .14s to .16s var(--ease); scale(.95) to scale(.988)", "purpose": "Order app: every tappable card, chip, pill and button presses in on :active." }
+    ],
+    "breakpoints": [
+      { "name": "front-stage", "value": "760px", "purpose": "Front page: min-width at which the column becomes a desktop phone stage and the wordmark appears." },
+      { "name": "front-short", "value": "700px (max-height)", "purpose": "Front page: hides the about line and shrinks cups to 110px." },
+      { "name": "app-narrow", "value": "359px (max-width)", "purpose": "Order app: sheds size (title 27px, 3-up swatch wall, 1-up toppings, 20px gutter)." },
+      { "name": "app-wide", "value": "430px", "purpose": "Order app: feature card title lifts to 34px." }
+    ],
+    "focus": [
+      { "surface": "index.html", "value": "outline: 3px solid var(--orange); outline-offset: 3px; border-radius: 999px" },
+      { "surface": "order/index.html", "value": "outline: 3px solid var(--ink); outline-offset: 3px; border-radius: var(--r-sm) (12px)" }
+    ],
+    "radiusBySurface": {
+      "index.html": { "segment": "3px", "shelf": "4px", "sticker": "22px", "stage": "34px", "pill": "999px" },
+      "order/index.html": { "control": "12px", "tile": "16px", "card": "22px", "feature": "28px", "pill": "999px", "count": "9px", "checkbox": "6px" }
+    }
+  },
+  "components": [
+    {
+      "name": "Order Ahead Button (front page bar)",
+      "kind": "button",
+      "refersTo": "button-order",
+      "description": "Orange pill in the pinned bottom bar; links to order/. Sibling of Directions.",
+      "html": "<a class=\"ds-btn-order\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 8h14l-1 12H6L5 8Z\"/><path d=\"M9 8V6a3 3 0 0 1 6 0v2\"/></svg>Order ahead</a>",
+      "css": ".ds-btn-order { display: inline-flex; align-items: center; justify-content: center; gap: .5em; min-height: 54px; padding: 0 1em; border-radius: 999px; background: #F4661B; color: #100C0A; font: 700 1rem/1.15 Figtree, system-ui, sans-serif; text-decoration: none; box-shadow: 0 14px 28px rgba(0,0,0,.3); transition: transform .35s cubic-bezier(.16,1,.3,1); } .ds-btn-order svg { width: 20px; height: 20px; flex: none; } .ds-btn-order:hover { transform: translateY(-2px); } .ds-btn-order:active { transform: translateY(1px) scale(.98); } .ds-btn-order:focus-visible { outline: 3px solid #F4661B; outline-offset: 3px; }"
+    },
+    {
+      "name": "Directions Button (front page bar)",
+      "kind": "button",
+      "refersTo": "button-directions",
+      "description": "Cream pill in the pinned bottom bar; opens Google Maps directions.",
+      "html": "<a class=\"ds-btn-dir\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z\"/><circle cx=\"12\" cy=\"9.5\" r=\"2.5\"/></svg>Directions</a>",
+      "css": ".ds-btn-dir { display: inline-flex; align-items: center; justify-content: center; gap: .5em; min-height: 54px; padding: 0 1em; border-radius: 999px; background: #FFFDF7; color: #100C0A; font: 700 1rem/1.15 Figtree, system-ui, sans-serif; text-decoration: none; box-shadow: 0 14px 28px rgba(0,0,0,.3); transition: transform .35s cubic-bezier(.16,1,.3,1); } .ds-btn-dir svg { width: 20px; height: 20px; flex: none; } .ds-btn-dir:hover { transform: translateY(-2px); } .ds-btn-dir:active { transform: translateY(1px) scale(.98); } .ds-btn-dir:focus-visible { outline: 3px solid #F4661B; outline-offset: 3px; }"
+    },
+    {
+      "name": "Hours Chip (front page)",
+      "kind": "chip",
+      "refersTo": "chip-hours",
+      "description": "Fixed top-right cream pill with a live open/closed dot; links to the hours sticker.",
+      "html": "<a class=\"ds-chip-hours\" href=\"#\" data-state=\"open\"><i></i><span>Open till 8 PM</span></a>",
+      "css": ".ds-chip-hours { display: inline-flex; align-items: center; gap: .45em; height: 38px; padding: 0 .9em; border-radius: 999px; background: #FFFDF7; color: #100C0A; font: 700 .85rem/1 Figtree, system-ui, sans-serif; text-decoration: none; box-shadow: 0 10px 22px rgba(0,0,0,.28); white-space: nowrap; } .ds-chip-hours i { width: 8px; height: 8px; border-radius: 50%; background: #1C8F3C; flex: none; } .ds-chip-hours[data-state=\"closed\"] i { background: #C94D0C; } .ds-chip-hours:focus-visible { outline: 3px solid #F4661B; outline-offset: 3px; }"
+    },
+    {
+      "name": "Sticker (front page)",
+      "kind": "card",
+      "refersTo": "sticker",
+      "description": "Cream card with a 4px yellow outline, tilted, on the charcoal find slide; holds the address or the hours table.",
+      "html": "<div class=\"ds-sticker\"><h3><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/></svg>Hours</h3><table><tr><td>Monday</td><td>Closed</td></tr><tr class=\"now\"><td>Tue to Sat</td><td>11 AM to 8 PM</td></tr><tr><td>Sunday</td><td>12 PM to 6 PM</td></tr></table></div>",
+      "css": ".ds-sticker { background: #FFFDF7; color: #100C0A; border-radius: 22px; padding: 18px 20px; outline: 4px solid #FFC81F; box-shadow: 0 18px 34px rgba(0,0,0,.35); transform: rotate(-2.5deg); font: 400 1rem/1.5 Figtree, system-ui, sans-serif; max-width: 360px; } .ds-sticker h3 { font: 400 1.1rem/1.2 Anton, Impact, sans-serif; letter-spacing: .03em; text-transform: uppercase; display: flex; align-items: center; gap: .5em; margin: 0 0 .5rem; } .ds-sticker h3 svg { width: 18px; height: 18px; flex: none; } .ds-sticker table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; } .ds-sticker td { padding: .4em 0; border-top: 1px solid rgba(16,12,10,.14); } .ds-sticker tr:first-child td { border-top: 0; } .ds-sticker td:last-child { text-align: right; font-weight: 700; white-space: nowrap; padding-left: 1em; } .ds-sticker tr.now td:first-child::after { content: \"today\"; margin-left: .5em; padding-left: .9em; font-size: .75em; font-weight: 700; background: radial-gradient(circle at .3em 55%, #F4661B .25em, transparent .3em); }"
+    },
+    {
+      "name": "From Price (front page)",
+      "kind": "custom",
+      "refersTo": "price",
+      "description": "The one price on a slide: Figtree 'from' and an Anton figure, orange on dark slides and ink on bright ones.",
+      "html": "<div class=\"ds-slide-dark\"><span class=\"ds-from\">from <b>$10</b></span></div>",
+      "css": ".ds-slide-dark { background: #1E1815; color: #FFFDF7; padding: 20px 22px; border-radius: 12px; display: inline-block; } .ds-from { display: inline-flex; align-items: baseline; gap: .35em; font: 700 .95rem/1.15 Figtree, system-ui, sans-serif; } .ds-from b { font: 400 1.5rem/1 Anton, Impact, sans-serif; letter-spacing: .01em; color: #F4661B; }"
+    },
+    {
+      "name": "Category Chip (order app)",
+      "kind": "chip",
+      "refersTo": "chip-category",
+      "description": "Tab in the horizontal category rail; selected fills ink.",
+      "html": "<div class=\"ds-rail\"><button class=\"ds-chip-cat\" aria-selected=\"true\">Lemonades</button><button class=\"ds-chip-cat\" aria-selected=\"false\">Dirty Sodas</button><button class=\"ds-chip-cat\" aria-selected=\"false\">Snow Cones</button></div>",
+      "css": ".ds-rail { display: flex; gap: 8px; background: #FFC81F; padding: 12px; border-radius: 12px; } .ds-chip-cat { flex: 0 0 auto; padding: 11px 18px; border-radius: 999px; min-height: 44px; display: flex; align-items: center; font: 700 14.5px/1.15 Figtree, system-ui, sans-serif; white-space: nowrap; color: #5A524C; background: rgba(16,12,10,.06); border: none; cursor: pointer; transition: background .18s cubic-bezier(.2,.85,.25,1), color .18s cubic-bezier(.2,.85,.25,1), transform .14s cubic-bezier(.2,.85,.25,1); } .ds-chip-cat[aria-selected=\"true\"] { background: #100C0A; color: #FFFDF7; font-weight: 800; } .ds-chip-cat:active { transform: scale(.95); } .ds-chip-cat:focus-visible { outline: 3px solid #100C0A; outline-offset: 3px; }"
+    },
+    {
+      "name": "Menu Item Card (order app)",
+      "kind": "card",
+      "refersTo": "card-item",
+      "description": "Cream card on the yellow canvas: cup thumb, name, two-line note, Anton price on a shared right edge.",
+      "html": "<div class=\"ds-canvas\"><button class=\"ds-item\"><svg class=\"ds-thumb\" viewBox=\"0 0 120 150\" width=\"58\" height=\"70\" aria-hidden=\"true\"><defs><linearGradient id=\"ds-g1\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ff6f91\"/><stop offset=\"1\" stop-color=\"#ff9a5a\"/></linearGradient></defs><rect x=\"66\" y=\"2\" width=\"9\" height=\"60\" rx=\"4.5\" transform=\"rotate(12 70 32)\" fill=\"#7CB342\"/><path d=\"M14 36h92l-9 100c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 36Z\" fill=\"url(#ds-g1)\"/><path fill=\"#fff\" opacity=\".3\" d=\"M24 44l6 86h5l-6-86Z\"/><ellipse cx=\"60\" cy=\"36\" rx=\"48\" ry=\"7\" fill=\"#fff\" opacity=\".9\"/></svg><span class=\"ds-icopy\"><span class=\"ds-iname\">Pink Peach</span><span class=\"ds-inote\">House favorite</span></span><span class=\"ds-iprice\">$7.00</span></button></div>",
+      "css": ".ds-canvas { background: #FFC81F; padding: 16px; border-radius: 12px; } .ds-item { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; padding: 10px 16px 10px 10px; border-radius: 22px; background: #FFFDF7; color: #100C0A; border: none; cursor: pointer; box-shadow: 0 1px 2px rgba(90,60,10,.07), 0 6px 16px rgba(90,60,10,.07); min-height: 70px; font-family: Figtree, system-ui, sans-serif; transition: transform .16s cubic-bezier(.2,.85,.25,1), box-shadow .16s cubic-bezier(.2,.85,.25,1); } .ds-thumb { flex-shrink: 0; display: block; } .ds-icopy { flex: 1; min-width: 0; } .ds-iname { font-weight: 800; font-size: 16.5px; letter-spacing: -.015em; line-height: 1.2; display: block; } .ds-inote { font-size: 12.5px; color: #5A524C; margin-top: 3px; line-height: 1.36; display: block; } .ds-iprice { font: 400 18px/1 Anton, \"Arial Narrow\", sans-serif; color: #C94D0C; flex-shrink: 0; letter-spacing: .01em; min-width: 56px; text-align: right; } .ds-item:hover { box-shadow: 0 2px 6px rgba(90,60,10,.10), 0 18px 38px rgba(90,60,10,.14); } .ds-item:active { transform: scale(.988); } .ds-item:focus-visible { outline: 3px solid #100C0A; outline-offset: 3px; }"
+    },
+    {
+      "name": "Option Pill (order app)",
+      "kind": "input",
+      "refersTo": "pill-option",
+      "description": "Single-choice control in the build sheet (base, cream): color pip, name, price; pressed fills ink.",
+      "html": "<div class=\"ds-pills\"><button class=\"ds-pill\" aria-pressed=\"true\"><span class=\"ds-pip\" style=\"background:#4A2418\"></span>Coke</button><button class=\"ds-pill\" aria-pressed=\"false\"><span class=\"ds-pip\" style=\"background:#FFD84D\"></span>Lemonade<span class=\"ds-op\">+$2.00</span></button></div>",
+      "css": ".ds-pills { display: flex; gap: 8px; flex-wrap: wrap; background: #FFFDF7; padding: 12px; border-radius: 12px; } .ds-pill { padding: 12px 15px; border-radius: 12px; background: rgba(16,12,10,.055); font: 600 14px/1.2 Figtree, system-ui, sans-serif; color: #100C0A; display: flex; align-items: center; gap: 8px; min-height: 46px; border: none; cursor: pointer; transition: background .16s cubic-bezier(.2,.85,.25,1), transform .14s cubic-bezier(.2,.85,.25,1); } .ds-pip { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; box-shadow: inset 0 -3px 5px rgba(0,0,0,.20), inset 0 2px 4px rgba(255,255,255,.5); } .ds-op { font-size: 11.5px; font-weight: 700; color: #6B615A; } .ds-pill[aria-pressed=\"true\"] { background: #100C0A; color: #FFFDF7; font-weight: 700; } .ds-pill[aria-pressed=\"true\"] .ds-op { color: #FFC81F; } .ds-pill:active { transform: scale(.96); } .ds-pill:focus-visible { outline: 3px solid #100C0A; outline-offset: 3px; }"
+    },
+    {
+      "name": "Topping Pill (order app)",
+      "kind": "input",
+      "refersTo": "pill-topping",
+      "description": "Checkable add-on control; pressed turns cream-orange with an inset orange ring and a sprung tick.",
+      "html": "<div class=\"ds-topgrid\"><button class=\"ds-top\" aria-pressed=\"true\"><span class=\"ds-chk\"></span><span class=\"ds-tn\">Chamoy rim</span><span class=\"ds-op\">+$0.75</span></button><button class=\"ds-top\" aria-pressed=\"false\"><span class=\"ds-chk\"></span><span class=\"ds-tn\">Whipped cream</span><span class=\"ds-op\">+$0.75</span></button></div>",
+      "css": ".ds-topgrid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; background: #FFFDF7; padding: 12px; border-radius: 12px; } .ds-top { padding: 9px 11px; min-height: 46px; border-radius: 16px; background: #F6EFE0; color: #100C0A; display: flex; align-items: center; gap: 8px; text-align: left; font: 600 12px/1.25 Figtree, system-ui, sans-serif; border: none; cursor: pointer; box-shadow: inset 0 0 0 1.5px transparent; transition: background .16s cubic-bezier(.2,.85,.25,1), transform .14s cubic-bezier(.2,.85,.25,1), box-shadow .16s cubic-bezier(.2,.85,.25,1); } .ds-top .ds-tn { flex: 1; min-width: 0; } .ds-top .ds-op { font-size: 11px; font-weight: 700; color: #6B615A; margin-left: auto; padding-left: 8px; } .ds-chk { width: 18px; height: 18px; border-radius: 6px; flex-shrink: 0; position: relative; background: rgba(16,12,10,.09); transition: background .16s cubic-bezier(.2,.85,.25,1); } .ds-chk::after { content: \"\"; position: absolute; left: 6px; top: 2.5px; width: 5px; height: 9px; border: solid #FFFDF7; border-width: 0 2.2px 2.2px 0; transform: rotate(45deg) scale(.4); opacity: 0; transition: opacity .14s cubic-bezier(.2,.85,.25,1), transform .18s cubic-bezier(.3,1.5,.5,1); } .ds-top[aria-pressed=\"true\"] { background: #FFF0D2; box-shadow: inset 0 0 0 1.5px #F4661B; } .ds-top[aria-pressed=\"true\"] .ds-chk { background: #F4661B; } .ds-top[aria-pressed=\"true\"] .ds-chk::after { opacity: 1; transform: rotate(45deg) scale(1); } .ds-top[aria-pressed=\"true\"] .ds-op { color: #C94D0C; } .ds-top:active { transform: scale(.97); } .ds-top:focus-visible { outline: 3px solid #100C0A; outline-offset: 3px; }"
+    },
+    {
+      "name": "Sheet Primary Button (order app)",
+      "kind": "button",
+      "refersTo": "button-primary-app",
+      "description": "Full-width ink button in Anton with the amount in yellow on the right; the add, checkout and done actions.",
+      "html": "<div class=\"ds-sheetfoot\"><button class=\"ds-btn-app\"><span>Pay and pick up</span><span class=\"ds-amt\">$18.00</span></button><button class=\"ds-btn-ghost\">Add something else</button></div>",
+      "css": ".ds-sheetfoot { background: #FFFDF7; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; } .ds-btn-app { width: 100%; padding: 17px 20px; border-radius: 22px; min-height: 54px; font: 400 18px/1 Anton, \"Arial Narrow\", sans-serif; letter-spacing: .05em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #100C0A; color: #FFFDF7; border: none; cursor: pointer; transition: transform .14s cubic-bezier(.2,.85,.25,1), background .2s cubic-bezier(.2,.85,.25,1); } .ds-btn-app .ds-amt { color: #FFC81F; margin-left: auto; } .ds-btn-app:active { transform: scale(.98); } .ds-btn-app[disabled] { background: rgba(16,12,10,.12); color: rgba(16,12,10,.40); cursor: not-allowed; transform: none; } .ds-btn-app:focus-visible { outline: 3px solid #100C0A; outline-offset: 3px; border-radius: 12px; } .ds-btn-ghost { background: transparent; color: #5A524C; margin-top: 8px; font: 700 14.5px/1.2 Figtree, system-ui, sans-serif; min-height: 44px; padding: 12px; border: none; cursor: pointer; border-radius: 22px; } .ds-btn-ghost:focus-visible { outline: 3px solid #100C0A; outline-offset: 3px; }"
+    },
+    {
+      "name": "Feature Card (order app)",
+      "kind": "card",
+      "refersTo": "card-feature",
+      "description": "Charcoal 'Create your own' card at the top of the menu: Anton title, cream sub, yellow price, syrup shelf, orange CTA.",
+      "html": "<div class=\"ds-canvas\"><button class=\"ds-feature\"><div class=\"ds-ft\">Create Your Own</div><div class=\"ds-fs\">Any base. Up to 3 syrups. Cream on top.</div><div class=\"ds-fp\">From<em>$7.00</em></div><div class=\"ds-shelf\"><i style=\"background:#FF3B4E\"></i><i style=\"background:#E0245E\"></i><i style=\"background:#7B3FA0\"></i><i style=\"background:#3B6FE0\"></i><i style=\"background:#38C0F0\"></i><i style=\"background:#FFA61F\"></i><i style=\"background:#FF9A5A\"></i><i style=\"background:#FFD028\"></i></div><div class=\"ds-fcta\"><span>Build yours</span><span class=\"ds-arw\">&rarr;</span></div></button></div>",
+      "css": ".ds-canvas { background: #FFC81F; padding: 16px; border-radius: 12px; } .ds-feature { width: 100%; text-align: left; background: #1E1815; color: #FFFDF7; border-radius: 28px; padding: 24px; border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(90,60,10,.10), 0 18px 38px rgba(90,60,10,.14); font-family: Figtree, system-ui, sans-serif; transition: transform .16s cubic-bezier(.2,.85,.25,1); } .ds-ft { font: 400 32px/1 Anton, \"Arial Narrow\", sans-serif; text-transform: uppercase; letter-spacing: .015em; } .ds-fs { font-size: 14px; color: rgba(255,253,247,.80); margin-top: 10px; line-height: 1.4; max-width: 22ch; } .ds-fp { margin-top: 16px; font-size: 13px; font-weight: 700; color: rgba(255,253,247,.85); display: flex; align-items: baseline; gap: 6px; } .ds-fp em { font: 400 22px/1 Anton, sans-serif; color: #FFC81F; letter-spacing: .01em; } .ds-shelf { display: flex; height: 8px; border-radius: 999px; overflow: hidden; margin-top: 20px; } .ds-shelf i { flex: 1; } .ds-fcta { margin-top: 20px; background: #F4661B; color: #100C0A; border-radius: 22px; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; font: 400 17px/1 Anton, \"Arial Narrow\", sans-serif; letter-spacing: .06em; text-transform: uppercase; min-height: 48px; } .ds-arw { transition: transform .2s cubic-bezier(.2,.85,.25,1); } .ds-feature:hover .ds-arw { transform: translateX(4px); } .ds-feature:active { transform: scale(.988); } .ds-feature:focus-visible { outline: 3px solid #100C0A; outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Drink Board",
+    "overview": "Snack & Sip looks like the shop's own menu board: lemon yellow as the ground, headings in Anton set tall and uppercase like hand-cut vinyl letters, prices in the same condensed face, and every drink drawn as a flat vector cup with a lime straw. Nothing is photographed and nothing is gray. The two surfaces share one brand kit (yellow, orange, charcoal, ink, cream, Anton, Figtree, the lemon mascot) and use it two ways. The front page is a vertical story: one category per full-height slide, each slide drenched edge to edge in a single brand color (charcoal, yellow, cream, orange, blue), a lineup of tilted cups in the middle, one Anton headline and a \"from $\" price at the bottom, and the two actions (Order ahead, Directions) pinned in a bar that never scrolls away. The order app is the board itself: a 520px column on solid yellow, a charcoal feature card for \"Create your own\", a chip rail for categories, cream item cards with a shared right-aligned price column, and a bottom sheet for building a drink.\n\nBoth surfaces are mobile-first and dense in different ways. The front page is blunt: one headline, one paragraph, one price per screen, and chrome that stays put. The order app is a working menu, so it carries a real type scale (section labels, item names, notes, prices) and a control vocabulary (chips, pills, swatches, sheet buttons), all on the same yellow canvas with cream cards floating on warm shadows.",
+    "keyCharacteristics": [
+      "Lemon yellow (`yellow`) is the brand ground; charcoal (`charcoal`) is the big dark surface; ink (`ink`) is text and primary action",
+      "Anton, uppercase, for every heading and every price; Figtree for everything else",
+      "Two text colors on the front page (ink on bright, cream on dark); the order app adds one warm gray (`text-secondary`) for notes and labels",
+      "Drinks are vector cups: tapered trapezoid body, white lid or rim, lime straw, liquid as a two-stop vertical gradient taken from the drink's colors",
+      "Front page: full-bleed slide colors, parallax layers, pinned pill bar, tilted cream stickers outlined in yellow",
+      "Order app: cream cards on yellow, 12/16/22/28px radius steps, warm brown-tinted shadows, ink-filled selected states"
+    ],
+    "rules": [
+      { "name": "The Yellow Ground Rule", "body": "Yellow is a surface, never a text color. Type on yellow is ink or `text-secondary`; type on charcoal is cream, with yellow reserved for the one price or number that must pop.", "section": "colors" },
+      { "name": "The Two Inks Rule (front page)", "body": "Front-page text is ink on the yellow, cream, orange and blue slides and cream on the charcoal slides. The slide class (`.dark`, `.yellow`, `.orange`, `.cream`, `.blue`) sets `--c`, `--fg` and `--seg` together; no other text color appears there.", "section": "colors" },
+      { "name": "The Gradient Cup Rule", "body": "A drink's color lives only in its cup: a two-stop vertical gradient from the drink's two colors (the order app's `colors` array, the front page's `<linearGradient>`), under a shared white-lid or white-rim symbol with a lime straw.", "section": "colors" },
+      { "name": "The Anton Is For Boards Rule", "body": "Anton appears only uppercase and only as a heading, a price, a date or a primary button label. Never in body copy, notes, captions or chips; those are Figtree.", "section": "typography" },
+      { "name": "The Numbers Line Up Rule", "body": "Prices share a right edge (`min-width: 56px; text-align: right` on every item card) and the hours table sets `font-variant-numeric: tabular-nums` with the time column right-aligned and bold.", "section": "typography" },
+      { "name": "The Floating Only Rule", "body": "Slides, copy, bubbles and the yellow canvas carry no shadow. Only something that sits on top of a surface (a pill, a cup, a sticker, a card, a sheet) casts one.", "section": "elevation" },
+      { "name": "The Warm Shadow Rule (order app)", "body": "Shadows on the yellow canvas are brown-tinted (`rgba(90,60,10,…)`, `rgba(60,40,10,…)`), never neutral black, so cream cards look lit by the yellow rather than cut out of it.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep yellow as a surface and ink or cream as the text on it; reach for `text-secondary` only in the order app for notes and labels.",
+      "Do set every heading, price, date and primary button in Anton, uppercase, tight (0.95 to 1.04 line-height, +0.005 to +0.06em), and everything else in Figtree.",
+      "Do give a new front-page slide one of the five themes (`.dark`, `.yellow`, `.orange`, `.cream`, `.blue`) and declare the same color on `data-c` so the page, stage and browser theme-color follow it.",
+      "Do draw every drink as the shared cup, lidded cup or cone symbol over a two-stop vertical gradient of that drink's two colors, with a lime straw.",
+      "Do use the order app's radius roles as named: 12px for option controls, 16px for topping controls, 22px for cards and sheet buttons, 28px for feature surfaces, pills for chips.",
+      "Do keep Order ahead and Directions pinned and reachable from every slide, and turn parallax, snap and the bob animation off under `prefers-reduced-motion`.",
+      "Do right-align prices on a shared column and keep the hours table in tabular numerals."
+    ],
+    "donts": [
+      "Don't add a gray or neutral page background; the ground is yellow, the dark surface is charcoal, cards are cream.",
+      "Don't set Anton in running copy, chips, notes or captions, and don't use Figtree for a price.",
+      "Don't put a neutral black drop shadow on an order-app card; shadows on the yellow canvas are brown-tinted (`rgba(90,60,10,…)`).",
+      "Don't use a third text color on the front page; ink on bright slides, cream on dark ones, with orange or yellow only for the price figure and the strong word.",
+      "Don't add a top navigation bar or a third pinned action to the front page; the chrome is the progress strip, the hours chip and the two-button bar.",
+      "Don't photograph drinks or use raster illustrations in place of the vector cup."
+    ]
+  }
+}
