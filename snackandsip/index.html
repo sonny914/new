@@ -98,11 +98,11 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 .sticker address{font-style:normal;font-size:1.05rem;line-height:1.4}
 .sticker address a{display:inline-block;color:inherit;text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:2px;text-decoration-color:var(--orange)}
 .hours{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.hours td{padding:.4em 0;border-top:1px solid rgba(16,12,10,.14)}
+.hours td{padding:.4em 0;border-top:1px solid rgba(16,12,10,.14);vertical-align:middle}
 .hours tr:first-child td{border-top:0}
 .hours td:last-child{text-align:right;font-weight:700;white-space:nowrap;padding-left:1em}
 .hours tr.now td:first-child{white-space:nowrap}
-.hours tr.now td:first-child::after{content:"today";margin-left:.5em;padding-left:.9em;font-size:.75em;font-weight:700;background:radial-gradient(circle at .3em 55%,var(--orange) .25em,transparent .3em)}
+.hours tr.now td:first-child::after{content:"today";display:inline-block;vertical-align:middle;margin-left:.5em;padding-left:.9em;font-size:.75em;font-weight:700;background:radial-gradient(circle at .3em 55%,var(--orange) .25em,transparent .3em)}
 /* chrome */
 .progress,.bar,.chip{position:fixed;z-index:10;pointer-events:none}
 .progress,.bar{left:50%;translate:-50% 0;width:min(100%,var(--col));padding:0 14px}
@@ -118,8 +118,8 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 .btn:hover{transform:translateY(-2px)}
 .btn:active{transform:translateY(1px) scale(.98)}
 .btn svg{width:20px;height:20px;flex:none}
-.btn.order{background:var(--orange);color:var(--ink)}
-.btn.dir{background:var(--cream);color:var(--ink)}
+.btn.dir{background:var(--orange);color:var(--ink)}
+.btn.order{background:var(--cream);color:var(--ink)}
 /* desktop stage */
 .wordmark{display:none}
 @media (min-width:760px){
@@ -179,8 +179,8 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 <div class="progress" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 <a class="chip" href="#visit" id="hoursChip" data-state="closed" aria-live="polite"><i></i><span>Hours</span></a>
 <nav class="bar" aria-label="Order, directions and hours">
-  <a class="btn order" href="order/"><svg><use href="#i-bag"/></svg>Order ahead</a>
   <a class="btn dir" href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener"><svg><use href="#i-pin"/></svg>Directions</a>
+  <a class="btn order" href="order/"><svg><use href="#i-bag"/></svg>Order ahead</a>
 </nav>
 
 <main class="phone" id="top">
@@ -190,7 +190,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
       <video autoplay muted loop playsinline preload="metadata" poster="img/poster.jpg" aria-hidden="true"><source src="media/hero.mp4" type="video/mp4"></video>
     </div>
     <div class="scrim"></div>
-    <a class="brand" href="#top"><img src="brand/logo.png" alt="" width="36" height="36">Snack &amp; Sip</a>
+    <a class="brand" href="#top" aria-label="Snack &amp; Sip, back to top"><img src="brand/logo.png" alt="" width="36" height="36"></a>
     <div class="copy" data-depth="-24">
       <h1 id="h-hero">Snack<br>&amp; Sip</h1>
       <p><strong>Pearland Town Center</strong> &middot; next to Great American Cookies, near the pavilion.</p>
@@ -201,7 +201,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
   <section class="slide yellow" data-c="#ffc81f" aria-labelledby="h-byo">
     <div class="layer bubbles" data-depth="30"><i style="left:8%;top:14%;width:14px;height:14px"></i><i style="left:84%;top:60%;width:18px;height:18px"></i></div>
     <div class="lineup n1" data-depth="60">
-      <figure><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-byo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a18"/><stop offset="1" stop-color="#38c0f0"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-byo)"/><use href="#cup-lid"/><image href="brand/logo.png" x="36" y="70" width="48" height="48" clip-path="circle(24px at 60px 94px)"/></svg></figure>
+      <figure><svg viewBox="0 0 120 150" aria-hidden="true"><defs><linearGradient id="g-byo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a18"/><stop offset="1" stop-color="#38c0f0"/></linearGradient></defs><path d="M14 40h92l-9 96c-.6 6-5.6 10-11.5 10H34.5c-5.9 0-10.9-4-11.5-10L14 40Z" fill="url(#g-byo)"/><use href="#cup-lid"/><clipPath id="byo-clip"><circle cx="60" cy="94" r="24"/></clipPath><image href="brand/logo.png" x="36" y="70" width="48" height="48" clip-path="url(#byo-clip)"/></svg></figure>
     </div>
     <div class="copy" data-depth="-24">
       <h2 id="h-byo">Create your own</h2>
@@ -251,7 +251,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
     </div>
     <div class="copy" data-depth="-24">
       <h2 id="h-energy">Dirty Energy</h2>
-      <p>Red Bull and Alani builds, 24 oz, with fruit, glitter and cream. The Peach Thrill is the one people ask for.</p>
+      <p>Red Bull and Alani builds, 24 oz, with fruit, glitter and cream. Mango Dragon, Key Lime Mango, Peach Thrill, Electric Berry.</p>
       <span class="from">from <b>$10</b></span>
     </div>
   </section>
@@ -277,7 +277,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
     </div>
       <div class="sticker" style="--tilt:-2.5deg">
         <h3><svg><use href="#i-pin"/></svg>Where</h3>
-        <address><a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">11200 Broadway St., Suite 1370, Pearland, TX 77584</a><br><span style="font-size:.95rem">Next to Great American Cookies, near the pavilion.</span></address>
+        <address><a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">11200 Broadway St., Suite 1370</a><br>Pearland, TX 77584<br><span style="font-size:.95rem">Next to Great American Cookies, near the pavilion.</span></address>
       </div>
       <div class="sticker" style="--tilt:1.5deg">
         <h3><svg><use href="#i-clock"/></svg>Hours</h3>
@@ -287,7 +287,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
           <tr data-d="0"><td>Sunday</td><td>12 PM to 6 PM</td></tr>
         </table>
       </div>
-    <footer>Snack &amp; Sip &middot; Pearland Town Center</footer>
+    <footer>Order ahead is a demo for now: nothing is sent to the shop. &middot; Snack &amp; Sip, Pearland Town Center</footer>
   </section>
 </main>
 <p class="wordmark"><img src="brand/logo.png" alt="">Snack &amp; Sip<small>Pearland Town Center<br>Tue to Sat 11 to 8 &middot; Sun 12 to 6</small></p>

@@ -235,6 +235,8 @@ const CONFIG = {
   .status.closed #hours{color:var(--orange-deep)}
   .backlink{display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;font-weight:700;font-size:14px;color:var(--ink);text-decoration:none;padding:8px 14px;border-radius:var(--r-pill);background:rgba(16,12,10,.08)}
   .footer a{color:var(--ink);font-weight:700}
+  .demonote{font-size:13px;font-weight:700;color:var(--ink);margin:0 0 10px;padding:10px 12px;border-radius:var(--r-sm);background:#FFF0D2}
+  .ico{width:18px;height:18px;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .wrap{max-width:520px;margin:0 auto;padding:0 var(--s6)}
 
   /* ================= type system ================= */
@@ -258,8 +260,6 @@ const CONFIG = {
     border-radius:var(--r-feature);padding:var(--s6);box-shadow:var(--e2);
     display:block;width:100%;text-align:left;transition:transform .16s var(--ease)}
   .hero:active{transform:scale(.988)}
-  .hero-eyebrow{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
-    color:#FF7A2E}
   .hero-body{display:flex;gap:var(--s5);align-items:center;margin-top:10px}
   .hero-copy{flex:1;min-width:0}
   .hero-title{font-family:"Anton","Arial Narrow",sans-serif;font-size:32px;line-height:1.0;
@@ -489,7 +489,7 @@ const CONFIG = {
   .blank h3{font-family:"Anton","Arial Narrow",sans-serif;font-size:23px;text-transform:uppercase;
     letter-spacing:.02em;margin:0 0 6px}
   .blank p{font-size:14px;color:var(--text-secondary);margin:0;line-height:1.5}
-  .demoflag{display:inline-block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  .demoflag{display:inline-block;font-size:13px;font-weight:700;color:var(--ink);
     color:var(--muted);background:rgba(16,12,10,.08);border-radius:var(--r-pill);
     padding:6px 13px;margin-top:var(--s2);font-weight:800}
 
@@ -542,7 +542,7 @@ const CONFIG = {
 <body>
 
 <header>
-  <a class="backlink" href="../">&larr; Snack &amp; Sip</a>
+  <a class="backlink" href="../"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Snack &amp; Sip</a>
   <div class="badge" id="badge"></div>
   <div class="status">
     <span class="dot"></span><b id="hours"></b><span id="tagline"></span>
@@ -562,7 +562,7 @@ const CONFIG = {
 
   <div class="footer">
     <div id="addr"></div>
-    <span class="demoflag">Demo · orders are not sent to the shop yet</span>
+    <span class="demoflag">Demo: orders are not sent to the shop yet</span>
   </div>
 </main>
 
@@ -774,7 +774,6 @@ const CONFIG = {
   if(feature){
     $("#hero").innerHTML = `
       <button class="hero" data-id="${feature.id}">
-        <div class="hero-eyebrow">Made to order</div>
         <div class="hero-body">
           <div class="hero-copy">
             <div class="hero-title">${feature.name}</div>
@@ -785,7 +784,7 @@ const CONFIG = {
         </div>
         <div class="shelf">${CONFIG.syrups.map(sy=>
           `<i style="background:${sy.color}"></i>`).join("")}</div>
-        <div class="hero-cta"><span>Build yours</span><span class="arw">&rarr;</span></div>
+        <div class="hero-cta"><span>Build yours</span><svg class="ico arw" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
       </button>`;
     $("#hero").addEventListener("click", e => {
       const b = e.target.closest("[data-id]"); if(!b) return;
@@ -1028,7 +1027,8 @@ const CONFIG = {
       <div class="totrow"><span>Tax</span><span>${money(tax)}</span></div>
       <div class="totrow big"><span>Total</span><span>${money(tot)}</span></div>
       <div class="actionbar">
-        <button class="btn" id="checkout"><span>Pay and pick up</span><span class="amt">${money(tot)}</span></button>
+        <p class="demonote">Demo: this order is not sent to the shop and no payment is taken.</p>
+        <button class="btn" id="checkout"><span>Place demo order</span><span class="amt">${money(tot)}</span></button>
         <button class="btn ghost" id="keepgoing">Add something else</button>
       </div>
     `);
@@ -1055,7 +1055,7 @@ const CONFIG = {
           `<div class="punch ${i<p?"on":""}"></div>`).join("")}</div>
       </div>
       <button class="btn" id="done">Back to menu</button>
-      <div class="footer"><span class="demoflag">Demo · no payment was taken and the shop has not received this</span></div>
+      <div class="footer"><span class="demoflag">Demo: no payment was taken and the shop has not received this</span></div>
     `);
   }
   // events board — hidden entirely when the array is empty
