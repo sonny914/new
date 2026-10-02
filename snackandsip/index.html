@@ -2,195 +2,333 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Snack &amp; Sip | Lemonades, Dirty Sodas &amp; Snow Cones in Pearland, TX</title>
-<meta name="description" content="Snack &amp; Sip at Pearland Town Center: flavored lemonades including the Peach Thriller, dirty sodas and snow cones. Open Tuesday to Sunday.">
-<meta name="theme-color" content="#2b1034">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Snack &amp; Sip | Lemonades, Dirty Sodas &amp; Snow Cones at Pearland Town Center</title>
+<meta name="description" content="Snack &amp; Sip at Pearland Town Center, Pearland TX: flavored lemonades including the Peach Thriller, dirty sodas and snow cones. Open Tuesday to Sunday, next to Great American Cookies.">
+<meta name="theme-color" content="#1e0a2e">
+<link rel="canonical" href="https://snackandsip.netlify.app/">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="img/poster.jpg">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Snack &amp; Sip">
 <meta property="og:title" content="Snack &amp; Sip | Pearland Town Center">
-<meta property="og:description" content="Flavored lemonades, dirty sodas and snow cones at Pearland Town Center.">
-<meta property="og:image" content="img/og.jpg">
+<meta property="og:description" content="Flavored lemonades, dirty sodas and snow cones. Next to Great American Cookies, near the pavilion.">
+<meta property="og:url" content="https://snackandsip.netlify.app/">
+<meta property="og:image" content="https://snackandsip.netlify.app/img/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/unbounded.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/figtree.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"CafeOrCoffeeShop","name":"Snack & Sip","servesCuisine":"Lemonades, dirty sodas, snow cones",
+{"@context":"https://schema.org","@type":"CafeOrCoffeeShop","name":"Snack & Sip","url":"https://snackandsip.netlify.app/","image":"https://snackandsip.netlify.app/img/og.jpg","servesCuisine":"Lemonades, dirty sodas, snow cones, snacks",
 "address":{"@type":"PostalAddress","streetAddress":"11200 Broadway St., Suite 1370","addressLocality":"Pearland","addressRegion":"TX","postalCode":"77584","addressCountry":"US"},
 "openingHoursSpecification":[
 {"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Wednesday","Thursday","Friday","Saturday"],"opens":"11:00","closes":"20:00"},
 {"@type":"OpeningHoursSpecification","dayOfWeek":"Sunday","opens":"12:00","closes":"18:00"}]}
 </script>
 <style>
-:root{--ink:#2b1034;--cream:#fff6ea;--peach:#ff9a6b;--pink:#ff4f7b;--sky:#5fd3e0;--sun:#ffc98a;--r:26px}
+:root{
+  --ink:#1e0a2e;--paper:#fff;
+  --peach:#ff9e6b;--berry:#ff4f7b;--mango:#ffc233;--sky:#4fc3ff;--coco:#f1ebdd;--cola:#4a2a1f;--ice:#6e3be8;
+  --stage:var(--ink);--btn:var(--peach);--btn-ink:var(--ink);
+  --col:430px;--bar:84px;--ease:cubic-bezier(.16,1,.3,1);
+}
 *{box-sizing:border-box;margin:0}
-html{scroll-behavior:smooth}
-body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.55;overflow-x:hidden}
-h1,h2,h3,.brand{font-family:'Bagel Fat One','Arial Rounded MT Bold',system-ui,sans-serif;font-weight:400;line-height:1}
-a{color:inherit}
-.wrap{width:min(1080px,100% - 32px);margin-inline:auto}
-nav{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;color:#fff;transition:background .3s}
-nav.solid{background:rgba(43,16,52,.92);backdrop-filter:blur(8px)}
-.brand{display:flex;align-items:center;gap:10px;font-size:1.35rem;text-decoration:none}
-.brand img{width:38px;height:38px}
-.btn{display:inline-block;background:var(--pink);color:#fff;padding:.8em 1.4em;border-radius:99px;font-weight:700;text-decoration:none;transition:transform .2s}
-.btn:hover{transform:translateY(-2px) rotate(-1deg)}
-.btn.alt{background:#fff;color:var(--ink)}
+html{scroll-snap-type:y proximity;scroll-behavior:smooth;background:var(--stage);transition:background .7s var(--ease)}
+body{font:400 1rem/1.5 Figtree,system-ui,sans-serif;color:var(--ink);background:var(--stage);transition:background .7s var(--ease);-webkit-font-smoothing:antialiased;overflow-x:clip}
+::selection{background:var(--ink);color:var(--peach)}
+:focus-visible{outline:3px solid var(--paper);outline-offset:3px;border-radius:999px}
+html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.45);border-radius:8px}
+.phone{width:min(100%,var(--col));margin-inline:auto;position:relative}
+.slide{position:relative;min-height:100svh;scroll-snap-align:start;overflow:clip;display:grid;grid-template-rows:1fr auto;padding:64px 22px calc(var(--bar) + 22px);background:var(--c);color:var(--fg,var(--ink));isolation:isolate}
+.slide h2,.slide h1{font-family:Unbounded,Figtree,sans-serif;font-weight:800;line-height:.98;letter-spacing:-.025em;text-wrap:balance}
+.slide .copy{position:relative;z-index:3;align-self:end;will-change:transform}
+.slide p{max-width:34ch;font-size:1.05rem}
+.slide .copy p{margin-top:.6rem}
+.badge{display:inline-flex;align-items:center;gap:.4em;margin-top:.9rem;padding:.42em .9em;border-radius:999px;background:var(--ink);color:var(--paper);font-weight:700;font-size:.85rem;letter-spacing:.01em}
+.badge svg{width:14px;height:14px}
+.layer{position:absolute;inset:0;pointer-events:none;will-change:transform}
+.cup{position:absolute;right:-6%;top:9%;width:66%;max-width:300px;filter:drop-shadow(0 26px 30px rgba(30,10,46,.28))}
+.cup.cone{right:0;top:7%;width:60%}
+.bubbles{z-index:0}
+.bubbles i{position:absolute;border-radius:50%;background:var(--paper);opacity:.35}
 /* hero */
-.hero{position:relative;min-height:100svh;display:grid;align-items:center;overflow:hidden;color:#fff;background:var(--ink)}
-.hero video,.hero .poster{position:absolute;inset:-6% 0;width:100%;height:112%;object-fit:cover;will-change:transform}
-.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(43,16,52,.82),rgba(43,16,52,.25) 70%),linear-gradient(0deg,rgba(43,16,52,.55),transparent 40%)}
-.float{position:absolute;z-index:2;font-size:3rem;will-change:transform;pointer-events:none;filter:drop-shadow(0 8px 12px rgba(0,0,0,.25))}
-.f1{top:22%;right:12%}.f2{top:58%;right:30%;font-size:2.2rem}.f3{top:30%;right:40%;font-size:1.8rem}
-.hero .wrap{position:relative;z-index:3;padding-block:110px 70px;will-change:transform}
-.kicker{letter-spacing:.2em;font-weight:700;font-size:.8rem;color:var(--sun);text-transform:uppercase}
-h1{font-size:clamp(3.6rem,13vw,9rem);margin:.15em 0 .2em}
-.lede{font-size:clamp(1.05rem,2.5vw,1.35rem);max-width:30ch;margin-bottom:1.6em}
-.cta{display:flex;gap:12px;flex-wrap:wrap}
-/* sections */
-section{padding:clamp(64px,10vw,120px) 0}
-h2{font-size:clamp(2.2rem,6vw,3.8rem);margin-bottom:.5em}
-.about{display:grid;gap:32px;grid-template-columns:1.2fr 1fr;align-items:center}
-.about p{font-size:1.15rem;max-width:44ch}
-.blob{aspect-ratio:1;border-radius:46% 54% 40% 60%/55% 45% 55% 45%;background:linear-gradient(135deg,var(--sky),var(--pink) 60%,var(--peach));display:grid;place-items:center;font-size:clamp(4rem,12vw,7rem);will-change:transform}
-.menu{background:var(--ink);color:var(--cream);position:relative;overflow:hidden}
-.cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
-.card{border-radius:var(--r);padding:26px 22px;color:var(--ink);transition:transform .25s}
-.card:hover{transform:translateY(-6px) rotate(-1.2deg)}
-.card h3{font-size:1.5rem;margin-bottom:.4em}
-.card .tag{display:inline-block;margin-top:.8em;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:#fff;padding:.3em .8em;border-radius:99px}
-.c1{background:#ffd0a8}.c2{background:#ffb3c7}.c3{background:#ffe27a}.c4{background:#a9ecf3}.c5{background:#c9b5ff}.c6{background:#bff0c8}
-.note{margin-top:28px;opacity:.8}
-.visit{display:grid;gap:24px;grid-template-columns:1fr 1fr}
-.panel{background:#fff;border-radius:var(--r);padding:30px;box-shadow:0 14px 40px rgba(43,16,52,.1)}
-table{width:100%;border-collapse:collapse}
-td{padding:.55em 0;border-bottom:1px dashed rgba(43,16,52,.2)}
-td:last-child{text-align:right;font-weight:700}
-tr.closed td:last-child{color:var(--pink)}
-address{font-style:normal;font-size:1.2rem;margin-bottom:.8em}
-footer{background:var(--ink);color:var(--cream);padding:48px 0;text-align:center}
-footer .brand{justify-content:center;font-size:2rem;margin-bottom:.4em}
-footer p{opacity:.8;margin-top:.4em}
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s}
-.reveal.in{opacity:1;transform:none}
-@media(max-width:760px){.about,.visit{grid-template-columns:1fr}.blob{max-width:260px}.f1{right:6%}.f3{display:none}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.card,.btn{transition:none}}
+.hero{--c:var(--ink);--fg:var(--paper);padding-top:0}
+.hero .media{position:absolute;inset:-5% 0;z-index:0}
+.hero .media>*{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero .scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(0deg,var(--ink) 0%,rgba(30,10,46,.75) 36%,rgba(30,10,46,0) 70%)}
+.hero h1{font-size:clamp(2.75rem,15.5vw,4.4rem)}
+.hero .copy p{font-size:1.1rem;max-width:30ch}
+.hero .copy p strong{font-weight:700}
+.brand{position:absolute;top:28px;left:22px;z-index:4;display:flex;align-items:center;gap:10px;color:var(--paper);font-weight:700;text-decoration:none;font-size:.95rem}
+.brand img{width:34px;height:34px;border-radius:10px}
+.sound{position:absolute;top:28px;right:22px;z-index:4;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.14);color:var(--paper)}
+.sound svg{width:18px;height:18px}
+/* drink slides */
+.peach{--c:var(--peach);--btn:var(--ink);--btn-ink:var(--paper)}
+.berry{--c:var(--berry)}
+.mango{--c:var(--mango)}
+.sky{--c:var(--sky)}
+.coco{--c:var(--coco)}
+.cola{--c:var(--cola);--fg:var(--paper)}
+.ice{--c:var(--ice);--fg:var(--paper)}
+.slide h2{font-size:clamp(2.1rem,10.5vw,3.1rem)}
+.liq{fill:var(--liq,color-mix(in oklch,var(--c) 70%,var(--ink)))}
+.lid{fill:var(--lid,color-mix(in oklch,var(--c) 45%,#fff))}
+.glass{fill:rgba(255,255,255,.18)}
+.straw{fill:var(--straw,var(--ink))}
+.coco{--liq:#f6e7cf;--lid:#fff;--straw:var(--berry)}
+.cola,.ice{--straw:var(--berry)}
+.cola{--liq:#2a1510}
+/* final */
+.find{--c:var(--ink);--fg:var(--paper);--btn:var(--peach);--btn-ink:var(--ink);grid-template-rows:auto auto auto 1fr;gap:18px}
+.find footer{align-self:end}
+.find h2{font-size:clamp(2rem,9.5vw,2.8rem)}
+.sticker{background:var(--paper);color:var(--ink);border-radius:22px;padding:18px 20px;box-shadow:0 18px 34px rgba(0,0,0,.28);transform:rotate(var(--tilt,0deg))}
+
+.sticker h3{font-family:Unbounded,sans-serif;font-weight:800;font-size:1rem;letter-spacing:-.01em;display:flex;align-items:center;gap:.5em;margin-bottom:.5rem}
+.sticker h3 svg{width:18px;height:18px;flex:none}
+.sticker address{font-style:normal;font-size:1.05rem;line-height:1.4}
+.sticker a{color:inherit;text-decoration:underline;text-underline-offset:.2em;text-decoration-thickness:2px;text-decoration-color:var(--peach)}
+.hours{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.hours td{padding:.4em 0;border-top:1px solid rgba(30,10,46,.14)}
+.hours tr:first-child td{border-top:0}
+.hours td:last-child{text-align:right;font-weight:700;white-space:nowrap;padding-left:1em}
+.hours tr.now td{color:var(--ink)}
+.hours tr.now td:first-child::after{content:"today";margin-left:.5em;font-size:.75em;font-weight:700;color:var(--berry)}
+.find p.about{max-width:36ch}
+.find footer{font-size:.85rem;color:rgba(255,255,255,.72);padding-bottom:4px}
+.find footer a{color:var(--paper)}
+/* chrome */
+.progress,.bar{position:fixed;left:50%;translate:-50% 0;width:min(100%,var(--col));z-index:10;padding:0 14px;pointer-events:none}
+.progress{top:0;display:flex;gap:4px;padding-top:12px}
+.progress span{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.35);overflow:hidden}
+.progress span::after{content:"";display:block;height:100%;width:100%;background:var(--paper);transform:scaleX(var(--p,0));transform-origin:left}
+.bar{bottom:0;display:flex;gap:10px;align-items:stretch;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+.bar>*{pointer-events:auto}
+.btn{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:.55em;min-height:54px;padding:0 1.2em;border-radius:999px;background:var(--btn);color:var(--btn-ink);font-weight:700;font-size:1.02rem;text-decoration:none;box-shadow:0 14px 28px rgba(30,10,46,.3);transition:transform .35s var(--ease),background .5s,color .5s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(1px) scale(.98)}
+.btn svg{width:20px;height:20px}
+.chip{display:inline-flex;align-items:center;gap:.5em;min-height:54px;padding:0 1.1em;border-radius:999px;background:var(--paper);color:var(--ink);font-weight:700;font-size:.92rem;text-decoration:none;box-shadow:0 14px 28px rgba(30,10,46,.3);white-space:nowrap}
+.chip i{width:9px;height:9px;border-radius:50%;background:#1cab5a;flex:none}
+.chip[data-state="closed"] i{background:var(--berry)}
+.chip svg{width:18px;height:18px}
+/* desktop stage */
+@media (min-width:760px){
+  html{scroll-snap-type:none;overflow:hidden}
+  .phone{margin:28px auto;height:calc(100svh - 56px);overflow-y:auto;scroll-snap-type:y proximity;scrollbar-width:none;border-radius:34px;box-shadow:0 40px 90px rgba(0,0,0,.35)}
+  .phone::-webkit-scrollbar{display:none}
+  .slide{min-height:calc(100svh - 56px)}
+  .hero .media{inset:-5% 0}
+  .progress{top:28px;padding-inline:26px}
+  .bar{bottom:28px;padding-inline:26px;padding-bottom:16px}
+  .wordmark{position:fixed;left:40px;bottom:36px;z-index:5;color:rgba(255,255,255,.9);font:800 clamp(1rem,2vw,1.4rem)/1.1 Unbounded,sans-serif;letter-spacing:-.02em;max-width:220px;text-wrap:balance}
+  .wordmark small{display:block;font:600 .85rem/1.4 Figtree,sans-serif;color:rgba(255,255,255,.75);margin-top:.4em}
+}
+.wordmark{display:none}
+@media (min-width:760px){.wordmark{display:block}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .layer,.copy{transform:none!important}
+  .btn,html,body{transition:none}
+}
 </style>
 </head>
 <body>
-<nav>
-  <a class="brand" href="#top"><img src="logo.svg" width="38" height="38" alt="">Snack &amp; Sip</a>
-  <a class="btn alt" href="#visit">Visit</a>
-</nav>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6L8 10H4Z"/><path d="M16 9l5 6M21 9l-5 6"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7L12 2Z"/></symbol>
+  <symbol id="cup" viewBox="0 0 220 300">
+    <rect class="straw" x="128" y="4" width="16" height="120" rx="8" transform="rotate(12 136 64)"/>
+    <path class="liq" d="M34 86h152l-18 182c-1 10-9 18-19 18H71c-10 0-18-8-19-18L34 86Z"/>
+    <g fill="#fff" opacity=".55"><rect x="62" y="118" width="46" height="46" rx="10" transform="rotate(14 85 141)"/><rect x="118" y="150" width="42" height="42" rx="10" transform="rotate(-9 139 171)"/><rect x="78" y="200" width="44" height="44" rx="10" transform="rotate(-5 100 222)"/></g>
+    <g fill="#fff" opacity=".8"><circle cx="70" cy="252" r="4"/><circle cx="150" cy="238" r="3"/><circle cx="104" cy="178" r="3"/><circle cx="160" cy="118" r="4"/></g>
+    <path class="glass" d="M34 86h152l-18 182c-1 10-9 18-19 18H71c-10 0-18-8-19-18L34 86Z"/>
+    <path fill="#fff" opacity=".35" d="M52 100l10 170h8L60 100Z"/>
+    <ellipse class="lid" cx="110" cy="86" rx="80" ry="12"/>
+  </symbol>
+  <symbol id="cone" viewBox="0 0 220 300">
+    <path fill="#fff" d="M60 150h100l-42 142c-2 6-10 6-12 0L60 150Z"/>
+    <path fill="#fff" opacity=".6" d="M60 150h100l-6 22H66Z"/>
+    <circle class="liq" cx="110" cy="112" r="78"/>
+    <circle fill="#fff" opacity=".35" cx="84" cy="88" r="26"/>
+    <rect class="straw" x="130" y="30" width="14" height="110" rx="7" transform="rotate(18 137 85)"/>
+  </symbol>
+</svg>
 
-<header class="hero" id="top">
-  <img class="poster" data-depth="0.12" src="img/poster.jpg" alt="" width="1600" height="900" fetchpriority="high">
-  <video data-depth="0.12" autoplay muted loop playsinline preload="auto" poster="img/poster.jpg" aria-hidden="true">
-    <source src="media/hero.mp4" type="video/mp4">
-  </video>
-  <span class="float f1" data-depth="0.35" aria-hidden="true">🍋</span>
-  <span class="float f2" data-depth="0.55" aria-hidden="true">🍓</span>
-  <span class="float f3" data-depth="0.25" aria-hidden="true">🧊</span>
-  <div class="wrap" data-depth="-0.06">
-    <p class="kicker">Pearland Town Center</p>
-    <h1>Snack<br>&amp; Sip</h1>
-    <p class="lede">Flavored lemonades, dirty sodas and snow cones, ready when the craving hits.</p>
-    <div class="cta">
-      <a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">Get directions</a>
-      <a class="btn alt" href="#menu">See the sips</a>
+<div class="progress" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<main class="phone" id="top">
+  <section class="slide hero" id="hero" data-c="#1e0a2e" aria-label="Snack and Sip">
+    <div class="media layer" data-depth="40">
+      <img class="poster" src="img/poster.jpg" alt="" width="1600" height="900" fetchpriority="high" decoding="async">
+      <video autoplay muted loop playsinline preload="metadata" poster="img/poster.jpg" aria-hidden="true"><source src="media/hero.mp4" type="video/mp4"></video>
     </div>
-  </div>
-</header>
-
-<section id="about">
-  <div class="wrap about">
-    <div class="reveal">
-      <h2>Your cold-drink<br>pit stop.</h2>
-      <p>Snack &amp; Sip is a drink and snack spot at Pearland Town Center, right next to Great American Cookies and near the pavilion. Stop in for a colorful cup, grab something to nibble and keep strolling.</p>
+    <div class="scrim"></div>
+    <a class="brand" href="#top"><img src="logo.svg" alt="" width="34" height="34">Snack &amp; Sip</a>
+    <span class="sound" aria-hidden="true"><svg><use href="#i-mute"/></svg></span>
+    <div class="copy" data-depth="-24">
+      <h1>Snack<br>&amp; Sip</h1>
+      <p><strong>Pearland Town Center</strong> &middot; next to Great American Cookies, near the pavilion. Flavored lemonades, dirty sodas and snow cones.</p>
     </div>
-    <div class="blob" data-depth="0.08" aria-hidden="true">🍹</div>
-  </div>
-</section>
+  </section>
 
-<section class="menu" id="menu">
-  <div class="wrap">
-    <h2 class="reveal">The Sips</h2>
-    <div class="cards">
-      <article class="card c1 reveal"><h3>Peach Thriller</h3><p>A fan favorite among our flavored lemonades.</p><span class="tag">Popular</span></article>
-      <article class="card c2 reveal"><h3>Strawberry Lemonade</h3><p>Flavored lemonade.</p></article>
-      <article class="card c3 reveal"><h3>Mango Lemonade</h3><p>Flavored lemonade.</p></article>
-      <article class="card c4 reveal"><h3>Blue Cotton Candy Lemonade</h3><p>Flavored lemonade.</p></article>
-      <article class="card c6 reveal"><h3>Coconut Lemonade</h3><p>Flavored lemonade.</p></article>
-      <article class="card c5 reveal"><h3>Dirty Sodas</h3><p>Soda, but make it a treat.</p></article>
-      <article class="card c3 reveal"><h3>Snow Cones</h3><p>Shaved ice, the classic way to cool off.</p></article>
+  <section class="slide peach" data-c="#ff9e6b">
+    <div class="layer bubbles" data-depth="30"><i style="left:8%;top:14%;width:14px;height:14px"></i><i style="left:30%;top:70%;width:9px;height:9px"></i><i style="left:84%;top:62%;width:18px;height:18px"></i></div>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <div class="copy" data-depth="-24">
+      <h2>Peach<br>Thriller</h2>
+      <p>The lemonade people come back for. Peach, lemon, lots of ice.</p>
+      <span class="badge"><svg><use href="#i-star"/></svg>Most asked for</span>
     </div>
-    <p class="note reveal">Plus snacks to pair with your sip. Ask at the counter for today's lineup.</p>
-  </div>
-</section>
+  </section>
 
-<section id="visit">
-  <div class="wrap">
-    <h2 class="reveal">Come hang out</h2>
-    <div class="visit">
-      <div class="panel reveal">
-        <h3>Hours</h3>
-        <table>
-          <tr><td>Monday</td><td>Closed</td></tr>
-          <tr><td>Tuesday to Saturday</td><td>11:00 AM to 8:00 PM</td></tr>
-          <tr><td>Sunday</td><td>12:00 PM to 6:00 PM</td></tr>
+  <section class="slide berry" data-c="#ff4f7b">
+    <div class="layer bubbles" data-depth="30"><i style="left:12%;top:20%;width:10px;height:10px"></i><i style="left:76%;top:76%;width:16px;height:16px"></i><i style="left:50%;top:8%;width:8px;height:8px"></i></div>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <div class="copy" data-depth="-24">
+      <h2>Strawberry Lemonade</h2>
+      <p>Bright, sweet and pink all the way down.</p>
+    </div>
+  </section>
+
+  <section class="slide mango" data-c="#ffc233">
+    <div class="layer bubbles" data-depth="30"><i style="left:6%;top:30%;width:12px;height:12px"></i><i style="left:40%;top:78%;width:10px;height:10px"></i><i style="left:88%;top:18%;width:14px;height:14px"></i></div>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <div class="copy" data-depth="-24">
+      <h2>Mango Lemonade</h2>
+      <p>Tropical and tart. Built for a Texas afternoon.</p>
+    </div>
+  </section>
+
+  <section class="slide sky" data-c="#4fc3ff">
+    <div class="layer bubbles" data-depth="30"><i style="left:14%;top:10%;width:16px;height:16px"></i><i style="left:66%;top:72%;width:10px;height:10px"></i><i style="left:36%;top:46%;width:7px;height:7px"></i></div>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <div class="copy" data-depth="-24">
+      <h2>Blue Cotton Candy Lemonade</h2>
+      <p>The one that turns heads across the food court.</p>
+    </div>
+  </section>
+
+  <section class="slide coco" data-c="#f1ebdd">
+    <div class="layer bubbles" data-depth="30"><i style="left:10%;top:22%;width:12px;height:12px;background:var(--ink);opacity:.12"></i><i style="left:70%;top:70%;width:18px;height:18px;background:var(--ink);opacity:.12"></i></div>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <div class="copy" data-depth="-24">
+      <h2>Coconut Lemonade</h2>
+      <p>Creamy, cool, a little bit beach.</p>
+    </div>
+  </section>
+
+  <section class="slide cola" data-c="#4a2a1f">
+    <div class="layer bubbles" data-depth="30"><i style="left:20%;top:12%;width:12px;height:12px"></i><i style="left:60%;top:80%;width:9px;height:9px"></i><i style="left:86%;top:40%;width:16px;height:16px"></i></div>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <div class="copy" data-depth="-24">
+      <h2>Dirty Sodas</h2>
+      <p>Your soda, dressed up with syrups and cream. Pick a base, pick a flavor.</p>
+    </div>
+  </section>
+
+  <section class="slide ice" data-c="#6e3be8">
+    <div class="layer bubbles" data-depth="30"><i style="left:12%;top:18%;width:14px;height:14px"></i><i style="left:74%;top:66%;width:10px;height:10px"></i><i style="left:44%;top:84%;width:7px;height:7px"></i></div>
+    <svg class="layer cup cone" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cone"/></svg>
+    <div class="copy" data-depth="-24">
+      <h2>Snow Cones</h2>
+      <p>Shaved ice, any syrup on the shelf. The classic cool-down.</p>
+    </div>
+  </section>
+
+  <section class="slide find" id="visit" data-c="#1e0a2e">
+    <div class="copy" style="align-self:start">
+      <h2>Come find us</h2>
+      <p class="about">A drink and snack stop inside Pearland Town Center. Grab a cup, grab a snack, keep strolling.</p>
+    </div>
+      <div class="sticker" style="--tilt:-1.2deg">
+        <h3><svg><use href="#i-pin"/></svg>Where</h3>
+        <address><a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">11200 Broadway St., Suite 1370<br>Pearland, TX 77584</a><br><span style="font-size:.95rem">Next to Great American Cookies, near the pavilion.</span></address>
+      </div>
+      <div class="sticker" style="--tilt:1deg">
+        <h3><svg><use href="#i-clock"/></svg>Hours</h3>
+        <table class="hours">
+          <tr data-d="1"><td>Monday</td><td>Closed</td></tr>
+          <tr data-d="2,3,4,5,6"><td>Tuesday to Saturday</td><td>11 AM to 8 PM</td></tr>
+          <tr data-d="0"><td>Sunday</td><td>12 PM to 6 PM</td></tr>
         </table>
       </div>
-      <div class="panel reveal">
-        <h3>Find us</h3>
-        <address>11200 Broadway St., Suite 1370<br>Pearland, TX 77584</address>
-        <p>At Pearland Town Center, next to Great American Cookies and near the pavilion.</p>
-        <p style="margin-top:1.2em"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">Directions in Google Maps</a></p>
-      </div>
-    </div>
-  </div>
-</section>
+    <footer>Snack &amp; Sip &middot; Pearland Town Center &middot; <a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">Directions</a></footer>
+  </section>
+</main>
 
-<footer>
-  <div class="wrap">
-    <div class="brand"><img src="logo.svg" width="38" height="38" alt="">Snack &amp; Sip</div>
-    <address style="font-size:1rem"><a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">11200 Broadway St., Suite 1370, Pearland, TX 77584</a></address>
-    <p>Tue to Sat 11 AM to 8 PM · Sun 12 PM to 6 PM · Mon closed</p>
-  </div>
-</footer>
+<div class="bar">
+  <a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener"><svg><use href="#i-pin"/></svg>Directions<svg><use href="#i-arrow"/></svg></a>
+  <a class="chip" href="#visit" id="hoursChip" data-state="closed"><i></i><span>Hours</span></a>
+</div>
+<p class="wordmark">Snack &amp; Sip<small>Pearland Town Center<br>Tue to Sat 11 to 8 &middot; Sun 12 to 6</small></p>
 
 <script>
 (()=>{
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const v=document.querySelector('.hero video'), poster=document.querySelector('.hero .poster');
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+  /* video */
+  const v=$('video'), poster=$('.poster');
   if(v){
-    v.addEventListener('canplay',()=>{ if(poster) poster.style.visibility='hidden' });
-    v.addEventListener('error',()=>{ v.remove() }, true);
-    if(reduce){ v.removeAttribute('autoplay'); v.pause(); }
-    else { const p=v.play(); if(p&&p.catch) p.catch(()=>{}); }
+    v.addEventListener('canplay',()=>{poster.style.visibility='hidden'},{once:true});
+    v.addEventListener('error',()=>{v.remove();$('.sound')?.remove()},true);
+    if(reduce){v.removeAttribute('autoplay');v.pause();v.remove();$('.sound')?.remove()}
+    else{const p=v.play();p&&p.catch&&p.catch(()=>{})}
   }
-  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target) } }),{threshold:.15});
-  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-  const nav=document.querySelector('nav');
-  const navT=()=>nav.classList.toggle('solid',scrollY>innerHeight*.6);
-  addEventListener('scroll',navT,{passive:true}); navT();
-  if(reduce) return;
-  const layers=[...document.querySelectorAll('[data-depth]')];
+  /* hours (America/Chicago) */
+  const chip=$('#hoursChip'), hrs={0:[12,18],2:[11,20],3:[11,20],4:[11,20],5:[11,20],6:[11,20]};
+  const names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const fmt=h=>h>12?`${h-12} PM`:h===12?'12 PM':`${h} AM`;
+  try{
+    const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',weekday:'short',hour:'numeric',minute:'numeric',hour12:false}).formatToParts(new Date());
+    const g=t=>parts.find(p=>p.type===t).value;
+    const d=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(g('weekday'));
+    const now=(+g('hour')%24)+(+g('minute'))/60;
+    const t=hrs[d];let txt,state='closed';
+    if(t&&now>=t[0]&&now<t[1]){state='open';txt=`Open till ${fmt(t[1])}`}
+    else if(t&&now<t[0]){txt=`Opens ${fmt(t[0])} today`}
+    else{let n=(d+1)%7,i=0;while(!hrs[n]&&i<7){n=(n+1)%7;i++}txt=`Closed, opens ${n===(d+1)%7?'tomorrow':names[n]} ${fmt(hrs[n][0])}`}
+    chip.dataset.state=state;chip.querySelector('span').textContent=txt;
+    $$('.hours tr').forEach(r=>{if(r.dataset.d.split(',').map(Number).includes(d))r.classList.add('now')});
+  }catch(e){chip.querySelector('span').textContent='Hours'}
+  /* stage colour + progress + parallax */
+  const slides=$$('.slide'), segs=$$('.progress span'), root=document.documentElement, theme=$('meta[name=theme-color]');
+  const mq=matchMedia('(min-width:760px)'), phone=$('.phone');
+  let io;
+  const watch=()=>{io&&io.disconnect();io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const s=e.target, cs=getComputedStyle(s);
+    root.style.setProperty('--stage',s.dataset.c);
+    root.style.setProperty('--btn',cs.getPropertyValue('--btn'));
+    root.style.setProperty('--btn-ink',cs.getPropertyValue('--btn-ink'));
+    theme.content=s.dataset.c;
+  }),{root:mq.matches?phone:null,threshold:.55});slides.forEach(s=>io.observe(s))};
+  watch();mq.addEventListener('change',()=>{watch();update()});
   let ticking=false;
   const update=()=>{
-    const y=scrollY;
-    layers.forEach(el=>{
-      const r=el.getBoundingClientRect(), mid=r.top+r.height/2-innerHeight/2;
-      const d=parseFloat(el.dataset.depth);
-      if(el.closest('.hero')) el.style.transform=`translate3d(0,${(y*d).toFixed(1)}px,0)`;
-      else el.style.transform=`translate3d(0,${(mid*-d).toFixed(1)}px,0)`;
+    const d=mq.matches, y=d?phone.scrollTop:scrollY, vh=d?phone.clientHeight:innerHeight;
+    slides.forEach((s,i)=>{
+      const top=s.offsetTop+(d?0:phone.offsetTop), h=s.offsetHeight;
+      const p=Math.min(1,Math.max(0,(y+vh-top)/h));
+      segs[i].style.setProperty('--p',p.toFixed(3));
+      if(reduce)return;
+      const rel=(top+h/2-(y+vh/2))/vh; if(Math.abs(rel)>1.2)return;
+      s.querySelectorAll('[data-depth]').forEach(el=>{el.style.transform=`translate3d(0,${(rel*el.dataset.depth).toFixed(1)}px,0)`});
     });
     ticking=false;
   };
-  addEventListener('scroll',()=>{ if(!ticking){ ticking=true; requestAnimationFrame(update) } },{passive:true});
+  const onScroll=()=>{if(!ticking){ticking=true;requestAnimationFrame(update)}};
+  addEventListener('scroll',onScroll,{passive:true});phone.addEventListener('scroll',onScroll,{passive:true});
+  addEventListener('resize',update);
   update();
 })();
 </script>
