@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Snack &amp; Sip | Lemonades, Dirty Sodas &amp; Snow Cones in Pearland, TX</title>
+<meta name="description" content="Snack &amp; Sip at Pearland Town Center: flavored lemonades including the Peach Thriller, dirty sodas and snow cones. Open Tuesday to Sunday.">
+<meta name="theme-color" content="#2b1034">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/poster.jpg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Snack &amp; Sip | Pearland Town Center">
+<meta property="og:description" content="Flavored lemonades, dirty sodas and snow cones at Pearland Town Center.">
+<meta property="og:image" content="img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"CafeOrCoffeeShop","name":"Snack & Sip","servesCuisine":"Lemonades, dirty sodas, snow cones",
+"address":{"@type":"PostalAddress","streetAddress":"11200 Broadway St., Suite 1370","addressLocality":"Pearland","addressRegion":"TX","postalCode":"77584","addressCountry":"US"},
+"openingHoursSpecification":[
+{"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Wednesday","Thursday","Friday","Saturday"],"opens":"11:00","closes":"20:00"},
+{"@type":"OpeningHoursSpecification","dayOfWeek":"Sunday","opens":"12:00","closes":"18:00"}]}
+</script>
+<style>
+:root{--ink:#2b1034;--cream:#fff6ea;--peach:#ff9a6b;--pink:#ff4f7b;--sky:#5fd3e0;--sun:#ffc98a;--r:26px}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.55;overflow-x:hidden}
+h1,h2,h3,.brand{font-family:'Bagel Fat One','Arial Rounded MT Bold',system-ui,sans-serif;font-weight:400;line-height:1}
+a{color:inherit}
+.wrap{width:min(1080px,100% - 32px);margin-inline:auto}
+nav{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;color:#fff;transition:background .3s}
+nav.solid{background:rgba(43,16,52,.92);backdrop-filter:blur(8px)}
+.brand{display:flex;align-items:center;gap:10px;font-size:1.35rem;text-decoration:none}
+.brand img{width:38px;height:38px}
+.btn{display:inline-block;background:var(--pink);color:#fff;padding:.8em 1.4em;border-radius:99px;font-weight:700;text-decoration:none;transition:transform .2s}
+.btn:hover{transform:translateY(-2px) rotate(-1deg)}
+.btn.alt{background:#fff;color:var(--ink)}
+/* hero */
+.hero{position:relative;min-height:100svh;display:grid;align-items:center;overflow:hidden;color:#fff;background:var(--ink)}
+.hero video,.hero .poster{position:absolute;inset:-6% 0;width:100%;height:112%;object-fit:cover;will-change:transform}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(43,16,52,.82),rgba(43,16,52,.25) 70%),linear-gradient(0deg,rgba(43,16,52,.55),transparent 40%)}
+.float{position:absolute;z-index:2;font-size:3rem;will-change:transform;pointer-events:none;filter:drop-shadow(0 8px 12px rgba(0,0,0,.25))}
+.f1{top:22%;right:12%}.f2{top:58%;right:30%;font-size:2.2rem}.f3{top:30%;right:40%;font-size:1.8rem}
+.hero .wrap{position:relative;z-index:3;padding-block:110px 70px;will-change:transform}
+.kicker{letter-spacing:.2em;font-weight:700;font-size:.8rem;color:var(--sun);text-transform:uppercase}
+h1{font-size:clamp(3.6rem,13vw,9rem);margin:.15em 0 .2em}
+.lede{font-size:clamp(1.05rem,2.5vw,1.35rem);max-width:30ch;margin-bottom:1.6em}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+/* sections */
+section{padding:clamp(64px,10vw,120px) 0}
+h2{font-size:clamp(2.2rem,6vw,3.8rem);margin-bottom:.5em}
+.about{display:grid;gap:32px;grid-template-columns:1.2fr 1fr;align-items:center}
+.about p{font-size:1.15rem;max-width:44ch}
+.blob{aspect-ratio:1;border-radius:46% 54% 40% 60%/55% 45% 55% 45%;background:linear-gradient(135deg,var(--sky),var(--pink) 60%,var(--peach));display:grid;place-items:center;font-size:clamp(4rem,12vw,7rem);will-change:transform}
+.menu{background:var(--ink);color:var(--cream);position:relative;overflow:hidden}
+.cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.card{border-radius:var(--r);padding:26px 22px;color:var(--ink);transition:transform .25s}
+.card:hover{transform:translateY(-6px) rotate(-1.2deg)}
+.card h3{font-size:1.5rem;margin-bottom:.4em}
+.card .tag{display:inline-block;margin-top:.8em;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:#fff;padding:.3em .8em;border-radius:99px}
+.c1{background:#ffd0a8}.c2{background:#ffb3c7}.c3{background:#ffe27a}.c4{background:#a9ecf3}.c5{background:#c9b5ff}.c6{background:#bff0c8}
+.note{margin-top:28px;opacity:.8}
+.visit{display:grid;gap:24px;grid-template-columns:1fr 1fr}
+.panel{background:#fff;border-radius:var(--r);padding:30px;box-shadow:0 14px 40px rgba(43,16,52,.1)}
+table{width:100%;border-collapse:collapse}
+td{padding:.55em 0;border-bottom:1px dashed rgba(43,16,52,.2)}
+td:last-child{text-align:right;font-weight:700}
+tr.closed td:last-child{color:var(--pink)}
+address{font-style:normal;font-size:1.2rem;margin-bottom:.8em}
+footer{background:var(--ink);color:var(--cream);padding:48px 0;text-align:center}
+footer .brand{justify-content:center;font-size:2rem;margin-bottom:.4em}
+footer p{opacity:.8;margin-top:.4em}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s}
+.reveal.in{opacity:1;transform:none}
+@media(max-width:760px){.about,.visit{grid-template-columns:1fr}.blob{max-width:260px}.f1{right:6%}.f3{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.card,.btn{transition:none}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="#top"><img src="logo.svg" width="38" height="38" alt="">Snack &amp; Sip</a>
+  <a class="btn alt" href="#visit">Visit</a>
+</nav>
+
+<header class="hero" id="top">
+  <img class="poster" data-depth="0.12" src="img/poster.jpg" alt="" width="1600" height="900" fetchpriority="high">
+  <video data-depth="0.12" autoplay muted loop playsinline preload="auto" poster="img/poster.jpg" aria-hidden="true">
+    <source src="media/hero.mp4" type="video/mp4">
+  </video>
+  <span class="float f1" data-depth="0.35" aria-hidden="true">🍋</span>
+  <span class="float f2" data-depth="0.55" aria-hidden="true">🍓</span>
+  <span class="float f3" data-depth="0.25" aria-hidden="true">🧊</span>
+  <div class="wrap" data-depth="-0.06">
+    <p class="kicker">Pearland Town Center</p>
+    <h1>Snack<br>&amp; Sip</h1>
+    <p class="lede">Flavored lemonades, dirty sodas and snow cones, ready when the craving hits.</p>
+    <div class="cta">
+      <a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">Get directions</a>
+      <a class="btn alt" href="#menu">See the sips</a>
+    </div>
+  </div>
+</header>
+
+<section id="about">
+  <div class="wrap about">
+    <div class="reveal">
+      <h2>Your cold-drink<br>pit stop.</h2>
+      <p>Snack &amp; Sip is a drink and snack spot at Pearland Town Center, right next to Great American Cookies and near the pavilion. Stop in for a colorful cup, grab something to nibble and keep strolling.</p>
+    </div>
+    <div class="blob" data-depth="0.08" aria-hidden="true">🍹</div>
+  </div>
+</section>
+
+<section class="menu" id="menu">
+  <div class="wrap">
+    <h2 class="reveal">The Sips</h2>
+    <div class="cards">
+      <article class="card c1 reveal"><h3>Peach Thriller</h3><p>A fan favorite among our flavored lemonades.</p><span class="tag">Popular</span></article>
+      <article class="card c2 reveal"><h3>Strawberry Lemonade</h3><p>Flavored lemonade.</p></article>
+      <article class="card c3 reveal"><h3>Mango Lemonade</h3><p>Flavored lemonade.</p></article>
+      <article class="card c4 reveal"><h3>Blue Cotton Candy Lemonade</h3><p>Flavored lemonade.</p></article>
+      <article class="card c6 reveal"><h3>Coconut Lemonade</h3><p>Flavored lemonade.</p></article>
+      <article class="card c5 reveal"><h3>Dirty Sodas</h3><p>Soda, but make it a treat.</p></article>
+      <article class="card c3 reveal"><h3>Snow Cones</h3><p>Shaved ice, the classic way to cool off.</p></article>
+    </div>
+    <p class="note reveal">Plus snacks to pair with your sip. Ask at the counter for today's lineup.</p>
+  </div>
+</section>
+
+<section id="visit">
+  <div class="wrap">
+    <h2 class="reveal">Come hang out</h2>
+    <div class="visit">
+      <div class="panel reveal">
+        <h3>Hours</h3>
+        <table>
+          <tr><td>Monday</td><td>Closed</td></tr>
+          <tr><td>Tuesday to Saturday</td><td>11:00 AM to 8:00 PM</td></tr>
+          <tr><td>Sunday</td><td>12:00 PM to 6:00 PM</td></tr>
+        </table>
+      </div>
+      <div class="panel reveal">
+        <h3>Find us</h3>
+        <address>11200 Broadway St., Suite 1370<br>Pearland, TX 77584</address>
+        <p>At Pearland Town Center, next to Great American Cookies and near the pavilion.</p>
+        <p style="margin-top:1.2em"><a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">Directions in Google Maps</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand"><img src="logo.svg" width="38" height="38" alt="">Snack &amp; Sip</div>
+    <address style="font-size:1rem"><a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">11200 Broadway St., Suite 1370, Pearland, TX 77584</a></address>
+    <p>Tue to Sat 11 AM to 8 PM · Sun 12 PM to 6 PM · Mon closed</p>
+  </div>
+</footer>
+
+<script>
+(()=>{
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const v=document.querySelector('.hero video'), poster=document.querySelector('.hero .poster');
+  if(v){
+    v.addEventListener('canplay',()=>{ if(poster) poster.style.visibility='hidden' });
+    v.addEventListener('error',()=>{ v.remove() }, true);
+    if(reduce){ v.removeAttribute('autoplay'); v.pause(); }
+    else { const p=v.play(); if(p&&p.catch) p.catch(()=>{}); }
+  }
+  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target) } }),{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  const nav=document.querySelector('nav');
+  const navT=()=>nav.classList.toggle('solid',scrollY>innerHeight*.6);
+  addEventListener('scroll',navT,{passive:true}); navT();
+  if(reduce) return;
+  const layers=[...document.querySelectorAll('[data-depth]')];
+  let ticking=false;
+  const update=()=>{
+    const y=scrollY;
+    layers.forEach(el=>{
+      const r=el.getBoundingClientRect(), mid=r.top+r.height/2-innerHeight/2;
+      const d=parseFloat(el.dataset.depth);
+      if(el.closest('.hero')) el.style.transform=`translate3d(0,${(y*d).toFixed(1)}px,0)`;
+      else el.style.transform=`translate3d(0,${(mid*-d).toFixed(1)}px,0)`;
+    });
+    ticking=false;
+  };
+  addEventListener('scroll',()=>{ if(!ticking){ ticking=true; requestAnimationFrame(update) } },{passive:true});
+  update();
+})();
+</script>
+</body>
+</html>
