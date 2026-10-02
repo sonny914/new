@@ -2,13 +2,14 @@
 /* Bulb Entry language (2026-09): the shared pages take the entry's tokens. Near-black ground, cream lines and
    secondary text, ivory body text; orange exists only on the thing under the pointer or the focus. */
 :root{
-  --black:#0B0A09; --malt:#171512; --ivory:#F4F1E9; --oat:#E8DCC2; --turmeric:#E8DCC2; --spice:#E8DCC2;
-  --paper:#0B0A09; --surface:#100F0D; --surface-2:#171512;
-  --ink:#F4F1E9; --quiet:#968D7C; --line:#E8DCC2; --live:#FF5A1F;
-  --hair:rgba(232,220,194,0.22); --hair-soft:rgba(232,220,194,0.12);
-  --brass:#E8DCC2; --brass-bright:#F4F1E9; --brass-rgb:232,220,194;          /* the old accent is now a cream line, never a colour */
-  --btn-bg:transparent; --btn-fg:#F4F1E9; --btn-bg-hover:transparent;
-  --panel-ink:#0B0A09; --panel-bone:#F4F1E9; --panel-brass:#E8DCC2; --panel-line:rgba(232,220,194,0.22);
+  /* the entry's three colours: black ground, cream lines and type, orange for the one live thing (qb-identity) */
+  --black:#000000; --malt:#121211; --ivory:#F2EEE5; --oat:#F2EEE5; --turmeric:#F2EEE5; --spice:#F2EEE5;
+  --paper:#000000; --surface:#0A0A09; --surface-2:#121211;
+  --ink:#F2EEE5; --quiet:#96948E; --line:#F2EEE5; --live:#FF5A00;   /* quiet: the cream at 62% on black, as on /rd/ */
+  --hair:rgba(242,238,229,0.22); --hair-soft:rgba(242,238,229,0.12);
+  --brass:#F2EEE5; --brass-bright:#F2EEE5; --brass-rgb:242,238,229;          /* the old accent is now a cream line, never a colour */
+  --btn-bg:transparent; --btn-fg:#F2EEE5; --btn-bg-hover:transparent;
+  --panel-ink:#000000; --panel-bone:#F2EEE5; --panel-brass:#F2EEE5; --panel-line:rgba(242,238,229,0.22);
   --ok:#8FBF98; --lost:#E08C8C;
   --maxw:1080px; --sec:clamp(72px,10vw,120px);
   --ease:cubic-bezier(0.22,1,0.36,1); --ease-out:cubic-bezier(.23,1,.32,1);
@@ -41,7 +42,7 @@ h2.display{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-siz
 .mono{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase}
 
 /* nav */
-.nav{padding:16px 0;border-bottom:1px solid var(--hair-soft);position:sticky;top:0;background:rgba(17,17,17,0.93);backdrop-filter:blur(10px);z-index:100}
+.nav{padding:16px 0;border-bottom:1px solid var(--hair-soft);position:sticky;top:0;background:rgba(0,0,0,0.93);backdrop-filter:blur(10px);z-index:100}
 .nav-in{max-width:var(--maxw);margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;gap:20px}
 .nav-logo{display:inline-flex;align-items:center;gap:12px;font-family:'Jost','Instrument Sans',sans-serif;font-size:14px;font-weight:400;letter-spacing:0.32em;text-transform:uppercase;color:var(--ink)}
 .nav-logo .mark{display:block;width:25px;height:20px;flex:0 0 auto}
@@ -202,7 +203,7 @@ footer{margin-top:var(--sec);padding:52px 0 44px;border-top:1px solid var(--hair
 .built-cap a{color:var(--quiet);font-weight:400;letter-spacing:0.1em}
 .built-cap a:hover{color:var(--ink)}
 .phone{width:248px;flex:0 0 auto;background:#151310;padding:9px;border-radius:42px;box-shadow:0 30px 60px -30px rgba(27,26,21,0.4),0 2px 6px rgba(27,26,21,0.12)}
-.screen{background:#FFFDF9;border-radius:34px;overflow:hidden;display:flex;flex-direction:column;height:496px;color:#2B2118;font-family:'Instrument Sans',sans-serif}
+.screen{background:#FFFDF9;border-radius:34px;overflow:hidden;display:flex;flex-direction:column;height:496px;color:#2B2118}
 .screen::before{content:"";flex:0 0 auto;width:70px;height:20px;background:#151310;border-radius:11px;margin:10px auto 6px}
 .scr-body{flex:1;padding:10px 18px 0;display:flex;flex-direction:column;min-height:0}
 .scr-tag{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:#8C7A63}
@@ -649,12 +650,12 @@ footer{margin-top:var(--sec);padding:52px 0 44px;border-top:1px solid var(--hair
 .pt-q + .pt-q{margin-top:clamp(36px,5vw,48px)}
 .pt-help{color:var(--quiet);font-size:15.5px;margin-top:12px;max-width:52ch}
 .pt-field{margin-top:22px}
-.pt-ta{width:100%;min-height:120px;padding:16px;font-family:'Instrument Sans',system-ui,sans-serif;font-size:17px;line-height:1.55;background:var(--surface);color:var(--ink);border:1px solid var(--hair);border-radius:4px;resize:vertical;transition:border-color .25s var(--ease),box-shadow .25s var(--ease)}
+.pt-ta{width:100%;min-height:120px;padding:16px;font-size:17px;line-height:1.55;background:var(--surface);color:var(--ink);border:1px solid var(--hair);border-radius:4px;resize:vertical;transition:border-color .25s var(--ease),box-shadow .25s var(--ease)}
 .pt-ta:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(var(--brass-rgb),0.16)}
 .pt-ta::placeholder{color:var(--quiet);opacity:.7}
 .pt-opts{list-style:none;margin:22px 0 0;padding:0;border-top:1px solid var(--hair)}
-.pt-opt{display:grid;grid-template-columns:22px 1fr;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--hair-soft);cursor:pointer;font-size:16.5px;transition:padding-left .25s var(--ease)}
-.pt-opt:hover{padding-left:6px}
+.pt-opt{display:grid;grid-template-columns:22px 1fr;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--hair-soft);cursor:pointer;font-size:16.5px}
+.pt-opt:hover .mk{border-color:var(--ink)}   /* the option answers the pointer in place; nothing slides */
 .pt-opt input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
 .pt-opt .mk{width:18px;height:18px;border:1px solid var(--quiet);display:inline-flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s;flex:0 0 auto}
 .pt-opt input[type=radio] + .mk{border-radius:50%}
@@ -717,7 +718,7 @@ footer{margin-top:var(--sec);padding:52px 0 44px;border-top:1px solid var(--hair
 .intake .f-group + .f-group{margin-top:22px}
 .intake .f-label{font-size:16.5px;font-weight:600;line-height:1.4}
 .intake .f-hint{font-size:14px;color:var(--quiet);margin-top:-2px}
-.intake .f-textarea{font-family:'Instrument Sans',system-ui,sans-serif;font-size:16px;min-height:96px}
+.intake .f-textarea{font-size:16px;min-height:96px}
 .intake .f-input,.intake .f-select{font-size:16px}
 .intake .f-row{grid-template-columns:1fr 1fr}
 .intake .later{border-top:1px solid var(--hair);padding-top:26px}
@@ -747,8 +748,8 @@ footer{margin-top:var(--sec);padding:52px 0 44px;border-top:1px solid var(--hair
 
 /* ================= Bulb Entry language: type, chrome, interaction ================= */
 /* one family; display weight 500, tracking never past -0.02em */
-body,.f-input,.f-select,.f-textarea,.f-submit,.btn,.screen{font-family:'Hubot Sans',system-ui,sans-serif}
-h1.display,h2.display,.reg-name,.panel-name,.case h2,.f-success h3,.scr-h,.built-block h3,.turn,.pull,.art h2,.art .beat,.note-title,.research-note h3,.lab-line,.promise-line,.promise-sub,.scr-stat b,.col h3,.gap-close{font-family:'Hubot Sans',system-ui,sans-serif;font-weight:500;letter-spacing:-.01em}
+body,.f-input,.f-select,.f-textarea,.f-submit,.btn,.screen,.pt-ta,.pt-next,.rv-list li::before{font-family:'Hubot Sans',system-ui,sans-serif}
+h1.display,h2.display,.reg-name,.panel-name,.case h2,.f-success h3,.scr-h,.built-block h3,.turn,.pull,.art h2,.art .beat,.note-title,.research-note h3,.lab-line,.promise-line,.promise-sub,.scr-stat b,.col h3,.gap-close,.pt-q,.rv-h,.rv-plan h3{font-family:'Hubot Sans',system-ui,sans-serif;font-weight:500;letter-spacing:-.01em}
 h1.display{font-size:clamp(30px,4.6vw,48px);line-height:1.08}
 h2.display{font-size:clamp(24px,3.4vw,34px);line-height:1.12}
 /* the small labels: sentence case, no tracking, one size, the secondary colour */
@@ -763,8 +764,9 @@ h2.display{font-size:clamp(24px,3.4vw,34px);line-height:1.12}
 .col:hover{border-top-color:var(--hair)}
 .note-entry:hover,.art .seebuild:hover{padding-left:0}
 /* buttons are words with a hairline, not pills */
-.btn,.f-submit{background:transparent;color:var(--ink);border:0;border-bottom:1px solid var(--hair);border-radius:0;padding:12px 0;font-weight:500;transform:none;transition:color 180ms var(--ease-out),border-color 180ms var(--ease-out)}
-.btn:hover,.btn:active,.f-submit:hover:not(:disabled){background:transparent;border-color:var(--live);transform:none}
+.btn,.f-submit,.pt-next{background:transparent;color:var(--ink);border:0;border-bottom:1px solid var(--hair);border-radius:0;padding:12px 0;font-weight:500;transform:none;transition:color 180ms var(--ease-out),border-color 180ms var(--ease-out)}
+.btn:hover,.btn:active,.f-submit:hover:not(:disabled),.pt-next:hover,.pt-next:active{background:transparent;border-color:var(--live);transform:none}
+.pt-next:hover,.pt-next:active{color:var(--live)}
 .btn-ghost{border-color:var(--hair-soft)}
 .btn .short{display:none}
 .hero .cta-row .btn{width:auto;text-align:left}
@@ -810,7 +812,7 @@ footer.end p{font-size:15px;font-weight:500}
 footer.end a{display:inline-flex;align-items:center;min-height:44px;color:var(--line);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px;text-decoration-color:var(--quiet);transition:color 180ms var(--ease-out),text-decoration-color 180ms var(--ease-out)}
 footer.end .legal{margin-top:18px;font-size:13px;color:var(--quiet);font-weight:400}
 /* browser surfaces belong to the palette */
-::selection{background:rgba(232,220,194,.22);color:var(--ink)}
+::selection{background:rgba(var(--brass-rgb),.22);color:var(--ink)}
 :focus-visible{outline:none;color:var(--live);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px;text-decoration-color:var(--live);border-radius:0}
 .f-input:focus-visible,.f-select:focus-visible,.f-textarea:focus-visible,.pt-opt:focus-visible{text-decoration:none;color:var(--ink);border-color:var(--live)}
 @media (prefers-reduced-motion:reduce){ .btn,.f-submit,.top nav a,.top .mark,footer.end a{transition:none} }
