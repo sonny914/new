@@ -65,14 +65,13 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 .hero .copy p strong{font-weight:700}
 .brand{position:absolute;top:28px;left:22px;z-index:4;display:flex;align-items:center;gap:10px;color:var(--paper);font-weight:700;text-decoration:none;font-size:.95rem}
 .brand img{width:34px;height:34px;border-radius:10px}
-.sound{position:absolute;top:28px;right:22px;z-index:4;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.14);color:var(--paper)}
-.sound svg{width:18px;height:18px}
 /* drink slides */
 .peach{--c:var(--peach);--btn:var(--ink);--btn-ink:var(--paper)}
 .berry{--c:var(--berry)}
 .mango{--c:var(--mango)}
 .sky{--c:var(--sky)}
-.coco{--c:var(--coco)}
+.coco{--c:var(--coco);--seg:var(--ink)}
+.berry,.mango,.sky,.coco{--btn:var(--ink);--btn-ink:var(--paper)}
 .cola{--c:var(--cola);--fg:var(--paper)}
 .ice{--c:var(--ice);--fg:var(--paper)}
 .slide h2{font-size:clamp(2.1rem,10.5vw,3.1rem)}
@@ -84,10 +83,11 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 .cola,.ice{--straw:var(--berry)}
 .cola{--liq:#2a1510}
 /* final */
-.find{--c:var(--ink);--fg:var(--paper);--btn:var(--peach);--btn-ink:var(--ink);grid-template-rows:auto auto auto 1fr;gap:18px}
+.find{--c:var(--ink);--fg:var(--paper);--btn:var(--peach);--btn-ink:var(--ink);grid-template-rows:auto auto auto 1fr;gap:24px}
 .find footer{align-self:end}
 .find h2{font-size:clamp(2rem,9.5vw,2.8rem)}
-.sticker{background:var(--paper);color:var(--ink);border-radius:22px;padding:18px 20px;box-shadow:0 18px 34px rgba(0,0,0,.28);transform:rotate(var(--tilt,0deg))}
+.sticker{background:#fff3e6;color:var(--ink);border-radius:22px;padding:18px 20px;outline:4px solid #fff;box-shadow:0 18px 34px rgba(0,0,0,.3);transform:rotate(var(--tilt,0deg));position:relative}
+.sticker+.sticker{margin-top:-16px;z-index:1}
 
 .sticker h3{font-family:Unbounded,sans-serif;font-weight:800;font-size:1rem;letter-spacing:-.01em;display:flex;align-items:center;gap:.5em;margin-bottom:.5rem}
 .sticker h3 svg{width:18px;height:18px;flex:none}
@@ -98,15 +98,15 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 .hours tr:first-child td{border-top:0}
 .hours td:last-child{text-align:right;font-weight:700;white-space:nowrap;padding-left:1em}
 .hours tr.now td{color:var(--ink)}
-.hours tr.now td:first-child::after{content:"today";margin-left:.5em;font-size:.75em;font-weight:700;color:var(--berry)}
+.hours tr.now td:first-child::after{content:"today";margin-left:.5em;padding-left:.9em;font-size:.75em;font-weight:700;color:var(--ink);background:radial-gradient(circle at .3em 55%,var(--berry) .25em,transparent .3em)}
 .find p.about{max-width:36ch}
 .find footer{font-size:.85rem;color:rgba(255,255,255,.72);padding-bottom:4px}
 .find footer a{color:var(--paper)}
 /* chrome */
 .progress,.bar{position:fixed;left:50%;translate:-50% 0;width:min(100%,var(--col));z-index:10;padding:0 14px;pointer-events:none}
 .progress{top:0;display:flex;gap:4px;padding-top:12px}
-.progress span{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.35);overflow:hidden}
-.progress span::after{content:"";display:block;height:100%;width:100%;background:var(--paper);transform:scaleX(var(--p,0));transform-origin:left}
+.progress span{flex:1;height:3px;border-radius:3px;background:color-mix(in oklch,var(--seg,#fff) 35%,transparent);overflow:hidden}
+.progress span::after{content:"";display:block;height:100%;width:100%;background:var(--seg,#fff);transform:scaleX(var(--p,0));transform-origin:left}
 .bar{bottom:0;display:flex;gap:10px;align-items:stretch;padding-bottom:max(16px,env(safe-area-inset-bottom))}
 .bar>*{pointer-events:auto}
 .btn{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:.55em;min-height:54px;padding:0 1.2em;border-radius:999px;background:var(--btn);color:var(--btn-ink);font-weight:700;font-size:1.02rem;text-decoration:none;box-shadow:0 14px 28px rgba(30,10,46,.3);transition:transform .35s var(--ease),background .5s,color .5s}
@@ -144,7 +144,6 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
   <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
-  <symbol id="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6L8 10H4Z"/><path d="M16 9l5 6M21 9l-5 6"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7L12 2Z"/></symbol>
   <symbol id="cup" viewBox="0 0 220 300">
     <rect class="straw" x="128" y="4" width="16" height="120" rx="8" transform="rotate(12 136 64)"/>
@@ -158,8 +157,9 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
   <symbol id="cone" viewBox="0 0 220 300">
     <path fill="#fff" d="M60 150h100l-42 142c-2 6-10 6-12 0L60 150Z"/>
     <path fill="#fff" opacity=".6" d="M60 150h100l-6 22H66Z"/>
-    <circle class="liq" cx="110" cy="112" r="78"/>
-    <circle fill="#fff" opacity=".35" cx="84" cy="88" r="26"/>
+    <g class="liq"><circle cx="110" cy="118" r="70"/><circle cx="64" cy="128" r="36"/><circle cx="156" cy="128" r="36"/><circle cx="84" cy="78" r="34"/><circle cx="138" cy="78" r="34"/><circle cx="110" cy="62" r="30"/></g>
+    <g fill="#fff" opacity=".3"><circle cx="84" cy="78" r="12"/><circle cx="110" cy="62" r="10"/><circle cx="64" cy="128" r="12"/></g>
+    <path fill="#fff" opacity=".35" d="M60 150c20 14 80 14 100 0v10H60Z"/>
     <rect class="straw" x="130" y="30" width="14" height="110" rx="7" transform="rotate(18 137 85)"/>
   </symbol>
 </svg>
@@ -174,7 +174,6 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
     </div>
     <div class="scrim"></div>
     <a class="brand" href="#top"><img src="logo.svg" alt="" width="34" height="34">Snack &amp; Sip</a>
-    <span class="sound" aria-hidden="true"><svg><use href="#i-mute"/></svg></span>
     <div class="copy" data-depth="-24">
       <h1>Snack<br>&amp; Sip</h1>
       <p><strong>Pearland Town Center</strong> &middot; next to Great American Cookies, near the pavilion. Flavored lemonades, dirty sodas and snow cones.</p>
@@ -186,14 +185,14 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
     <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
     <div class="copy" data-depth="-24">
       <h2>Peach<br>Thriller</h2>
-      <p>The lemonade people come back for. Peach, lemon, lots of ice.</p>
-      <span class="badge"><svg><use href="#i-star"/></svg>Most asked for</span>
+      <p>Our popular peach lemonade. Peach, lemon, lots of ice.</p>
+      <span class="badge"><svg><use href="#i-star"/></svg>Popular</span>
     </div>
   </section>
 
   <section class="slide berry" data-c="#ff4f7b">
     <div class="layer bubbles" data-depth="30"><i style="left:12%;top:20%;width:10px;height:10px"></i><i style="left:76%;top:76%;width:16px;height:16px"></i><i style="left:50%;top:8%;width:8px;height:8px"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/><g transform="translate(52 74) rotate(-20)"><path d="M0 0c-14 0-24 12-22 26 2 16 12 28 22 36 10-8 20-20 22-36C24 12 14 0 0 0Z" fill="#ff2d5e"/><path d="M-10-4 0-16l10 12-10 2Z" fill="#2fb872"/><g fill="#ffd9b0"><circle cx="-6" cy="14" r="2"/><circle cx="6" cy="10" r="2"/><circle cx="0" cy="28" r="2"/></g></g></svg>
     <div class="copy" data-depth="-24">
       <h2>Strawberry Lemonade</h2>
       <p>Bright, sweet and pink all the way down.</p>
@@ -211,7 +210,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 
   <section class="slide sky" data-c="#4fc3ff">
     <div class="layer bubbles" data-depth="30"><i style="left:14%;top:10%;width:16px;height:16px"></i><i style="left:66%;top:72%;width:10px;height:10px"></i><i style="left:36%;top:46%;width:7px;height:7px"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/><g fill="#dff3ff"><circle cx="78" cy="56" r="22"/><circle cx="104" cy="40" r="26"/><circle cx="132" cy="54" r="20"/><circle cx="100" cy="70" r="24"/></g><g fill="#fff" opacity=".7"><circle cx="92" cy="44" r="8"/><circle cx="120" cy="60" r="6"/></g></svg>
     <div class="copy" data-depth="-24">
       <h2>Blue Cotton Candy Lemonade</h2>
       <p>The one that turns heads across the food court.</p>
@@ -220,7 +219,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 
   <section class="slide coco" data-c="#f1ebdd">
     <div class="layer bubbles" data-depth="30"><i style="left:10%;top:22%;width:12px;height:12px;background:var(--ink);opacity:.12"></i><i style="left:70%;top:70%;width:18px;height:18px;background:var(--ink);opacity:.12"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/><g fill="#fff" stroke="#e8d9bf" stroke-width="2"><path d="M54 62c10-10 26-8 30 6-14 4-26 2-30-6Z"/><path d="M150 70c-8-12 2-26 16-22-2 14-8 22-16 22Z"/><path d="M96 48c12-6 26 2 24 16-14 0-22-6-24-16Z"/></g></svg>
     <div class="copy" data-depth="-24">
       <h2>Coconut Lemonade</h2>
       <p>Creamy, cool, a little bit beach.</p>
@@ -229,7 +228,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
 
   <section class="slide cola" data-c="#4a2a1f">
     <div class="layer bubbles" data-depth="30"><i style="left:20%;top:12%;width:12px;height:12px"></i><i style="left:60%;top:80%;width:9px;height:9px"></i><i style="left:86%;top:40%;width:16px;height:16px"></i></div>
-    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/></svg>
+    <svg class="layer cup" data-depth="70" viewBox="0 0 220 300" aria-hidden="true"><use href="#cup"/><path d="M36 92c20-12 40 10 60 0s40-12 60 0 24 18 24 18H34s-8-10 2-18Z" fill="#fff6ea"/><ellipse cx="110" cy="86" rx="80" ry="12" fill="#fff" opacity=".9"/></svg>
     <div class="copy" data-depth="-24">
       <h2>Dirty Sodas</h2>
       <p>Your soda, dressed up with syrups and cream. Pick a base, pick a flavor.</p>
@@ -250,11 +249,11 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
       <h2>Come find us</h2>
       <p class="about">A drink and snack stop inside Pearland Town Center. Grab a cup, grab a snack, keep strolling.</p>
     </div>
-      <div class="sticker" style="--tilt:-1.2deg">
+      <div class="sticker" style="--tilt:-2.5deg">
         <h3><svg><use href="#i-pin"/></svg>Where</h3>
         <address><a href="https://www.google.com/maps/dir/?api=1&destination=11200+Broadway+St+Suite+1370+Pearland+TX+77584" target="_blank" rel="noopener">11200 Broadway St., Suite 1370<br>Pearland, TX 77584</a><br><span style="font-size:.95rem">Next to Great American Cookies, near the pavilion.</span></address>
       </div>
-      <div class="sticker" style="--tilt:1deg">
+      <div class="sticker" style="--tilt:1.5deg">
         <h3><svg><use href="#i-clock"/></svg>Hours</h3>
         <table class="hours">
           <tr data-d="1"><td>Monday</td><td>Closed</td></tr>
@@ -280,8 +279,8 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
   const v=$('video'), poster=$('.poster');
   if(v){
     v.addEventListener('canplay',()=>{poster.style.visibility='hidden'},{once:true});
-    v.addEventListener('error',()=>{v.remove();$('.sound')?.remove()},true);
-    if(reduce){v.removeAttribute('autoplay');v.pause();v.remove();$('.sound')?.remove()}
+    v.addEventListener('error',()=>{v.remove()},true);
+    if(reduce){v.removeAttribute('autoplay');v.pause();v.remove()}
     else{const p=v.play();p&&p.catch&&p.catch(()=>{})}
   }
   /* hours (America/Chicago) */
@@ -310,6 +309,7 @@ html{scrollbar-color:rgba(255,255,255,.45) transparent;scrollbar-width:thin}
     root.style.setProperty('--stage',s.dataset.c);
     root.style.setProperty('--btn',cs.getPropertyValue('--btn'));
     root.style.setProperty('--btn-ink',cs.getPropertyValue('--btn-ink'));
+    root.style.setProperty('--seg',cs.getPropertyValue('--seg')||'#fff');
     theme.content=s.dataset.c;
   }),{root:mq.matches?phone:null,threshold:.55});slides.forEach(s=>io.observe(s))};
   watch();mq.addEventListener('change',()=>{watch();update()});
