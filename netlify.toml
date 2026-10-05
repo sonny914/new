@@ -16,6 +16,11 @@
 [functions]
   directory = "netlify/functions"
 
+# The Operator lab reads its prompts from markdown beside the function, so Jay can edit the
+# voice without touching code. List them so the bundle carries them.
+[functions."operator-interpret"]
+  included_files = ["netlify/functions/operator-prompts/*.md"]
+
 [[headers]]
   for = "/*"
   [headers.values]

@@ -535,7 +535,7 @@ Three layers, in order of importance:
 - Orange glows. Cream does not. Orange is already "the one live accent", so a glowing orange element is the same rule stated with more light, not a second accent.
 - One glowing element on screen at a time. If two things glow, neither is the point.
 - Glow decays. A confirmed rung flares for about a second and settles to flat orange. A retrieved context row lights as it lands and goes still. Idle frames are completely still.
-- Never on chrome, hover, selection, the cursor, or anything moving. No blur filters on animated elements (FounderOS had to strip them because moving glow "read as a flashing strobe").
+- Never on chrome, hover, selection, the cursor, or anything moving. Hover and focus turn a control orange (the identity's "one live item") but never give it a glow. No blur filters on animated elements (FounderOS had to strip them because moving glow "read as a flashing strobe").
 - Implementation shape: `box-shadow: 0 0 14px color-mix(in oklab, #FF5A00 40%, transparent)` as an outer halo, no inner bloom, no `filter: blur`. Under `prefers-reduced-motion` the flare is skipped and the element lands flat.
 
 | FounderOS principle | QB translation with black / cream / orange |
@@ -546,7 +546,7 @@ Three layers, in order of importance:
 | Surface equals background, hierarchy via hairlines | Black everywhere; hairline `color-mix(in oklab, #F2EEE5 10%, #000)`; stronger rule at 18%. No card shadows. At most one structural panel shadow, as a drop not a glow. |
 | One monospace face at two registers | Keep QB's existing type system; borrow the *two-register* idea: tiny tracked caps for labels and provenance (`SEEN · 3d ago · LinkedIn`), large tight tabular numerals for counts and rungs. If QB uses a grotesk, pair it with a mono for provenance strings only. |
 | Status dot grammar | A 6px dot for ladder rung is wrong (six states). Use a six-cell ladder meter: filled cells cream, the top Jay-confirmed cell orange, and that cell is the one element permitted to glow when it flips. Dots only for binary liveness (context loaded / store unreachable). |
-| Motion tokens on an unthemed root; two-property hover; 200ms press clock | Adopt verbatim as practice. No hover lens tilt; a 1px lift plus border brighten is the same "two properties" rule. Hover never turns anything orange. |
+| Motion tokens on an unthemed root; two-property hover; 200ms press clock | Adopt verbatim as practice. No hover lens tilt; a 1px lift plus colour shift is the same "two properties" rule. Per the identity, the pointed-at or focused control is the one live item and goes orange; it never glows. |
 | Entrance stagger, count-ins from last value, drawn lines | Only for *evidence appearing*: a new observation row rises in; a ladder cell fills and flares when a rung advances; a provenance line draws from artifact to observation when context is retrieved. Never on idle. |
 | Honest badges | `seeded`, `from cache`, `context unavailable`, `drafted by system`, `sent by Jay`. Every AI output carries `drafted by system · not sent`. Badges are cream; `sent by Jay` may be orange because it records a live human act. |
 | One loud element per page | On the artifact screen, the one loud element is the recommendation (COMMENT / SAVE / SCROLL) with its reasons. Everything else is quiet. The verdict is cream; it turns orange only after Jay presses a key, because then it is his, not the system's. |
