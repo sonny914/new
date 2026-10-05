@@ -1,7 +1,7 @@
 # FounderOS deep dive: a forensic product and technical study for Quiet Bands
 
 **Status:** research only. No QB code was touched. No FounderOS code was installed into QB.
-**Date:** 2026-10-04
+**Date:** 2026-10-04, palette and glow rules revised 2026-10-05
 **Subject:** The Founder OS (thefounderos.com) and its public demo repository `Bennettxai/FounderOS-DEMO`, commit `ef75fe8` (2026-09-30), MIT licensed.
 **Companion file:** `docs/research/founderos-file-map.md` maps every important source file to what it actually does.
 
@@ -527,20 +527,29 @@ Three layers, in order of importance:
 
 ### 8.3 Translation into QB's own visual language (principles only, no mockup)
 
-QB's palette is INK `#0E0F10`, BONE `#F6F4EE`, BRASS `#B38A3D`. QB's existing brief already bans glow, neon, bloom, glassmorphism, HUD chrome and sci-fi decoration (`docs/BRIEF.md`). FounderOS's default theme is, in fact, closer to that brief than to its own Terminal theme: no glow, no grid, white on black, colour as status only. The translation:
+**Palette correction.** The original brief for this study named INK `#0E0F10`, BONE `#F6F4EE` and BRASS `#B38A3D`. QB's own identity file (`.claude/skills/qb-identity/SKILL.md`) retires all three. The current identity is black `#000000` ground, cream `#F2EEE5` lines and type, and safety orange `#FF5A00` "for the one live accent only… Never a second accent." `docs/BRIEF.md` says the same in fewer words: "Near-black ground, cream/bone lines, orange = interactive only." Everything below uses black / cream / orange.
 
-| FounderOS principle | QB translation with INK / BONE / BRASS |
+**Glow.** The brief bans "glow, neon, bloom, glassmorphism, HUD chrome, cyberpunk, sci-fi decoration". FounderOS's own default theme agrees (`--glow: none`, "machinery, not mascots") and its one glowing failure is the knowledge graph, where glow is ambient and means nothing. The distinction that survives both: **glow as decoration is banned; glow as a state reading is allowed.** Rules:
+
+- Glow means *live* or *just confirmed*. Nothing else glows.
+- Orange glows. Cream does not. Orange is already "the one live accent", so a glowing orange element is the same rule stated with more light, not a second accent.
+- One glowing element on screen at a time. If two things glow, neither is the point.
+- Glow decays. A confirmed rung flares for about a second and settles to flat orange. A retrieved context row lights as it lands and goes still. Idle frames are completely still.
+- Never on chrome, hover, selection, the cursor, or anything moving. No blur filters on animated elements (FounderOS had to strip them because moving glow "read as a flashing strobe").
+- Implementation shape: `box-shadow: 0 0 14px color-mix(in oklab, #FF5A00 40%, transparent)` as an outer halo, no inner bloom, no `filter: blur`. Under `prefers-reduced-motion` the flare is skipped and the element lands flat.
+
+| FounderOS principle | QB translation with black / cream / orange |
 |---|---|
-| Accent is white; colour means status only | BONE is the accent and the text. BRASS is **not** a decorative accent; reserve it for exactly one meaning. Recommendation: BRASS marks *evidence that Jay confirmed* (a confirmed problem, a recorded human action, a rung advanced by Jay). AI proposals and unconfirmed observations stay BONE at reduced opacity. Never use BRASS for selection or hover. |
-| Three status colours | QB does not need red/yellow/green. The states that matter are "proposed by system", "confirmed by Jay", "stale / needs attention". Map: BONE at 100% / BRASS / BONE at 45% with a dashed hairline. If a true error state is needed, a single muted red is permitted, with a word beside it. |
-| Three text tiers | BONE at 100%, ~62%, ~38% on INK. Check the 38% tier against 3:1 at the smallest size used; QB should not go below 11px for anything a reader must read. |
-| Surface equals background, hierarchy via hairlines | INK everywhere; hairline `color-mix(in oklab, BONE 10%, INK)`; stronger rule `BONE 18%`. No card shadows. One structural panel shadow at most, as a drop not a glow. |
-| One monospace face at two registers | QB's existing type system should be kept; borrow the *two-register* idea: tiny tracked caps for labels and provenance (`SEEN · 3d ago · LinkedIn`), large tight tabular numerals for counts and rungs. If QB uses a grotesk, pair it with a mono for provenance strings only. |
-| Status dot grammar | A 6px dot for ladder rung is wrong (six states). Use a six-cell ladder meter, filled cells BONE, the top confirmed cell BRASS. Dots only for binary liveness (context loaded / store unreachable). |
-| Motion tokens on an unthemed root; two-property hover; 200ms press clock | Adopt verbatim as practice. QB does not need the hover lens tilt; a 1px lift plus border brighten is enough and is the same "two properties" rule. |
-| Entrance stagger, count-ins from last value, drawn lines | Use only for *evidence appearing*: a new observation row rises in; a ladder cell fills when a rung advances; a provenance line draws when context is retrieved. Never on idle. |
-| Honest badges | `seeded`, `from cache`, `context unavailable`, `drafted by system`, `sent by Jay`. Every AI output carries `drafted by system · not sent`. |
-| One loud element per page | On the artifact screen, the one loud element is the recommendation (COMMENT / SAVE / SCROLL) with its reasons. Everything else is quiet. |
+| Accent is white; colour means status only | Cream is the text and the structure. Orange is the single live accent and carries exactly one meaning in the tool: **this is the live item** (the thing Jay is pointed at, or the thing that just became true because Jay confirmed it). System proposals and unconfirmed observations are cream at reduced opacity. Orange is never used for selection chrome, hover, or decoration. |
+| Three status colours | QB does not need red/yellow/green. The states that matter are "proposed by system", "confirmed by Jay", "stale / needs attention". Map: cream at 100% / orange / cream at 45% with a dashed hairline. If a true error state is ever needed, pair a single muted red with a word beside it. |
+| Three text tiers | Cream at 100%, ~62%, ~38% on black. Check the 38% tier against 3:1 at the smallest size used; nothing a reader must read goes below 11px. |
+| Surface equals background, hierarchy via hairlines | Black everywhere; hairline `color-mix(in oklab, #F2EEE5 10%, #000)`; stronger rule at 18%. No card shadows. At most one structural panel shadow, as a drop not a glow. |
+| One monospace face at two registers | Keep QB's existing type system; borrow the *two-register* idea: tiny tracked caps for labels and provenance (`SEEN · 3d ago · LinkedIn`), large tight tabular numerals for counts and rungs. If QB uses a grotesk, pair it with a mono for provenance strings only. |
+| Status dot grammar | A 6px dot for ladder rung is wrong (six states). Use a six-cell ladder meter: filled cells cream, the top Jay-confirmed cell orange, and that cell is the one element permitted to glow when it flips. Dots only for binary liveness (context loaded / store unreachable). |
+| Motion tokens on an unthemed root; two-property hover; 200ms press clock | Adopt verbatim as practice. No hover lens tilt; a 1px lift plus border brighten is the same "two properties" rule. Hover never turns anything orange. |
+| Entrance stagger, count-ins from last value, drawn lines | Only for *evidence appearing*: a new observation row rises in; a ladder cell fills and flares when a rung advances; a provenance line draws from artifact to observation when context is retrieved. Never on idle. |
+| Honest badges | `seeded`, `from cache`, `context unavailable`, `drafted by system`, `sent by Jay`. Every AI output carries `drafted by system · not sent`. Badges are cream; `sent by Jay` may be orange because it records a live human act. |
+| One loud element per page | On the artifact screen, the one loud element is the recommendation (COMMENT / SAVE / SCROLL) with its reasons. Everything else is quiet. The verdict is cream; it turns orange only after Jay presses a key, because then it is his, not the system's. |
 | Progressive disclosure: pin a dossier, never reflow | The Person dossier opens beside the artifact, not over it; the artifact never moves. |
 | Empty states as sentences | "No prior context for this person. This is the first time we have seen them." |
 
@@ -575,7 +584,7 @@ What does *not* carry on video: the ambient pulses and sparks on the knowledge g
 6. **Keyboard-first operation.** `⌘K`, one key per decision (C / S / X), `/` to search people. Mastery on camera.
 7. **Honest badges in frame.** `drafted by system · not sent`, `confirmed by Jay`, `first time seen`. The audience is Jay's prospective clients; a tool that visibly refuses to overclaim *is* the pitch for "the system carries the context, the person carries the relationship".
 8. **No cursor spotlight, no tilt, no orbit.** FounderOS itself switched the spotlight off. QB's brief already bans the rest.
-9. **One signature element.** The six-cell evidence ladder with the BRASS confirmed cell. Every clip shows it; the audience learns to read it; it becomes QB's visual claim that attention is not intent.
+9. **One signature element.** The six-cell evidence ladder with the orange confirmed cell, the only thing on screen allowed to glow, and only when it flips. Every clip shows it; the audience learns to read it; it becomes QB's visual claim that attention is not intent.
 
 ---
 
@@ -593,7 +602,7 @@ Not code. Ideas, patterns, and a few MIT-licensed implementation details. Founde
 | 6 | **Revision-bound decisions.** | A decision applies to a specific version of the thing decided; if the thing changes, the decision reopens. | `lib/deliverable-revision.ts:25-31`, `lib/deliverable-decisions.ts` | MIT. | A ladder rung or a "COMMENT" decision is bound to the artifact hash; if the post is edited or a new reply arrives, the recommendation is marked stale. |
 | 7 | **Outbound guard that refuses by default.** | A tested, env-overridable refusal before any send. | `lib/mail-guard.mjs`, `tests/mail-guard.test.ts` | MIT. | QB V1 has no outbound path at all. If one is ever added, it starts as a guard that only allows Jay's own address. |
 | 8 | **Carry unresolved items forward with a fixed first-seen date.** | Correct, small model of "still open, this long". | `lib/comms-digest.ts:45-54, 301-337` | MIT. | Saved artifacts and open proposed next moves carry `first_seen_at` and age visibly. |
-| 9 | **The visual rulebook as tests.** | Taste enforced by CI: forbidden transitions, undefined CSS variables, status colours in selection, raw hex in derived tokens, minimum stagger blocks per page. | `tests/rebrand-acceptance-1i.test.ts`, `tests/css-vars-defined.test.ts`, `tests/interaction-layer.test.ts`, `tests/home-slab.test.ts` | MIT; the *approach* is the asset. | Write five such tests for QB's tool on day one: no glow, no `transition-all`, BRASS only on confirmed elements, no undefined var, no colour-only status. |
+| 9 | **The visual rulebook as tests.** | Taste enforced by CI: forbidden transitions, undefined CSS variables, status colours in selection, raw hex in derived tokens, minimum stagger blocks per page. | `tests/rebrand-acceptance-1i.test.ts`, `tests/css-vars-defined.test.ts`, `tests/interaction-layer.test.ts`, `tests/home-slab.test.ts` | MIT; the *approach* is the asset. | Write five such tests for QB's tool on day one: glow only on the live orange element and never on chrome or hover, no `transition-all`, orange only on live or Jay-confirmed elements, no undefined var, no colour-only status. |
 | 10 | **Colour means one thing; motion tokens on an unthemed root; two-property hover; 200/360/630ms clocks; radius never animates; entrance `fill-mode: backwards`.** | The structural discipline that makes it feel like an instrument. | `app/globals.css:11-13, 237-239, 397-497, 592-659` | MIT; CSS values are not creative expression, but re-derive them for QB anyway. | Adopt as QB's motion and colour rules (section 8.3). |
 | 11 | **Count-ups from the last displayed value; lines with `pathLength=1`; reduced motion lands instantly including JS loops.** | Small correctness details that most teams get wrong. | `components/CountUp.tsx:7-41`, `components/slab-charts.tsx:65-68` | MIT. | Ladder meter fills and evidence counts. |
 | 12 | **Pin a dossier beside the thing, never reflow the thing.** | The macro view stays stable while the micro view opens. | `components/FunnelNodeCard.tsx`, `components/NeuralGraph.tsx:300-320` | MIT. | Person dossier opens beside the artifact. |
@@ -764,11 +773,11 @@ One screen, one drawer, one list.
 - **Artifact pane (left, never moves):** the post text, author line with resolution badge (`resolved by URL`, `resolved by alias · confirm?`, `unknown · first time seen`), capture provenance in small caps.
 - **Interpretation pane (right):** context status badge (`ok · 7 prior events`, `empty · first time seen`, `unavailable`), observations as rows that rise in as retrieved, the verdict as the one loud element with reasons, the draft comment in an editable field when COMMENT.
 - **Decision keys:** `C` comment, `S` save, `X` scroll. Pressing one writes the `decision` event and, for `C`, copies the edited comment to the clipboard with a `drafted by system · edited by Jay · not sent` badge until Jay presses `Done` to write the `action` event.
-- **Person dossier (drawer beside, on demand):** name, company, six-cell ladder (BRASS on the confirmed top cell), timeline of events newest first, "last action / whose turn / proposed next move" lines, confirmed problems.
+- **Person dossier (drawer beside, on demand):** name, company, six-cell ladder (orange on the Jay-confirmed top cell, flaring once when it flips), timeline of events newest first, "last action / whose turn / proposed next move" lines, confirmed problems.
 - **Follow-up list:** artifacts with `action` but no `response_observed` after N days, with `first_seen_at` age; one key to record a response or `none`.
 - **Everything else is a sortable table:** people by rung, problems by confirmed evidence count.
 
-INK background, BONE text at three tiers, BRASS only on Jay-confirmed elements, hairlines, no shadows, no glow, motion only on evidence appearing and rung changes. Five visual tests in CI.
+Black background, cream text at three tiers, safety orange only on the live or Jay-confirmed element, hairlines, no shadows, glow only as the one-second flare on that orange element, motion only on evidence appearing and rung changes. Five visual tests in CI.
 
 ### 13.7 What must NOT exist in V1
 
@@ -781,7 +790,7 @@ INK background, BONE text at three tiers, BRASS only on Jay-confirmed elements, 
 - No dashboards of follower counts, engagement rates, or any platform metric.
 - No scheduler, cron, digest, or notification.
 - No multi-user, auth, roles, or workspaces beyond a single password.
-- No themes, no cursor effects, no ambient motion.
+- No themes, no cursor effects, no ambient motion, no glow on anything that is not the single live orange element.
 - No seeded demo data. The empty state is the honest state.
 - No Editorial Engine beyond the single comment draft. Long-form content from observations is a second slice, gated by the kill test.
 
@@ -830,7 +839,7 @@ flowchart LR
 | **Jay stops recording outcomes.** | High | Rungs 2–5 depend on Jay typing "they replied". If outcomes are not recorded, the ladder is just attention and the invariant is violated by omission. | Make recording a one-key act from the follow-up list; show the "unresolved for N days" count on the home screen; if the recording rate drops below half of actions after two weeks, that is itself a kill signal (section 15). |
 | **Voice drift in drafts.** | Medium | The Editorial Engine's whole point is that it does not reduce Jay to generic AI prose. | Store the edit distance per draft; if Jay rewrites more than ~60% of drafts after a month, the draft call is not earning its keep and should be removed, not improved. |
 | **The model proposes problems that are not there.** | Medium | False problem evidence is the attention-equals-intent error in a new costume. | Problem evidence counts only when Jay confirms; every system claim must cite a quote; show the quote beside the claim. |
-| **Over-trusting the FounderOS visual language.** | Medium | Its default theme is close to QB's brief, but its signature moves (lens, orbit, grid) are exactly what QB bans, and its 9–10px `--text-3` labels fail AA. | Adopt the principles in 8.3, not the CSS; minimum 11px; BRASS only on confirmed. |
+| **Over-trusting the FounderOS visual language.** | Medium | Its default theme is close to QB's brief, but its signature moves (lens, orbit, grid) are exactly what QB bans, and its 9–10px `--text-3` labels fail AA. | Adopt the principles in 8.3, not the CSS; minimum 11px; orange only on live or confirmed; glow only as a decaying state flare. |
 | **SQLite on one machine.** | Low in V1 | Context trapped on one laptop is fine for one operator; it is not fine the day a second person needs it. | Keep the schema Postgres-compatible; QB already runs Supabase. |
 | **Legal:** copying FounderOS prompt text, seed content or vendored brand assets. | Low if followed | MIT covers the code; it does not cover third-party logos or make FounderOS's voice QB's. | Re-implement patterns; write QB's own prompt files; never vendor logos. |
 | **The site's conceptual claims could not be read directly.** | Certain | Sections referencing `context.md`, "encoded workspace", manager/specialist structure and decision rules rely on search snippets or are `[UNKNOWN]`. | If those concepts matter to QB's thinking, someone with normal network access should read the site and the cohort materials and append a short addendum. The code findings do not depend on them. |
