@@ -1,0 +1,4 @@
+timestamp,customer,ticket_id,operator,stage,action,channel,counterparty_person,what_was_asked,result,committed_date,days_open_at_action,blocker_reason,minutes_spent,next_action_date
+2026-10-20 08:40,Supplier 1,T-1002,Operator A,A,text,sms,company man,sign ticket T-1002 (image attached),committed_date,2026-10-21,17,crew left location before signature,4,2026-10-22
+2026-10-20 08:52,Supplier 1,T-1004,Operator B,C,dispute_response,portal,approver,re-submitted with corrected AFE code per PO 4471,no_reply,,15,AFE code on ticket did not match PO,9,2026-10-23
+2026-10-20 09:05,Supplier 2,T-2210,Operator C,C,portal_update,portal,,status changed to Approved,approved,,6,,1,

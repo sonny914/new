@@ -1,0 +1,6 @@
+ticket_id,operator,ticket_date,signed_date,submitted_date,approved_date,paid_date,amount,status,dispute_reason,portal
+T-1001,Operator A,2026-07-02,2026-07-02,2026-07-09,2026-07-30,2026-09-05,4850.00,paid,,OpenInvoice
+T-1002,Operator A,2026-07-03,,2026-07-15,,,2200.00,open,missing signature on ticket,OpenInvoice
+T-1003,Operator B,2026-07-03,2026-07-03,2026-07-04,2026-07-21,,6100.00,approved,,Cortex
+T-1004,Operator B,2026-07-05,2026-07-05,2026-07-12,,,3300.00,disputed,AFE code does not match PO,Cortex
+T-1005,Operator C,2026-07-06,2026-07-06,2026-07-06,2026-07-08,2026-08-07,1750.00,paid,,email
