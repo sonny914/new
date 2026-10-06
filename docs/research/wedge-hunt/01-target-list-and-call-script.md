@@ -59,6 +59,8 @@ Let them talk. Write down every step, every person, every system they name. Then
 - "If I took a snapshot of every open ticket today, how many would be waiting on a signature, how many on operator approval, how many approved but unpaid?"
 - "Who does the chasing today? What else is that person supposed to be doing?"
 - "Has anyone ever offered to do this for you? What happened?"
+- "Does your outside CPA or bookkeeper have their own OpenInvoice login, or do they use yours?" (This answers the terms-of-use question: whether suppliers can add outside people as named Users.)
+- "Could you forward me your OpenInvoice supplier agreement? I want to read what it says about who can be a user on your account before I ask anyone to let us in."
 - "If someone owned that whole chase and you could see every ticket's status every Friday, what would that be worth to you a month? Say a number, even a rough one."
 
 **The ask (last two minutes).**
@@ -76,6 +78,7 @@ Within ten minutes, in this file under the company's row or in a notes section:
 - DSO and factoring rate if given.
 - The number they said when asked what it would be worth.
 - Whether they will send the export (yes / maybe / no) and the date promised.
+- Whether outside accountants have their own OpenInvoice logins (yes / no / unknown) and whether they will forward the supplier agreement.
 - Any sentence that sounded like a kill criterion ("operators won't let third parties in", "it's all net 60, nothing to chase", "our tickets just don't get signed").
 
 ## Objections you will hear
