@@ -184,6 +184,7 @@ textarea:focus-visible,input:focus-visible{color:var(--line);border-color:var(--
   .hud{padding:0 14px;gap:8px 10px}
   .hud .counts,.hud .title,.hud #export,.hud label[for="import"],.hud #set-key{display:none}
   .hud .right{margin-left:auto}
+  .hud .qb-word{display:none}
   .primary kbd{display:none}
   .status .hint{display:none}
 }
