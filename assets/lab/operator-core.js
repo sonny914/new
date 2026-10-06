@@ -393,3 +393,216 @@ https://www.linkedin.com/in/priya-natarajan-example
 Update on the maintenance handoff thing from a few weeks ago. We mapped it. A request touches five people and three systems before anyone with a wrench sees it, and two of those steps are someone re-typing what the last person wrote. Vendor confirmations still arrive by text message to whoever happened to call them.
 
 I am not looking for another portal. I want to know who has actually solved the "who notices when it goes quiet" problem without hiring a coordinator.`;
+
+/* =====================================================================
+   THE INSTRUMENT · graph projection, force layout, camera
+   Pure. Everything below is derived from the log; nothing is decorative.
+   ===================================================================== */
+
+/** Deterministic hash → [0,1). */
+export function unit(s) { const h = parseInt(hashText(String(s)), 16); return (h % 100000) / 100000; }
+
+/**
+ * The graph is a projection of the log. Nodes: problems (what QB cares about), people,
+ * companies, artifacts. Edges are evidence: who belongs where, who wrote what, which
+ * artifact demonstrated which problem (dashed until Jay confirms). Weights are counts.
+ */
+export function graphModel(store) {
+  const nodes = [], edges = [];
+  const now = store.now();
+  const loops = new Set(openLoops(store, now).map((l) => l.artifact.authorPersonId).filter(Boolean));
+  for (const row of problemTable(store)) {
+    nodes.push({ id: row.problem.id, kind: 'problem', label: row.problem.label, confirmed: row.confirmed, proposed: row.proposed, people: row.people, origin: row.problem.origin });
+  }
+  for (const c of store.state.companies) nodes.push({ id: c.id, kind: 'company', label: c.name, origin: c.origin });
+  for (const row of peopleTable(store)) {
+    const p = row.person;
+    nodes.push({ id: p.id, kind: 'person', label: p.displayName, title: p.title, rung: row.rung, events: row.events, lastAt: row.lastAt, companyId: p.companyId, openLoop: loops.has(p.id), origin: p.origin });
+    if (p.companyId && store.company(p.companyId)) edges.push({ id: `m:${p.id}`, source: p.id, target: p.companyId, kind: 'member', weight: 1 });
+  }
+  for (const a of store.state.artifacts) {
+    const evs = store.eventsForArtifact(a.id);
+    const dec = evs.filter((e) => e.kind === 'decision').pop();
+    const rec = evs.filter((e) => e.kind === 'recommendation').pop();
+    nodes.push({ id: a.id, kind: 'artifact', label: trim(a.rawText.replace(/\s+/g, ' '), 80), authorPersonId: a.authorPersonId, verdict: dec ? dec.payload.verdict : rec ? rec.payload.verdict : null, decided: Boolean(dec), capturedAt: a.capturedAt, origin: a.origin });
+    if (a.authorPersonId) edges.push({ id: `w:${a.id}`, source: a.authorPersonId, target: a.id, kind: 'authored', weight: 1 });
+    const byProblem = new Map();
+    for (const e of evs.filter((x) => x.kind === 'problem_evidence' && x.problemId)) {
+      const cur = byProblem.get(e.problemId) || { confirmed: false, count: 0, eventId: e.id };
+      cur.count += 1; if (e.actor === 'jay') { cur.confirmed = true; cur.eventId = e.id; }
+      byProblem.set(e.problemId, cur);
+    }
+    for (const [problemId, v] of byProblem) edges.push({ id: `e:${a.id}:${problemId}`, source: a.id, target: problemId, kind: 'evidence', confirmed: v.confirmed, weight: v.count, eventId: v.eventId });
+  }
+  return { nodes, edges };
+}
+
+export const LAYOUT = {
+  radius: { problem: 85, person: 250, company: 360, artifact: 250 },
+  length: { member: 70, authored: 34, evidence: 120 },
+  size: { problem: 7, person: 8, company: 5, artifact: 2.6 },
+};
+
+/** Where a new node should start: near its anchor if it has one, else on its ring at a hashed angle. */
+export function seedPosition(node, positions, edges) {
+  const anchor = edges.find((e) => (e.source === node.id && positions[e.target]) || (e.target === node.id && positions[e.source]));
+  if (anchor) {
+    const other = positions[anchor.source === node.id ? anchor.target : anchor.source];
+    const a = unit(node.id) * Math.PI * 2;
+    return { x: other.x + Math.cos(a) * 24, y: other.y + Math.sin(a) * 24 };
+  }
+  const a = unit(node.id) * Math.PI * 2, r = LAYOUT.radius[node.kind] || 200;
+  return { x: Math.cos(a) * (r || 30), y: Math.sin(a) * (r || 30) };
+}
+
+/**
+ * One tick of a small force layout. Mutates positions {id: {x,y,vx,vy}}. Forces: repulsion
+ * between all nodes (capped), springs along edges, a gentle radial pull by kind so problems
+ * sit at the centre, people around them, companies outside, and a centring pull.
+ * Returns the mean speed, so a caller can stop when it is still.
+ */
+export function layoutTick(model, positions, { alpha = 1, damping = 0.78 } = {}) {
+  const { nodes, edges } = model;
+  const P = positions;
+  for (const n of nodes) if (!P[n.id]) { const s = seedPosition(n, P, edges); P[n.id] = { x: s.x, y: s.y, vx: 0, vy: 0 }; }
+  for (let i = 0; i < nodes.length; i++) {
+    const a = P[nodes[i].id];
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = P[nodes[j].id];
+      let dx = a.x - b.x, dy = a.y - b.y; let d2 = dx * dx + dy * dy;
+      if (d2 < 0.01) { dx = (unit(nodes[i].id + nodes[j].id) - 0.5) * 0.1; dy = 0.05; d2 = dx * dx + dy * dy; }
+      const small = nodes[i].kind === 'artifact' || nodes[j].kind === 'artifact';
+      const k = (small ? 260 : 900) * alpha / Math.max(d2, 60);
+      const d = Math.sqrt(d2); const fx = (dx / d) * Math.min(k, 6), fy = (dy / d) * Math.min(k, 6);
+      a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+    }
+  }
+  for (const e of edges) {
+    const a = P[e.source], b = P[e.target]; if (!a || !b) continue;
+    const dx = b.x - a.x, dy = b.y - a.y; const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+    const rest = LAYOUT.length[e.kind] || 80;
+    const k = (e.kind === 'authored' ? 0.12 : 0.05) * alpha;
+    const f = (d - rest) * k; const fx = (dx / d) * f, fy = (dy / d) * f;
+    a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+  }
+  let speed = 0;
+  for (const n of nodes) {
+    const p = P[n.id];
+    const r = Math.sqrt(p.x * p.x + p.y * p.y) || 0.01;
+    const target = LAYOUT.radius[n.kind];
+    if (n.kind !== 'artifact') { const f = (target - r) * 0.012 * alpha; p.vx += (p.x / r) * f; p.vy += (p.y / r) * f; }
+    p.vx -= p.x * 0.0006 * alpha; p.vy -= p.y * 0.0006 * alpha;
+    p.vx *= damping; p.vy *= damping; p.x += p.vx; p.y += p.vy;
+    speed += Math.abs(p.vx) + Math.abs(p.vy);
+  }
+  return nodes.length ? speed / nodes.length : 0;
+}
+
+/** Run the layout to rest. Deterministic for a given model. */
+export function layoutSettle(model, positions = {}, maxTicks = 400) {
+  let alpha = 1, speed = Infinity, t = 0;
+  while (t < maxTicks && speed > 0.02) { speed = layoutTick(model, positions, { alpha }); alpha = Math.max(0.08, alpha * 0.985); t++; }
+  return positions;
+}
+
+/** Bounds of all positions with padding. */
+export function bounds(positions, pad = 60) {
+  const pts = Object.values(positions);
+  if (!pts.length) return { x: -200, y: -150, w: 400, h: 300 };
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const p of pts) { x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y); }
+  return { x: x0 - pad, y: y0 - pad, w: Math.max(x1 - x0 + 2 * pad, 200), h: Math.max(y1 - y0 + 2 * pad, 150) };
+}
+
+/**
+ * The camera target as a viewBox rect for a given aspect. `focus` is a position or null for home.
+ * `panelFrac` is the fraction of the viewport the left panel covers, so a focused node sits in
+ * the clear part of the screen rather than under the dossier.
+ */
+export function cameraRect({ focus, positions, aspect, panelFrac = 0, zoomW = 360, labelPad = 170 }) {
+  if (!focus) {
+    const b = bounds(positions); b.w += labelPad; // labels hang to the right of nodes
+    let w = b.w, h = b.h;
+    if (w / h < aspect) w = h * aspect; else h = w / aspect;
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+    // Keep the whole picture in the clear part of the screen.
+    const clearW = w * (1 - panelFrac);
+    const scale = Math.max(1, b.w / clearW);
+    w *= scale; h *= scale;
+    return { x: cx - w / 2 - (w * panelFrac) / 2, y: cy - h / 2, w, h };
+  }
+  const w = zoomW, h = zoomW / aspect;
+  const shift = (w * panelFrac) / 2;
+  return { x: focus.x - w / 2 - shift, y: focus.y - h / 2, w, h };
+}
+
+export function lerpRect(a, b, k) {
+  return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, w: a.w + (b.w - a.w) * k, h: a.h + (b.h - a.h) * k };
+}
+export function rectClose(a, b, eps = 0.05) {
+  return Math.abs(a.x - b.x) < eps && Math.abs(a.y - b.y) < eps && Math.abs(a.w - b.w) < eps && Math.abs(a.h - b.h) < eps;
+}
+
+/* ---------- a richer fictional example, so the macro view has something to show ---------- */
+export function seedExampleWide(store, nowIso = null) {
+  const base = seedExample(store, nowIso);
+  const now = new Date(nowIso || store.now());
+  const ago = (d) => new Date(now.getTime() - d * 86400000).toISOString();
+  const add = (name, title, company, url, post, probLabel, quote, days, path) => {
+    const co = company ? store.addCompany({ name: company, origin: 'example' }) : null;
+    const p = store.addPerson({ displayName: name, title, companyId: co ? co.id : null, linkedinUrl: url, origin: 'example' });
+    const a = store.addArtifact({ sourceKind: 'linkedin_post', origin: 'example', authorPersonId: p.id, capturedAt: ago(days), rawText: post });
+    store.append({ kind: 'artifact_captured', actor: 'jay', personId: p.id, artifactId: a.id, at: ago(days), origin: 'example', payload: { sourceKind: 'linkedin_post' } });
+    let pr = null, pe = null;
+    if (probLabel) {
+      pr = store.addProblem({ label: probLabel, origin: 'example' });
+      pe = store.append({ kind: 'problem_evidence', actor: 'system', personId: p.id, artifactId: a.id, problemId: pr.id, at: ago(days), origin: 'example', payload: { quote, cites: [a.id] } });
+    }
+    const verdict = path.includes('comment') ? 'COMMENT' : path.includes('save') ? 'SAVE' : 'SCROLL';
+    store.append({ kind: 'recommendation', actor: 'system', personId: p.id, artifactId: a.id, at: ago(days), origin: 'example', payload: { verdict, reasons: ['example'], cites: [a.id] } });
+    store.append({ kind: 'decision', actor: 'jay', personId: p.id, artifactId: a.id, at: ago(days), origin: 'example', payload: { verdict, agreedWithSystem: true } });
+    if (path.includes('comment') || path.includes('save')) {
+      const act = store.append({ kind: 'action', actor: 'jay', personId: p.id, artifactId: a.id, at: ago(days), origin: 'example', payload: { kind: path.includes('comment') ? 'commented' : 'saved', text: path.includes('comment') ? 'Who is supposed to notice first, and what do they see when they look?' : undefined } });
+      store.append({ kind: 'rung_changed', actor: 'system', personId: p.id, at: ago(days), origin: 'example', evidenceEventId: act.id, payload: { from: 0, to: 1 } });
+    }
+    if (path.includes('reply')) {
+      const r = store.append({ kind: 'response_observed', actor: 'jay', personId: p.id, artifactId: a.id, at: ago(Math.max(days - 2, 0)), origin: 'example', payload: { kind: 'reply', by: 'external', text: 'Exactly this. Nobody owns the gap.' } });
+      store.append({ kind: 'rung_changed', actor: 'system', personId: p.id, at: ago(Math.max(days - 2, 0)), origin: 'example', evidenceEventId: r.id, payload: { from: 1, to: 2 } });
+    }
+    if (path.includes('confirm') && pe) {
+      const c = store.append({ kind: 'problem_evidence', actor: 'jay', personId: p.id, artifactId: a.id, problemId: pr.id, at: ago(Math.max(days - 2, 0)), origin: 'example', evidenceEventId: pe.id, payload: { quote, cites: [a.id] } });
+      store.append({ kind: 'rung_changed', actor: 'jay', personId: p.id, at: ago(Math.max(days - 2, 0)), origin: 'example', evidenceEventId: c.id, payload: { from: 2, to: 3 } });
+    }
+    if (path.includes('meeting')) {
+      const m = store.append({ kind: 'response_observed', actor: 'jay', personId: p.id, artifactId: a.id, at: ago(Math.max(days - 5, 0)), origin: 'example', payload: { kind: 'dm', by: 'external', asksAboutQb: true, text: 'Could we talk about how you would approach this?' } });
+      store.append({ kind: 'rung_changed', actor: 'jay', personId: p.id, at: ago(Math.max(days - 5, 0)), origin: 'example', evidenceEventId: m.id, payload: { from: 3, to: 4 } });
+    }
+    return p;
+  };
+  const P1 = 'Maintenance requests lost between portal, vendor and on-site team';
+  const P2 = 'Vendor status lives in text messages nobody else can see';
+  const P3 = 'Front desk re-keys the same booking into three systems';
+  const P4 = 'Night audit exceptions discovered days later by accounting';
+  const P5 = 'Owner reporting assembled by hand from six exports';
+  add('Tomás Herrera', 'Regional Property Manager', 'Harborline Property Group', 'https://www.linkedin.com/in/tomas-herrera-example',
+    'Our vendors confirm by text. To the person who called. Which means the status of a $4k repair lives in one phone. Anyone solved this without a new portal?', P2,
+    'the status of a $4k repair lives in one phone', 14, ['comment', 'reply', 'confirm']);
+  add('Lena Abiodun', 'General Manager', 'Driftwood Hospitality', 'https://www.linkedin.com/in/lena-abiodun-example',
+    'Night audit found an exception from eleven days ago. Accounting found it today. Everyone did their job. The job is the problem.', P4,
+    'Night audit found an exception from eleven days ago. Accounting found it today.', 12, ['comment', 'reply']);
+  add('Sam Okonkwo', 'Director of Rooms', 'Driftwood Hospitality', 'https://www.linkedin.com/in/sam-okonkwo-example',
+    'Front desk types each group booking into the PMS, the POS and a spreadsheet for the GM. Three times. Daily. Asking for a friend who is me.', P3,
+    'types each group booking into the PMS, the POS and a spreadsheet for the GM. Three times.', 8, ['comment']);
+  add('Rina Castellanos', 'Asset Manager', 'Westmark Residential', 'https://www.linkedin.com/in/rina-castellanos-example',
+    'Monthly owner report: six exports, two hours, one person who is the only one who knows how. If she is sick, there is no report.', P5,
+    'six exports, two hours, one person who is the only one who knows how', 6, ['comment', 'reply', 'confirm', 'meeting']);
+  add('Dev Raman', 'Operations Lead', 'Westmark Residential', 'https://www.linkedin.com/in/dev-raman-example',
+    'Residents call about a repair the vendor already finished. Nobody told the portal. So nobody told the resident.', P1,
+    'Nobody told the portal. So nobody told the resident.', 4, ['save']);
+  add('Noor Haddad', 'Founder', null, 'https://www.linkedin.com/in/noor-haddad-example',
+    'AI will replace every property manager within five years. Thread.', null, null, 3, ['scroll']);
+  add('Elliot Park', 'Director of Engineering', 'Harborline Property Group', 'https://www.linkedin.com/in/elliot-park-example',
+    'Half my day is finding out what the other half of the building already knows. Work orders, vendor texts, resident emails, three inboxes.', P2,
+    'finding out what the other half of the building already knows', 2, ['comment']);
+  return base;
+}

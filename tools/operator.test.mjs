@@ -174,26 +174,71 @@ test('the first-encounter rule turns a stranger\'s COMMENT into SAVE unless it i
   assert.equal(applyVerdictRules({ ...base, verdict: 'SCROLL' }, { status: 'empty' }).verdict, 'SCROLL');
 });
 
+/* ---------- the graph: a projection of the log ---------- */
+test('the graph is derived from the log: every edge is a relationship on file, weights are counts', () => {
+  const store = C.createStore(mem(), { now: fixedNow });
+  C.seedExampleWide(store, T0);
+  const m = C.graphModel(store);
+  const ids = new Set(m.nodes.map((n) => n.id));
+  for (const e of m.edges) { assert.ok(ids.has(e.source) && ids.has(e.target), `dangling edge ${e.id}`); assert.ok(['member', 'authored', 'evidence'].includes(e.kind)); assert.ok(e.weight >= 1); }
+  const evidence = m.edges.filter((e) => e.kind === 'evidence');
+  assert.ok(evidence.length >= 6);
+  for (const e of evidence) assert.ok(store.events().some((x) => x.id === e.eventId), 'every evidence edge cites an event');
+  const confirmed = evidence.filter((e) => e.confirmed).length;
+  assert.equal(confirmed, store.events().filter((e) => e.kind === 'problem_evidence' && e.actor === 'jay').length, 'solid edges are exactly the Jay-confirmed evidence');
+  const priya = m.nodes.find((n) => n.kind === 'person' && n.label === 'Priya Natarajan');
+  assert.equal(priya.rung, 3);
+  assert.ok(m.nodes.find((n) => n.kind === 'person' && n.label === 'Marcus Oyelaran').openLoop, 'a person with an open loop is marked');
+});
+
+test('the layout settles, is deterministic, and keeps problems inside, people around, companies outside', () => {
+  const store = C.createStore(mem(), { now: fixedNow }); C.seedExampleWide(store, T0);
+  const m = C.graphModel(store);
+  const a = C.layoutSettle(m, {}, 400), b = C.layoutSettle(m, {}, 400);
+  for (const id of Object.keys(a)) { assert.ok(Number.isFinite(a[id].x) && Number.isFinite(a[id].y)); assert.equal(a[id].x, b[id].x); }
+  const r = (kind) => { const xs = m.nodes.filter((n) => n.kind === kind).map((n) => Math.hypot(a[n.id].x, a[n.id].y)); return xs.reduce((s, v) => s + v, 0) / xs.length; };
+  assert.ok(r('problem') < r('person'), 'problems sit inside people');
+  assert.ok(r('person') < r('company'), 'people sit inside companies');
+  const big = m.nodes.filter((n) => n.kind !== 'artifact');
+  for (let i = 0; i < big.length; i++) for (let j = i + 1; j < big.length; j++) assert.ok(Math.hypot(a[big[i].id].x - a[big[j].id].x, a[big[i].id].y - a[big[j].id].y) > 24, 'no two labelled nodes sit on top of each other');
+  assert.ok(C.layoutTick(m, a, { alpha: 0.05 }) < 0.5, 'a settled layout barely moves');
+});
+
+test('the camera frames the whole picture at home and keeps a focused node clear of the panel', () => {
+  const store = C.createStore(mem(), { now: fixedNow }); C.seedExampleWide(store, T0);
+  const pos = C.layoutSettle(C.graphModel(store));
+  const home = C.cameraRect({ focus: null, positions: pos, aspect: 16 / 9, panelFrac: 0.3 });
+  const b = C.bounds(pos, 0);
+  assert.ok(home.x + home.w * 0.3 <= b.x + 1, 'the picture starts right of the panel');
+  assert.ok(home.x + home.w >= b.x + b.w - 1 && home.y <= b.y && home.y + home.h >= b.y + b.h, 'and the whole picture is inside the frame');
+  assert.ok(Math.abs(home.w / home.h - 16 / 9) < 0.01);
+  const id = Object.keys(pos)[0];
+  const f = C.cameraRect({ focus: pos[id], positions: pos, aspect: 16 / 9, panelFrac: 0.3, zoomW: 400 });
+  const fx = (pos[id].x - f.x) / f.w;
+  assert.ok(fx > 0.3 && fx < 0.75, `focused node sits in the clear part of the screen (${fx.toFixed(2)})`);
+  const mid = C.lerpRect(home, f, 0.5); assert.ok(Math.abs(mid.w - (home.w + f.w) / 2) < 1e-9);
+  assert.equal(C.rectClose(f, { ...f }), true);
+});
+
 /* ---------- the visual rulebook ---------- */
 const css = readFileSync(new URL('../assets/lab/operator.css', import.meta.url), 'utf8');
 const js = readFileSync(new URL('../assets/lab/operator.js', import.meta.url), 'utf8');
 
-test('rule 1: safety orange is defined once and used only through the token', () => {
+test('rule 1: safety orange is defined once and used only through its tokens', () => {
   const hits = css.match(/#ff5a00/gi) || [];
   assert.equal(hits.length, 1, 'the hex appears once, on --live');
   assert.doesNotMatch(js, /#ff5a00/i);
   assert.doesNotMatch(css, /#FFBE0B|#B38A3D|#0E0F10|#F6F4EE/i, 'no retired brass, ink or bone');
 });
 
-test('rule 2: glow exists in exactly one place, the flaring ladder cell, and never on chrome or hover', () => {
-  const shadows = css.match(/box-shadow\s*:/g) || [];
-  // the flare keyframe carries three stops plus the one reset on focus
-  assert.ok(shadows.length <= 4, `box-shadow appears ${shadows.length} times`);
-  const nonFlare = css.split('\n').filter((l) => /box-shadow\s*:/.test(l) && !/@keyframes flare|rgba\(255,90,0/.test(l));
-  assert.equal(nonFlare.length, 1, 'one box-shadow outside the flare');
-  assert.ok(nonFlare[0].includes('focus-visible') && nonFlare[0].includes('box-shadow:none'), 'and it is the focus reset, not a glow');
-  assert.doesNotMatch(css, /filter\s*:\s*blur|drop-shadow|backdrop-filter/);
-  assert.doesNotMatch(css, /:hover[^{]*\{[^}]*box-shadow/);
+test('rule 2: glow exists in one place, the live node and its flare, and never on chrome, hover or motion', () => {
+  const lines = css.split('\n');
+  const glowLines = lines.filter((l) => /drop-shadow|box-shadow/.test(l));
+  assert.ok(glowLines.length >= 2 && glowLines.length <= 3, `glow lines: ${glowLines.length}`);
+  for (const l of glowLines) assert.ok(/\.is-live|\.flare|@keyframes flare/.test(l), `glow outside the live element: ${l.trim().slice(0, 60)}`);
+  for (const l of glowLines) assert.ok(/rgba\(255,90,0|var\(--live-soft\)/.test(l), 'glow is always the orange');
+  assert.doesNotMatch(css, /:hover[^{]*\{[^}]*(shadow|filter)/);
+  assert.doesNotMatch(css, /backdrop-filter|filter\s*:\s*blur/);
 });
 
 test('rule 3: hover and press move named properties on their own clocks; nothing transitions "all"', () => {
@@ -208,13 +253,16 @@ test('rule 4: every CSS variable used is defined', () => {
   for (const v of used) assert.ok(defined.has(v), `${v} is used but never defined`);
 });
 
-test('rule 5: motion collapses under reduced motion and no text is set below 12px', () => {
+test('rule 5: motion is state change only and collapses under reduced motion; nothing below 12px', () => {
   assert.match(css, /@media \(prefers-reduced-motion:reduce\)/);
   const rm = css.slice(css.indexOf('@media (prefers-reduced-motion:reduce)'));
-  assert.match(rm, /\.cell\.is-live\.flare\{animation:none\}/);
+  assert.match(rm, /\.flare \.core\{animation:none\}/);
+  assert.match(rm, /\.edge\.draw\{animation:none\}/);
   const sizes = [...css.matchAll(/font-size\s*:\s*([\d.]+)px/g)].map((m) => Number(m[1]));
   assert.ok(sizes.every((s) => s >= 12), `smallest font-size ${Math.min(...sizes)}px`);
   assert.doesNotMatch(css, /text-transform\s*:\s*uppercase/, 'labels are sentence case');
+  const infinite = [...css.matchAll(/animation:[^;]*infinite/g)].map((m) => m[0]);
+  assert.deepEqual(infinite.map((a) => a.includes('blink')), [true], 'the only looping animation is the busy tick while a reading is in flight');
 });
 
 test('the page keeps the site header lockup, is noindex, and loads the module', () => {
@@ -222,5 +270,6 @@ test('the page keeps the site header lockup, is noindex, and loads the module', 
   assert.match(html, /noindex/);
   assert.match(html, /class="qb-word"/);
   assert.match(html, /operator\.js/);
+  assert.match(html, /<svg id="canvas"/);
   assert.doesNotMatch(html, /glow|neon|bloom/i);
 });
