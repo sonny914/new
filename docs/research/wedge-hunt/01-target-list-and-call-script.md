@@ -19,25 +19,25 @@
 
 | # | Company | Service line | Contact, title | Source | Status | Aging export? | Pilot? |
 |---|---|---|---|---|---|---|---|
-| 1 | | | | | | | |
-| 2 | | | | | | | |
-| 3 | | | | | | | |
-| 4 | | | | | | | |
-| 5 | | | | | | | |
-| 6 | | | | | | | |
-| 7 | | | | | | | |
-| 8 | | | | | | | |
-| 9 | | | | | | | |
-| 10 | | | | | | | |
-| 11 | | | | | | | |
-| 12 | | | | | | | |
-| 13 | | | | | | | |
-| 14 | | | | | | | |
-| 15 | | | | | | | |
+| 1 | Imperative Chemical Partners | chemicals | owner / controller | posting: Billing EDI Specialist, Midland + Hempstead | | | |
+| 2 | CHP Energy Services | (confirm) | owner / controller | posting: Billing Specialist, Midland, $75–80k | | | |
+| 3 | Peak Rentals | rental equipment | owner | posting: Ticket Runner, Midland | | | |
+| 4 | Valiant Artificial Lift Solutions | artificial lift | owner / controller | posting: Invoicing Clerk, Midland | | | |
+| 5 | John W Stone Oil Distributor | fuel / lubricants | owner / controller | posting: Billing Specialist, Houston, 2026-05-09 | | | |
+| 6 | Bluehook Tool Company | downhole tools | owner | posting: Billing Specialist, Odessa | | | |
+| 7 | Basin Holdings | (confirm) | VP Finance | posting: Billing Supervisor, Conroe | | | |
+| 8 | Iron Horse Tools | rental tools | owner / controller | posting: Billing Specialist, Corpus Christi | | | |
+| 9 | WC Welding | welding / fabrication | owner | posting: Office Assistant (ticketing), Carthage | | | |
+| 10 | | | | EWTC directory | | | |
+| 11 | | | | EWTC directory | | | |
+| 12 | | | | factoring case study | | | |
+| 13 | | | | factoring case study | | | |
+| 14 | | | | warm intro | | | |
+| 15 | | | | warm intro | | | |
 
 ## Companies hiring for this loop
 
-(Paste the week-one job-posting table here.)
+See `00-week-one-checklist.md`, check 3 result: twenty postings, $18–31/hour, nine owner-operated names carried into rows 1–9 above. Recruiter-sourced postings (Addison Group, Robert Half, Insight Global) hide the employer; ask the recruiter which client if a warm path exists.
 
 ## The call
 
