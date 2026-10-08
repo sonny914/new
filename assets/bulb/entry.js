@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createSpatialEngine } from '/assets/lab/spatial-engine.js';
-import { poseAt, labelAt, settledAt, captionAt, seg, SEPARATION, ROTATION as TURN, SETTLE, MAP as SEQ } from './map.js?v=7';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
+import { poseAt, labelAt, settledAt, captionAt, catchAt, CATCH, seg, SEPARATION, ROTATION as TURN, SETTLE, MAP as SEQ } from './map.js?v=7';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
 export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=7';
 
 export const GROUND = 0x000000;      // brand black
@@ -582,7 +582,7 @@ export function createEntry(root, opts = {}) {
         if (!flat) { geo.computeVertexNormals(); glass = new THREE.Mesh(geo, glassMat.clone()); glass.material.depthWrite = false; piece.add(glass); }   // clear glass hides nothing behind it, as the whole bulb did the frame before   // the bake's own mesh, one glass, nothing added
         const outward = new THREE.Vector3(home.x, home.y * 0.35, home.z).normalize();
         const mats = [mat].concat(glass ? [glass.material] : []);
-        parts.frags[i] = { i, obj: piece, mat, edgeMat, edgeLines, glass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, lit: 0, litT: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
+        parts.frags[i] = { i, obj: piece, mat, edgeMat, edgeLines, glass, mats, home, radius, bbox, outward, hover: 0, hoverT: 0, lit: 0, litT: 0, burn: 0, navQ: new THREE.Quaternion(), tumbleQ: new THREE.Quaternion() };
         parts.shells.push(piece); scene.add(piece);
       } else if (name === 'shell_wire') {
         parts.wire = new THREE.LineSegments(o.geometry, lineMat); group.add(parts.wire);
@@ -703,7 +703,12 @@ export function createEntry(root, opts = {}) {
     // the live piece: the one under the pointer, the focus or the finger, or Work when none is. Its broken edges take the
     // crack's orange back, the one moment the visitor acts; the others stay cream. The crack light at the break still wins.
     f.lit += (f.litT - f.lit) * (still ? 1 : a); if (Math.abs(f.litT - f.lit) < 0.002) f.lit = f.litT;   // the still renders once: no ease
-    const e = Math.max(p.glow, f.lit * labelAt(p.t, f.i), SMOLDER * labelAt(p.t, f.i));
+    // the live piece catches: it smoulders first and the burn takes hold over about a second; it cools when it lets go.
+    // A chosen piece burns at once (the page is already leaving), and the still has no time to catch in.
+    const wall = f.burnAt ? Math.min(250, now - f.burnAt) : 0; f.burnAt = now;   // real time, not the frame's clamped step: a second is a second on any device
+    if (still || (sel && sel.i === f.i)) f.burn = 1;
+    else f.burn = f.litT > 0.5 ? Math.min(1, f.burn + wall / CATCH.ms) : Math.max(0, f.burn - wall / (CATCH.ms * 0.6));
+    const e = Math.max(p.glow, f.lit * labelAt(p.t, f.i) * catchAt(f.burn), SMOLDER * labelAt(p.t, f.i));
     f.edgeMat.opacity = e; f.edgeMat.visible = e > 0.002;
     if (f.ember) { const k2 = e * (sel && sel.i >= 0 && sel.i !== f.i ? 1 - selK : 1); f.ember.material.uniforms.uK.value = k2; f.ember.visible = p.broken && k2 > 0.002; }
     if (f.glass) f.glass.material.opacity = 1;

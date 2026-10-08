@@ -39,6 +39,11 @@ export function poseAt(t) {
   return { rot, text, dims, crack, broken, sep, settle, release, anchor, glow, heat };
 }
 
+/* A piece catches when it becomes the live one: a faint smoulder first, then the burn takes hold, over about a second.
+   `b` is how long it has been live, 0..1 of CATCH.ms; slow at first, then quick, as a flame catches. */
+export const CATCH = { ms: 1000, from: 0.22 };
+export function catchAt(b) { b = clamp(b); return CATCH.from + (1 - CATCH.from) * b * b * (3 - 2 * b) * (0.35 + 0.65 * b); }
+
 /** Label i (0..3) opacity at t: they arrive one after another near the end of the settle. */
 export function labelAt(t, i) { const a = 0.82 + i * LABEL_STAGGER; return seg(t, a, a + 0.08); }
 /** The settled frame's own wordmark and contact line: after the labels. */
