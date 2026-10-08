@@ -34,7 +34,9 @@ export function poseAt(t) {
   const release = seg(t, MAP.rotate, 0.85);            // the debris leaves the cracks
   const anchor = 1 - seg(t, MAP.separate, 0.85);       // the base and the filament fade once the fragments leave for their poses
   const glow = 1 - seg(t, MAP.rotate, GLOW_OUT);       // the crack light: full at the break, carried by the pieces, gone as they part
-  return { rot, text, dims, crack, broken, sep, settle, release, anchor, glow };
+  // the heat in the fracture: none in the hairline at rest, rising as the cracks run, full at the break; the pieces then carry it out as `glow`
+  const heat = broken ? glow : seg(t, MAP.crack, MAP.rotate);
+  return { rot, text, dims, crack, broken, sep, settle, release, anchor, glow, heat };
 }
 
 /** Label i (0..3) opacity at t: they arrive one after another near the end of the settle. */

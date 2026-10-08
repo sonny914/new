@@ -122,3 +122,11 @@ test('the explanation arrives while the pieces part and stays; the hint that the
   assert.equal(captionAt(0.84).hint, 0); assert.equal(captionAt(1).hint, 1);
   assert.ok(SAY.hint[0] >= 0.82, 'the hint waits for the first label');
 });
+
+test('the fracture heats as the cracks run and hands its heat to the pieces without a jump', () => {
+  assert.equal(poseAt(0).heat, 0, 'the impact hairline at rest is cold');
+  assert.equal(poseAt(MAP.crack).heat, 0);
+  assert.ok(Math.abs(poseAt(MAP.rotate - 1e-6).heat - 1) < 1e-6 && poseAt(MAP.rotate).heat === 1, 'full at the break, from both sides');
+  assert.equal(poseAt(GLOW_OUT).heat, 0, 'gone as the pieces part');
+  let prev = 0; for (let t = MAP.crack; t <= MAP.rotate; t += 0.005) { const h = poseAt(t).heat; assert.ok(h >= prev - 1e-12 && h - prev < 0.06); prev = h; }
+});

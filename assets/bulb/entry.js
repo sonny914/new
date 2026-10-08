@@ -8,8 +8,8 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createSpatialEngine } from '/assets/lab/spatial-engine.js';
-import { poseAt, labelAt, settledAt, captionAt, seg, SEPARATION, ROTATION as TURN, SETTLE, MAP as SEQ } from './map.js?v=6';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
-export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=6';
+import { poseAt, labelAt, settledAt, captionAt, seg, SEPARATION, ROTATION as TURN, SETTLE, MAP as SEQ } from './map.js?v=7';   // versioned: /assets/* is cached for an hour, and the map changes with the sequence
+export { poseAt, labelAt, MAP, ROTATION, seg } from './map.js?v=7';
 
 export const GROUND = 0x000000;      // brand black
 export const LINE = 0xF2EEE5;        // brand cream: the wireframe on the glass, the labels, the rim light
@@ -111,6 +111,12 @@ export const DRIFT = 0.028;          // world units of slow drift on a settled f
    still on the glass however the phone is held. Radians per unit of view; the reflections move about twice as far. */
 export const TILT_TURN = { yaw: 0.42, pitch: 0.28 };
 export const HOVER_MS = 180;         // the ease of a fragment coming forward under the pointer or the focus (Emil: ease-out, under 300 ms)
+/* The fracture's heat: the broken edge burns like a fresh break in hot glass. A capsule of light around every edge
+   segment, drawn in screen pixels so it reads the same at any depth: a hot core (orange toward cream), a glow, and a
+   faint spill onto the glass beside it. Max-blended, so overlapping segments join without beads. It burns where the
+   orange already lives: along the cracks as they run, on every piece at the break, then on the one live piece. */
+export const EMBER = { core: 1.2, glow: 4.5, spill: 12, reach: 30, flicker: 0.18, uneven: 0.45 };   // CSS px (every term is gone by the reach, so no edge shows), and how far the heat wavers
+export const SMOLDER = 0;            // the other three pieces' edges at rest (0..1). 0 keeps orange to the live piece alone.
 export const SELECT_MS = 480;        // the camera's move to a chosen fragment: on-screen movement, strong ease-in-out, retargetable
 
 /** A CSS cubic-bezier as a function of progress, so canvas motion can use the same curves as the stylesheet. */
@@ -376,6 +382,63 @@ export function splitFragment(geo, home) {
   return { surface, rim, grid, edge };
 }
 
+/** A capsule of fracture light around each segment of a LineSegments position array (pairs of points). Six vertices per
+ *  segment, unindexed, so a draw range in segments maps to one in vertices (the cracks grow by draw range). */
+export function emberGeometry(src) {
+  const n = src.length / 6, pos = new Float32Array(n * 18), a = new Float32Array(n * 18), b = new Float32Array(n * 18), c = new Float32Array(n * 18);
+  const corners = [[0, -1], [0, 1], [1, 1], [0, -1], [1, 1], [1, -1]];
+  for (let s = 0; s < n; s++) {
+    const o = s * 6, h = (Math.sin((src[o] + src[o + 3]) * 12.9898 + (src[o + 1] + src[o + 4]) * 78.233 + (src[o + 2] + src[o + 5]) * 37.719) * 43758.5453) % 1;
+    corners.forEach(([end, side], k) => {
+      const v = (s * 6 + k) * 3;
+      for (let j = 0; j < 3; j++) { a[v + j] = src[o + j]; b[v + j] = src[o + 3 + j]; pos[v + j] = src[o + end * 3 + j]; }
+      c[v] = end; c[v + 1] = side; c[v + 2] = Math.abs(h);
+    });
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aA', new THREE.BufferAttribute(a, 3));
+  g.setAttribute('aB', new THREE.BufferAttribute(b, 3)); g.setAttribute('aC', new THREE.BufferAttribute(c, 3));
+  return g;
+}
+
+function emberMaterial(shared) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uRes: shared.uRes, uRatio: shared.uRatio, uTime: shared.uTime, uK: { value: 0 }, uLive: { value: new THREE.Color(LIVE) }, uHot: { value: new THREE.Color(LIVE).lerp(new THREE.Color(LINE), 0.55) } },
+    vertexShader: `
+      attribute vec3 aA; attribute vec3 aB; attribute vec3 aC;
+      uniform vec2 uRes; uniform float uRatio; uniform float uTime;
+      varying vec2 vA; varying vec2 vB; varying float vN;
+      const float REACH = ${EMBER.reach.toFixed(1)}; const float FLICKER = ${EMBER.flicker.toFixed(3)}; const float UNEVEN = ${EMBER.uneven.toFixed(3)};
+      void main() {
+        vec4 ca = projectionMatrix * modelViewMatrix * vec4(aA, 1.0), cb = projectionMatrix * modelViewMatrix * vec4(aB, 1.0);
+        vA = (ca.xy / ca.w * 0.5 + 0.5) * uRes; vB = (cb.xy / cb.w * 0.5 + 0.5) * uRes;
+        vec2 d = vB - vA; float l = length(d); vec2 dir = l > 1e-4 ? d / l : vec2(1.0, 0.0); vec2 nrm = vec2(-dir.y, dir.x);
+        vec4 c = aC.x < 0.5 ? ca : cb; vec2 p = aC.x < 0.5 ? vA : vB;
+        float r = REACH * uRatio;
+        p += nrm * aC.y * r + dir * (aC.x < 0.5 ? -r : r);
+        gl_Position = vec4((p / uRes * 2.0 - 1.0) * c.w, c.z, c.w);
+        // the break is not evenly hot: each stretch has its own heat, and it wavers slowly on its own phase, like an edge still cooling
+        float h = aC.z * 6.2832, base = 1.0 - UNEVEN * (0.5 + 0.5 * sin(h * 13.0) * sin(h * 5.0 + 1.3));
+        vN = base * (1.0 - FLICKER + FLICKER * (0.5 + 0.5 * sin(uTime * 1.7 + h * 3.0)) * (0.6 + 0.4 * sin(uTime * 0.63 + h * 7.0)));
+      }`,
+    fragmentShader: `
+      uniform float uRatio; uniform float uK; uniform vec3 uLive; uniform vec3 uHot;
+      varying vec2 vA; varying vec2 vB; varying float vN;
+      const float CORE = ${EMBER.core.toFixed(2)}; const float GLOW = ${EMBER.glow.toFixed(2)}; const float SPILL = ${EMBER.spill.toFixed(2)};
+      void main() {
+        vec2 pa = gl_FragCoord.xy - vA, ba = vB - vA;
+        float t = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-4), 0.0, 1.0);
+        float d = length(pa - ba * t) / uRatio;                      // CSS px from the break
+        float core = exp(-pow(d / CORE, 2.0)), glow = exp(-pow(d / GLOW, 2.0)), spill = exp(-pow(d / SPILL, 2.0));
+        vec3 col = mix(uLive, uHot, smoothstep(0.55, 1.0, vN)) * core + uLive * (0.55 * glow + 0.2 * spill);   // the hottest stretches run toward cream, the coolest stay orange
+        gl_FragColor = vec4(col * uK * vN, 1.0);
+        #include <colorspace_fragment>
+      }`,
+    transparent: true, depthWrite: false, depthTest: true, toneMapped: false, fog: false, side: THREE.DoubleSide,   // the quads are built in screen space; either winding is the front
+    blending: THREE.CustomBlending, blendEquation: THREE.MaxEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor,
+  });
+}
+
 /* ---------- runtime ---------- */
 export function createEntry(root, opts = {}) {
   const still = !!opts.still;                                          // reduced motion: the settled frame, once, tappable, no drift, no hue
@@ -415,6 +478,7 @@ export function createEntry(root, opts = {}) {
   glassMat.color.set(GLASS.color); glassMat.attenuationColor.set(GLASS.attenuationColor);
 
   const parts = { shells: [], frags: [], glass: null, wire: null, cracks: null, crackSegs: 0, base: null, baseSolid: null, baseGeom: null, filament: null, dims: null, debris: null, points: null };
+  const emberShared = { uRes: { value: new THREE.Vector2(1, 1) }, uRatio: { value: 1 }, uTime: { value: 0 } };   // one size and one clock for every ember
   const box = new THREE.Box3();
   const sphere = { c: new THREE.Vector3(), r: 1 };                     // the bulb's bounding sphere in its own space: the pivot and the framing
   const anchor = new THREE.Vector3();                                  // where the sphere's centre sits in the world
@@ -431,6 +495,7 @@ export function createEntry(root, opts = {}) {
     renderer.setSize(w, h, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
     if (parts.points) parts.points.material.uniforms.uRatio.value = ratio;
+    renderer.getDrawingBufferSize(emberShared.uRes.value); emberShared.uRatio.value = ratio;
     if (box.isEmpty()) return;
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     portrait = h > w;
@@ -540,6 +605,14 @@ export function createEntry(root, opts = {}) {
       }
     });
     if (parts.cracks) carryCracks();
+    parts.frags.forEach((f) => {                                       // each piece's broken edge burns: built after the cracks are carried, so they burn too
+      if (!f) return; f.ember = new THREE.Mesh(emberGeometry(f.edgeLines.geometry.attributes.position.array), emberMaterial(emberShared));
+      f.ember.renderOrder = 3; f.ember.frustumCulled = false; f.ember.visible = false; f.obj.add(f.ember);
+    });
+    if (parts.cracks) {                                                // the cracks burn as they run, grown by the same draw range
+      parts.crackEmber = new THREE.Mesh(emberGeometry(parts.cracks.geometry.attributes.position.array), emberMaterial(emberShared));
+      parts.crackEmber.renderOrder = 3; parts.crackEmber.frustumCulled = false; parts.crackEmber.geometry.setDrawRange(0, 0); group.add(parts.crackEmber);
+    }
     if (parts.debris) { parts.points = makeDebris(parts.debris, mobile.matches ? DUST.mobile : DUST.desktop, stage.clientHeight > stage.clientWidth ? SPREAD.portrait : SPREAD.landscape); group.add(parts.points); }
     if (!flat) {                                                        // the whole envelope at rest: one lathe, the bake's own profile
       const lathe = glassLathe();                                      // finer than the grid it carries, no crease at the neck
@@ -630,8 +703,9 @@ export function createEntry(root, opts = {}) {
     // the live piece: the one under the pointer, the focus or the finger, or Work when none is. Its broken edges take the
     // crack's orange back, the one moment the visitor acts; the others stay cream. The crack light at the break still wins.
     f.lit += (f.litT - f.lit) * (still ? 1 : a); if (Math.abs(f.litT - f.lit) < 0.002) f.lit = f.litT;   // the still renders once: no ease
-    const e = Math.max(p.glow, f.lit * labelAt(p.t, f.i));
+    const e = Math.max(p.glow, f.lit * labelAt(p.t, f.i), SMOLDER * labelAt(p.t, f.i));
     f.edgeMat.opacity = e; f.edgeMat.visible = e > 0.002;
+    if (f.ember) { const k2 = e * (sel && sel.i >= 0 && sel.i !== f.i ? 1 - selK : 1); f.ember.material.uniforms.uK.value = k2; f.ember.visible = p.broken && k2 > 0.002; }
     if (f.glass) f.glass.material.opacity = 1;
   }
 
@@ -714,6 +788,8 @@ export function createEntry(root, opts = {}) {
     scene.fog.far = fogFar + 60 * p.settle;                             // the settled pieces leave the haze entirely: depth is parallax and scale, never dimness
     if (settled) { const k = still ? 1 : settledAt(t); settledRest.forEach((el) => { el.style.opacity = k.toFixed(3); }); settled.style.pointerEvents = k > 0.5 ? 'auto' : 'none'; }
     if (parts.cracks) { parts.cracks.geometry.setDrawRange(0, Math.round(parts.crackSegs * p.crack) * 2); parts.cracks.visible = !p.broken; }
+    if (parts.crackEmber) { parts.crackEmber.geometry.setDrawRange(0, Math.round(parts.crackSegs * p.crack) * 6); parts.crackEmber.material.uniforms.uK.value = p.heat; parts.crackEmber.visible = !p.broken && p.heat > 0.002; }
+    emberShared.uTime.value = still ? 0 : clock;
     if (parts.wire) parts.wire.visible = !p.broken;
     if (parts.glass) parts.glass.visible = !p.broken;
     anchorMat.opacity = 0.86 * p.anchor; if (parts.baseSolid) parts.baseSolid.visible = p.anchor > 0.5;
@@ -750,7 +826,7 @@ export function createEntry(root, opts = {}) {
     }
     renderer.render(scene, camera);
     placeLabels(t, p.settle);                                          // after the render, so the camera's matrices are this frame's
-    return !still && (p.settle > 0.001 || moving);                     // the settled fragments drift on their own; nothing else does
+    return !still && (p.settle > 0.001 || moving || p.heat > 0.01);                     // the settled fragments drift on their own; nothing else does
   }
 
   /* ---------- input: labels and the fragments themselves ---------- */
