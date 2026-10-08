@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { poseAt, labelAt, settledAt, captionAt, seg, MAP, ROTATION, CRACK0, SEPARATION, SETTLE, GLOW_OUT, SAY } from '../assets/bulb/map.js';
+import { poseAt, labelAt, settledAt, captionAt, seg, MAP, ROTATION, CRACK0, SEPARATION, SETTLE, GLOW_OUT, SAY, catchAt, CATCH } from '../assets/bulb/map.js';
 
 test('the whole bulb holds still through the hold; the text is on at rest and the marks stay until the turn', () => {
   for (const t of [0, MAP.hold / 2, MAP.hold]) { const p = poseAt(t); assert.equal(p.rot, 0); assert.equal(p.dims, 1); assert.equal(p.broken, false); assert.equal(p.sep, 0); }
@@ -121,4 +121,20 @@ test('the explanation arrives while the pieces part and stays; the hint that the
   assert.ok(SAY.why[1] < 0.82, 'read before the labels start to arrive');
   assert.equal(captionAt(0.84).hint, 0); assert.equal(captionAt(1).hint, 1);
   assert.ok(SAY.hint[0] >= 0.82, 'the hint waits for the first label');
+});
+
+test('the fracture heats as the cracks run and hands its heat to the pieces without a jump', () => {
+  assert.equal(poseAt(0).heat, 0, 'the impact hairline at rest is cold');
+  assert.equal(poseAt(MAP.crack).heat, 0);
+  assert.ok(Math.abs(poseAt(MAP.rotate - 1e-6).heat - 1) < 1e-6 && poseAt(MAP.rotate).heat === 1, 'full at the break, from both sides');
+  assert.equal(poseAt(GLOW_OUT).heat, 0, 'gone as the pieces part');
+  let prev = 0; for (let t = MAP.crack; t <= MAP.rotate; t += 0.005) { const h = poseAt(t).heat; assert.ok(h >= prev - 1e-12 && h - prev < 0.06); prev = h; }
+});
+
+test('a piece catches: a smoulder first, then the full burn, never backwards', () => {
+  assert.equal(catchAt(0), CATCH.from, 'it starts as a smoulder, not cold and not full');
+  assert.ok(CATCH.from > 0.1 && CATCH.from < 0.4);
+  assert.equal(catchAt(1), 1); assert.equal(catchAt(2), 1);
+  assert.ok(catchAt(0.25) < 0.35, 'slow at first');
+  let prev = catchAt(0); for (let b = 0.01; b <= 1; b += 0.01) { const c = catchAt(b); assert.ok(c >= prev - 1e-12); prev = c; }
 });

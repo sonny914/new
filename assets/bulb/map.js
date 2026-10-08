@@ -34,8 +34,15 @@ export function poseAt(t) {
   const release = seg(t, MAP.rotate, 0.85);            // the debris leaves the cracks
   const anchor = 1 - seg(t, MAP.separate, 0.85);       // the base and the filament fade once the fragments leave for their poses
   const glow = 1 - seg(t, MAP.rotate, GLOW_OUT);       // the crack light: full at the break, carried by the pieces, gone as they part
-  return { rot, text, dims, crack, broken, sep, settle, release, anchor, glow };
+  // the heat in the fracture: none in the hairline at rest, rising as the cracks run, full at the break; the pieces then carry it out as `glow`
+  const heat = broken ? glow : seg(t, MAP.crack, MAP.rotate);
+  return { rot, text, dims, crack, broken, sep, settle, release, anchor, glow, heat };
 }
+
+/* A piece catches when it becomes the live one: a faint smoulder first, then the burn takes hold, over about a second.
+   `b` is how long it has been live, 0..1 of CATCH.ms; slow at first, then quick, as a flame catches. */
+export const CATCH = { ms: 1000, from: 0.22 };
+export function catchAt(b) { b = clamp(b); return CATCH.from + (1 - CATCH.from) * b * b * (3 - 2 * b) * (0.35 + 0.65 * b); }
 
 /** Label i (0..3) opacity at t: they arrive one after another near the end of the settle. */
 export function labelAt(t, i) { const a = 0.82 + i * LABEL_STAGGER; return seg(t, a, a + 0.08); }
