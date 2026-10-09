@@ -82,8 +82,9 @@
   .ref-strip .t .acc{position:absolute;top:50%;left:14px;right:14px;height:6px;background:var(--live);border-radius:3px;opacity:.85}
   .ref-strip .t .acc + .acc{top:calc(50% + 18px);right:40%;background:#2A2723;opacity:1}
   .brace{position:absolute;left:0;right:0;bottom:-6px;display:grid;grid-template-columns:1fr 5fr 1fr;gap:14px;font-family:'Space Mono';font-size:18px;letter-spacing:.16em;text-transform:uppercase;color:var(--oat);text-align:center}
-  .brace div{border-top:2px solid var(--hair);padding-top:16px}
-  .brace .mid{border-color:var(--live);color:var(--live)}
+  .brace div{--line:var(--hair);background:linear-gradient(var(--line),var(--line)) no-repeat 0 0/100% 2px;padding-top:18px}
+  .brace .mid{--line:var(--live);color:var(--live)}
+  .brace span{display:inline-block}
   .s2 .stage{display:flex;flex-direction:column}
   .s2 .ref-wrap{flex:1;position:relative;padding-bottom:64px}
 
@@ -211,7 +212,7 @@
         <div class="t"><span class="k">Proof</span><i class="acc"></i><i class="acc"></i><span class="num">06</span></div>
         <div class="t cta"><span class="k">Ask</span><span class="num">07</span></div>
       </div>
-      <div class="brace"><div>Stop</div><div class="mid">Same template · new payoff each swipe</div><div>Follow</div></div>
+      <div class="brace"><div><span>Stop</span></div><div class="mid"><span>Same template · new payoff each swipe</span></div><div><span>Follow</span></div></div>
     </div>
   </div>
   <div class="foot"><span>Swipe →</span><div class="dots"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div></div>
@@ -324,5 +325,6 @@
   <div class="foot"><span>Thanks for swiping</span><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div></div>
 </section>
 
+<script src="anim.js"></script>
 </body>
 </html>
