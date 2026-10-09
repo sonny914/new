@@ -6,7 +6,7 @@
 <title>Vibe Coded Carousel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Syne:wght@800&family=Fraunces:ital,opsz,wght@1,9..144,600&display=block" rel="stylesheet">
 <style>
   :root{
     --black:#0B0A09; --malt:#171512; --surface:#121110;
@@ -103,19 +103,19 @@
   .sw i{width:58px;height:58px;border-radius:12px;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
   .sw span{font-family:'Space Mono',monospace;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--quiet);display:flex;flex-direction:column;gap:4px}
   .sw span b{font-size:18px;color:var(--oat);font-weight:400}
-  .site{border-radius:20px;background:#F4F1E9;color:#0B0A09;padding:30px 34px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .site{border-radius:20px;background:var(--c-bg);color:var(--c-text);padding:30px 34px;display:flex;flex-direction:column;position:relative;overflow:hidden}
   .site .nav{display:flex;justify-content:space-between;align-items:center;font-family:'Space Mono';font-size:14px;letter-spacing:.1em}
   .site .nav b{font-family:'Bricolage Grotesque';font-weight:800;font-size:22px;letter-spacing:-.02em}
-  .site .nav span{display:flex;gap:16px;color:#6A6357}
+  .site .nav span{display:flex;gap:16px;opacity:.6}
   .site h4{font-family:'Bricolage Grotesque';font-weight:800;font-size:54px;line-height:.95;letter-spacing:-.04em;margin-top:36px}
-  .site h4 em{font-style:normal;color:#FF5A1F}
-  .site p{font-size:18px;line-height:1.45;color:#5A5348;margin-top:14px;max-width:340px}
+  .site h4 em{font-style:normal;color:var(--c-primary)}
+  .site p{font-size:18px;line-height:1.45;opacity:.72;margin-top:14px;max-width:340px}
   .site .cta{display:flex;gap:10px;margin-top:22px}
   .site .cta span{font-size:16px;font-weight:600;padding:12px 18px;border-radius:10px}
-  .site .cta .p{background:#FF5A1F;color:#0B0A09}
-  .site .cta .s{border:1.5px solid #0B0A09}
-  .site .blob{position:absolute;right:-50px;bottom:-60px;width:240px;height:240px;border-radius:50%;background:#2E6F5E}
-  .site .blob2{position:absolute;right:120px;bottom:40px;width:90px;height:90px;border-radius:24px;background:#E8DCC2;transform:rotate(14deg)}
+  .site .cta .p{background:var(--c-primary);color:var(--c-on)}
+  .site .cta .s{border:1.5px solid var(--c-text)}
+  .site .blob{position:absolute;right:-50px;bottom:-60px;width:240px;height:240px;border-radius:50%;background:var(--c-accent)}
+  .site .blob2{position:absolute;right:120px;bottom:40px;width:90px;height:90px;border-radius:24px;background:var(--c-secondary);transform:rotate(14deg)}
   .contrast{position:absolute;left:24px;bottom:22px;font-family:'Space Mono';font-size:14px;letter-spacing:.1em;background:#0B0A09;color:#8FBF98;padding:8px 12px;border-radius:8px}
 
   /* ---------- 4 · type ---------- */
@@ -164,6 +164,147 @@
   .cta-s .btns span.solid{background:var(--live);border-color:var(--live);color:var(--black);font-weight:700}
   .cta-s .quote{position:absolute;z-index:4;left:var(--pad);bottom:190px;font-family:'Instrument Serif';font-style:italic;font-size:36px;line-height:1.15;color:var(--oat);max-width:420px}
   .cta-s .quote small{display:block;font-family:'Space Mono';font-style:normal;font-size:17px;letter-spacing:.16em;text-transform:uppercase;color:var(--quiet);margin-top:12px}
+
+  /* hooks the motion layer animates; at rest they match the stills */
+  @property --c-text{syntax:'<color>';inherits:true;initial-value:#0B0A09}
+  @property --c-bg{syntax:'<color>';inherits:true;initial-value:#F4F1E9}
+  @property --c-primary{syntax:'<color>';inherits:true;initial-value:#FF5A1F}
+  @property --c-secondary{syntax:'<color>';inherits:true;initial-value:#E8DCC2}
+  @property --c-accent{syntax:'<color>';inherits:true;initial-value:#2E6F5E}
+  @property --c-on{syntax:'<color>';inherits:true;initial-value:#0B0A09}
+  .search .q{font-family:'Space Mono',monospace;font-size:24px;display:inline-block;width:10ch;overflow:hidden;white-space:nowrap;vertical-align:bottom}
+  #s5 .cmd{display:inline-block;width:34ch;overflow:hidden;white-space:nowrap;vertical-align:bottom}
+  .caret{display:inline-block;width:3px;height:1.05em;background:var(--live);margin-left:3px;vertical-align:-.15em}
+  .ln{display:block}
+  .hex{position:relative;display:block}
+  .hex .pb,.hex .pc{position:absolute;left:0;top:0;opacity:0}
+  .spec.after .aa{position:relative}
+  .spec.after .aa .f{display:block}
+  .spec.after .aa .f + .f{position:absolute;left:0;bottom:0;opacity:0}
+  .f2{font-family:'Syne',sans-serif;font-style:normal;font-weight:800;letter-spacing:-.06em;font-size:150px}
+  .f3{font-family:'Fraunces',serif;font-style:italic;font-weight:600;letter-spacing:-.03em}
+  .f4{font-family:'Bricolage Grotesque',sans-serif;font-style:normal;font-weight:800;letter-spacing:-.06em}
+  .snap{position:absolute;left:-14px;right:-14px;top:-14px;height:340px;pointer-events:none;
+    --b:linear-gradient(var(--live),var(--live));
+    background:var(--b) 0 0/38px 4px no-repeat,var(--b) 0 0/4px 38px no-repeat,var(--b) 100% 0/38px 4px no-repeat,var(--b) 100% 0/4px 38px no-repeat,
+      var(--b) 0 100%/38px 4px no-repeat,var(--b) 0 100%/4px 38px no-repeat,var(--b) 100% 100%/38px 4px no-repeat,var(--b) 100% 100%/4px 38px no-repeat}
+  .flash{position:absolute;inset:0;border-radius:30px;background:#fff;pointer-events:none}
+  .toast{position:absolute;right:40px;top:150px;z-index:5;background:var(--ivory);color:var(--black);font-family:'Space Mono',monospace;font-size:19px;letter-spacing:.06em;padding:14px 20px;border-radius:14px;box-shadow:0 20px 40px rgba(0,0,0,.5)}
+  .toast b{color:var(--live-deep)}
+  .snap,.flash,.toast,.caret,.spark{opacity:0}
+  .walk{display:none}
+
+  /* ================= MOTION =================
+     Only under body.motion (index.html?motion, or render-video.mjs), so the PNG stills never change.
+     Each slide plays on an 8s loop; render-video.mjs pauses every animation and seeks it frame by frame.
+     The cover breathes on whole-loop periods (seamless); the rest build in and fade out at 7.45s. */
+  body.motion{--L:8s}
+  @keyframes pin{from{opacity:0;translate:0 24px}}
+  @keyframes pout{to{opacity:0;translate:0 -12px}}
+  @keyframes rise{from{opacity:0;translate:0 140px}}
+  @keyframes up{from{opacity:0;translate:0 26px}}
+  @keyframes fade{from{opacity:0}}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+  @keyframes nudge{0%,100%{translate:0 0}50%{translate:8px 0}}
+  @keyframes ring{from{box-shadow:0 0 0 0 rgba(255,90,31,.6)}to{box-shadow:0 0 0 22px rgba(255,90,31,0)}}
+
+  /* 1 · cover */
+  body.motion .cover .photo{transform-origin:50% 32%;animation:kb var(--L) ease-in-out infinite}
+  @keyframes kb{0%,100%{scale:1}50%{scale:1.045}}
+  body.motion .card{animation:float var(--L) ease-in-out infinite}
+  body.motion .card.c2{animation-delay:-2.5s}
+  body.motion .card.c3{animation-delay:-1s;animation-duration:calc(var(--L) / 2)}
+  body.motion .card.c4{animation-delay:-6s}
+  @keyframes float{0%,100%{translate:0 0;rotate:0deg}50%{translate:0 -22px;rotate:2.5deg}}
+  body.motion .streaks .gl{animation:glo calc(var(--L) / 2) ease-in-out infinite}
+  @keyframes glo{0%,100%{opacity:.5}50%{opacity:.95}}
+  body.motion .streaks .spark{opacity:1;stroke-dasharray:110 2400;animation:spark var(--L) cubic-bezier(.45,0,.55,1) infinite}
+  body.motion .streaks .spark.r{animation-delay:-4s}
+  @keyframes spark{from{stroke-dashoffset:2510}to{stroke-dashoffset:0}}
+  body.motion .cover h1 .l2 em{
+    background-image:linear-gradient(100deg,transparent 42%,rgba(255,238,228,.95) 50%,transparent 58%),linear-gradient(180deg,var(--ember),var(--live) 55%,var(--live-deep));
+    background-size:300% 100%,100% 100%;background-repeat:no-repeat;animation:shine var(--L) ease-in-out infinite}
+  @keyframes shine{0%,52%{background-position:100% 0,0 0}78%,100%{background-position:0% 0,0 0}}
+  body.motion .cover .swipe b{display:inline-block;animation:nudge calc(var(--L) / 4) ease-in-out infinite}
+
+  /* tool slides: the panel builds in, then fades before the loop restarts */
+  body.motion .panel{animation:pin .45s cubic-bezier(.2,.8,.2,1) both, pout .45s ease-in 7.45s forwards}
+
+  /* 2 · patterns: search → pick → screenshot → hand to Claude */
+  body.motion #s2 .q{animation:type10 .9s steps(10,end) .55s both}
+  @keyframes type10{from{width:0}}
+  body.motion .caret{animation:blink .8s linear infinite}
+  body.motion #s2 .ph{animation:rise .8s cubic-bezier(.2,.8,.2,1) 1s both}
+  body.motion #s2 .ph:nth-child(2){animation-delay:1.08s}
+  body.motion #s2 .ph:nth-child(4){animation-delay:1.24s}
+  body.motion #s2 .ph:nth-child(5){animation-delay:1.32s}
+  body.motion #s2 .ph.hot{animation:rise .8s cubic-bezier(.2,.8,.2,1) 1.16s both, pick .5s cubic-bezier(.2,.8,.2,1) 2.2s both}
+  @keyframes pick{from{transform:none;filter:grayscale(1) brightness(.45);border-color:#2A2723;box-shadow:0 0 0 0 rgba(255,90,31,0),0 0 0 rgba(255,90,31,0)}}
+  body.motion #s2 .callout{animation:up .5s ease-out 2.6s both}
+  body.motion #s2 .snap{animation:snapin .35s cubic-bezier(.2,.8,.2,1) 3s both}
+  @keyframes snapin{from{opacity:0;scale:1.18}to{opacity:1;scale:1}}
+  body.motion #s2 .flash{animation:flash .45s ease-out 3.35s both}
+  @keyframes flash{0%{opacity:0}25%{opacity:.85}100%{opacity:0}}
+  body.motion #s2 .toast{animation:toast .5s cubic-bezier(.2,.8,.2,1) 3.9s both}
+  @keyframes toast{from{opacity:0;translate:0 18px;scale:.96}to{opacity:1}}
+
+  /* 3 · color: the page recolours live through three palettes and back (seamless) */
+  body.motion #s3 .colors{animation:pal var(--L) ease-in-out infinite}
+  @keyframes pal{
+    0%,20%,86%,100%{--c-text:#0B0A09;--c-bg:#F4F1E9;--c-primary:#FF5A1F;--c-secondary:#E8DCC2;--c-accent:#2E6F5E;--c-on:#0B0A09}
+    26%,50%{--c-text:#14231C;--c-bg:#EEF2EA;--c-primary:#2F7D4F;--c-secondary:#CFE0C3;--c-accent:#E0A43A;--c-on:#FFFFFF}
+    56%,80%{--c-text:#F4F1E9;--c-bg:#16130F;--c-primary:#FFB547;--c-secondary:#3A332B;--c-accent:#7FA7FF;--c-on:#16130F}}
+  body.motion #s3 .hex .pa{animation:la var(--L) linear infinite}
+  body.motion #s3 .hex .pb{animation:lb var(--L) linear infinite}
+  body.motion #s3 .hex .pc{animation:lc var(--L) linear infinite}
+  @keyframes la{0%,20%{opacity:1}24%,84%{opacity:0}88%,100%{opacity:1}}
+  @keyframes lb{0%,21%{opacity:0}25%,50%{opacity:1}54%,100%{opacity:0}}
+  @keyframes lc{0%,51%{opacity:0}55%,80%{opacity:1}84%,100%{opacity:0}}
+
+  /* 4 · type: the "after" specimen cycles through four typefaces (seamless) */
+  body.motion #s4 .aa .f{animation:fcyc var(--L) ease-in-out infinite}
+  body.motion #s4 .aa .f2{animation-delay:-6s}
+  body.motion #s4 .aa .f3{animation-delay:-4s}
+  body.motion #s4 .aa .f4{animation-delay:-2s}
+  @keyframes fcyc{0%{opacity:0;translate:0 26px}5%,25%{opacity:1;translate:0 0}30%,100%{opacity:0;translate:0 -26px}}
+  body.motion #s4 .arrow{animation:pulse calc(var(--L) / 4) ease-in-out infinite}
+  @keyframes pulse{0%,100%{scale:1}50%{scale:1.1}}
+
+  /* 5 · components: type the /ui prompt, then the pricing section builds */
+  body.motion #s5 .cmd{animation:type34 1.4s steps(34,end) .5s both}
+  @keyframes type34{from{width:0}}
+  body.motion #s5 .l2{animation:fade .3s ease-out 2.15s both}
+  body.motion #s5 .tier{animation:rise .7s cubic-bezier(.2,.8,.2,1) 2.45s both}
+  body.motion #s5 .tier:nth-child(3){animation-delay:2.75s}
+  body.motion #s5 .tier.pop{animation:rise .7s cubic-bezier(.2,.8,.2,1) 2.6s both, pop .6s cubic-bezier(.3,1.6,.5,1) 2.9s both}
+  @keyframes pop{from{scale:.94}}
+  body.motion #s5 .tier i{transform-origin:left center;animation:bar .5s cubic-bezier(.2,.8,.2,1) 3s both}
+  body.motion #s5 .tier i:nth-of-type(2){animation-delay:3.08s}
+  body.motion #s5 .tier i:nth-of-type(3){animation-delay:3.16s}
+  body.motion #s5 .tier i:nth-of-type(4){animation-delay:3.24s}
+  @keyframes bar{from{scale:0 1}}
+  body.motion #s5 .tier.pop .b{animation:ring 1.2s ease-out 3.6s 3 both}
+
+  /* 6 · CTA: Puppet Jay walks in (8-frame cycle), settles into his standing pose */
+  body.motion #s6 .walk{display:block;opacity:1;position:absolute;left:406px;bottom:113px;width:779px;height:930px;z-index:2;
+    background:url(img/jay-walk.png) 0 0/800% 100% no-repeat;
+    animation:walkf 1s steps(8,end) 0s 2 both, walkx 2s linear 0s both, hide .2s linear 2s forwards}
+  @keyframes walkf{from{background-position:0 0}to{background-position:114.2857% 0}}
+  @keyframes walkx{from{translate:900px 0}to{translate:0 0}}
+  @keyframes hide{to{opacity:0}}
+  body.motion #s6 .jay{animation:land .25s ease-out 1.97s both, pout .45s ease-in 7.45s forwards}
+  @keyframes land{from{opacity:0;translate:0 8px}}
+  body.motion #s6 .floor{animation:fade .6s ease-out 1.2s both, pout .45s ease-in 7.45s forwards}
+  body.motion #s6 .copy{animation:pout .45s ease-in 7.45s forwards}
+  body.motion #s6 .k{animation:up .5s ease-out .2s both}
+  body.motion #s6 .ln{animation:up .6s cubic-bezier(.2,.8,.2,1) .4s both}
+  body.motion #s6 .ln:nth-child(2){animation-delay:.55s}
+  body.motion #s6 .ln:nth-child(3){animation-delay:.7s}
+  body.motion #s6 .copy p{animation:up .5s ease-out 1s both}
+  body.motion #s6 .btns span{animation:up .5s ease-out 1.2s both}
+  body.motion #s6 .btns span + span{animation-delay:1.35s}
+  body.motion #s6 .btns span.solid{animation:up .5s ease-out 1.2s both, ring 1.2s ease-out 2.8s 3}
+  body.motion #s6 .quote{animation:up .5s ease-out 2.5s both, pout .45s ease-in 7.45s forwards}
 </style>
 </head>
 <body>
@@ -174,10 +315,12 @@
   <div class="tint"></div>
   <svg class="streaks" viewBox="0 0 1080 1350" fill="none">
     <defs><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter></defs>
-    <path d="M-40 1000 C 70 780, 130 520, 40 230" stroke="#FF5A1F" stroke-width="10" filter="url(#glow)" opacity=".8"/>
+    <path class="gl" d="M-40 1000 C 70 780, 130 520, 40 230" stroke="#FF5A1F" stroke-width="10" filter="url(#glow)" opacity=".8"/>
     <path d="M-40 1000 C 70 780, 130 520, 40 230" stroke="#FFC9A8" stroke-width="2.5" opacity=".9"/>
-    <path d="M1120 180 C 1000 400, 990 640, 1110 920" stroke="#FF5A1F" stroke-width="12" filter="url(#glow)" opacity=".7"/>
+    <path class="gl" d="M1120 180 C 1000 400, 990 640, 1110 920" stroke="#FF5A1F" stroke-width="12" filter="url(#glow)" opacity=".7"/>
     <path d="M1120 180 C 1000 400, 990 640, 1110 920" stroke="#FFC9A8" stroke-width="2.5" opacity=".85"/>
+    <path class="spark" d="M-40 1000 C 70 780, 130 520, 40 230" stroke="#FFF3EA" stroke-width="5" stroke-linecap="round"/>
+    <path class="spark r" d="M1120 180 C 1000 400, 990 640, 1110 920" stroke="#FFF3EA" stroke-width="5" stroke-linecap="round"/>
   </svg>
   <div class="grade"></div>
 
@@ -188,7 +331,7 @@
   <div class="card c4"><svg viewBox="0 0 100 100"><rect x="6" y="14" width="88" height="72" rx="14" fill="#0B0A09"/><text x="50" y="62" text-anchor="middle" font-family="Space Mono" font-weight="700" font-size="30" fill="#FF5A1F">/ui</text><rect x="64" y="66" width="4" height="0" fill="#FF5A1F"/></svg></div>
 
   <div class="inner">
-    <div class="top"><span>@flighty.builds</span><span class="count">1/6</span></div>
+    <div class="top"><span>@flighty.ai</span><span class="count">1/6</span></div>
     <div class="head">
       <h1><span class="l1">Your app looks</span><span class="l2"><em>Vibe</em> coded.</span></h1>
       <p class="sub">4 designer sites to <em>fix that.</em></p>
@@ -199,18 +342,19 @@
 
 <!-- 02 · MOBBIN -->
 <section class="slide tool" id="s2">
-  <div class="top"><span>@flighty.builds</span><span class="count">2/6</span></div>
+  <div class="top"><span>@flighty.ai</span><span class="count">2/6</span></div>
   <h2>mobbin<span>.com</span></h2>
   <p class="for">For UI patterns</p>
   <p class="body">500k+ screens from apps that actually shipped. Search <b>"onboarding"</b>, screenshot the one you like, and hand it to Claude as the reference.</p>
   <div class="panel">
     <span class="tag soft">Free tier</span>
-    <div class="search"><i></i>onboarding</div>
+    <div class="search"><i></i><span class="q">onboarding</span><span class="caret"></span></div>
     <div class="callout">↓ Screenshot this one</div>
+    <div class="toast"><b>✓</b> Reference → Claude</div>
     <div class="phones">
       <div class="ph"><b class="h"></b><b class="t"></b><b class="t s"></b><b class="img"></b><b class="btn"></b></div>
       <div class="ph"><b class="img"></b><b class="h"></b><b class="t"></b><b class="btn"></b></div>
-      <div class="ph hot"><b class="h"></b><b class="t"></b><b class="t s"></b><b class="img"></b><b class="btn"></b></div>
+      <div class="ph hot"><span class="snap"></span><span class="flash"></span><b class="h"></b><b class="t"></b><b class="t s"></b><b class="img"></b><b class="btn"></b></div>
       <div class="ph"><b class="h"></b><b class="img"></b><b class="t"></b><b class="t s"></b><b class="btn"></b></div>
       <div class="ph"><b class="img"></b><b class="t"></b><b class="t s"></b><b class="btn"></b></div>
     </div>
@@ -220,7 +364,7 @@
 
 <!-- 03 · REALTIME COLORS -->
 <section class="slide tool" id="s3">
-  <div class="top"><span>@flighty.builds</span><span class="count">3/6</span></div>
+  <div class="top"><span>@flighty.ai</span><span class="count">3/6</span></div>
   <h2 style="font-size:98px">realtimecolors<span>.com</span></h2>
   <p class="for">For color</p>
   <p class="body">Pick five colors and watch them land on a real page: buttons, cards, text. <b>Contrast check built in.</b> Export straight to CSS or Tailwind.</p>
@@ -228,11 +372,11 @@
     <span class="tag">Free</span>
     <div class="colors">
       <div class="sw-list">
-        <div class="sw"><i style="background:#0B0A09"></i><span>Text<b>#0B0A09</b></span></div>
-        <div class="sw"><i style="background:#F4F1E9"></i><span>Background<b>#F4F1E9</b></span></div>
-        <div class="sw"><i style="background:#FF5A1F"></i><span>Primary<b>#FF5A1F</b></span></div>
-        <div class="sw"><i style="background:#E8DCC2"></i><span>Secondary<b>#E8DCC2</b></span></div>
-        <div class="sw"><i style="background:#2E6F5E"></i><span>Accent<b>#2E6F5E</b></span></div>
+        <div class="sw"><i style="background:var(--c-text)"></i><span>Text<b class="hex"><span class="pa">#0B0A09</span><span class="pb">#14231C</span><span class="pc">#F4F1E9</span></b></span></div>
+        <div class="sw"><i style="background:var(--c-bg)"></i><span>Background<b class="hex"><span class="pa">#F4F1E9</span><span class="pb">#EEF2EA</span><span class="pc">#16130F</span></b></span></div>
+        <div class="sw"><i style="background:var(--c-primary)"></i><span>Primary<b class="hex"><span class="pa">#FF5A1F</span><span class="pb">#2F7D4F</span><span class="pc">#FFB547</span></b></span></div>
+        <div class="sw"><i style="background:var(--c-secondary)"></i><span>Secondary<b class="hex"><span class="pa">#E8DCC2</span><span class="pb">#CFE0C3</span><span class="pc">#3A332B</span></b></span></div>
+        <div class="sw"><i style="background:var(--c-accent)"></i><span>Accent<b class="hex"><span class="pa">#2E6F5E</span><span class="pb">#E0A43A</span><span class="pc">#7FA7FF</span></b></span></div>
       </div>
       <div class="site">
         <div class="nav"><b>yourapp</b><span>FEATURES&nbsp; PRICING</span></div>
@@ -249,7 +393,7 @@
 
 <!-- 04 · FONTSHARE -->
 <section class="slide tool" id="s4">
-  <div class="top"><span>@flighty.builds</span><span class="count">4/6</span></div>
+  <div class="top"><span>@flighty.ai</span><span class="count">4/6</span></div>
   <h2>fontshare<span>.com</span></h2>
   <p class="for">For type</p>
   <p class="body">Pro-grade typefaces from Indian Type Foundry, <b>free for commercial use.</b> Swap the default sans for Satoshi or Clash Display and the template look disappears.</p>
@@ -257,7 +401,7 @@
     <span class="tag">Free</span>
     <div class="type">
       <div class="spec before"><span class="lbl">Before · the default</span><span class="aa">Aa</span><span class="line">Your app. Same font as every other app.</span></div>
-      <div class="spec after"><span class="lbl">After · a real choice</span><span class="aa">Aa</span><span class="line">Your app, with a point of view.</span></div>
+      <div class="spec after"><span class="lbl">After · a real choice</span><span class="aa"><span class="f f1">Aa</span><span class="f f2">Aa</span><span class="f f3">Aa</span><span class="f f4">Aa</span></span><span class="line">Your app, with a point of view.</span></div>
     </div>
     <span class="arrow">→</span>
   </div>
@@ -266,14 +410,14 @@
 
 <!-- 05 · 21ST.DEV -->
 <section class="slide tool" id="s5">
-  <div class="top"><span>@flighty.builds</span><span class="count">5/6</span></div>
+  <div class="top"><span>@flighty.ai</span><span class="count">5/6</span></div>
   <h2>21st<span>.dev</span></h2>
   <p class="for">For components</p>
   <p class="body">Community-built React + Tailwind components: heroes, pricing, navbars. Copy the code, or connect its <b>Magic MCP</b> to Claude Code and type <b>/ui</b>.</p>
   <div class="panel">
     <span class="tag soft">Free to browse</span>
     <div class="comp">
-      <div class="term"><span class="g">&gt;</span> <span class="w">/ui pricing section, 3 tiers, dark</span><br><span class="ok">✓</span> component added · PricingSection.tsx</div>
+      <div class="term"><span class="g">&gt;</span> <span class="w cmd">/ui pricing section, 3 tiers, dark</span><span class="caret"></span><br><span class="l2"><span class="ok">✓</span> component added · PricingSection.tsx</span></div>
       <div class="tiers">
         <div class="tier"><span class="n">Starter</span><span class="p">$0</span><i></i><i style="width:70%"></i><i style="width:80%"></i><span class="b"></span></div>
         <div class="tier pop"><span class="n">Pro</span><span class="p">$19<small> /mo</small></span><i></i><i style="width:70%"></i><i style="width:85%"></i><i style="width:60%"></i><span class="b"></span></div>
@@ -286,18 +430,20 @@
 
 <!-- 06 · CTA -->
 <section class="slide cta-s" id="s6">
-  <div class="top"><span>@flighty.builds</span><span class="count">6/6</span></div>
+  <div class="top"><span>@flighty.ai</span><span class="count">6/6</span></div>
   <div class="floor"></div>
+  <div class="walk"></div>
   <img class="jay" src="img/jay-full.png" alt="">
   <div class="copy">
     <span class="k">That's the kit</span>
-    <h3>Ship apps<br>that look<br><em>designed.</em></h3>
-    <p>Follow <b>@flighty.builds</b> for the tools behind every build.</p>
+    <h3><span class="ln">Ship apps</span><span class="ln">that look</span><span class="ln"><em>designed.</em></span></h3>
+    <p>Follow <b>@flighty.ai</b> for the tools behind every build.</p>
     <div class="btns"><span class="solid">Follow</span><span>Save for your next build</span></div>
   </div>
   <p class="quote">"Default fonts. Again?"<small>— Puppet Jay</small></p>
   <div class="foot"><span>Thanks for swiping</span><div class="dots"><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div></div>
 </section>
 
+<script>if (new URLSearchParams(location.search).has('motion')) document.body.classList.add('motion');</script>
 </body>
 </html>
