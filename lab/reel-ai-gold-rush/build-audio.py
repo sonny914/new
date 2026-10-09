@@ -123,7 +123,10 @@ place(sfx, 17.98, whoosh(0.5, False), 0.3)                                   # i
 place(sfx, 22.15, tick(2000), 0.18); place(sfx, 22.45, tick(1600), 0.2)      # NOT JUST / BUILDING.
 place(sfx, 24.45, impact(0.8), 0.45)                                         # TEACHING.
 place(sfx, 25.0, pen(), 0.18)                                                # underline
-place(sfx, 26.55, bell(440, 1.4), 0.2); place(sfx, 26.55, bell(659, 1.4), 0.12)     # end frame
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'qb-sting'))
+from sting_audio import make_sting                                           # the Quiet Bands sting
+sting = make_sting(SR).mean(axis=1)
+place(sfx, 26.6, sting / np.abs(sting).max(), 0.43)                          # end frame: on the mark
 
 # ------------------------------------------------------------------------- music bed (original) --
 BPM = 96; beat = 60 / BPM
