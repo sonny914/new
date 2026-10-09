@@ -73,7 +73,7 @@ form.addEventListener('submit', async (e) => {
     showError('Couldn’t send the form.');
     return;
   }
-  fetch('/.netlify/functions/score-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...row, intake: undefined, attribution: undefined, pressure_test: undefined }) }).catch(() => {});
+  fetch('/.netlify/functions/score-lead', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...row, intake: undefined, attribution: undefined, pressure_test: undefined }) }).catch(() => {});
   orb.destroy();
   track('qb_work_intake_complete', { from: fromPT ? 'pressure-test' : 'direct', pt_state: fromPT && saved && saved.result ? saved.result.state : null });
   container.innerHTML = `<div class="f-success rise in"><div class="stamp">Received</div><h3>Got it.</h3><p>We read every answer. If the work is a fit, Jay replies personally, usually within two business days.</p></div>`;
