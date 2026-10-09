@@ -17,10 +17,10 @@ const out = join(here, 'export');
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1200, height: 1400 }, deviceScaleFactor: 2 });
-await page.goto(pathToFileURL(join(here, 'index.html')).href + '?motion', { waitUntil: 'networkidle' });
+await page.goto(pathToFileURL(join(here, 'index.html')).href + '?motion&render', { waitUntil: 'networkidle' });
 await page.evaluate(async () => {
   await document.fonts.ready;
-  const walk = new Image(); walk.src = 'img/jay-walk.png'; await walk.decode();
+  await window.motionReady;   // Puppet Jay's walk-in frames
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 });
 
@@ -31,8 +31,9 @@ for (const id of ids) {
   const el = await page.$(`#${id}`);
   const total = LOOP * FPS;
   for (let f = 0; f < total; f++) {
-    await page.evaluate(([sel, ms]) => {
+    await page.evaluate(async ([sel, ms]) => {
       for (const a of document.querySelector(sel).getAnimations({ subtree: true })) { a.pause(); a.currentTime = ms; }
+      await window.motionSeek?.(ms / 1000);   // per-frame media (Puppet Jay walk-in), when the page has any
     }, [`#${id}`, (f / FPS) * 1000]);
     await el.screenshot({ path: join(frames, `${String(f).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 95 });
   }
