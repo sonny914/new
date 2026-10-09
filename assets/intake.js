@@ -3,6 +3,7 @@
    scoring prompt keeps working unchanged; the structured answers go to `intake`. */
 import { qbInsert, track, getAttribution, pt } from './qb.js';
 import { STATES } from './triage.js';
+import { mountOrb } from './orb/thinking-orb.js';
 
 const form = document.getElementById('intake-form');
 const container = document.getElementById('form-container');
@@ -43,7 +44,11 @@ form.addEventListener('submit', async (e) => {
     const el = form.querySelector(`[name="${missing || 'email'}"]`); if (el) el.focus();
     return;
   }
-  const btn = form.querySelector('.f-submit'); btn.disabled = true; btn.textContent = 'Sending…';
+  const btn = form.querySelector('.f-submit'); btn.disabled = true;
+  // A searching orb while the answers travel: 20 is the library's inline-text size; the button's own text names it.
+  btn.classList.add('sending'); btn.textContent = '';
+  const orb = mountOrb(btn, { state: 'searching', size: 20, theme: 'dark', label: null });
+  btn.append(document.createTextNode('Sending…'));
 
   const intake = {
     today: data.today, who: data.who, how_often: data.how_often, systems: data.systems, goes_wrong: data.goes_wrong,
@@ -64,11 +69,12 @@ form.addEventListener('submit', async (e) => {
   };
   const ok = await qbInsert('leads', row);
   if (!ok) {
-    btn.disabled = false; btn.textContent = 'Send it to Quiet Bands';
+    orb.destroy(); btn.classList.remove('sending'); btn.disabled = false; btn.textContent = 'Send it to Quiet Bands';
     showError('Couldn’t send the form.');
     return;
   }
   fetch('/.netlify/functions/score-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...row, intake: undefined, attribution: undefined, pressure_test: undefined }) }).catch(() => {});
+  orb.destroy();
   track('qb_work_intake_complete', { from: fromPT ? 'pressure-test' : 'direct', pt_state: fromPT && saved && saved.result ? saved.result.state : null });
   container.innerHTML = `<div class="f-success rise in"><div class="stamp">Received</div><h3>Got it.</h3><p>We read every answer. If the work is a fit, Jay replies personally, usually within two business days.</p></div>`;
   container.scrollIntoView({ behavior: 'smooth', block: 'center' });

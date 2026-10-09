@@ -227,3 +227,28 @@ To change the choreography, edit poses in `story.js`; the engine needs no change
 ## Lab: Spatial Dossier v0.1 (`/lab/spatial-dossier/`)
 
 Isolated technical prototype for the street-luxury × dossier × technology direction: one layered object in real CSS 3D, touch parallax, press-and-hold inspection, scroll travel between planes, and a striped lenticular that flips the workflow diagram between how it looks and what actually happens. Plan and report: `docs/SPATIAL-DOSSIER-PLAN.md`. Files: `assets/lab/dossier.css`, `assets/lab/dossier.js`, `assets/lab/grain.png`; tests in `tools/dossier.test.mjs`. `/lab/*` is served `noindex`. Nothing on the production homepage or in the funnel is touched.
+
+## Thinking orb (`assets/orb/`)
+
+The [`thinking-orbs`](https://www.npmjs.com/package/thinking-orbs) loading indicator (MIT, Jakub Antalik) on a site with no React and no build. `assets/orb/engine.js` is the package's own geometry and painter, vendored verbatim; `assets/orb/thinking-orb.js` replaces its React wrapper with `mountOrb(target, props)` and a `<thinking-orb>` custom element that take the same props (`state`, `size`, `theme`, `speed`, `paused`, `color`, `dots`, `dotSize`, `opts`, `label`).
+
+```html
+<script type="module" src="/assets/orb/thinking-orb.js"></script>
+<thinking-orb state="searching" size="64"></thinking-orb>
+```
+
+```js
+import { mountOrb } from '/assets/orb/thinking-orb.js';
+const orb = mountOrb(el, { state: 'searching', size: 20, theme: 'dark' });
+orb.set({ state: 'working' }); orb.destroy();
+```
+
+Nine states (`working searching solving listening connecting weaving composing breathing shaping`), three tuned sizes (64, 32, 20), auto dark/light, reduced motion paints a still frame, offscreen and hidden tabs pause.
+
+Manipulating them:
+
+- **By hand:** `interactive` (attribute or prop). Holding stops it, a sideways drag spins it through its own motion, letting go flings it and it coasts back to its own pace. Arrow keys nudge it and Home resets it. A drag moves that one orb's clock rather than transforming the picture, so shading, depth and each state's own motion stay exactly what the engine draws. Reduced motion keeps the drag but drops the coast. In code: `orb.scrub(d)`, `orb.fling(v)`, `orb.reset()`.
+- **By knob:** `dots`, `dotSize`, `speed`, `color`, and `opts` for each state's own engine knobs (for example `{"particles":8}` for working, `{"scanMul":2}` for searching, `{"nodeN":70,"thr":0.9}` for connecting, `{"turns":5}` for weaving, `{"shape":2}` to hold shaping on the square). On the element, `opts` is JSON.
+- **Bigger:** `zoom` draws a preset larger (geometry at size × zoom, the preset's dot count kept).
+
+The lab's "Hold one" playground has a slider for every knob and prints the markup for whatever you land on. In use: the Work intake button (`/work/`) shows a 20px `searching` orb while the answers send. Every state at every size: `/lab/thinking-orb/`. Tests: `tools/orb.test.mjs` (`npm test`). To upgrade the engine, re-copy `dist/index-*.js` from the package into `engine.js` and keep its readable export block.
