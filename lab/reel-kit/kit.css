@@ -1,0 +1,21 @@
+/* Quiet Bands reel kit: black ground, cream type and lines, one orange accent (qb-identity). */
+:root{--black:#000;--cream:#F2EEE5;--orange:#FF5A00;--quiet:#8E887C;--hair:rgba(242,238,229,.22);--panel:#0B0B0A}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--black);color:var(--cream);font-family:'Instrument Sans',system-ui,sans-serif}
+.abs{position:absolute}
+.mono{font-family:'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase}
+.disp{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.045em;line-height:.9}
+.mask{overflow:hidden;display:block}
+.mask > span{display:inline-block}
+.panel{border-radius:20px;background:var(--panel);border:1.5px solid var(--hair);box-shadow:0 30px 60px rgba(0,0,0,.6)}
+/* captions: from the recording, one orange word per phrase, clear of the reel UI */
+#cap{left:70px;width:940px;text-align:center;font-weight:600;font-size:50px;line-height:1.14;letter-spacing:-.01em;text-shadow:0 2px 18px rgba(0,0,0,.55)}
+#cap em{font-style:normal;color:var(--orange)}
+/* end frame: the Quiet Bands sting (lab/qb-sting) */
+#kit-end{position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:100}
+#kit-end .lockup{width:300px;height:auto;color:var(--cream);overflow:visible}
+#qbmark,#qbword{transform-box:fill-box;transform-origin:50% 50%}
+/* word-synced captions (Kit.wordCaptions): cream, orange emphasis, at most two short lines */
+#cap .em{color:var(--orange)}
+#cap span{transition:none}

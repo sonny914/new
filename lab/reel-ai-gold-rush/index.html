@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>AI Gold Rush Reel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@500;600&family=Space+Mono:wght@400;700&display=block" rel="stylesheet">
+<style>
+  /* Quiet Bands: black ground, cream type and lines, one orange accent (qb-identity). */
+  :root{--black:#000;--cream:#F2EEE5;--orange:#FF5A00;--quiet:#8E887C;--hair:rgba(242,238,229,.22);--panel:#0B0B0A}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#000}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--black);color:var(--cream);font-family:'Instrument Sans',system-ui,sans-serif}
+  .abs{position:absolute}
+  .mono{font-family:'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase}
+  .disp{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.045em;line-height:.9}
+
+  /* talking head: cropped above the burned-in caption band, graded in ffmpeg */
+  #face{left:0;top:230px;width:1080px;height:1107px;transform-origin:540px 560px;overflow:hidden;will-change:transform}
+  #face img{display:block;width:1080px;height:1107px}
+  #face .shade{position:absolute;inset:0;background:
+    linear-gradient(180deg,rgba(0,0,0,.92) 0,rgba(0,0,0,.55) 200px,rgba(0,0,0,0) 420px),
+    linear-gradient(0deg,#000 0,rgba(0,0,0,.6) 110px,rgba(0,0,0,0) 260px)}
+
+  /* hook 1: tool cards */
+  .card{width:236px;height:118px;border-radius:18px;background:var(--panel);border:1.5px solid var(--hair);padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 18px 40px rgba(0,0,0,.6)}
+  .card .tag{font-size:13px;color:var(--quiet)}
+  .card .nm{font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;letter-spacing:-.02em}
+  .card .plus{position:absolute;right:16px;top:14px;width:22px;height:22px;border:1.5px solid var(--hair);border-radius:50%}
+  .card .plus::before,.card .plus::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:1.5px;background:var(--cream);transform:translate(-50%,-50%)}
+  .card .plus::after{transform:translate(-50%,-50%) rotate(90deg)}
+
+  /* type zone above the head (ceiling is darkened by the shade) */
+  .top-line{left:0;width:1080px;text-align:center}
+  .mask{overflow:hidden;display:block}
+  .mask > span{display:inline-block}
+
+  /* hook 2 takeover */
+  #take{inset:0;background:#000}
+  #take .w1{left:0;width:1080px;top:690px;text-align:center;font-size:270px;color:var(--orange)}
+  #take .w2{left:0;width:1080px;top:960px;text-align:center;font-size:190px}
+
+  /* scene B: app windows */
+  .win{border-radius:20px;background:var(--panel);border:1.5px solid var(--hair);overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.65)}
+  .win .bar{height:42px;border-bottom:1.5px solid var(--hair);display:flex;align-items:center;gap:8px;padding:0 16px}
+  .win .bar i{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--hair)}
+  .win .bar span{margin-left:10px;font-size:15px;color:var(--quiet)}
+  .win .body{padding:20px}
+  .win .ln{height:12px;border-radius:6px;background:#1D1C1A;margin-bottom:12px}
+  .win .btn{margin-top:18px;width:150px;height:40px;border-radius:999px;border:1.5px solid var(--hair)}
+  .win .badge{position:absolute;right:-12px;top:-12px;min-width:40px;height:40px;border-radius:20px;background:var(--cream);color:#000;font:700 18px 'Space Mono';display:flex;align-items:center;justify-content:center;padding:0 10px}
+
+  /* scene B: the demo window (the tool they already have) */
+  #demo{transform-origin:0 0}
+  #demo .body{position:relative;height:calc(100% - 42px);padding:20px;display:grid;grid-template-columns:310px 1fr;gap:20px}
+  .notes{border:1.5px solid var(--hair);border-radius:14px;padding:16px 18px;position:relative}
+  .notes h4{font:700 17px 'Space Mono';letter-spacing:.12em;text-transform:uppercase;color:var(--quiet);margin-bottom:12px}
+  .notes p{font-size:25px;line-height:1.3;margin-bottom:10px}
+  .notes .sel{position:absolute;inset:48px 8px 8px 8px;border-radius:8px;background:rgba(255,90,0,.16);border:1.5px solid rgba(255,90,0,.6)}
+  .chat{display:flex;flex-direction:column;gap:10px;position:relative}
+  .reply p{font-size:25px;line-height:1.3}
+  .input{position:absolute;left:0;right:0;bottom:0;height:62px;border:1.5px solid var(--hair);border-radius:16px;display:flex;align-items:center;padding:0 64px 0 16px;font:400 21px 'Space Mono';color:var(--quiet);white-space:nowrap;overflow:hidden}
+  .input .typed{color:var(--cream)}
+  .input .send{position:absolute;right:9px;top:9px;width:42px;height:42px;border-radius:50%;background:var(--cream)}
+  .input .send::after{content:"";position:absolute;left:14px;top:12px;border-left:14px solid #000;border-top:8px solid transparent;border-bottom:8px solid transparent}
+  .chip{font:700 18px 'Space Mono';letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:var(--cream);color:#000;align-self:flex-start}
+  .cursor{width:56px;height:56px}
+  .cursor .lab{position:absolute;left:42px;top:40px;font:700 17px 'Space Mono';letter-spacing:.14em;padding:5px 10px;border-radius:999px;white-space:nowrap}
+  #coach .lab{background:var(--orange);color:#000}
+  #you .lab{background:var(--cream);color:#000}
+
+  /* centerpiece */
+  #geo{left:0;top:0}
+  .cw{left:0;width:1080px;text-align:center}
+
+  /* captions: from the recording, kept clear of the reel UI */
+  #cap{left:70px;width:880px;top:1330px;text-align:center;font-weight:600;font-size:46px;line-height:1.16;letter-spacing:-.01em}
+  #cap em{font-style:normal;color:var(--orange)}
+
+  /* end frame */
+  #end{inset:0;background:#000;display:flex;align-items:center;justify-content:center}
+  #end .lockup{width:300px;height:auto;color:var(--cream)}
+  #qbmark,#qbword{transform-box:fill-box;transform-origin:50% 50%}   /* sting: see lab/qb-sting */
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="face" class="abs"><img id="faceimg" alt=""><div class="shade"></div></div>
+  <div id="cards" class="abs" style="inset:0"></div>
+  <div id="windows" class="abs" style="inset:0"></div>
+
+  <!-- hook 1 type -->
+  <div id="h1a" class="abs top-line disp" style="top:196px;font-size:176px"><span class="mask"><span>GET RICH</span></span></div>
+  <div id="h1b" class="abs top-line disp" style="top:354px;font-size:60px;letter-spacing:-.025em"><span class="mask"><span>BUILDING AI TOOLS</span></span></div>
+
+  <!-- hook 2 -->
+  <div id="h2label" class="abs top-line mono" style="top:290px;font-size:38px"></div>
+  <div id="take" class="abs">
+    <div class="abs w1 disp"><span class="mask"><span>WRONG</span></span></div>
+    <div class="abs w2 disp"><span class="mask"><span>THING?</span></span></div>
+  </div>
+
+  <!-- scene B demo -->
+  <div id="demo" class="abs win">
+    <div class="bar"><i></i><i></i><i></i><span id="demotitle">another AI app</span></div>
+    <div class="body">
+      <div class="notes"><h4>Tuesday notes</h4><p>Ship date: Friday</p><p>Send Dana pricing</p><p>Contract this week</p><div class="sel" id="sel"></div></div>
+      <div class="chat">
+        <div class="reply" id="reply"><p>Hi Dana, recap from Tuesday:</p><p>we ship Friday, pricing attached,</p><p>contract to you this week.</p></div>
+        <span class="chip" id="sent">✓ Sent</span>
+        <div class="input"><span class="typed" id="typed"></span><span id="ph">Ask anything…</span><span class="send"></span></div>
+      </div>
+    </div>
+  </div>
+  <div id="coach" class="abs cursor"><svg viewBox="0 0 24 24" width="56" height="56"><path d="M4 2.5l15 8.2-6.6 1.6 3.9 7.3-2.6 1.4-3.9-7.3L5 18.4z" fill="#FF5A00" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></svg><span class="lab">COACH</span></div>
+  <div id="you" class="abs cursor"><svg viewBox="0 0 24 24" width="56" height="56"><path d="M4 2.5l15 8.2-6.6 1.6 3.9 7.3-2.6 1.4-3.9-7.3L5 18.4z" fill="#F2EEE5" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></svg><span class="lab">YOU</span></div>
+
+  <!-- centerpiece: training → implementation → business -->
+  <div id="cp" class="abs" style="inset:0;background:#000">
+    <svg id="geo" class="abs" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+    <div id="cw1" class="abs cw disp" style="top:1210px;font-size:160px"><span class="mask"><span>TRAINING</span></span></div>
+    <div id="cw2" class="abs cw disp" style="top:1232px;font-size:116px"><span class="mask"><span>IMPLEMENTATION</span></span></div>
+    <div id="cw3a" class="abs cw mono" style="top:1196px;font-size:36px"><span class="mask"><span>That's a whole</span></span></div>
+    <div id="cw3b" class="abs cw disp" style="top:1250px;font-size:160px;color:var(--orange)"><span class="mask"><span>BUSINESS.</span></span></div>
+    <div id="steps" class="abs" style="inset:0"></div>
+  </div>
+
+  <!-- conclusion -->
+  <div id="c1" class="abs top-line mono" style="top:204px;font-size:34px"><span class="mask"><span>Not just</span></span></div>
+  <div id="c2" class="abs top-line disp" style="top:250px;font-size:112px"><span class="mask"><span>BUILDING.</span></span></div>
+  <div id="c3" class="abs top-line disp" style="top:250px;font-size:168px;color:var(--orange)"><span class="mask" id="c3m"></span></div>
+  <svg id="uline" class="abs" style="left:170px;top:396px" width="740" height="60" viewBox="0 0 740 60"><path id="ulp" d="M8 34 C 160 18, 330 44, 470 28 S 690 22, 732 30" fill="none" stroke="#F2EEE5" stroke-width="9" stroke-linecap="round"/></svg>
+
+  <div id="cap" class="abs"></div>
+  <div id="end" class="abs"><svg class="lockup" viewBox="0 0 845 690" role="img" aria-label="Quiet Bands" xmlns="http://www.w3.org/2000/svg"><g id="qbmark"><path fill="currentColor" transform="translate(98.1 0) scale(0.7874)" d="M307 120H239A236 230 0 0 0 239 580H307V476H239A126 126 0 0 1 239 224H307ZM516 120H584A236 230 0 0 1 584 580H516V476H584A126 126 0 0 0 584 224H516ZM394 0H429A43 43 0 0 1 472 43V615A43 43 0 0 1 429 658H394A43 43 0 0 1 351 615V43A43 43 0 0 1 394 0Z"/></g><g id="qbword"><path fill="currentColor" transform="translate(0 535.1)" d="M71 155C70 155 69 154 69 154C68 154 68 150 68 132C68 112 68 110 68 110C67 109 67 110 65 111C62 113 60 114 55 116C49 118 41 119 33 117C24 115 13 108 8 100C4 95 2 90 1 83C-1 73 1 62 6 53C11 46 16 42 23 38C27 36 32 34 37 33C40 33 48 33 51 33C58 35 62 38 66 41C68 42 68 42 69 39C69 34 67 35 80 35C91 34 91 34 92 35C92 35 92 36 92 88C92 158 92 154 92 154C91 155 77 155 71 155ZM446 118C439 118 432 115 427 111C425 110 424 109 424 109C423 108 423 109 423 113C423 115 423 116 422 116C421 117 399 117 399 116C399 116 399 91 399 60C399 6 399 4 399 4L400 3L411 3C417 3 422 3 422 3C423 4 423 3 424 23C424 33 424 41 424 41C424 42 425 42 426 41C431 36 440 33 447 33C459 32 470 37 479 45C492 58 495 79 486 96C482 104 474 111 466 114C458 118 454 118 446 118ZM804 118C799 118 796 117 792 115C784 113 778 107 774 100C772 97 772 96 780 94C781 93 783 92 785 92C786 91 788 91 789 90C792 89 792 89 793 90C795 93 798 97 801 98C806 101 816 100 819 97C820 96 821 94 821 93C821 92 820 89 819 89C817 87 811 85 804 83C794 81 789 79 784 75C777 71 775 63 776 55C778 48 779 46 783 42C787 38 789 37 795 35C800 33 802 33 806 33C822 32 835 39 841 50C842 52 842 52 838 54C836 55 833 56 831 57C826 59 824 59 823 59C823 59 822 59 822 58C820 55 817 52 813 51C807 50 801 52 799 55C799 57 799 59 800 61C801 62 807 65 816 66C821 67 828 69 832 71C835 73 840 77 842 80C846 87 845 97 840 105C835 112 824 117 812 118C809 118 806 118 804 118ZM254 118C248 117 240 115 235 112C231 109 225 103 223 100C220 95 217 88 216 82C214 71 217 58 223 50C229 43 236 38 245 35C251 33 253 33 260 33C267 33 270 33 278 36C284 38 292 45 295 49C300 57 302 62 303 71C303 75 303 81 303 81C302 82 298 82 272 82C240 82 240 82 240 83C239 84 241 87 242 89C245 93 249 96 254 97C258 98 264 98 267 97C271 96 276 93 278 90C280 88 280 87 289 92C294 94 298 96 298 97C299 97 299 97 298 100C295 104 291 107 285 111C280 115 272 117 266 118C262 118 257 118 254 118ZM530 118C527 117 523 117 522 116C521 116 519 115 518 115C510 111 502 105 498 97C493 88 491 78 493 71C495 56 502 46 514 38C517 36 522 35 527 33C531 33 538 33 542 34C549 35 554 37 558 41C560 43 560 42 560 38C560 36 560 35 561 35C561 35 563 35 572 35C583 35 583 35 583 35C584 36 584 41 584 76L584 116L583 116C583 116 581 116 572 116C559 116 560 117 560 112C560 109 560 108 559 109C558 109 557 110 556 111C553 114 547 116 542 117C540 118 534 118 530 118ZM714 118C707 117 701 115 696 111C692 109 688 105 686 102C684 100 681 94 680 92C675 80 676 65 683 54C689 43 698 36 711 34C715 33 723 33 727 34C734 36 738 37 743 41C744 42 744 42 744 41C745 41 745 40 745 22C745 12 745 3 745 3C745 3 767 3 768 3C768 4 768 7 768 58C768 114 768 116 768 116C768 116 763 116 756 116C743 116 745 117 745 113C745 108 745 108 741 111C737 114 732 116 727 117C724 118 717 118 714 118ZM126 118C123 117 117 115 115 114C110 111 107 107 104 102C102 98 102 97 101 92L100 89L100 63C100 48 100 36 100 36C101 35 101 35 110 35C119 34 123 35 124 35C124 35 124 39 124 59C124 86 124 85 126 89C129 96 139 98 147 95C152 92 155 88 156 82C156 79 156 78 156 57C156 37 157 35 157 35C158 34 179 34 180 35C180 35 180 39 180 75L180 115L180 116C179 116 179 116 168 116C159 116 158 116 157 116C157 116 157 115 156 112C156 108 156 108 154 110C150 113 144 116 139 117C136 118 128 118 126 118ZM342 117C331 117 322 112 318 104C315 98 315 96 315 74C315 56 315 56 315 55C314 55 314 55 309 55C305 55 303 55 303 54C302 54 302 35 303 35C303 35 305 34 309 34C313 34 314 34 315 34L315 34L315 23C315 14 315 13 316 13C317 12 338 12 338 13C339 13 339 14 339 23C339 31 339 33 339 34C340 34 340 34 349 35C358 35 358 35 359 35C359 36 359 54 359 54C358 55 356 55 349 55C342 55 340 55 339 55C339 56 339 57 339 71C339 88 339 89 340 92C342 96 345 97 354 96C358 96 358 96 359 97C359 97 359 101 359 107C359 116 359 116 358 117C358 117 355 117 352 117C347 117 345 117 342 117ZM592 116C591 115 591 36 592 35C592 35 612 34 614 35L615 35L615 38C615 40 615 42 615 42C615 43 616 42 618 41C623 36 631 33 640 33C644 33 644 33 649 34C652 35 656 37 657 38C658 38 658 38 659 39C660 39 665 44 666 46C669 50 672 56 672 62C673 64 673 81 673 102C673 115 673 116 672 116C672 117 649 117 649 116C649 116 649 106 649 92C649 66 649 66 647 62C645 59 644 57 640 55L638 55L633 55C630 55 629 55 628 55C621 57 617 62 616 68C615 70 615 71 615 93C615 111 615 115 615 116C614 117 592 117 592 116ZM188 116C188 116 187 116 187 115C187 115 187 36 187 36C187 35 188 35 188 35C188 35 209 35 210 35C210 35 211 35 211 36C211 36 211 54 211 76C211 114 211 116 210 116C210 116 189 116 188 116ZM51 96C58 95 64 90 67 83C69 78 69 71 66 66C60 54 45 50 34 58C28 61 25 67 24 74C23 81 27 88 33 93C36 95 39 96 43 97C44 97 49 97 51 96ZM447 97C458 96 467 87 467 75C467 71 466 68 463 63C456 52 439 51 430 60C425 64 424 69 423 75C423 83 425 87 431 92C435 95 438 96 442 97C443 97 444 97 444 97C444 97 445 97 447 97ZM540 97C552 95 559 87 560 77C560 70 558 65 554 60C546 52 531 52 523 60C514 68 514 81 522 90C527 95 534 98 540 97ZM729 96C733 95 737 92 740 88C742 85 743 84 744 81C745 78 745 78 745 74C745 71 745 70 744 68C740 59 733 54 723 54C717 54 712 56 708 59C705 63 703 65 702 69C701 71 701 72 701 75C701 79 701 79 702 82C703 85 704 87 706 89C709 93 713 95 717 96C720 97 726 97 729 96ZM279 65C280 65 278 60 275 58C273 55 270 54 266 53C260 51 253 52 248 55C243 58 239 65 241 66C243 66 278 66 279 65ZM196 25C192 24 189 22 187 18C186 15 186 10 188 6C194 -2 206 -2 211 6C213 10 213 14 212 17C211 21 208 24 204 25C202 26 198 26 196 25Z"/></g></svg></div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------------------------
+// Deterministic timeline. render(t) draws the frame for source time t (seconds of the recording);
+// seek(t) also swaps in that frame of the talking head. Times come from words.json (forced
+// alignment of the actual recording), so every cue sits on a spoken word.
+// ---------------------------------------------------------------------------------------------
+const W = (window.WORDS = []);
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, d) => clamp((t - a) / d);
+const lerp = (a, b, k) => a + (b - a) * k;
+const outExpo = (k) => (k >= 1 ? 1 : 1 - Math.pow(2, -10 * k));
+const outCubic = (k) => 1 - Math.pow(1 - k, 3);
+const inCubic = (k) => k * k * k;
+const inOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const outBack = (k) => 1 + 2.4 * Math.pow(k - 1, 3) + 1.4 * Math.pow(k - 1, 2);
+const css = (el, o) => Object.assign(el.style, o);
+const show = (el, on) => { el.style.display = on ? '' : 'none'; };
+// mask reveal of a .mask > span: k 0→1 slides the text up into view; out 0→1 slides it away
+const maskIn = (el, k, out = 0) => {
+  const s = el.querySelector('.mask > span');
+  s.style.transform = `translateY(${(1 - outExpo(k)) * 105 - inCubic(out) * 105}%)`;
+};
+
+// --- hook 1: generic tool cards (categories only, no real products) ---------------------------
+const CARD_NAMES = ['AI notes', 'AI email', 'AI slides', 'AI agent', 'AI video', 'AI search', 'AI copy', 'AI code',
+  'AI design', 'AI CRM', 'AI voice', 'AI tutor', 'AI sheets', 'AI chat', 'AI sales', 'AI images'];
+const CARD_POS = [[28, 640, -6], [816, 620, 5], [40, 790, 4], [826, 772, -5], [18, 935, -3], [834, 920, 6], [190, 1080, 5],
+  [640, 1070, -4], [418, 1150, 2], [70, 1160, -7], [790, 1150, 4], [236, 520, -8], [620, 512, 7], [302, 935, -4], [560, 930, 5], [430, 790, -2]];
+const cards = CARD_NAMES.map((nm, i) => {
+  const el = document.createElement('div');
+  el.className = 'abs card';
+  el.innerHTML = `<span class="tag mono">AI tool</span><span class="nm">${nm}</span><span class="plus"></span>`;
+  $('cards').append(el);
+  return el;
+});
+
+// --- scene B: competing app windows -------------------------------------------------------------
+const WIN = [
+  ['another AI app', 60, 360, 430, 290, -4, '3'], ['AI app, 14-day trial', 560, 330, 450, 300, 5, '12'],
+  ['untitled AI app', 300, 610, 440, 290, -2, '7'], ['AI app (beta)', 610, 760, 420, 280, 4, '1'],
+  ['yet another AI app', 70, 860, 440, 290, 6, '24'], ['AI app v2', 520, 980, 430, 270, -5, '5'],
+  ['new AI app', 250, 1010, 430, 260, 2, '9'],
+];
+const wins = WIN.map(([title, x, y, w, h, r, badge]) => {
+  const el = document.createElement('div');
+  el.className = 'abs win';
+  css(el, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' });
+  el.innerHTML = `<div class="bar"><i></i><i></i><i></i><span class="mono">${title}</span></div>
+    <div class="body"><div class="ln" style="width:70%"></div><div class="ln" style="width:90%"></div><div class="ln" style="width:55%"></div><div class="btn"></div></div>
+    <span class="badge">${badge}</span>`;
+  el.dataset.r = r;
+  $('windows').append(el);
+  return el;
+});
+
+// --- centerpiece geometry -----------------------------------------------------------------------
+const SVGNS = 'http://www.w3.org/2000/svg';
+const mk = (tag, attrs, parent = $('geo')) => { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.append(e); return e; };
+const CX = 540, CY = 830, R = 270;
+const CHAIN = [[150, 870], [345, 780], [540, 880], [735, 780], [930, 870]];                 // implementation workflow
+const LABELS = ['Learn', 'Map', 'Build', 'Test', 'Run'];
+const RING = CHAIN.map((_, i) => { const a = -Math.PI / 2 + (i / 5) * Math.PI * 2; return [CX + R * Math.cos(a), CY + R * Math.sin(a)]; });
+const ringPath = mk('circle', { cx: CX, cy: CY, r: R, fill: 'none', stroke: '#FF5A00', 'stroke-width': 5, 'stroke-linecap': 'round', transform: `rotate(-90 ${CX} ${CY})` });
+const links = [0, 1, 2, 3].map(() => mk('line', { stroke: '#F2EEE5', 'stroke-width': 5, 'stroke-linecap': 'round' }));
+const pulses = [0, 1, 2].map(() => mk('circle', { r: 10, fill: '#FF5A00' }));
+const nodes = CHAIN.map((_, i) => mk('circle', { r: 16, fill: i === 0 ? '#FF5A00' : '#F2EEE5' }));
+const nodeRings = CHAIN.map(() => mk('circle', { r: 38, fill: 'none', stroke: 'rgba(242,238,229,.3)', 'stroke-width': 2.5 }));
+const stepLabels = LABELS.map((l) => { const e = document.createElement('div'); e.className = 'abs mono'; css(e, { fontSize: '22px', color: 'var(--quiet)', width: '180px', textAlign: 'center' }); e.textContent = l; $('steps').append(e); return e; });
+
+// --- conclusion: TEACHING. letter by letter -----------------------------------------------------
+const TEACH = 'TEACHING.';
+$('c3m').innerHTML = [...TEACH].map((ch) => `<span style="display:inline-block">${ch}</span>`).join('');
+const teachLetters = [...$('c3m').children];
+const ulLen = $('ulp').getTotalLength();
+css($('ulp'), { strokeDasharray: ulLen, strokeDashoffset: ulLen });
+
+// --- captions (phrases from the recording; one orange word each, none during kinetic takeovers) --
+const CAPS = [
+  [0.31, 1.95, 'Everybody\'s trying to get <em>rich</em>'], [2.05, 3.7, 'building AI tools.'],
+  [3.99, 5.3, 'But what if we\'re selling'],
+  [6.44, 7.58, 'Most people don\'t need'], [7.6, 8.85, '<em>another</em> AI app.'],
+  [9.08, 10.75, 'They need somebody to show them'], [10.8, 11.88, 'how to use the ones'], [11.9, 13.05, 'they <em>already</em> have.'],
+  [18.0, 18.75, 'Maybe,'], [19.5, 20.5, 'just maybe,'], [20.8, 22.12, 'the <em>real</em> AI gold rush'], [22.16, 23.7, 'isn\'t building the tools.'],
+  [24.2, 25.5, 'It\'s <em>teaching</em> people'], [25.6, 26.55, 'how to use \'em.'],
+];
+
+// ---------------------------------------------------------------------------------------------
+function render(t) {
+  // ---- talking head: position, push-ins, card mode, iris -------------------------------------
+  const face = $('face');
+  let sc = 1, tx = 0, ty = 0, radius = 0, clip = 'none', faceOn = true;
+  if (t >= 3.99 && t < 6.44) sc = 1.14 + 0.03 * seg(t, 3.99, 2.4);              // hook 2: hard push-in, then creep
+  if (t >= 8.9 && t < 13.35) {                                                  // demo: face becomes a card above the tool
+    const k = inOut(seg(t, 8.95, 0.5));
+    sc = lerp(1, 0.56, k); ty = lerp(0, -290, k); radius = lerp(0, 44, k);
+  }
+  if (t >= 13.35 && t < 18.0) faceOn = false;                                   // centerpiece is full-screen
+  if (t >= 18.0) {
+    sc = 1 + 0.06 * inOut(seg(t, 18.0, 8.4));
+    const k = outCubic(seg(t, 18.0, 0.5));                                       // iris out of the business loop
+    if (k < 1) clip = `circle(${lerp(R, 1400, k)}px at ${CX}px ${CY - 230}px)`;
+  }
+  show(face, faceOn);
+  const fadeOut = t >= 12.9 && t < 13.35 ? 1 - seg(t, 12.95, 0.3) : 1;            // the card leaves with the collapsing demo
+  css(face, { transform: `translate(${tx}px,${ty}px) scale(${sc})`, borderRadius: radius / sc + 'px', clipPath: clip, opacity: fadeOut });
+
+  // ---- hook 1 ----------------------------------------------------------------------------------
+  const h1 = t < 3.99;
+  show($('h1a'), h1); show($('h1b'), h1); show($('cards'), h1);
+  if (h1) {
+    maskIn($('h1a'), seg(t, 1.5, 0.32));
+    maskIn($('h1b'), seg(t, 2.08, 0.32));
+    cards.forEach((el, i) => {
+      const t0 = 2.1 + i * 0.105, k = seg(t, t0, 0.42), e = outExpo(k);
+      const [x, y, r] = CARD_POS[i], fromX = x < 540 ? -320 : 1400;
+      show(el, k > 0);
+      css(el, { left: lerp(fromX, x, e) + 'px', top: lerp(y + 160, y, e) + 'px', transform: `rotate(${lerp(r * 3, r, e)}deg)`, zIndex: i });
+    });
+  }
+
+  // ---- hook 2: label types, then the WRONG THING? takeover -------------------------------------
+  const lab = $('h2label');
+  show(lab, t >= 4.1 && t < 5.42);
+  if (t >= 4.1) {
+    const parts = [['WHAT', 4.11], ['IF', 4.28], ['WE\'RE', 4.42], ['SELLING', 4.55], ['THE', 5.38]];
+    lab.textContent = parts.filter(([, s]) => t >= s).map(([w]) => w).join(' ');
+  }
+  const tk = t >= 5.42 && t < 6.44;
+  show($('take'), tk);
+  if (tk) { maskIn($('take').querySelector('.w1'), seg(t, 5.42, 0.2)); maskIn($('take').querySelector('.w2'), seg(t, 5.78, 0.22)); }
+
+  // ---- scene B: windows pile up on each word, then all but one leave ------------------------------
+  const wt = [6.44, 6.63, 6.96, 7.3, 7.63, 8.02, 8.4];
+  const wOn = t >= 6.44 && t < 9.1;
+  show($('windows'), wOn);
+  if (wOn) wins.forEach((el, i) => {
+    const k = seg(t, wt[i], 0.28), out = inCubic(seg(t, 8.68 + i * 0.03, 0.34));
+    const r = +el.dataset.r, dir = i % 2 ? 1 : -1;
+    show(el, k > 0 && !(i === 3 && t >= 8.7));                                      // window 4 becomes the demo
+    css(el, { opacity: clamp(k * 3) * (1 - out), transform: `translateX(${dir * out * 900}px) rotate(${r + dir * out * 20}deg) scale(${lerp(0.7, 1, outBack(k))})`, zIndex: i });
+  });
+
+  // demo window: grows out of window 4, runs the lesson, then collapses into the first node
+  const dOn = t >= 8.7 && t < 13.4;
+  show($('demo'), dOn);
+  const demo = $('demo');
+  if (dOn) {
+    const k = inOut(seg(t, 8.7, 0.55));
+    const [, x0, y0, w0, h0] = WIN[3];
+    let x = lerp(x0, 50, k), y = lerp(y0, 836, k), w = lerp(w0, 920, k), h = lerp(h0, 436, k);
+    const c = inCubic(seg(t, 13.0, 0.36));                                          // collapse to the centre dot
+    x = lerp(x, CX - 14, c); y = lerp(y, CY - 14, c); w = lerp(w, 28, c); h = lerp(h, 28, c);
+    css(demo, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: lerp(20, 14, c) + 'px', transform: `rotate(${lerp(4, 0, k)}deg)`, zIndex: 20 });
+    const inner = seg(t, 9.2, 0.25) * (1 - seg(t, 12.95, 0.12));
+    demo.querySelector('.body').style.opacity = inner;
+    demo.querySelector('.bar').style.opacity = 1 - c;
+    $('demotitle').textContent = t >= 12.1 ? 'the AI you already have' : 'another AI app';
+    $('demotitle').style.color = t >= 12.1 ? 'var(--cream)' : '';
+    $('sel').style.opacity = seg(t, 9.98, 0.2) * (1 - seg(t, 11.5, 0.3));
+    const prompt = 'Turn these notes into an email';
+    const n = Math.floor(prompt.length * seg(t, 10.38, 0.95));
+    $('typed').textContent = t < 11.5 ? prompt.slice(0, n) : '';
+    $('ph').style.display = n > 0 && t < 11.5 ? 'none' : '';
+    [...$('reply').children].forEach((p, i) => { p.style.opacity = seg(t, 11.55 + i * 0.32, 0.25); });
+    $('sent').style.opacity = seg(t, 12.62, 0.15);
+  }
+  // cursors: the coach shows, you follow
+  const cOn = t >= 9.35 && t < 12.95, yOn = t >= 10.8 && t < 12.95;
+  show($('coach'), cOn); show($('you'), yOn);
+  if (cOn) {
+    const p1 = outCubic(seg(t, 9.35, 0.5)), p2 = inOut(seg(t, 9.95, 0.38)), p3 = inOut(seg(t, 10.32, 0.4));
+    let x = lerp(1120, 860, p1), y = lerp(760, 820, p1);
+    x = lerp(x, 250, p2); y = lerp(y, 990, p2);                                     // point at the notes
+    x = lerp(x, 600, p3); y = lerp(y, 1200, p3);                                    // then at the input
+    css($('coach'), { left: x + 'px', top: y + 'px', zIndex: 30 });
+  }
+  if (yOn) {
+    const p1 = outCubic(seg(t, 10.8, 0.45)), p2 = inOut(seg(t, 11.05, 0.36));
+    let x = lerp(-70, 330, p1), y = lerp(1250, 1190, p1);
+    x = lerp(x, 898, p2); y = lerp(y, 1214, p2);                                    // to send
+    const click = Math.sin(Math.PI * seg(t, 11.42, 0.16));
+    css($('you'), { left: x + 'px', top: y + 'px', transform: `scale(${1 - 0.18 * click})`, zIndex: 31 });
+  }
+
+  // ---- centerpiece ---------------------------------------------------------------------------------
+  const cpOn = t >= 13.3 && t < 18.5;
+  show($('cp'), cpOn);
+  if (cpOn) {
+    $('cp').style.background = t < 18.0 ? '#000' : 'transparent';
+    // node positions: S1 two nodes, S2 the five-step chain, S3 the loop
+    const k2 = inOut(seg(t, 14.9, 0.55)), k3 = inOut(seg(t, 16.62, 0.6));
+    const s1 = [[400, 830], [680, 830], [680, 830], [680, 830], [680, 830]];
+    const pos = CHAIN.map((p, i) => [lerp(lerp(s1[i][0], p[0], k2), RING[i][0], k3), lerp(lerp(s1[i][1], p[1], k2), RING[i][1], k3)]);
+    const spin = t >= 17.2 ? (t - 17.2) * 0.35 : 0;                                  // the loop starts turning
+    const rot = (p) => { const a = spin, dx = p[0] - CX, dy = p[1] - CY; return [CX + dx * Math.cos(a) - dy * Math.sin(a), CY + dx * Math.sin(a) + dy * Math.cos(a)]; };
+    const P = pos.map(rot);
+    const iris = outCubic(seg(t, 18.0, 0.5));
+    nodes.forEach((n, i) => {
+      const vis = i < 2 ? seg(t, 13.34 + i * 0.29, 0.2) : seg(t, 15.05 + (i - 2) * 0.16, 0.2);
+      n.setAttribute('cx', P[i][0]); n.setAttribute('cy', P[i][1]);
+      n.setAttribute('r', (i === 0 ? 24 : 19) * outBack(vis) * (1 - seg(t, 17.94, 0.1)));
+      n.setAttribute('fill', t >= 17.23 || i === 0 ? '#FF5A00' : '#F2EEE5');
+      nodeRings[i].setAttribute('cx', P[i][0]); nodeRings[i].setAttribute('cy', P[i][1]);
+      nodeRings[i].setAttribute('opacity', vis * (1 - k3) * 0.9);
+    });
+    links.forEach((l, i) => {
+      const draw = i === 0 ? outCubic(seg(t, 13.66, 0.3)) : outCubic(seg(t, 15.1 + (i - 1) * 0.16, 0.28));
+      const a = P[i], b = P[i + 1];
+      l.setAttribute('x1', a[0]); l.setAttribute('y1', a[1]);
+      l.setAttribute('x2', lerp(a[0], b[0], draw)); l.setAttribute('y2', lerp(a[1], b[1], draw));
+      l.setAttribute('opacity', (i === 0 ? 1 : seg(t, 15.0, 0.1)) * (1 - k3));
+    });
+    // knowledge pulses: teacher → learner during "training"
+    pulses.forEach((p, i) => {
+      const u = ((t - 13.85 - i * 0.33) % 1.0 + 1) % 1.0, on = t >= 13.85 + i * 0.33 && t < 14.95;
+      p.setAttribute('cx', lerp(P[0][0], P[1][0], u)); p.setAttribute('cy', lerp(P[0][1], P[1][1], u)); p.setAttribute('opacity', on ? 1 : 0);
+    });
+    // the loop closes on "business"
+    const circ = 2 * Math.PI * R, close = outCubic(seg(t, 16.75, 0.48));
+    ringPath.setAttribute('stroke-dasharray', circ);
+    ringPath.setAttribute('stroke-dashoffset', circ * (1 - close));
+    ringPath.setAttribute('stroke-width', t >= 17.23 ? lerp(5, 16, outBack(seg(t, 17.23, 0.3))) * (1 - iris) + 2 : 5);
+    ringPath.setAttribute('r', lerp(R, 1350, iris));
+    ringPath.setAttribute('opacity', 1 - seg(t, 18.25, 0.25));
+    stepLabels.forEach((e, i) => {
+      css(e, { left: P[i][0] - 90 + 'px', top: P[i][1] + 48 + 'px', opacity: seg(t, 15.15 + i * 0.16, 0.2) * (1 - seg(t, 16.6, 0.3)) });
+    });
+    // the words physically hand over to each other
+    const wOut = (a) => 1 - seg(t, 17.88, 0.1);
+    maskIn($('cw1'), seg(t, 13.6, 0.32), seg(t, 14.88, 0.22));
+    maskIn($('cw2'), seg(t, 14.98, 0.34), seg(t, 16.56, 0.22));
+    maskIn($('cw3a'), seg(t, 16.62, 0.3));
+    maskIn($('cw3b'), seg(t, 17.2, 0.26));
+    [$('cw1'), $('cw2'), $('cw3a'), $('cw3b')].forEach((e) => (e.style.opacity = wOut()));
+  }
+
+  // ---- conclusion ------------------------------------------------------------------------------------
+  const cOnz = t >= 22.1 && t < 26.8;                // stays up until the end frame's black has covered it
+  [$('c1'), $('c2'), $('c3'), $('uline')].forEach((e) => show(e, cOnz));
+  if (cOnz) {
+    const shrink = inOut(seg(t, 24.1, 0.35));
+    maskIn($('c1'), seg(t, 22.15, 0.3));
+    maskIn($('c2'), seg(t, 22.45, 0.3));
+    css($('c1'), { top: lerp(204, 172, shrink) + 'px', opacity: lerp(1, 0.5, shrink) });
+    css($('c2'), { top: lerp(250, 206, shrink) + 'px', fontSize: lerp(112, 40, shrink) + 'px', opacity: lerp(1, 0.5, shrink) });
+    teachLetters.forEach((s, i) => { const k = outExpo(seg(t, 24.46 + i * 0.045, 0.34)); s.style.transform = `translateY(${(1 - k) * 105}%)`; });
+    $('c3').style.display = t >= 24.4 ? '' : 'none';
+    $('ulp').style.strokeDashoffset = ulLen * (1 - inOut(seg(t, 25.0, 0.55)));
+  }
+
+  // ---- captions --------------------------------------------------------------------------------------
+  const cap = CAPS.find(([a, b]) => t >= a && t < b);
+  $('cap').innerHTML = cap ? cap[2] : '';
+  $('cap').style.opacity = cap ? seg(t, cap[0], 0.08) : 0;
+  
+
+  // ---- end frame -------------------------------------------------------------------------------------
+  show($('end'), t >= 26.55);
+  $('end').style.opacity = seg(t, 26.55, 0.22);
+  // the Quiet Bands sting (lab/qb-sting): the mark lands on the ding at 26.6, the wordmark a beat later
+  [['qbmark', 26.6], ['qbword', 26.67]].forEach(([id, t0]) => {
+    const k = outExpo(seg(t, t0, 0.6));
+    css($(id), { opacity: seg(t, t0, 0.16), transform: `translateY(${(1 - k) * 24 * 845 / 300}px) scale(${0.965 + 0.035 * k})` });
+  });
+}
+
+// face frames are pre-graded JPEGs at 30 fps (frames/0001.jpg = t 0.000)
+window.FACE_DIR = new URLSearchParams(location.search).get('face') || 'frames';
+window.seek = async (t) => {
+  const img = $('faceimg');
+  const n = Math.min(810, Math.max(1, Math.floor(t * 30 + 1e-6) + 1));
+  const src = `${window.FACE_DIR}/${String(n).padStart(4, '0')}.jpg`;
+  if (img.getAttribute('src') !== src) { img.src = src; await img.decode().catch(() => {}); }
+  render(t);
+};
+window.ready = document.fonts.ready;
+if (new URLSearchParams(location.search).has('play')) {          // live preview: ?play
+  const t0 = performance.now();
+  const tick = (now) => { window.seek(((now - t0) / 1000) % 28); requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+} else render(0);
+</script>
+</body>
+</html>

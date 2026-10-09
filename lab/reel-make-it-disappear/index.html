@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Make It Disappear Reel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@500;600&family=Space+Mono:wght@400;700&display=block" rel="stylesheet">
+<link rel="stylesheet" href="../reel-kit/kit.css">
+<style>
+  /* One orange line runs through the reel: it strikes CODE, underlines the problem, scans the busywork,
+     locks onto one problem, becomes its workflow, and finally shrinks to the dot the sting lands on. */
+  #face{inset:0;transform-origin:540px 900px;will-change:transform}
+  #face img{display:block;width:1080px;height:1920px}
+  #grad{inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0,rgba(0,0,0,0) 260px,rgba(0,0,0,0) 1150px,rgba(0,0,0,.7) 1440px,rgba(0,0,0,.84) 1700px)}
+  #dim{inset:0;background:#000}
+  #codebg{left:64px;top:250px;width:960px;font:400 25px/48px 'Space Mono',monospace;color:rgba(242,238,229,.2);white-space:pre}
+  #codebg div{will-change:transform}
+  #w-code{left:0;width:1080px;top:700px;text-align:center;font-size:300px}
+  #cursor{width:30px;background:var(--cream)}
+  #l-solve{left:0;width:1080px;top:600px;text-align:center;font-size:40px;color:var(--quiet)}
+  #w-exp,#w-prob{left:0;width:1080px;text-align:center;font-size:164px;white-space:nowrap}
+  #w-exp{top:660px}
+  #w-prob{top:812px}
+
+  /* busywork, around the head */
+  .sheet{left:36px;top:330px;width:452px;height:318px}
+  .mail{left:592px;top:356px;width:452px;height:330px}
+  .tasks{left:36px;top:1110px;width:470px;height:290px}
+  .hd{height:52px;border-bottom:1.5px solid var(--hair);display:flex;align-items:center;gap:12px;padding:0 18px;font:700 18px 'Space Mono';letter-spacing:.1em;text-transform:uppercase;color:var(--quiet)}
+  .hd b{margin-left:auto;min-width:44px;height:34px;border-radius:17px;background:var(--cream);color:#000;display:flex;align-items:center;justify-content:center;padding:0 10px;font-size:18px}
+  .cells{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:16px 18px}
+  .cell{height:38px;border-radius:7px;border:1.5px solid var(--hair);position:relative}
+  .cell i{position:absolute;left:10px;top:13px;height:10px;border-radius:5px;background:#3A3833}
+  .cell.sel{border-color:var(--cream)}
+  .keychip{font:700 26px 'Space Mono';padding:10px 18px;border-radius:14px;background:var(--cream);color:#000;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .row{display:flex;align-items:center;gap:14px;padding:0 18px;height:54px;border-bottom:1.5px solid rgba(242,238,229,.1);font-size:28px}
+  .row .dot{width:12px;height:12px;border-radius:50%;background:var(--cream);flex:none}
+  .row .who{color:var(--quiet);font-size:20px;margin-left:auto;font-family:'Space Mono'}
+  .task{display:flex;align-items:center;gap:16px;padding:0 20px;height:56px;font-size:29px}
+  .box{width:30px;height:30px;border-radius:8px;border:2px solid var(--hair);flex:none;position:relative}
+  .box.on{background:var(--cream);border-color:var(--cream)}
+  .box.on::after{content:"";position:absolute;left:9px;top:3px;width:8px;height:15px;border:solid #000;border-width:0 4px 4px 0;transform:rotate(45deg)}
+
+  /* find → learn → build */
+  #chap{left:0;width:1080px;top:300px;text-align:center;font-size:34px}
+  #chap span{color:var(--quiet)}
+  .tile{width:290px;height:128px;padding:18px 20px;display:flex;flex-direction:column;justify-content:space-between;border-radius:18px}
+  .tile .k{font:700 15px 'Space Mono';letter-spacing:.14em;text-transform:uppercase;color:var(--quiet)}
+  .tile .nm{font-size:29px;font-weight:600;line-height:1.05}
+  .tile.lock{border-color:var(--orange)}
+  .step{font:700 29px 'Space Mono';letter-spacing:.06em;white-space:nowrap}
+  .brick{border-radius:16px;background:var(--cream);color:#000;display:flex;align-items:center;padding:0 26px;font:700 30px 'Space Mono';letter-spacing:.04em;white-space:nowrap;overflow:hidden}
+  .brick .fill{position:absolute;left:0;top:0;bottom:0;background:var(--orange)}
+  .brick span{position:relative}
+  #solved{font:700 22px 'Space Mono';letter-spacing:.14em;padding:10px 18px;border-radius:999px;background:var(--orange);color:#000}
+
+  /* prompts */
+  #prompt{left:70px;top:1150px;width:940px;height:112px;border-radius:56px;display:flex;align-items:center;padding:0 120px 0 40px;font:400 30px 'Space Mono';white-space:nowrap;overflow:hidden}
+  #prompt .send{position:absolute;right:16px;top:16px;width:80px;height:80px;border-radius:50%;background:var(--cream)}
+  #prompt .send::after{content:"";position:absolute;left:30px;top:24px;border-left:24px solid #000;border-top:16px solid transparent;border-bottom:16px solid transparent}
+  #ph{color:var(--quiet)}
+  #stamp{left:640px;top:1040px;font:700 92px 'Space Mono';letter-spacing:.02em;padding:4px 26px;border:7px solid var(--cream);border-radius:22px;color:var(--cream);background:rgba(0,0,0,.55)}
+
+  /* the disappear */
+  #l-pay{left:0;width:1080px;top:690px;text-align:center;font-size:40px}
+  #dust{left:0;top:0}
+  #ov{left:0;top:0;overflow:visible}
+  #cap{top:1490px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="face" class="abs"><img id="faceimg" alt=""></div>
+  <div id="grad" class="abs"></div>
+  <div id="dim" class="abs"></div>
+
+  <!-- 1 · the strike -->
+  <div id="codebg" class="abs"></div>
+  <div id="w-code" class="abs disp"><span class="mask"><span id="codeword">CODE</span></span></div>
+  <div id="cursor" class="abs"></div>
+  <div id="l-solve" class="abs mono"><span class="mask"><span>Solve</span></span></div>
+  <div id="w-exp" class="abs disp"><span class="mask"><span>EXPENSIVE</span></span></div>
+  <div id="w-prob" class="abs disp"><span class="mask"><span id="probword">PROBLEMS.</span></span></div>
+
+  <!-- busywork -->
+  <div id="busy" class="abs" style="inset:0">
+    <div id="sheet" class="abs panel sheet"><div class="hd">leads_final_v3.xlsx</div><div class="cells" id="cells"></div></div>
+    <div id="kc" class="abs keychip">⌘C</div>
+    <div id="kv" class="abs keychip">⌘V</div>
+    <div id="mail" class="abs panel mail"><div class="hd">Inbox <b id="unread">12</b></div><div id="rows"></div></div>
+    <div id="tasks" class="abs panel tasks"><div class="hd">This week</div><div id="tlist" style="padding-top:6px"></div></div>
+  </div>
+
+  <!-- 2 · find → learn → build -->
+  <div id="chap" class="abs mono"></div>
+  <div id="tiles" class="abs" style="inset:0"></div>
+  <div id="flow" class="abs" style="inset:0"></div>
+
+  <!-- prompts -->
+  <div id="prompt" class="abs panel"><span id="typed"></span><span id="ph">Ask anything…</span><span class="send"></span></div>
+  <div id="stamp" class="abs">$0</div>
+
+  <!-- 3 · the disappear -->
+  <div id="l-pay" class="abs mono"></div>
+  <canvas id="dust" class="abs" width="1080" height="1920"></canvas>
+
+  <svg id="ov" class="abs" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  <div id="cap" class="abs"></div>
+</div>
+
+<script src="../reel-kit/kit.js"></script>
+<script>
+const { $, clamp, seg, lerp, outExpo, outCubic, inCubic, inOut, outBack, css, show, maskIn, fit, svg, rng, captions, sting } = Kit;
+// Times are recording seconds, from words.json (forced alignment of the actual delivery).
+const OFFSET = 0.1, HIT = 23.6, FPS = 30;                          // the sting lands as the last dot vanishes
+const FRAMES = Math.round((HIT + Kit.STING.length - OFFSET) * FPS);
+
+// ---- the line, the reticle, the flow nodes (one SVG overlay) ----------------------------------------
+const ov = $('ov');
+const band = svg('line', { stroke: '#FF5A00', 'stroke-linecap': 'round' }, ov);
+const flowNodes = [0, 1, 2, 3].map(() => svg('circle', { fill: '#F2EEE5' }, ov));
+const outline = svg('rect', { fill: 'none', stroke: '#FF5A00', 'stroke-width': 6, rx: 22 }, ov);
+const ret = [0, 1, 2, 3].map(() => svg('path', { fill: 'none', stroke: '#FF5A00', 'stroke-width': 7, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, ov));
+const setBand = (x1, y1, x2, y2, w, op = 1) => {
+  [['x1', x1], ['y1', y1], ['x2', x2], ['y2', y2], ['stroke-width', w], ['opacity', op]].forEach(([k, v]) => band.setAttribute(k, v));
+};
+
+// ---- 1 · code texture (generic, typed then dropped) ---------------------------------------------------
+const CODE = ['import { sheet, crm } from "./ops"', '', 'export async function sync(rows) {', '  for (const row of rows) {',
+  '    const lead = await crm.find(row.id)', '    if (!lead) continue', '    lead.status = normalize(row.status)', '    await crm.save(lead)',
+  '  }', '  return rows.length', '}', '', 'function normalize(s) {', '  return s.trim().toLowerCase()', '}', '',
+  'const queue = new Map()', 'queue.set("emails", [])', 'await retry(() => send(queue), 3)', '', '// TODO: handle edge cases', '// TODO: tests',
+  'export default { sync, normalize }'];
+const codeLines = CODE.map((l) => { const d = document.createElement('div'); d.textContent = l || ' '; $('codebg').append(d); return d; });
+
+// ---- busywork ------------------------------------------------------------------------------------------
+const cells = [...Array(20)].map((_, i) => { const c = document.createElement('div'); c.className = 'cell'; c.innerHTML = `<i style="width:${30 + ((i * 37) % 45)}%"></i>`; $('cells').append(c); return c; });
+const MAIL = [['Re: invoice?', 'Dana'], ['Fwd: Fwd: quote', 'Ray'], ['Following up', 'Mo'], ['Re: Re: schedule', 'Kai'], ['Quick question', 'Lee']];
+const rows = MAIL.map(([s, w]) => { const r = document.createElement('div'); r.className = 'row'; r.innerHTML = `<span class="dot"></span><span>${s}</span><span class="who">${w}</span>`; $('rows').append(r); return r; });
+const TASKS = ['Update the CRM', 'Re-key the invoices', 'Rename 200 files', 'Build the weekly report'];
+const tasks = TASKS.map((s) => { const r = document.createElement('div'); r.className = 'task'; r.innerHTML = `<span class="box"></span><span>${s}</span>`; $('tlist').append(r); return r; });
+
+// ---- 2 · problem tiles, workflow, solution ----------------------------------------------------------------
+const TILES = ['Copy-paste data', 'Chasing emails', 'Re-keying invoices', 'Weekly reports', 'Scheduling', 'Data entry',
+  'Follow-ups', 'Onboarding docs', 'CRM updates', 'Quotes', 'Inbox triage', 'File renaming'];
+const TX = (i) => 81 + (i % 3) * 314, TY = (i) => 600 + Math.floor(i / 3) * 152;
+const tiles = TILES.map((nm, i) => { const e = document.createElement('div'); e.className = 'abs panel tile'; e.innerHTML = `<span class="k">Problem ${String(i + 1).padStart(2, '0')}</span><span class="nm">${nm}</span>`; $('tiles').append(e); return e; });
+const LOCK = 1, HOPS = [[12.95, 9], [13.28, 5], [13.6, 1]];       // the reticle hunts, then locks on "problems"
+const STEPS = ['Read the thread', 'Find what’s owed', 'Draft the follow-up', 'Send it and log it'];
+const NY = [820, 960, 1100, 1240];
+const stepEls = STEPS.map((s) => { const e = document.createElement('div'); e.className = 'abs step'; e.textContent = s; $('flow').append(e); return e; });
+const bricks = STEPS.map((s) => { const e = document.createElement('div'); e.className = 'abs brick'; e.innerHTML = `<i class="fill"></i><span>${s}</span>`; $('flow').append(e); return e; });
+const solved = document.createElement('div'); solved.id = 'solved'; solved.className = 'abs'; solved.textContent = '✓ AUTOMATED'; $('flow').append(solved);
+
+// ---- 3 · PROBLEM as particles ------------------------------------------------------------------------------
+const P = { off: null, parts: [], top: 0, h: 0, x0: 0, x1: 0, base: 0 };
+function initDust() {
+  const off = document.createElement('canvas'); off.width = 1080; off.height = 1920;
+  const g = off.getContext('2d');
+  let size = 230; g.font = `800 ${size}px 'Bricolage Grotesque'`;
+  const spacing = -0.045 * size; g.letterSpacing = spacing + 'px';
+  const w = g.measureText('PROBLEM').width; if (w > 940) { size = Math.floor(size * 940 / w); g.font = `800 ${size}px 'Bricolage Grotesque'`; g.letterSpacing = -0.045 * size + 'px'; }
+  g.fillStyle = '#F2EEE5'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  P.base = 990; g.fillText('PROBLEM', 540, P.base);
+  const m = g.measureText('PROBLEM');
+  P.top = P.base - m.actualBoundingBoxAscent - 8; P.h = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent + 16;
+  P.x0 = 540 - m.width / 2; P.x1 = 540 + m.width / 2; P.under = P.base + 44;
+  const data = g.getImageData(0, 0, 1080, 1920).data, r = rng(11), S = 4;
+  for (let y = Math.floor(P.top); y < P.top + P.h; y += S) for (let x = Math.floor(P.x0) - 4; x < P.x1 + 4; x += S) {
+    if (data[((y + 2) * 1080 + x + 2) * 4 + 3] > 60) P.parts.push({ x, y, a: r(), b: r(), c: r(), ember: r() < 0.07 });
+  }
+  P.off = off;
+}
+function drawDust(t) {
+  const c = $('dust').getContext('2d'); c.clearRect(0, 0, 1080, 1920);
+  if (t < 21.46 || t > 23.6 || !P.off) return;
+  const T0 = 22.66, S = 4;
+  if (t < T0) {                                                   // mask in on "problem", then hold
+    const k = outExpo(seg(t, 21.48, 0.34));
+    c.save(); c.beginPath(); c.rect(0, P.top, 1080, P.h); c.clip();
+    c.drawImage(P.off, 0, (1 - k) * P.h * 1.05); c.restore();
+    return;
+  }
+  for (const p of P.parts) {                                       // dissolve left to right, drifting up and away
+    const delay = 0.5 * (p.x - P.x0) / (P.x1 - P.x0) + 0.12 * p.a, life = 0.5 + 0.4 * p.b;
+    const u = clamp((t - T0 - delay) / life);
+    if (u <= 0) { c.drawImage(P.off, p.x, p.y, S, S, p.x, p.y, S, S); continue; }
+    if (u >= 1) continue;
+    const e = u * u;
+    const x = p.x + e * (50 + 230 * p.c) + Math.sin(u * 7 + p.a * 12) * 10 * u;
+    const y = p.y - e * (120 + 300 * p.b);
+    const s = S * (1 - 0.55 * u);
+    c.globalAlpha = Math.pow(1 - u, 1.4);
+    if (p.ember) { c.fillStyle = '#FF5A00'; c.fillRect(x, y, s, s); } else c.drawImage(P.off, p.x, p.y, S, S, x, y, s, s);
+    c.globalAlpha = 1;
+  }
+}
+
+// ---- captions (from the recording; step aside where the type already says it) ----------------------------
+const CAPS = [
+  [0.0, 1.3, 'You <em>don’t</em> need to learn how to'], [1.82, 2.95, 'to make <em>money</em> with AI.'],
+  [3.89, 4.7, 'You need to learn how to'],
+  [6.92, 7.95, 'Businesses are still'], [7.97, 9.15, '<em>copy-and-pasting</em> data,'], [9.2, 10.55, '<em>chasing</em> emails,'],
+  [10.59, 11.4, 'and doing work'], [11.42, 12.85, 'that AI could help <em>automate</em>.'],
+  [12.95, 14.75, 'Find <em>one</em> of those problems.'], [15.16, 16.7, 'Learn the <em>workflow</em>.'], [16.99, 18.2, 'Build a <em>solution</em>.'],
+  [18.22, 19.03, 'Because nobody’s'], [19.05, 20.45, 'paying for your <em>prompts</em>.'],
+  [22.18, 23.3, 'you make <em>disappear</em>.'],
+];
+
+// measured once fonts are in (positions come from the real type, not guesses)
+const M = {};
+function init() {
+  const fs = fit($('w-exp').querySelector('.mask > span'), 960);
+  $('w-prob').querySelector('.mask > span').style.fontSize = fs + 'px';
+  const r = (el) => el.getBoundingClientRect();
+  const cw = r($('codeword'));
+  M.code = { x0: cw.left, x1: cw.right, cy: cw.top + cw.height * 0.53, top: cw.top + cw.height * 0.14, h: cw.height * 0.72 };
+  const pw = r($('probword'));
+  M.prob = { x0: pw.left + 6, x1: pw.right - 6, ul: pw.bottom + 10 };
+  initDust();
+}
+
+// -------------------------------------------------------------------------------------------------------------
+function render(t) {
+  // ---- face: opening settle, slow pushes ----------------------------------------------------------------
+  let sc = lerp(1.12, 1.02, outExpo(seg(t, 0.1, 0.9)));
+  if (t >= 6.4) sc = lerp(1.02, 1.06, inOut(seg(t, 6.6, 6.0)));
+  if (t >= 18.0) sc = lerp(1.04, 1.1, inOut(seg(t, 18.1, 3.2)));
+  css($('face'), { transform: `scale(${sc})` });
+
+  // ---- the dark: one continuous chapter for the strike, the wipe out, busywork, the grid, the disappear ---
+  let dim = 0, clip = 'none';
+  if (t < 6.6) dim = 0.74 * outCubic(seg(t, 0.72, 0.28));
+  if (t >= 6.56 && t < 7.0) { dim = 0.74; clip = `inset(${lerp(-20, 1940, inOut(seg(t, 6.56, 0.38)))}px 0 0 0)`; }   // the line wipes it away
+  if (t >= 12.55 && t < 18.4) dim = 0.9 * outCubic(seg(t, 12.55, 0.3)) * (1 - inOut(seg(t, 18.06, 0.34)));
+  if (t >= 20.6) dim = lerp(0.88, 1, seg(t, 22.7, 0.7)) * outCubic(seg(t, 20.6, 0.3));
+  css($('dim'), { opacity: dim, clipPath: clip });
+
+  // ---- 1 · the strike -----------------------------------------------------------------------------------------
+  const s1 = t >= 0.7 && t < 3.6;
+  show($('codebg'), s1); show($('w-code'), s1); show($('cursor'), s1 && t < 2.0);
+  if (s1) {
+    codeLines.forEach((d, i) => {
+      const k = seg(t, 0.76 + i * 0.045, 0.12), fall = inCubic(seg(t, 2.28 + ((i * 7) % 11) * 0.03, 0.55));
+      css(d, { opacity: k * (1 - fall), transform: `translate(${(1 - outExpo(k)) * 24}px, ${fall * 700}px) rotate(${fall * (i % 2 ? 9 : -7)}deg)` });
+    });
+    const sp = $('codeword');
+    const k = outExpo(seg(t, 1.3, 0.32)), drop = inCubic(seg(t, 3.0, 0.32));
+    sp.style.transform = `translateY(${(1 - k) * 105 + drop * 115}%)`;
+    css($('cursor'), { left: (M.code.x1 + 16) + 'px', top: M.code.top + 'px', height: M.code.h + 'px', opacity: (Math.floor((t - 1.3) * 3.4) % 2 === 0 && t >= 1.45) ? 1 : 0 });
+  }
+  show($('l-solve'), t >= 4.6 && t < 6.6); show($('w-exp'), t >= 5.0 && t < 6.6); show($('w-prob'), t >= 5.55 && t < 6.6);
+  maskIn($('l-solve'), seg(t, 4.7, 0.3), seg(t, 6.38, 0.16));
+  maskIn($('w-exp'), seg(t, 5.1, 0.32), seg(t, 6.38, 0.16));
+  maskIn($('w-prob'), seg(t, 5.65, 0.32), seg(t, 6.4, 0.16));
+
+  // ---- the line ---------------------------------------------------------------------------------------------------
+  let bandOn = false;
+  const midX = 540, dashW = 70;
+  if (t >= 2.02 && t < 7.0) {
+    bandOn = true;
+    const { x0, x1, cy } = M.code, tilt = 22;
+    const draw = outExpo(seg(t, 2.02, 0.2));                                     // strike on "money"
+    let a = [x0 - 30, cy + tilt], b = [lerp(x0 - 30, x1 + 30, draw), lerp(cy + tilt, cy - tilt, draw)], w = 22;
+    const breath = inOut(seg(t, 3.06, 0.62));                                    // shrinks to a waiting dash where the underline will be
+    a = [lerp(a[0], midX - dashW, breath), lerp(a[1], M.prob.ul, breath)]; b = [lerp(b[0], midX + dashW, breath), lerp(b[1], M.prob.ul, breath)];
+    w = lerp(22, 14, breath);
+    const under = outExpo(seg(t, 5.68, 0.42));                                   // becomes the underline of PROBLEMS.
+    a[0] = lerp(a[0], M.prob.x0, under); b[0] = lerp(b[0], M.prob.x1, under);
+    const wide = inOut(seg(t, 6.38, 0.18)), up = inOut(seg(t, 6.38, 0.18));      // full width, up to the top edge…
+    a = [lerp(a[0], -40, wide), lerp(a[1], -12, up)]; b = [lerp(b[0], 1120, wide), lerp(b[1], -12, up)];
+    const wipe = inOut(seg(t, 6.56, 0.38));                                      // …then wipes down, clearing the dark
+    a[1] = b[1] = lerp(a[1], 1940, wipe); w = lerp(w, 10, wide);
+    setBand(a[0], a[1], b[0], b[1], w);
+  }
+  if (t >= 12.1 && t < 12.62) {                                                  // "automate": one scan through the busywork
+    bandOn = true; const y = lerp(250, 1480, inOut(seg(t, 12.12, 0.46)));
+    setBand(-40, y, 1120, y, 8, 1 - seg(t, 12.5, 0.1));
+  }
+  if (t >= 15.15 && t < 17.3) {                                                  // the workflow line, down from the locked problem
+    bandOn = true; const y0 = 690 + 4, draw = outCubic(seg(t, 15.18, 1.05)), gone = inCubic(seg(t, 16.98, 0.28));
+    setBand(540, y0, 540, lerp(y0, NY[3], draw), 8, 1 - gone);
+  }
+  if (t >= 21.58 && t < 23.6) {                                                  // underline of PROBLEM, then the last dot
+    bandOn = true; const draw = outExpo(seg(t, 21.6, 0.36)), shrink = inOut(seg(t, 22.72, 0.62)), dot = inCubic(seg(t, 23.36, 0.2));
+    const half = lerp(0, (P.x1 - P.x0) / 2, draw) * (1 - shrink);
+    setBand(540 - half, P.under, 540 + half, P.under, lerp(16, 22, shrink) * (1 - dot), 1);
+  }
+  band.style.display = bandOn ? '' : 'none';
+
+  // ---- busywork ---------------------------------------------------------------------------------------------------
+  const bOn = t >= 7.9 && t < 12.95;
+  show($('busy'), bOn);
+  if (bOn) {
+    const away = inCubic(seg(t, 12.52, 0.22));
+    const pop = (el, t0, dx, dy) => { const k = seg(t, t0, 0.32); css(el, { opacity: clamp(k * 3) * (1 - away), transform: `translate(${(1 - outExpo(k)) * dx}px, ${(1 - outExpo(k)) * dy}px) scale(${lerp(0.92, 1, outBack(k)) * lerp(1, 0.86, away)})` }); };
+    pop($('sheet'), 7.97, -60, 30); pop($('mail'), 9.18, 60, 30); pop($('tasks'), 10.76, -60, 30);
+    const scanY = lerp(250, 1480, inOut(seg(t, 12.12, 0.46)));                    // things the scan has passed are done
+    const done = (y) => t >= 12.12 && scanY >= y;
+    cells.forEach((c, i) => {
+      const filled = i === 0 || t >= 8.55 + (i - 1) * 0.026;
+      c.style.opacity = i < 4 || filled ? 1 : 0.25;
+      c.classList.toggle('sel', (i === 0 && t >= 7.97 && t < 8.6) || done(400 + Math.floor(i / 4) * 46));
+      c.firstChild.style.background = done(400 + Math.floor(i / 4) * 46) ? 'var(--cream)' : '';
+    });
+    const chip = (el, t0, x, y) => { const k = seg(t, t0, 0.22), o = 1 - seg(t, t0 + 0.55, 0.15); css(el, { left: x + 'px', top: y + 'px', opacity: clamp(k * 3) * o, transform: `scale(${lerp(0.6, 1, outBack(k))})` }); };
+    chip($('kc'), 7.99, 300, 300); chip($('kv'), 8.53, 360, 600);
+    rows.forEach((r, i) => { const k = seg(t, 9.22 + i * 0.16, 0.24); css(r, { opacity: k, transform: `translateX(${(1 - outExpo(k)) * 80}px)` }); r.querySelector('.dot').style.opacity = done(420 + i * 54) ? 0 : 1; });
+    $('unread').textContent = done(400) ? '0' : String(Math.round(lerp(12, 48, seg(t, 9.2, 1.15))));
+    tasks.forEach((r, i) => { const k = seg(t, [10.78, 10.96, 11.12, 11.27][i], 0.22); css(r, { opacity: k, transform: `translateX(${(1 - outExpo(k)) * -50}px)` }); r.querySelector('.box').classList.toggle('on', done(1170 + i * 56)); });
+  }
+
+  // ---- 2 · find → learn → build --------------------------------------------------------------------------------
+  const gOn = t >= 12.6 && t < 18.45;
+  show($('tiles'), gOn); show($('chap'), gOn); show($('flow'), gOn && t >= 15.1);
+  const chap = t < 15.1 ? ['01', 'Find'] : t < 16.95 ? ['02', 'Learn'] : ['03', 'Build'];
+  $('chap').innerHTML = `<span>${chap[0]} / 03</span>&nbsp;&nbsp;${chap[1]}`;
+  const cs = [12.95, 15.16, 16.99].filter((s) => t >= s).pop() || 12.95;
+  css($('chap'), { opacity: seg(t, cs, 0.12) * (1 - seg(t, 18.02, 0.2)), transform: `translateY(${(1 - outExpo(seg(t, cs, 0.3))) * 20}px)` });
+  if (gOn) {
+    tiles.forEach((e, i) => {
+      const k = seg(t, 12.66 + i * 0.022, 0.3), fall = inCubic(seg(t, 14.05 + Math.abs(i - LOCK) * 0.03, 0.42));
+      let x = TX(i), y = TY(i), s = lerp(0.85, 1, outBack(k)), o = clamp(k * 2.5);
+      if (i === LOCK) {                                                          // the one: up to the top of the flow
+        const mv = inOut(seg(t, 14.7, 0.48)); x = lerp(x, 540 - 145, mv); y = lerp(y, 560, mv);
+      } else { y += fall * 260; o *= (1 - fall) * (t >= 13.94 ? 0.35 : 1); }
+      e.classList.toggle('lock', i === LOCK && t >= 13.94);
+      css(e, { left: x + 'px', top: y + 'px', opacity: o, transform: `scale(${s})`, zIndex: i === LOCK ? 5 : 1 });
+    });
+    // reticle: four corner brackets hop between tiles, then squeeze shut on the one
+    let hop = 0; HOPS.forEach(([s], i) => { if (t >= s) hop = i; });
+    const [hs, hi] = HOPS[hop], prev = HOPS[Math.max(0, hop - 1)][1];
+    const m = inOut(seg(t, hs, 0.22));
+    let cx = lerp(TX(prev), TX(hi), hop ? m : 1) + 145, cy = lerp(TY(prev), TY(hi), hop ? m : 1) + 64;
+    const mv = inOut(seg(t, 14.7, 0.48)); cx = lerp(cx, 540, mv); cy = lerp(cy, 624, mv);
+    const lock = outBack(seg(t, 13.94, 0.24)), pad = lerp(30, 8, lock) + 6 * (1 - seg(t, 12.95, 0.2)), L = 34;
+    const hw = 145 + pad, hh = 64 + pad, rOn = t >= 12.95 && t < 15.2;
+    ret.forEach((p, i) => {
+      const sx = i % 2 ? 1 : -1, sy = i < 2 ? -1 : 1, x = cx + sx * hw, y = cy + sy * hh;
+      p.setAttribute('d', `M${x} ${y - sy * L}L${x} ${y}L${x - sx * L} ${y}`);
+      p.setAttribute('opacity', rOn ? seg(t, 12.95, 0.12) * (1 - seg(t, 14.95, 0.25)) : 0);
+    });
+    // learn: nodes and step labels down the line, alternating sides
+    flowNodes.forEach((n, i) => {
+      const k = outBack(seg(t, 15.57 + i * 0.18, 0.26)), b = seg(t, 16.99 + i * 0.08, 0.3);
+      n.setAttribute('cx', 540); n.setAttribute('cy', NY[i]); n.setAttribute('r', t >= 15.1 && t < 18.45 ? 15 * k * (1 - b) : 0);
+    });
+    stepEls.forEach((e, i) => {
+      const k = seg(t, 15.62 + i * 0.18, 0.28), b = seg(t, 16.99 + i * 0.08, 0.2), right = i % 2 === 0;
+      css(e, { top: NY[i] - 17 + 'px', left: right ? '580px' : 'auto', right: right ? 'auto' : '580px', opacity: k * (1 - b), transform: `translateX(${(1 - outExpo(k)) * (right ? 30 : -30)}px)` });
+    });
+    // build: each step becomes a brick; they stack into one solid block
+    const BW = 700, BH = 92, BX = 190, BY = 734;
+    bricks.forEach((e, i) => {
+      const k = outExpo(seg(t, 16.99 + i * 0.08, 0.36));
+      const w = lerp(30, BW, k), h = lerp(30, BH, k), x = lerp(525, BX, k), y = lerp(NY[i] - 15, BY + i * (BH + 6), k);
+      css(e, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', opacity: t >= 16.99 + i * 0.08 ? 1 : 0, color: k > 0.6 ? '#000' : 'transparent' });
+      const run = 17.46 + i * 0.12;                                               // the workflow runs: an orange pass through each step
+      const head = outCubic(seg(t, run, 0.24)), tail = inOut(seg(t, run + 0.26, 0.26));
+      css(e.firstChild, { left: tail * 100 + '%', width: Math.max(0, head - tail) * 100 + '%' });
+    });
+    const ok = outCubic(seg(t, 17.31, 0.4)), per = 2 * (BW + 4 * (BH + 6) + 16);
+    outline.setAttribute('x', BX - 14); outline.setAttribute('y', BY - 14); outline.setAttribute('width', BW + 28); outline.setAttribute('height', 4 * (BH + 6) + 22);
+    outline.setAttribute('stroke-dasharray', per); outline.setAttribute('stroke-dashoffset', per * (1 - ok)); outline.setAttribute('opacity', t >= 17.31 ? 1 : 0);
+    const sk = seg(t, 17.62, 0.25);
+    css(solved, { left: 540 + 145 - 60 + 'px', top: 560 - 24 + 'px', opacity: sk, transform: `scale(${lerp(0.6, 1, outBack(sk))})` });
+    const exit = inCubic(seg(t, 18.02, 0.26));                                    // drops away fast, no lingering over the face
+    [$('flow'), $('tiles')].forEach((e) => css(e, { opacity: 1 - exit, transform: `translateY(${exit * 240}px) scale(${1 - 0.08 * exit})` }));
+    ov.style.opacity = t >= 15.1 && t < 18.45 ? 1 - exit : 1;
+  } else { flowNodes.forEach((n) => n.setAttribute('r', 0)); ret.forEach((p) => p.setAttribute('opacity', 0)); outline.setAttribute('opacity', 0); ov.style.opacity = 1; }
+
+  // ---- prompts: worth $0 ---------------------------------------------------------------------------------------
+  const pOn = t >= 18.5 && t < 20.6;
+  show($('prompt'), pOn); show($('stamp'), pOn && t >= 19.58);
+  if (pOn) {
+    const k = seg(t, 18.52, 0.34), out = inCubic(seg(t, 20.22, 0.32));
+    const shake = t >= 19.61 ? Math.sin((t - 19.61) * 70) * 9 * (1 - seg(t, 19.61, 0.25)) : 0;
+    css($('prompt'), { opacity: clamp(k * 3) * (1 - out), transform: `translate(${shake}px, ${(1 - outExpo(k)) * 80 + out * 140}px)` });
+    const text = 'You are a world-class expert. Write me a', n = Math.floor(text.length * seg(t, 18.66, 0.88));
+    $('typed').textContent = text.slice(0, n); $('ph').style.display = n ? 'none' : '';
+    const sk = seg(t, 19.6, 0.16);
+    css($('stamp'), { opacity: clamp(sk * 4) * (1 - out), transform: `translateY(${out * 140}px) rotate(-9deg) scale(${lerp(1.7, 1, outBack(sk))})` });
+  }
+
+  // ---- 3 · the disappear ------------------------------------------------------------------------------------------
+  const lOn = t >= 20.6 && t < 23.3;
+  show($('l-pay'), lOn);
+  if (lOn) {
+    const parts = [["THEY'RE", 20.63], ['PAYING', 20.87], ['FOR', 21.26], ['THE', 21.38]];
+    $('l-pay').textContent = parts.filter(([, s]) => t >= s).map(([w]) => w).join(' ');
+    css($('l-pay'), { top: (P.top - 70) + 'px', opacity: 1 - seg(t, 22.6, 0.4) });
+  }
+  drawDust(t);
+
+  captions($('cap'), CAPS, t);
+  sting(t, HIT);
+}
+
+Kit.boot({ render, fps: FPS, offset: OFFSET, frames: FRAMES, face: { img: $('faceimg'), fps: 24, count: 579 }, init });
+</script>
+</body>
+</html>
