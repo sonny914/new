@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Flighty Carousel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=block" rel="stylesheet">
+<style>
+  :root{
+    --black:#0B0A09; --malt:#171512; --surface:#121110;
+    --ivory:#F4F1E9; --oat:#E8DCC2; --quiet:#968D7C;
+    --live:#FF5A1F; --live-deep:#C83A0A; --ember:#FF8A4C;
+    --hair:rgba(232,220,194,0.18);
+    --pad:84px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#050505;display:flex;flex-direction:column;align-items:center;gap:40px;padding:40px 0}
+  .slide{
+    position:relative;width:1080px;height:1350px;overflow:hidden;flex:none;
+    background:var(--black);color:var(--ivory);
+    font-family:'Instrument Sans',system-ui,sans-serif;
+    padding:var(--pad);display:flex;flex-direction:column;
+  }
+  /* film grain on every slide */
+  .slide::after{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:50;opacity:.09;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .top{display:flex;justify-content:space-between;align-items:center;font-family:'Space Mono',monospace;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);position:relative;z-index:2}
+  .top .count{color:var(--oat);border:1px solid var(--hair);border-radius:999px;padding:8px 18px;letter-spacing:.1em}
+  .step{font-family:'Space Mono',monospace;font-size:22px;letter-spacing:.22em;text-transform:uppercase;color:var(--live);margin-top:84px;display:flex;align-items:center;gap:16px}
+  .step::before{content:"";width:44px;height:2px;background:var(--live)}
+  h2{
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:104px;line-height:.94;letter-spacing:-.035em;
+    margin-top:26px;padding-left:34px;border-left:10px solid var(--live);
+  }
+  h2 em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;letter-spacing:-.01em;color:var(--oat)}
+  .lede{font-size:34px;line-height:1.38;color:#CFC8B8;margin-top:34px;max-width:860px;padding-left:44px}
+  .lede b{color:var(--ivory);font-weight:600}
+  .stage{flex:1;margin-top:52px;position:relative;min-height:0}
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:44px;font-family:'Space Mono',monospace;font-size:20px;letter-spacing:.2em;text-transform:uppercase;color:var(--quiet);position:relative;z-index:2}
+  .dots{display:flex;gap:10px}
+  .dots i{width:10px;height:10px;border-radius:50%;background:#3A3630}
+  .dots i.on{background:var(--live);width:34px;border-radius:6px}
+
+  /* ---------- 1 · COVER ---------- */
+  .cover{background:radial-gradient(120% 90% at 78% 18%, var(--ember) 0%, var(--live) 38%, var(--live-deep) 78%, #7A1F02 100%);color:var(--black)}
+  .cover .top{color:rgba(11,10,9,.72)}
+  .cover .top .count{color:var(--black);border-color:rgba(11,10,9,.3)}
+  .cover .stack{position:absolute;right:-60px;top:150px;width:560px;height:600px}
+  .cover .card{position:absolute;width:420px;height:480px;border-radius:26px;background:var(--black);box-shadow:0 40px 80px rgba(60,12,0,.45);padding:34px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(255,255,255,.06)}
+  .cover .card .n{font-family:'Space Mono',monospace;color:var(--quiet);font-size:18px;letter-spacing:.16em}
+  .cover .card .bar{border-left:7px solid var(--live);padding-left:18px;font-family:'Bricolage Grotesque';font-weight:800;color:var(--ivory);font-size:46px;line-height:.98;letter-spacing:-.03em}
+  .cover .card .lines i{display:block;height:12px;border-radius:6px;background:#2A2723;margin-top:12px}
+  .cover .c1{transform:rotate(-14deg) translate(-40px,60px);opacity:.55}
+  .cover .c2{transform:rotate(-6deg) translate(20px,20px);opacity:.8}
+  .cover .c3{transform:rotate(4deg) translate(90px,-10px)}
+  .cover h1{
+    position:relative;z-index:3;margin-top:auto;
+    font-family:'Instrument Serif',serif;font-weight:400;font-size:196px;line-height:.84;letter-spacing:-.03em;
+  }
+  .cover h1 .sans{display:block;font-family:'Bricolage Grotesque';font-weight:800;font-size:178px;letter-spacing:-.055em;line-height:.88;color:var(--ivory);text-shadow:0 10px 40px rgba(80,15,0,.35)}
+  .cover h1 em{font-style:italic}
+  .cover .sub{position:relative;z-index:3;font-size:34px;line-height:1.3;margin-top:34px;max-width:760px;color:rgba(11,10,9,.82);font-weight:500}
+  .cover .foot{color:var(--black)}
+  .cover .swipe{display:inline-flex;align-items:center;gap:16px;background:var(--black);color:var(--ivory);padding:18px 28px;border-radius:999px;letter-spacing:.18em}
+  .cover .swipe span{color:var(--live)}
+  .cover .dots i{background:rgba(11,10,9,.25)}
+  .cover .dots i.on{background:var(--black)}
+
+  /* ---------- 2 · REFERENCE ---------- */
+  .ref-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:14px;height:100%}
+  .ref-strip .t{border-radius:16px;background:var(--surface);border:1px solid var(--hair);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:14px}
+  .ref-strip .t .k{font-family:'Space Mono';font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);writing-mode:vertical-rl;transform:rotate(180deg);position:absolute;top:18px;left:14px}
+  .ref-strip .t .num{font-family:'Bricolage Grotesque';font-weight:800;font-size:58px;letter-spacing:-.04em;color:#3A3630}
+  .ref-strip .t.hook{background:linear-gradient(170deg,var(--ember),var(--live-deep));border:0}
+  .ref-strip .t.hook .k,.ref-strip .t.hook .num{color:var(--black)}
+  .ref-strip .t.cta{background:var(--ivory);border:0}
+  .ref-strip .t.cta .k,.ref-strip .t.cta .num{color:var(--black)}
+  .ref-strip .t .acc{position:absolute;top:50%;left:14px;right:14px;height:6px;background:var(--live);border-radius:3px;opacity:.85}
+  .ref-strip .t .acc + .acc{top:calc(50% + 18px);right:40%;background:#2A2723;opacity:1}
+  .brace{position:absolute;left:0;right:0;bottom:-6px;display:grid;grid-template-columns:1fr 5fr 1fr;gap:14px;font-family:'Space Mono';font-size:18px;letter-spacing:.16em;text-transform:uppercase;color:var(--oat);text-align:center}
+  .brace div{border-top:2px solid var(--hair);padding-top:16px}
+  .brace .mid{border-color:var(--live);color:var(--live)}
+  .s2 .stage{display:flex;flex-direction:column}
+  .s2 .ref-wrap{flex:1;position:relative;padding-bottom:64px}
+
+  /* ---------- 3 · PROMPT ---------- */
+  .prompt{height:100%;border-radius:28px;background:var(--surface);border:1px solid var(--hair);padding:40px 44px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .prompt .bar{display:flex;gap:10px;margin-bottom:28px;align-items:center}
+  .prompt .bar i{width:14px;height:14px;border-radius:50%;background:#2E2A25}
+  .prompt .bar span{margin-left:auto;font-family:'Space Mono';font-size:17px;letter-spacing:.16em;color:var(--quiet);text-transform:uppercase}
+  .prompt p{font-family:'Space Mono',monospace;font-size:27px;line-height:1.55;color:#B9B1A1}
+  .prompt mark{background:none;color:var(--ivory);box-shadow:inset 0 -12px 0 rgba(255,90,31,.45)}
+  .prompt .tags{margin-top:auto;display:flex;flex-wrap:wrap;gap:12px}
+  .prompt .tags span{font-family:'Space Mono';font-size:18px;letter-spacing:.12em;text-transform:uppercase;padding:10px 18px;border-radius:999px;border:1px solid var(--hair);color:var(--oat)}
+  .prompt .tags span.hot{background:var(--live);border-color:var(--live);color:var(--black)}
+  .prompt .caret{display:inline-block;width:16px;height:34px;background:var(--live);vertical-align:-6px;margin-left:6px}
+
+  /* ---------- 4 · BRAND ---------- */
+  .brand{height:100%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1.15fr 1fr;gap:18px}
+  .sw{border-radius:24px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;font-family:'Space Mono';font-size:18px;letter-spacing:.12em;text-transform:uppercase}
+  .sw b{font-family:'Bricolage Grotesque';font-weight:800;font-size:40px;letter-spacing:-.02em;text-transform:none}
+  .sw.live{background:var(--live);color:var(--black);grid-row:span 2}
+  .sw.live .big{font-family:'Instrument Serif';font-style:italic;font-size:250px;line-height:.8;letter-spacing:-.04em;text-transform:none;margin-top:auto;margin-bottom:24px}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .sw.ivory{background:var(--ivory);color:var(--black)}
+  .sw.oat{background:var(--oat);color:var(--black)}
+  .sw.ink{background:var(--surface);border:1px solid var(--hair);color:var(--oat)}
+  .type{border-radius:24px;background:var(--surface);border:1px solid var(--hair);padding:28px;display:flex;flex-direction:column;justify-content:space-between}
+  .type .row{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--hair);padding:10px 0}
+  .type .row:last-child{border:0}
+  .type .row span{font-family:'Space Mono';font-size:15px;letter-spacing:.14em;color:var(--quiet);text-transform:uppercase}
+  .type .a{font-family:'Bricolage Grotesque';font-weight:800;font-size:46px;letter-spacing:-.03em}
+  .type .b{font-family:'Instrument Serif';font-style:italic;font-size:48px;color:var(--oat)}
+  .type .c{font-family:'Space Mono';font-size:24px;color:var(--live)}
+
+  /* ---------- 5 · CODE ---------- */
+  .code-wrap{height:100%;display:grid;grid-template-columns:1.25fr 1fr;gap:20px}
+  .code{border-radius:24px;background:var(--surface);border:1px solid var(--hair);padding:30px 28px;font-family:'Space Mono',monospace;font-size:21px;line-height:1.62;color:#8E8676;white-space:pre;overflow:hidden}
+  .code .ln{color:#3E3a33;display:inline-block;width:36px}
+  .code .s{color:var(--ember)} .code .p{color:var(--oat)} .code .v{color:var(--ivory)} .code .c{color:#5B554B;font-style:italic}
+  .artboard{border-radius:24px;border:2px dashed rgba(255,90,31,.55);position:relative;display:flex;align-items:center;justify-content:center;padding:30px}
+  .artboard .mini{width:100%;aspect-ratio:1080/1350;background:var(--black);border:1px solid var(--hair);border-radius:12px;padding:20px;display:flex;flex-direction:column;box-shadow:0 30px 60px rgba(0,0,0,.6)}
+  .artboard .mini .h{border-left:5px solid var(--live);padding-left:12px;font-family:'Bricolage Grotesque';font-weight:800;font-size:34px;line-height:.95;letter-spacing:-.03em;margin-top:22px}
+  .artboard .mini .l{height:8px;background:#2A2723;border-radius:4px;margin-top:10px}
+  .artboard .mini .img{flex:1;margin-top:16px;border-radius:8px;background:linear-gradient(150deg,var(--ember),var(--live-deep))}
+  .artboard .dim{position:absolute;font-family:'Space Mono';font-size:18px;letter-spacing:.12em;color:var(--live);background:var(--black);padding:0 10px}
+  .artboard .dim.w{top:-13px;left:50%;transform:translateX(-50%)}
+  .artboard .dim.hh{right:-44px;top:50%;transform:translateY(-50%) rotate(90deg)}
+
+  /* ---------- 6 · EXPORT ---------- */
+  .exp{height:100%;display:flex;flex-direction:column;gap:20px}
+  .term{border-radius:24px;background:var(--surface);border:1px solid var(--hair);padding:30px 34px;font-family:'Space Mono',monospace;font-size:23px;line-height:1.7;color:#8E8676}
+  .term .g{color:var(--live)} .term .w{color:var(--ivory)} .term .ok{color:#8FBF98}
+  .files{flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr;gap:16px}
+  .file{border-radius:18px;border:1px solid var(--hair);background:#0F0E0C;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .file .th{flex:1;border-radius:10px;background:var(--malt);position:relative;overflow:hidden}
+  .file .th::before{content:"";position:absolute;left:12%;top:22%;width:7px;height:22%;background:var(--live);border-radius:2px}
+  .file .th::after{content:"";position:absolute;left:12%;right:12%;bottom:12%;height:38%;border-radius:6px;background:#26231F}
+  .file.f1 .th{background:linear-gradient(160deg,var(--ember),var(--live-deep))}
+  .file.f1 .th::before,.file.f1 .th::after{display:none}
+  .file.f7 .th{background:var(--ivory)}
+  .file.f7 .th::before{display:none}
+  .file.f7 .th::after{background:var(--live);height:22%;bottom:39%}
+  .file .nm{font-family:'Space Mono';font-size:16px;color:var(--oat);letter-spacing:.04em}
+  .file .sz{font-family:'Space Mono';font-size:14px;color:var(--quiet);letter-spacing:.08em}
+  .file.done{border-color:var(--live);background:var(--live);color:var(--black);justify-content:center;align-items:flex-start;padding:22px}
+  .file.done b{font-family:'Bricolage Grotesque';font-weight:800;font-size:64px;letter-spacing:-.04em;line-height:.9}
+  .file.done span{font-family:'Space Mono';font-size:16px;letter-spacing:.14em;text-transform:uppercase;margin-top:10px}
+
+  /* ---------- 7 · CTA ---------- */
+  .cta{background:var(--ivory);color:var(--black);isolation:isolate}
+  .cta .top{color:#7C7465}
+  .cta .top .count{color:var(--black);border-color:rgba(11,10,9,.2)}
+  .cta .frame{margin:120px auto 0;border:1px solid rgba(11,10,9,.18);padding:16px 30px;font-family:'Space Mono';font-size:22px;letter-spacing:.16em;color:#4A443B;text-transform:lowercase;background:#FBF9F4;box-shadow:0 8px 24px rgba(11,10,9,.06)}
+  .cta .sign{
+    margin:70px auto 0;width:820px;height:300px;border-radius:30px;position:relative;
+    background:linear-gradient(105deg,#FF3D00 0%,var(--live) 35%,var(--ember) 70%,#FFB37A 100%);
+    box-shadow:0 0 0 12px #FBF9F4,0 0 0 14px rgba(11,10,9,.12),0 34px 60px rgba(200,58,10,.28);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cta .sign::before{content:"";position:absolute;inset:-90px -60px -140px;z-index:-1;background:radial-gradient(closest-side,rgba(255,90,31,.38),rgba(255,90,31,0));}
+  .cta .sign b{font-family:'Bricolage Grotesque';font-weight:800;font-size:200px;letter-spacing:-.06em;color:var(--ivory);line-height:1;text-shadow:0 6px 30px rgba(120,25,0,.35)}
+  .cta .sign .cursor{position:absolute;right:70px;bottom:-40px;width:96px;height:96px}
+  .cta h3{margin-top:auto;font-family:'Instrument Serif';font-weight:400;font-size:100px;line-height:.95;letter-spacing:-.025em;text-align:center}
+  .cta h3 em{font-style:italic;color:var(--live-deep)}
+  .cta .sub{text-align:center;font-size:30px;line-height:1.4;color:#5A5348;margin-top:26px}
+  .cta .row{display:flex;justify-content:center;gap:14px;margin-top:40px}
+  .cta .row span{font-family:'Space Mono';font-size:19px;letter-spacing:.14em;text-transform:uppercase;padding:14px 24px;border-radius:999px;border:1.5px solid var(--black)}
+  .cta .row span.solid{background:var(--black);color:var(--ivory)}
+  .cta .foot{color:#7C7465}
+  .cta .dots i{background:rgba(11,10,9,.15)}
+  .cta .dots i.on{background:var(--live)}
+</style>
+</head>
+<body>
+
+<!-- 01 · COVER -->
+<section class="slide cover" id="s1">
+  <div class="top"><span>@flighty.builds</span><span class="count">01/07</span></div>
+  <div class="stack">
+    <div class="card c1"><span class="n">07/07</span><div class="lines"><i></i><i style="width:60%"></i></div></div>
+    <div class="card c2"><span class="n">04/07</span><div class="lines"><i></i><i style="width:70%"></i></div></div>
+    <div class="card c3"><span class="n">02/07</span><div class="bar">Steal the structure</div><div class="lines"><i></i><i style="width:80%"></i><i style="width:55%"></i></div></div>
+  </div>
+  <h1><em>One prompt.</em><span class="sans">7 slides.</span></h1>
+  <p class="sub">This carousel was built in HTML/CSS by AI from a single brief. Here's the exact workflow.</p>
+  <div class="foot">
+    <span class="swipe">Swipe to steal it <span>→</span></span>
+    <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+</section>
+
+<!-- 02 · REFERENCE -->
+<section class="slide s2" id="s2">
+  <div class="top"><span>@flighty.builds</span><span class="count">02/07</span></div>
+  <div class="step">Step 01 · Reference</div>
+  <h2>Steal the <em>structure,</em><br>not the post.</h2>
+  <p class="lede">Screen-record a carousel that stopped your thumb. Ignore the topic. <b>Map the skeleton</b> — the best ones share one shape.</p>
+  <div class="stage">
+    <div class="ref-wrap">
+      <div class="ref-strip">
+        <div class="t hook"><span class="k">Hook</span><span class="num">01</span></div>
+        <div class="t"><span class="k">Proof</span><i class="acc"></i><i class="acc"></i><span class="num">02</span></div>
+        <div class="t"><span class="k">Proof</span><i class="acc"></i><i class="acc"></i><span class="num">03</span></div>
+        <div class="t"><span class="k">Proof</span><i class="acc"></i><i class="acc"></i><span class="num">04</span></div>
+        <div class="t"><span class="k">Proof</span><i class="acc"></i><i class="acc"></i><span class="num">05</span></div>
+        <div class="t"><span class="k">Proof</span><i class="acc"></i><i class="acc"></i><span class="num">06</span></div>
+        <div class="t cta"><span class="k">Ask</span><span class="num">07</span></div>
+      </div>
+      <div class="brace"><div>Stop</div><div class="mid">Same template · new payoff each swipe</div><div>Follow</div></div>
+    </div>
+  </div>
+  <div class="foot"><span>Swipe →</span><div class="dots"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div></div>
+</section>
+
+<!-- 03 · PROMPT -->
+<section class="slide" id="s3">
+  <div class="top"><span>@flighty.builds</span><span class="count">03/07</span></div>
+  <div class="step">Step 02 · Prompt</div>
+  <h2>Write it like<br>a <em>creative brief.</em></h2>
+  <p class="lede">Not "make me a carousel." Give it <b>format, feel, size and deliverable</b> — what any designer would ask.</p>
+  <div class="stage">
+    <div class="prompt">
+      <div class="bar"><i></i><i></i><i></i><span>the actual prompt</span></div>
+      <p>Create a premium <mark>7-slide</mark> Instagram carousel inspired by my uploaded references. Use <mark>bold typography</mark>, intentional layouts, and <mark>cohesive branding</mark>. Build with <mark>HTML/CSS</mark>, render at <mark>1080 × 1350</mark>, and export seven <mark>high-quality PNGs</mark>.<span class="caret"></span></p>
+      <div class="tags"><span class="hot">Format</span><span>Feel</span><span>Size</span><span>Deliverable</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>Swipe →</span><div class="dots"><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div></div>
+</section>
+
+<!-- 04 · BRAND -->
+<section class="slide" id="s4">
+  <div class="top"><span>@flighty.builds</span><span class="count">04/07</span></div>
+  <div class="step">Step 03 · System</div>
+  <h2>Lock the brand<br><em>before</em> the slides.</h2>
+  <p class="lede">One accent. Three neutrals. Three typefaces. <b>Constraints are what make it look expensive.</b></p>
+  <div class="stage">
+    <div class="brand">
+      <div class="sw live"><span>Live · #FF5A1F</span><span class="big">Aa</span><b>The only loud colour.</b></div>
+      <div class="duo">
+        <div class="sw ivory"><span>Ivory</span><b>#F4F1E9</b></div>
+        <div class="sw ink"><span>Black</span><b style="color:var(--ivory)">#0B0A09</b></div>
+      </div>
+      <div class="type">
+        <div class="row"><span class="a">Bricolage</span><span>Headlines</span></div>
+        <div class="row"><span class="b">Instrument Serif</span><span>Accents</span></div>
+        <div class="row"><span class="c">SPACE MONO</span><span>Labels</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Swipe →</span><div class="dots"><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i></div></div>
+</section>
+
+<!-- 05 · CODE -->
+<section class="slide" id="s5">
+  <div class="top"><span>@flighty.builds</span><span class="count">05/07</span></div>
+  <div class="step">Step 04 · Build</div>
+  <h2>Design in <em>code,</em><br>not drag-and-drop.</h2>
+  <p class="lede">Each slide is a 1080×1350 div. Change one variable and <b>all seven update at once.</b></p>
+  <div class="stage">
+    <div class="code-wrap">
+<div class="code"><span class="ln">1</span><span class="p">:root</span> {
+<span class="ln">2</span>  <span class="v">--live</span>: <span class="s">#FF5A1F</span>;
+<span class="ln">3</span>  <span class="v">--black</span>: <span class="s">#0B0A09</span>;
+<span class="ln">4</span>}
+<span class="ln">5</span><span class="p">.slide</span> {
+<span class="ln">6</span>  <span class="v">width</span>: <span class="s">1080px</span>;
+<span class="ln">7</span>  <span class="v">height</span>: <span class="s">1350px</span>;
+<span class="ln">8</span>}
+<span class="ln">9</span><span class="p">h2</span> {
+<span class="ln">10</span>  <span class="v">border-left</span>:
+<span class="ln">11</span>    <span class="s">10px solid var(--live)</span>;
+<span class="ln">12</span>}
+<span class="ln">13</span><span class="c">/* 1 change → 7 slides */</span></div>
+      <div class="artboard">
+        <span class="dim w">1080</span><span class="dim hh">1350</span>
+        <div class="mini"><span style="font-family:'Space Mono';font-size:11px;color:var(--quiet);letter-spacing:.1em">@FLIGHTY.BUILDS</span><div class="h">Design in code.</div><div class="l"></div><div class="l" style="width:70%"></div><div class="img"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Swipe →</span><div class="dots"><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i></div></div>
+</section>
+
+<!-- 06 · EXPORT -->
+<section class="slide" id="s6">
+  <div class="top"><span>@flighty.builds</span><span class="count">06/07</span></div>
+  <div class="step">Step 05 · Export</div>
+  <h2>A robot browser<br><em>snaps</em> every slide.</h2>
+  <p class="lede">Playwright opens the page and screenshots each slide at <b>2× pixel density</b>, then scales to 1080×1350. Crisp type, zero compression mush.</p>
+  <div class="stage">
+    <div class="exp">
+      <div class="term"><span class="g">$</span> <span class="w">node render.mjs</span><br><span class="ok">✓</span> 7 slides · 1080×1350 · PNG · ready to post</div>
+      <div class="files">
+        <div class="file f1"><div class="th"></div><span class="nm">01-cover.png</span><span class="sz">1080 × 1350</span></div>
+        <div class="file"><div class="th"></div><span class="nm">02-reference.png</span><span class="sz">1080 × 1350</span></div>
+        <div class="file"><div class="th"></div><span class="nm">03-prompt.png</span><span class="sz">1080 × 1350</span></div>
+        <div class="file"><div class="th"></div><span class="nm">04-system.png</span><span class="sz">1080 × 1350</span></div>
+        <div class="file"><div class="th"></div><span class="nm">05-build.png</span><span class="sz">1080 × 1350</span></div>
+        <div class="file"><div class="th"></div><span class="nm">06-export.png</span><span class="sz">1080 × 1350</span></div>
+        <div class="file f7"><div class="th"></div><span class="nm">07-follow.png</span><span class="sz">1080 × 1350</span></div>
+        <div class="file done"><b>7/7</b><span>Post-ready</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Swipe →</span><div class="dots"><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i></div></div>
+</section>
+
+<!-- 07 · CTA -->
+<section class="slide cta" id="s7">
+  <div class="top"><span>@flighty.builds</span><span class="count">07/07</span></div>
+  <div class="frame">@flighty.builds</div>
+  <div class="sign">
+    <b>Follow</b>
+    <svg class="cursor" viewBox="0 0 24 24"><path d="M4 2.5l15 8.2-6.6 1.6 3.9 7.3-2.6 1.4-3.9-7.3L5 18.4z" fill="#0B0A09" stroke="#F4F1E9" stroke-width="1.2" stroke-linejoin="round"/></svg>
+  </div>
+  <h3>Build in <em>public</em><br>with me.</h3>
+  <p class="sub">Real AI builds, the prompts behind them,<br>and what actually ships. Every week.</p>
+  <div class="row"><span class="solid">Save this</span><span>Send to a builder</span></div>
+  <div class="foot"><span>Thanks for swiping</span><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div></div>
+</section>
+
+</body>
+</html>
