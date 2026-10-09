@@ -22,7 +22,13 @@
      dots     density multiplier                         default 1
      dotSize  radius multiplier                          default 1
      opts     raw engine knobs merged over the preset    default none
-     label    aria-label; undefined = per-state default, null (or the `decorative` attribute) = aria-hidden */
+     label    aria-label; undefined = per-state default, null (or the `decorative` attribute) = aria-hidden
+     interactive  grab it: holding stops it, dragging sideways spins it through its own motion, letting go flings it
+              and it coasts back to its own pace. Arrow keys nudge it, Home resets.        default false
+     zoom     draw the chosen preset larger: geometry at size × zoom, the preset's dot count and tuning kept  default 1
+
+   Manipulation is time, not a transform: every state turns as its clock runs, so a drag moves this one orb's clock
+   forward or back. Shading, depth order and each state's own motion stay exactly what the engine draws. */
 import { resolvePreset, scaleCounts, scaleRadii, MODE_FRAMES, paintFrame } from './engine.js';
 
 export const STATES = Object.freeze(['working', 'searching', 'solving', 'listening', 'connecting', 'weaving', 'composing', 'breathing', 'shaping']);
@@ -31,7 +37,20 @@ export const LABELS = Object.freeze({
   working: 'Working…', searching: 'Searching…', solving: 'Solving…', listening: 'Listening…', connecting: 'Connecting…',
   weaving: 'Weaving…', composing: 'Composing…', breathing: 'Thinking…', shaping: 'Shaping…',
 });
-export const DEFAULTS = Object.freeze({ state: 'working', size: 64, theme: 'auto', speed: 1, paused: false, dots: 1, dotSize: 1 });
+export const DEFAULTS = Object.freeze({ state: 'working', size: 64, theme: 'auto', speed: 1, paused: false, dots: 1, dotSize: 1, interactive: false, zoom: 1 });
+/** Orb-time a drag across the orb's full width moves it: enough to turn a globe about a quarter, never a blur. */
+export const GRAB = 8;
+/** How fast a fling dies away, per second. */
+export const DECAY = 3.2;
+/** Orb-time per CSS px of drag, for an orb drawn `displayPx` wide. */
+export const grabPerPx = (displayPx) => GRAB / Math.max(1, displayPx);
+/** Exact coast over `dt` seconds of exponential decay: returns [distance moved, new velocity]; tiny speeds stop. */
+export function inertiaStep(vel, dt, k = DECAY) {
+  if (!vel || !(dt > 0)) return [0, vel || 0];
+  const f = Math.exp(-k * dt);
+  const v = vel * f;
+  return [(vel * (1 - f)) / k, Math.abs(v) < 0.02 ? 0 : v];
+}
 /** The instant a reduced-motion user sees: the library's representative still frame. */
 export const STILL_T = 0.6;
 
@@ -55,7 +74,7 @@ export function nearestSize(n) {
 }
 
 const num = (v, d) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
-const truthy = (v) => v === true || v === '' || v === 'true' || v === 'paused';
+const truthy = (v) => v === true || v === '' || v === 'true' || v === 'paused' || v === 'interactive';
 
 /** Fill defaults, drop undefined, validate every prop. Pure. */
 export function normalizeProps(raw = {}) {
@@ -72,6 +91,8 @@ export function normalizeProps(raw = {}) {
     dotSize: Math.max(0.1, num(p.dotSize, 1)),
     opts: p.opts && typeof p.opts === 'object' ? p.opts : undefined,
     label: p.label === null ? null : typeof p.label === 'string' ? p.label : undefined,
+    interactive: truthy(p.interactive),
+    zoom: Math.min(8, Math.max(0.25, num(p.zoom, 1))),
   };
 }
 
@@ -99,6 +120,7 @@ export function resolveDark(theme, el, system = systemDark) {
 /** Build the per-configuration painter: (ctx, dpr, tSec, dark) → paints one frame. Pure over its inputs. */
 export function makePainter(props) {
   const { state, size, speed, color, dots, dotSize, opts: over } = props;
+  const px = size * (props.zoom || 1);
   const { mode, speed: base, opts: preset } = resolvePreset(state, size);
   let opts = dots !== 1 ? scaleCounts(preset, dots) : preset;
   if (dotSize !== 1) opts = scaleRadii(opts, dotSize);
@@ -106,12 +128,13 @@ export function makePainter(props) {
   const frameFn = MODE_FRAMES[mode];
   const tint = parseTint(color);
   return {
+    px, opts,
     effSpeed: base * speed,
-    frame: (tSec) => frameFn(size, tSec, opts),
+    frame: (tSec) => frameFn(px, tSec, opts),
     paint(ctx, dpr, tSec, dark) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, size, size);
-      paintFrame(ctx, frameFn(size, tSec, opts), dark, tint);
+      ctx.clearRect(0, 0, px, px);
+      paintFrame(ctx, frameFn(px, tSec, opts), dark, tint);
     },
   };
 }
@@ -131,40 +154,99 @@ export function mountOrb(target, raw = {}) {
   let dark = resolveDark(props.theme, canvas);
   let reduced = !!(mqRm && mqRm.matches);
   let visible = true, running = false, raf = 0, painter = null, dpr = 1;
+  // The orb's own clock. It starts on the shared clock so every orb mounted together is in phase, then integrates,
+  // so speed changes never jump and an offscreen orb catches up when it comes back. `scrub` is what hands added.
+  let t = 0, last = performance.now(), scrub = 0, vel = 0, held = false, lastX = 0, lastMove = 0, sample = 0;
 
-  const now = () => (reduced ? STILL_T : (performance.now() / 1000) * painter.effSpeed);
-  const paintNow = () => { if (ctx && painter) painter.paint(ctx, dpr, now(), dark); };
-  const loop = () => { paintNow(); if (running) raf = requestAnimationFrame(loop); };
-  const canRun = () => !props.paused && !reduced && visible && document.visibilityState !== 'hidden';
-  const start = () => { if (running || !canRun()) return; running = true; raf = requestAnimationFrame(loop); };
+  const frameT = () => (reduced ? STILL_T : t) + scrub;
+  const paintNow = () => { if (ctx && painter) painter.paint(ctx, dpr, frameT(), dark); };
+  const advance = () => {
+    const n = performance.now(); const dt = (n - last) / 1000; last = n;
+    if (!props.paused && !reduced && !held) t += dt * painter.effSpeed;
+    if (vel && !held) { const [d, v] = inertiaStep(vel, dt); scrub += d; vel = v; }
+  };
+  const wantRun = () => visible && document.visibilityState !== 'hidden' && (held || vel !== 0 || (!props.paused && !reduced));
+  const loop = () => { advance(); paintNow(); if (wantRun()) raf = requestAnimationFrame(loop); else running = false; };
+  const start = () => { if (running || !wantRun()) return; running = true; raf = requestAnimationFrame(loop); };
   const stop = () => { running = false; cancelAnimationFrame(raf); };
 
   const configure = () => {
-    const { size, state, label } = props;
+    const { state, label, interactive } = props;
     dpr = Math.min(2, (typeof devicePixelRatio === 'number' && devicePixelRatio) || 1);
-    canvas.width = Math.round(size * dpr); canvas.height = Math.round(size * dpr);
-    canvas.style.width = `${size}px`; canvas.style.height = `${size}px`;
+    painter = makePainter(props);
+    const px = painter.px;
+    canvas.width = Math.round(px * dpr); canvas.height = Math.round(px * dpr);
+    canvas.style.width = `${px}px`; canvas.style.height = `${px}px`;
     if (label === null) { canvas.setAttribute('aria-hidden', 'true'); canvas.removeAttribute('role'); canvas.removeAttribute('aria-label'); }
     else { canvas.removeAttribute('aria-hidden'); canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', label ?? LABELS[state]); }
-    painter = makePainter(props);
+    if (interactive) {
+      canvas.style.cursor = held ? 'grabbing' : 'grab'; canvas.style.touchAction = 'pan-y';
+      if (label !== null) canvas.tabIndex = 0;
+      canvas.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight Home');
+    } else {
+      held = false; vel = 0; canvas.style.cursor = ''; canvas.style.touchAction = '';
+      canvas.removeAttribute('tabindex'); canvas.removeAttribute('aria-keyshortcuts');
+    }
   };
   const refresh = () => { stop(); configure(); paintNow(); start(); };
   const retheme = () => { const d = resolveDark(props.theme, canvas); if (d !== dark) { dark = d; paintNow(); } };
+
+  // hands: hold stops it, a sideways drag spins it through its own motion, a fling coasts and dies away
+  const onDown = (e) => {
+    if (!props.interactive || (e.button !== undefined && e.button > 0)) return;
+    held = true; vel = 0; sample = 0; lastX = e.clientX; lastMove = performance.now();
+    if (canvas.setPointerCapture && e.pointerId !== undefined) { try { canvas.setPointerCapture(e.pointerId); } catch { /* synthetic */ } }
+    canvas.style.cursor = 'grabbing'; start();
+  };
+  const onMove = (e) => {
+    if (!held) return;
+    const n = performance.now(); const d = (e.clientX - lastX) * grabPerPx(painter.px); lastX = e.clientX;
+    const dt = Math.max(0.004, (n - lastMove) / 1000); lastMove = n;
+    scrub += d; sample = 0.6 * (d / dt) + 0.4 * sample;
+    if (!running) paintNow();
+  };
+  const onUp = () => {
+    if (!held) return;
+    held = false; canvas.style.cursor = props.interactive ? 'grab' : '';
+    const fresh = performance.now() - lastMove < 90;
+    vel = !reduced && fresh ? Math.max(-60, Math.min(60, sample)) : 0; sample = 0;
+    start();
+  };
+  const onKey = (e) => {
+    if (!props.interactive) return;
+    const step = GRAB * 0.12;
+    if (e.key === 'ArrowRight') scrub += step; else if (e.key === 'ArrowLeft') scrub -= step;
+    else if (e.key === 'Home') { scrub = 0; vel = 0; } else return;
+    e.preventDefault(); if (!running) paintNow();
+  };
+  canvas.addEventListener('pointerdown', onDown);
+  canvas.addEventListener('pointermove', onMove);
+  canvas.addEventListener('pointerup', onUp);
+  canvas.addEventListener('pointercancel', onUp);
+  canvas.addEventListener('lostpointercapture', onUp);
+  canvas.addEventListener('keydown', onKey);
 
   const io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (visible) start(); else stop(); }) : null;
   if (io) io.observe(canvas);
   const onVis = () => { if (document.visibilityState === 'hidden') stop(); else start(); };
   document.addEventListener('visibilitychange', onVis);
-  const onRm = (e) => { reduced = e.matches; refresh(); };
+  const onRm = (e) => { reduced = e.matches; if (reduced) vel = 0; refresh(); };
   if (mqRm) mqRm.addEventListener('change', onRm);
   if (mqDark) mqDark.addEventListener('change', retheme);
   const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(retheme) : null;
   if (mo) mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'], subtree: true });
 
-  refresh();
+  configure();
+  t = (performance.now() / 1000) * painter.effSpeed;
+  paintNow(); start();
   return {
     canvas,
     get props() { return props; },
+    /** Where the orb is in its motion, in engine time; scrub moves it by hand. */
+    get time() { return frameT(); },
+    scrub(d) { scrub += Number(d) || 0; if (!running) paintNow(); },
+    fling(v) { if (!reduced) { vel = Number(v) || 0; start(); } },
+    reset() { scrub = 0; vel = 0; if (!running) paintNow(); },
     set(patch) { props = normalizeProps({ ...props, ...patch }); dark = resolveDark(props.theme, canvas); refresh(); },
     pause() { this.set({ paused: true }); },
     play() { this.set({ paused: false }); },
@@ -173,20 +255,24 @@ export function mountOrb(target, raw = {}) {
       document.removeEventListener('visibilitychange', onVis);
       if (mqRm) mqRm.removeEventListener('change', onRm);
       if (mqDark) mqDark.removeEventListener('change', retheme);
+      for (const [k, f] of [['pointerdown', onDown], ['pointermove', onMove], ['pointerup', onUp], ['pointercancel', onUp], ['lostpointercapture', onUp], ['keydown', onKey]]) canvas.removeEventListener(k, f);
       if (own) canvas.remove();
     },
   };
 }
 
-/* <thinking-orb state size theme speed paused color dots dot-size label decorative> — the JSX, as HTML. */
-const ATTRS = ['state', 'size', 'theme', 'speed', 'paused', 'color', 'dots', 'dot-size', 'label', 'decorative'];
+/* <thinking-orb state size theme speed paused color dots dot-size label decorative interactive zoom opts='{"thr":1}'>
+   — the JSX, as HTML. */
+const ATTRS = ['state', 'size', 'theme', 'speed', 'paused', 'color', 'dots', 'dot-size', 'label', 'decorative', 'interactive', 'zoom', 'opts'];
+const parseOpts = (v) => { if (!v) return undefined; try { const o = JSON.parse(v); return o && typeof o === 'object' ? o : undefined; } catch { return undefined; } };
 export const ThinkingOrbElement = typeof HTMLElement === 'undefined' ? null : class ThinkingOrbElement extends HTMLElement {
   static get observedAttributes() { return ATTRS; }
   #orb = null;
   #read() {
     const g = (k) => this.getAttribute(k) ?? undefined;
     return { state: g('state'), size: g('size'), theme: g('theme'), speed: g('speed'), paused: this.hasAttribute('paused'),
-      color: g('color'), dots: g('dots'), dotSize: g('dot-size'), label: this.hasAttribute('decorative') ? null : g('label') };
+      color: g('color'), dots: g('dots'), dotSize: g('dot-size'), label: this.hasAttribute('decorative') ? null : g('label'),
+      interactive: this.hasAttribute('interactive'), zoom: g('zoom'), opts: parseOpts(g('opts')) };
   }
   connectedCallback() {
     if (this.#orb) return;

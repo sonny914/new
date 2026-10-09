@@ -32,6 +32,25 @@
   .controls button{font:inherit;color:var(--cream);background:transparent;border:1px solid var(--hair);border-radius:4px;padding:6px 12px;cursor:pointer}
   .controls button[aria-pressed=true]{border-color:var(--live);color:var(--live)}
   .note{font-size:13px;color:var(--quiet);margin-top:30px;max-width:70ch}
+  .play{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:28px 40px;margin:8px 0 44px;padding:26px 0 30px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+  .play h2{grid-column:1/-1;font-size:17px;font-weight:500}
+  .stage{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .stage-box{width:100%;aspect-ratio:1;max-width:300px;display:grid;place-items:center;border:1px solid var(--hair)}
+  .stage .hint{font-size:13px;color:var(--quiet);text-align:center;max-width:30ch}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+  .chips button{font:inherit;font-size:14px;color:var(--cream);background:transparent;border:1px solid var(--hair);border-radius:4px;padding:7px 12px;min-height:36px;cursor:pointer}
+  .chips button[aria-checked=true]{border-color:var(--live);color:var(--live)}
+  .knobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px 26px}
+  .knob{display:grid;grid-template-columns:1fr auto;gap:6px 10px;font-size:14px;color:var(--quiet)}
+  .knob input{grid-column:1/-1;width:100%;accent-color:var(--cream)}
+  .knob output{color:var(--cream);font-variant-numeric:tabular-nums}
+  .knob.moved span{color:var(--cream)}
+  .play-row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:20px;font-size:14px;color:var(--quiet)}
+  .play-row button{font:inherit;font-size:14px;color:var(--cream);background:transparent;border:1px solid var(--hair);border-radius:4px;padding:7px 12px;min-height:36px;cursor:pointer}
+  .play-row button[aria-pressed=true]{border-color:var(--live);color:var(--live)}
+  .code{margin-top:20px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.55;color:var(--cream);background:rgba(242,238,229,.05);border:1px solid var(--hair);padding:12px 14px;white-space:pre-wrap;overflow-wrap:anywhere}
+  canvas:focus-visible{outline:1px solid var(--live);outline-offset:6px;border-radius:50%}
+  @media(max-width:720px){.play{grid-template-columns:1fr}.stage-box{max-width:280px}}
   button.send{margin-top:14px;font:inherit;font-size:15px;font-weight:600;color:var(--cream);background:transparent;border:1px solid var(--cream);border-radius:5px;padding:13px 28px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;min-height:46px}
   button.send:disabled{color:var(--quiet);cursor:wait}
 </style>
@@ -41,19 +60,40 @@
   <h1>Thinking orb</h1>
   <p class="k"><code>&lt;thinking-orb state="searching" size="64"&gt;</code> · lab</p>
 </header>
-<p class="intro">The <code>thinking-orbs</code> indicator without React: the package's own engine, a vanilla wrapper. Nine states, each at the 64 and 20 presets. The page is <code>data-theme="dark"</code>; the last cell is pinned <code>light</code>. Reduced motion paints one still frame.</p>
+<p class="intro">The <code>thinking-orbs</code> indicator without React: the package's own engine, a vanilla wrapper. The page is <code>data-theme="dark"</code>; the light cell takes its theme from the tree. Reduced motion paints one still frame, and a drag still turns it.</p>
 
+<section class="play" aria-labelledby="play-h">
+  <h2 id="play-h">Hold one</h2>
+  <div class="stage">
+    <div class="stage-box" id="stage"></div>
+    <p class="hint">Hold to stop it. Drag sideways to spin it. Let go to fling it. Arrow keys nudge, Home resets.</p>
+  </div>
+  <div>
+    <div class="chips" id="chips" role="radiogroup" aria-label="State"></div>
+    <div class="knobs" id="knobs"></div>
+    <div class="play-row">
+      <span>ink</span>
+      <button type="button" data-ink="" aria-pressed="true">grey</button>
+      <button type="button" data-ink="#F2EEE5" aria-pressed="false">cream</button>
+      <button type="button" data-ink="#FF5A00" aria-pressed="false">orange</button>
+      <button type="button" id="play-reset">reset</button>
+    </div>
+    <pre class="code" id="code" aria-label="Markup for this orb"></pre>
+  </div>
+</section>
+
+<p class="intro">Every state, at 64 and 20. Drag any of the big ones too.</p>
 <div class="grid" id="grid">
-  <div class="cell"><thinking-orb state="working" size="64"></thinking-orb><span class="inline"><thinking-orb state="working" size="20" decorative></thinking-orb>Working…</span><span class="name">working <span>particles on tilted orbits</span></span></div>
-  <div class="cell"><thinking-orb state="searching" size="64"></thinking-orb><span class="inline"><thinking-orb state="searching" size="20" decorative></thinking-orb>Searching…</span><span class="name">searching <span>a scan meridian sweeps a globe</span></span></div>
-  <div class="cell"><thinking-orb state="solving" size="64"></thinking-orb><span class="inline"><thinking-orb state="solving" size="20" decorative></thinking-orb>Solving…</span><span class="name">solving <span>bands scramble, then click back</span></span></div>
-  <div class="cell"><thinking-orb state="listening" size="64"></thinking-orb><span class="inline"><thinking-orb state="listening" size="20" decorative></thinking-orb>Listening…</span><span class="name">listening <span>a waveform rolls the rings</span></span></div>
-  <div class="cell"><thinking-orb state="connecting" size="64"></thinking-orb><span class="inline"><thinking-orb state="connecting" size="20" decorative></thinking-orb>Connecting…</span><span class="name">connecting <span>a constellation wires itself</span></span></div>
-  <div class="cell"><thinking-orb state="weaving" size="64"></thinking-orb><span class="inline"><thinking-orb state="weaving" size="20" decorative></thinking-orb>Weaving…</span><span class="name">weaving <span>three strands plait the sphere</span></span></div>
-  <div class="cell"><thinking-orb state="composing" size="64"></thinking-orb><span class="inline"><thinking-orb state="composing" size="20" decorative></thinking-orb>Composing…</span><span class="name">composing <span>an undulating sash</span></span></div>
-  <div class="cell"><thinking-orb state="breathing" size="64"></thinking-orb><span class="inline"><thinking-orb state="breathing" size="20" decorative></thinking-orb>Thinking…</span><span class="name">breathing <span>a ring slowly morphing</span></span></div>
-  <div class="cell"><thinking-orb state="shaping" size="64"></thinking-orb><span class="inline"><thinking-orb state="shaping" size="20" decorative></thinking-orb>Shaping…</span><span class="name">shaping <span>circle → triangle → square</span></span></div>
-  <div class="cell light" data-theme="light"><thinking-orb state="searching" size="64"></thinking-orb><span class="inline"><thinking-orb state="searching" size="20" decorative></thinking-orb>Searching…</span><span class="name">searching, light <span>auto theme from the tree</span></span></div>
+  <div class="cell"><thinking-orb state="working" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="working" size="20" decorative></thinking-orb>Working…</span><span class="name">working <span>particles on tilted orbits</span></span></div>
+  <div class="cell"><thinking-orb state="searching" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="searching" size="20" decorative></thinking-orb>Searching…</span><span class="name">searching <span>a scan meridian sweeps a globe</span></span></div>
+  <div class="cell"><thinking-orb state="solving" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="solving" size="20" decorative></thinking-orb>Solving…</span><span class="name">solving <span>bands scramble, then click back</span></span></div>
+  <div class="cell"><thinking-orb state="listening" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="listening" size="20" decorative></thinking-orb>Listening…</span><span class="name">listening <span>a waveform rolls the rings</span></span></div>
+  <div class="cell"><thinking-orb state="connecting" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="connecting" size="20" decorative></thinking-orb>Connecting…</span><span class="name">connecting <span>a constellation wires itself</span></span></div>
+  <div class="cell"><thinking-orb state="weaving" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="weaving" size="20" decorative></thinking-orb>Weaving…</span><span class="name">weaving <span>three strands plait the sphere</span></span></div>
+  <div class="cell"><thinking-orb state="composing" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="composing" size="20" decorative></thinking-orb>Composing…</span><span class="name">composing <span>an undulating sash</span></span></div>
+  <div class="cell"><thinking-orb state="breathing" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="breathing" size="20" decorative></thinking-orb>Thinking…</span><span class="name">breathing <span>a ring slowly morphing</span></span></div>
+  <div class="cell"><thinking-orb state="shaping" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="shaping" size="20" decorative></thinking-orb>Shaping…</span><span class="name">shaping <span>circle → triangle → square</span></span></div>
+  <div class="cell light" data-theme="light"><thinking-orb state="searching" size="64" interactive></thinking-orb><span class="inline"><thinking-orb state="searching" size="20" decorative></thinking-orb>Searching…</span><span class="name">searching, light <span>auto theme from the tree</span></span></div>
 </div>
 
 <div class="controls">
@@ -67,7 +107,70 @@
 <button type="button" class="send" id="send">Send it to Quiet Bands</button>
 
 <script type="module">
-  import { mountOrb } from '/assets/orb/thinking-orb.js';
+  import { mountOrb, STATES, DEFAULTS } from '/assets/orb/thinking-orb.js';
+  import { resolvePreset } from '/assets/orb/engine.js';
+
+  // ---- the playground: one orb, its own knobs, the markup to reproduce it
+  const KNOBS = {
+    working:    [['particles', 'Particles', 1, 12, 1], ['orbitN', 'Orbits', 2, 24, 1], ['ghostA', 'Trail', 0, 1, 0.05]],
+    searching:  [['scanMul', 'Scan speed', 0, 3, 0.05], ['dimBase', 'Far side', 0, 2, 0.05], ['latRings', 'Rings', 4, 30, 1]],
+    solving:    [['moveCount', 'Moves', 2, 40, 1], ['rActive', 'Lift', 0, 1, 0.05], ['latRings', 'Rings', 4, 30, 1]],
+    listening:  [['rings', 'Rings', 4, 30, 1], ['lonDensity', 'Density', 10, 80, 1]],
+    connecting: [['nodeN', 'Nodes', 6, 80, 1], ['thr', 'Reach', 0.3, 1.4, 0.02], ['signals', 'Signals', 0, 20, 1], ['lineW', 'Line', 0.2, 2.5, 0.05]],
+    weaving:    [['turns', 'Turns', 1, 8, 0.25], ['strandN', 'Strand dots', 10, 120, 1]],
+    composing:  [['wobMul', 'Wobble', 0, 3, 0.05], ['bandMul', 'Bands', 0, 3, 0.05], ['spin', 'Spin', -3, 3, 0.1], ['lanes', 'Lanes', 1, 12, 1]],
+    breathing:  [['wobMul', 'Wobble', 0, 3, 0.05], ['bandMul', 'Bands', 0, 3, 0.05], ['spin', 'Spin', -3, 3, 0.1]],
+    shaping:    [['shape', 'Shape', -1, 2, 1], ['spread', 'Spread', 0.5, 3, 0.05]],
+  };
+  const COMMON = [['speed', 'Speed', 0, 3, 0.05, 1], ['dots', 'Density', 0.25, 3, 0.05, 1], ['dotSize', 'Dot size', 0.4, 2.5, 0.05, 1]];
+  const SHAPES = ['cycle', 'circle', 'triangle', 'square'];
+  const ZOOM = () => (matchMedia('(max-width: 720px)').matches ? 3.75 : 4);
+  const st = { state: 'connecting', common: { speed: 1, dots: 1, dotSize: 1 }, opts: {}, color: '' };
+  const stage = mountOrb(document.getElementById('stage'), { state: st.state, size: 64, zoom: ZOOM(), interactive: true });
+  const chips = document.getElementById('chips'), knobs = document.getElementById('knobs'), code = document.getElementById('code');
+  const fmt = (v) => (Number.isInteger(v) ? String(v) : (+v.toFixed(2)).toString());
+
+  function apply() {
+    const opts = { ...st.opts }; if (opts.shape === -1) delete opts.shape;
+    stage.set({ state: st.state, ...st.common, color: st.color || undefined, opts: Object.keys(opts).length ? opts : undefined });
+    const a = [`state="${st.state}"`, 'size="64"', 'zoom="4"', 'interactive'];
+    for (const [k, , , , , d] of COMMON) if (st.common[k] !== d) a.push(`${k === 'dotSize' ? 'dot-size' : k}="${fmt(st.common[k])}"`);
+    if (st.color) a.push(`color="${st.color}"`);
+    if (Object.keys(opts).length) a.push(`opts='${JSON.stringify(Object.fromEntries(Object.entries(opts).map(([k, v]) => [k, +fmt(v)])))}'`);
+    code.textContent = `<thinking-orb ${a.join(' ')}></thinking-orb>`;
+  }
+  function slider([key, label, min, max, step], value, onInput, moved) {
+    const id = `k-${key}`, wrap = document.createElement('label'); wrap.className = 'knob' + (moved ? ' moved' : ''); wrap.htmlFor = id;
+    const name = document.createElement('span'); name.textContent = label;
+    const out = document.createElement('output'); out.htmlFor = id;
+    const show = (v) => { out.textContent = key === 'shape' ? SHAPES[v + 1] : fmt(v); };
+    const input = Object.assign(document.createElement('input'), { type: 'range', id, min, max, step, value });
+    input.addEventListener('input', () => { const v = Number(input.value); show(v); wrap.classList.add('moved'); onInput(v); apply(); });
+    show(Number(value)); wrap.append(name, out, input); return wrap;
+  }
+  function renderKnobs() {
+    knobs.replaceChildren();
+    for (const k of COMMON) knobs.append(slider(k, st.common[k[0]], (v) => { st.common[k[0]] = v; }, st.common[k[0]] !== k[5]));
+    const preset = resolvePreset(st.state, 64).opts;
+    for (const k of KNOBS[st.state]) {
+      const base = k[0] === 'shape' ? -1 : (preset[k[0]] ?? { scanMul: 1, dimBase: 1, wobMul: 1, bandMul: 1, spin: 1, spread: 1, thr: 0.72 }[k[0]] ?? k[2]);
+      knobs.append(slider(k, st.opts[k[0]] ?? base, (v) => { st.opts[k[0]] = v; }, k[0] in st.opts));
+    }
+  }
+  for (const s of STATES) {
+    const b = Object.assign(document.createElement('button'), { type: 'button', textContent: s });
+    b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(s === st.state));
+    b.addEventListener('click', () => { st.state = s; st.opts = {}; chips.querySelectorAll('button').forEach((c) => c.setAttribute('aria-checked', String(c === b))); renderKnobs(); apply(); });
+    chips.append(b);
+  }
+  document.querySelectorAll('[data-ink]').forEach((b) => b.addEventListener('click', () => {
+    st.color = b.dataset.ink; document.querySelectorAll('[data-ink]').forEach((c) => c.setAttribute('aria-pressed', String(c === b))); apply();
+  }));
+  document.getElementById('play-reset').addEventListener('click', () => { st.common = { speed: 1, dots: 1, dotSize: 1 }; st.opts = {}; stage.reset(); renderKnobs(); apply(); });
+  matchMedia('(max-width: 720px)').addEventListener('change', () => stage.set({ zoom: ZOOM() }));
+  renderKnobs(); apply();
+
+  // ---- the grid controls
   const big = () => [...document.querySelectorAll('.cell > thinking-orb')];
   const all = () => [...document.querySelectorAll('thinking-orb')];
   const speed = document.getElementById('speed'), out = document.getElementById('speed-out');

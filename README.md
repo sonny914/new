@@ -243,4 +243,12 @@ const orb = mountOrb(el, { state: 'searching', size: 20, theme: 'dark' });
 orb.set({ state: 'working' }); orb.destroy();
 ```
 
-Nine states (`working searching solving listening connecting weaving composing breathing shaping`), three tuned sizes (64, 32, 20), auto dark/light, reduced motion paints a still frame, offscreen and hidden tabs pause. In use: the Work intake button (`/work/`) shows a 20px `searching` orb while the answers send. Every state at every size: `/lab/thinking-orb/`. Tests: `tools/orb.test.mjs` (`npm test`). To upgrade the engine, re-copy `dist/index-*.js` from the package into `engine.js` and keep its readable export block.
+Nine states (`working searching solving listening connecting weaving composing breathing shaping`), three tuned sizes (64, 32, 20), auto dark/light, reduced motion paints a still frame, offscreen and hidden tabs pause.
+
+Manipulating them:
+
+- **By hand:** `interactive` (attribute or prop). Holding stops it, a sideways drag spins it through its own motion, letting go flings it and it coasts back to its own pace. Arrow keys nudge it and Home resets it. A drag moves that one orb's clock rather than transforming the picture, so shading, depth and each state's own motion stay exactly what the engine draws. Reduced motion keeps the drag but drops the coast. In code: `orb.scrub(d)`, `orb.fling(v)`, `orb.reset()`.
+- **By knob:** `dots`, `dotSize`, `speed`, `color`, and `opts` for each state's own engine knobs (for example `{"particles":8}` for working, `{"scanMul":2}` for searching, `{"nodeN":70,"thr":0.9}` for connecting, `{"turns":5}` for weaving, `{"shape":2}` to hold shaping on the square). On the element, `opts` is JSON.
+- **Bigger:** `zoom` draws a preset larger (geometry at size × zoom, the preset's dot count kept).
+
+The lab's "Hold one" playground has a slider for every knob and prints the markup for whatever you land on. In use: the Work intake button (`/work/`) shows a 20px `searching` orb while the answers send. Every state at every size: `/lab/thinking-orb/`. Tests: `tools/orb.test.mjs` (`npm test`). To upgrade the engine, re-copy `dist/index-*.js` from the package into `engine.js` and keep its readable export block.

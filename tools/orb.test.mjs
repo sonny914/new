@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { MODE_FRAMES, STATE_TO_MODE, resolvePreset, countDots } from '../assets/orb/engine.js';
-import { STATES, SIZES, LABELS, parseTint, nearestSize, normalizeProps, ancestorTheme, resolveDark, makePainter, ThinkingOrbElement, STILL_T } from '../assets/orb/thinking-orb.js';
+import { STATES, SIZES, LABELS, parseTint, nearestSize, normalizeProps, ancestorTheme, resolveDark, makePainter, ThinkingOrbElement, STILL_T, inertiaStep, grabPerPx, GRAB, DECAY } from '../assets/orb/thinking-orb.js';
 
 const finite = (n) => typeof n === 'number' && Number.isFinite(n);
 
@@ -59,9 +59,11 @@ test('sizes snap to the nearest tuned preset, ties and nonsense to 64', () => {
 });
 
 test('normalizeProps fills defaults, drops undefined, validates, and keeps null label as decorative', () => {
-  assert.deepEqual(normalizeProps(), { state: 'working', size: 64, theme: 'auto', speed: 1, paused: false, color: undefined, dots: 1, dotSize: 1, opts: undefined, label: undefined });
+  assert.deepEqual(normalizeProps(), { state: 'working', size: 64, theme: 'auto', speed: 1, paused: false, color: undefined, dots: 1, dotSize: 1, opts: undefined, label: undefined, interactive: false, zoom: 1 });
   const p = normalizeProps({ state: 'searching', size: '20', theme: 'dark', speed: '1.5', paused: '', color: ' #fff ', dots: '0', dotSize: 'x', opts: { thr: 2 }, label: null });
-  assert.deepEqual(p, { state: 'searching', size: 20, theme: 'dark', speed: 1.5, paused: true, color: '#fff', dots: 0.1, dotSize: 1, opts: { thr: 2 }, label: null });
+  assert.deepEqual(p, { state: 'searching', size: 20, theme: 'dark', speed: 1.5, paused: true, color: '#fff', dots: 0.1, dotSize: 1, opts: { thr: 2 }, label: null, interactive: false, zoom: 1 });
+  assert.equal(normalizeProps({ interactive: '' }).interactive, true, 'a bare attribute turns it on');
+  assert.equal(normalizeProps({ zoom: 99 }).zoom, 8); assert.equal(normalizeProps({ zoom: 0 }).zoom, 0.25); assert.equal(normalizeProps({ zoom: 'x' }).zoom, 1);
   assert.equal(normalizeProps({ state: 'flying', theme: 'neon', speed: -2 }).state, 'working');
   assert.equal(normalizeProps({ theme: 'neon' }).theme, 'auto');
   assert.equal(normalizeProps({ speed: -2 }).speed, 0);
@@ -98,4 +100,34 @@ test('makePainter bakes speed, tint and density into one painter that draws a fr
 
 test('the module imports without a DOM and only defines the element where one exists', () => {
   assert.equal(ThinkingOrbElement, null);
+});
+
+test('a fling coasts the exact distance of an exponential decay, then stops', () => {
+  assert.deepEqual(inertiaStep(0, 0.016), [0, 0]);
+  assert.deepEqual(inertiaStep(5, 0), [0, 5], 'no time, no travel');
+  // stepping in small frames lands where one big step does: offscreen catch-up is exact
+  let small = 0, v = 10; for (let i = 0; i < 60; i++) { const [d, nv] = inertiaStep(v, 1 / 60); small += d; v = nv; }
+  const [big] = inertiaStep(10, 1);
+  assert.ok(Math.abs(small - big) < 1e-9, `${small} vs ${big}`);
+  assert.ok(Math.abs(inertiaStep(10, 1e6)[0] - 10 / DECAY) < 1e-9, 'total travel is v / k');
+  assert.equal(inertiaStep(10, 5)[1], 0, 'slow enough to stop');
+  assert.ok(inertiaStep(-10, 0.1)[0] < 0, 'flings go both ways');
+});
+
+test('a drag across the orb\'s width moves the same orb-time at any size or zoom', () => {
+  assert.equal(grabPerPx(64) * 64, GRAB); assert.equal(grabPerPx(256) * 256, GRAB); assert.equal(grabPerPx(0), GRAB);
+});
+
+test('zoom draws the preset larger without changing its dot count, and moving time moves the dots', () => {
+  for (const state of STATES) {
+    const one = makePainter(normalizeProps({ state, size: 64 }));
+    const four = makePainter(normalizeProps({ state, size: 64, zoom: 4 }));
+    assert.equal(four.px, 256); assert.equal(one.px, 64);
+    const a = one.frame(2), b = four.frame(2);
+    assert.equal(b.dots.length, a.dots.length, `${state}: same marks`);
+    const span = (f) => Math.max(...f.dots.map((d) => d.x)) - Math.min(...f.dots.map((d) => d.x));
+    assert.ok(span(b) > span(a) * 3, `${state}: four times the stage`);
+    const moved = one.frame(2 + GRAB * 0.12);
+    assert.notDeepEqual(moved.dots.map((d) => [d.x, d.y]), a.dots.map((d) => [d.x, d.y]), `${state}: a nudge changes the picture`);
+  }
 });
