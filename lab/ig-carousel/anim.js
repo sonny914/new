@@ -1,6 +1,6 @@
 // Slide 02 motion: a deterministic timeline, renderAt(t) for t in [0, LOOP).
-// Static by default (the PNG export never runs this). Open index.html?anim to
-// preview it live; render-video.mjs drives renderAt frame by frame.
+// Static by default (the PNG export never runs this). index.html?motion plays it live
+// (see the bootstrap in index.html); render-video.mjs drives renderAt frame by frame.
 (() => {
   const LOOP = 8; // seconds; t = LOOP looks identical to t = 0, so the MP4 loops cleanly
   const slide = document.getElementById('s2');
@@ -79,9 +79,4 @@
 
   window.renderAt = renderAt;
   window.LOOP = LOOP;
-  if (new URLSearchParams(location.search).has('anim')) {
-    const t0 = performance.now();
-    const tick = (now) => { renderAt((now - t0) / 1000); requestAnimationFrame(tick); };
-    requestAnimationFrame(tick);
-  }
 })();
