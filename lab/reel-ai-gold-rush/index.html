@@ -240,7 +240,8 @@ function render(t) {
     if (k < 1) clip = `circle(${lerp(R, 1400, k)}px at ${CX}px ${CY - 230}px)`;
   }
   show(face, faceOn);
-  css(face, { transform: `translate(${tx}px,${ty}px) scale(${sc})`, borderRadius: radius / sc + 'px', clipPath: clip });
+  const fadeOut = t >= 12.9 && t < 13.35 ? 1 - seg(t, 12.95, 0.3) : 1;            // the card leaves with the collapsing demo
+  css(face, { transform: `translate(${tx}px,${ty}px) scale(${sc})`, borderRadius: radius / sc + 'px', clipPath: clip, opacity: fadeOut });
 
   // ---- hook 1 ----------------------------------------------------------------------------------
   const h1 = t < 3.99;
@@ -336,7 +337,7 @@ function render(t) {
     nodes.forEach((n, i) => {
       const vis = i < 2 ? seg(t, 13.34 + i * 0.29, 0.2) : seg(t, 15.05 + (i - 2) * 0.16, 0.2);
       n.setAttribute('cx', P[i][0]); n.setAttribute('cy', P[i][1]);
-      n.setAttribute('r', (i === 0 ? 24 : 19) * outBack(vis) * (1 - iris));
+      n.setAttribute('r', (i === 0 ? 24 : 19) * outBack(vis) * (1 - seg(t, 17.94, 0.1)));
       n.setAttribute('fill', t >= 17.23 || i === 0 ? '#FF5A00' : '#F2EEE5');
       nodeRings[i].setAttribute('cx', P[i][0]); nodeRings[i].setAttribute('cy', P[i][1]);
       nodeRings[i].setAttribute('opacity', vis * (1 - k3) * 0.9);
@@ -364,7 +365,7 @@ function render(t) {
       css(e, { left: P[i][0] - 90 + 'px', top: P[i][1] + 48 + 'px', opacity: seg(t, 15.15 + i * 0.16, 0.2) * (1 - seg(t, 16.6, 0.3)) });
     });
     // the words physically hand over to each other
-    const wOut = (a) => 1 - seg(t, 17.95, 0.15);
+    const wOut = (a) => 1 - seg(t, 17.88, 0.1);
     maskIn($('cw1'), seg(t, 13.6, 0.32), seg(t, 14.88, 0.22));
     maskIn($('cw2'), seg(t, 14.98, 0.34), seg(t, 16.56, 0.22));
     maskIn($('cw3a'), seg(t, 16.62, 0.3));

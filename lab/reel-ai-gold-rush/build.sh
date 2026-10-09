@@ -27,4 +27,10 @@ ffmpeg -v error -y -framerate 30 -i "$work/frames/%04d.jpg" -i "$work/audio/mix.
   -c:a aac -b:a 192k -ar 48000 -shortest -movflags +faststart "$here/export/ai-gold-rush-reel.mp4"
 ffmpeg -v error -y -i "$here/export/ai-gold-rush-reel.mp4" -vf scale=540:960 -c:v libx264 -preset medium -crf 26 \
   -c:a aac -b:a 96k -movflags +faststart "$here/export/ai-gold-rush-reel-preview.mp4"
+# 5. a version without the music bed, for adding Instagram audio at upload
+ffmpeg -v error -y -i "$work/audio/voice.wav" -i "$work/audio/sfx.wav" \
+  -filter_complex "[1:a]volume=0.55[s];[0:a][s]amix=inputs=2:duration=longest:normalize=0,apad=whole_dur=27.8,atrim=0:27.8,loudnorm=I=-14:TP=-1.0:LRA=10[out]" \
+  -map "[out]" -ar 48000 "$work/audio/mix_nomusic.wav"
+ffmpeg -v error -y -i "$here/export/ai-gold-rush-reel.mp4" -i "$work/audio/mix_nomusic.wav" -map 0:v -map 1:a -c:v copy \
+  -c:a aac -b:a 192k -shortest -movflags +faststart "$here/export/ai-gold-rush-reel-no-music.mp4"
 echo "done → $here/export"
