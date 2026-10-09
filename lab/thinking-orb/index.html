@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#000000" />
+<title>Quiet Bands — Thinking orb</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<style>
+  :root{--black:#000000;--cream:#F2EEE5;--quiet:#968D7C;--hair:rgba(242,238,229,.18);--live:#FF5A00}
+  *{box-sizing:border-box;margin:0}
+  html{background:var(--black);color:var(--cream)}
+  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:40px 16px 80px;max-width:1080px;margin:0 auto;line-height:1.45}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--hair);padding-bottom:18px}
+  h1{font-size:22px;font-weight:500;letter-spacing:-.01em}
+  .k{font-size:14px;color:var(--quiet)}
+  .k code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--cream)}
+  .intro{margin:22px 0 28px;max-width:62ch;color:var(--quiet);font-size:15px}
+  .intro code{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--cream)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+  .cell{border:1px solid var(--hair);padding:18px 16px 14px;display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;gap:10px 16px;align-items:center;min-height:150px}
+  .cell thinking-orb[size="64"]{grid-row:1}
+  .cell .inline{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--quiet);justify-self:end}
+  .cell .name{grid-column:1/-1;font-size:14px;color:var(--cream);display:flex;justify-content:space-between;gap:8px}
+  .cell .name span{color:var(--quiet)}
+  .cell.light{background:var(--cream);color:#111;border-color:transparent}
+  .cell.light .name,.cell.light .inline{color:#111}.cell.light .name span{color:#5c574d}
+  .controls{margin:34px 0 10px;display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;font-size:14px;color:var(--quiet);border-top:1px solid var(--hair);padding-top:22px}
+  .controls label{display:inline-flex;align-items:center;gap:8px}
+  .controls input[type=range]{width:120px;accent-color:var(--cream)}
+  .controls button{font:inherit;color:var(--cream);background:transparent;border:1px solid var(--hair);border-radius:4px;padding:6px 12px;cursor:pointer}
+  .controls button[aria-pressed=true]{border-color:var(--live);color:var(--live)}
+  .note{font-size:13px;color:var(--quiet);margin-top:30px;max-width:70ch}
+  button.send{margin-top:14px;font:inherit;font-size:15px;font-weight:600;color:var(--cream);background:transparent;border:1px solid var(--cream);border-radius:5px;padding:13px 28px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;min-height:46px}
+  button.send:disabled{color:var(--quiet);cursor:wait}
+</style>
+</head>
+<body>
+<header>
+  <h1>Thinking orb</h1>
+  <p class="k"><code>&lt;thinking-orb state="searching" size="64"&gt;</code> · lab</p>
+</header>
+<p class="intro">The <code>thinking-orbs</code> indicator without React: the package's own engine, a vanilla wrapper. Nine states, each at the 64 and 20 presets. The page is <code>data-theme="dark"</code>; the last cell is pinned <code>light</code>. Reduced motion paints one still frame.</p>
+
+<div class="grid" id="grid">
+  <div class="cell"><thinking-orb state="working" size="64"></thinking-orb><span class="inline"><thinking-orb state="working" size="20" decorative></thinking-orb>Working…</span><span class="name">working <span>particles on tilted orbits</span></span></div>
+  <div class="cell"><thinking-orb state="searching" size="64"></thinking-orb><span class="inline"><thinking-orb state="searching" size="20" decorative></thinking-orb>Searching…</span><span class="name">searching <span>a scan meridian sweeps a globe</span></span></div>
+  <div class="cell"><thinking-orb state="solving" size="64"></thinking-orb><span class="inline"><thinking-orb state="solving" size="20" decorative></thinking-orb>Solving…</span><span class="name">solving <span>bands scramble, then click back</span></span></div>
+  <div class="cell"><thinking-orb state="listening" size="64"></thinking-orb><span class="inline"><thinking-orb state="listening" size="20" decorative></thinking-orb>Listening…</span><span class="name">listening <span>a waveform rolls the rings</span></span></div>
+  <div class="cell"><thinking-orb state="connecting" size="64"></thinking-orb><span class="inline"><thinking-orb state="connecting" size="20" decorative></thinking-orb>Connecting…</span><span class="name">connecting <span>a constellation wires itself</span></span></div>
+  <div class="cell"><thinking-orb state="weaving" size="64"></thinking-orb><span class="inline"><thinking-orb state="weaving" size="20" decorative></thinking-orb>Weaving…</span><span class="name">weaving <span>three strands plait the sphere</span></span></div>
+  <div class="cell"><thinking-orb state="composing" size="64"></thinking-orb><span class="inline"><thinking-orb state="composing" size="20" decorative></thinking-orb>Composing…</span><span class="name">composing <span>an undulating sash</span></span></div>
+  <div class="cell"><thinking-orb state="breathing" size="64"></thinking-orb><span class="inline"><thinking-orb state="breathing" size="20" decorative></thinking-orb>Thinking…</span><span class="name">breathing <span>a ring slowly morphing</span></span></div>
+  <div class="cell"><thinking-orb state="shaping" size="64"></thinking-orb><span class="inline"><thinking-orb state="shaping" size="20" decorative></thinking-orb>Shaping…</span><span class="name">shaping <span>circle → triangle → square</span></span></div>
+  <div class="cell light" data-theme="light"><thinking-orb state="searching" size="64"></thinking-orb><span class="inline"><thinking-orb state="searching" size="20" decorative></thinking-orb>Searching…</span><span class="name">searching, light <span>auto theme from the tree</span></span></div>
+</div>
+
+<div class="controls">
+  <label>speed <input type="range" id="speed" min="0.25" max="3" step="0.25" value="1" /> <output id="speed-out">1×</output></label>
+  <button type="button" id="pause" aria-pressed="false">pause</button>
+  <button type="button" id="live" aria-pressed="false">orange ink</button>
+  <label>size <select id="size"><option>64</option><option>32</option><option>20</option></select></label>
+</div>
+
+<p class="note">The site's one real wait is the Work intake button, which shows the 20px <code>searching</code> orb while the answers send:</p>
+<button type="button" class="send" id="send">Send it to Quiet Bands</button>
+
+<script type="module">
+  import { mountOrb } from '/assets/orb/thinking-orb.js';
+  const big = () => [...document.querySelectorAll('.cell > thinking-orb')];
+  const all = () => [...document.querySelectorAll('thinking-orb')];
+  const speed = document.getElementById('speed'), out = document.getElementById('speed-out');
+  speed.addEventListener('input', () => { out.textContent = `${speed.value}×`; all().forEach((o) => o.setAttribute('speed', speed.value)); });
+  const pause = document.getElementById('pause');
+  pause.addEventListener('click', () => { const on = pause.getAttribute('aria-pressed') !== 'true'; pause.setAttribute('aria-pressed', String(on)); all().forEach((o) => o.toggleAttribute('paused', on)); });
+  const live = document.getElementById('live');
+  live.addEventListener('click', () => { const on = live.getAttribute('aria-pressed') !== 'true'; live.setAttribute('aria-pressed', String(on)); all().forEach((o) => on ? o.setAttribute('color', '#FF5A00') : o.removeAttribute('color')); });
+  document.getElementById('size').addEventListener('change', (e) => big().forEach((o) => o.setAttribute('size', e.target.value)));
+  const send = document.getElementById('send'); let orb = null;
+  send.addEventListener('click', () => {
+    send.disabled = true; send.textContent = '';
+    orb = mountOrb(send, { state: 'searching', size: 20, theme: 'dark', label: null });
+    send.append(document.createTextNode('Sending…'));
+    setTimeout(() => { orb.destroy(); orb = null; send.disabled = false; send.textContent = 'Send it to Quiet Bands'; }, 2600);
+  });
+</script>
+<script type="module" src="/assets/orb/thinking-orb.js"></script>
+</body>
+</html>

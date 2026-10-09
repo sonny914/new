@@ -227,3 +227,20 @@ To change the choreography, edit poses in `story.js`; the engine needs no change
 ## Lab: Spatial Dossier v0.1 (`/lab/spatial-dossier/`)
 
 Isolated technical prototype for the street-luxury × dossier × technology direction: one layered object in real CSS 3D, touch parallax, press-and-hold inspection, scroll travel between planes, and a striped lenticular that flips the workflow diagram between how it looks and what actually happens. Plan and report: `docs/SPATIAL-DOSSIER-PLAN.md`. Files: `assets/lab/dossier.css`, `assets/lab/dossier.js`, `assets/lab/grain.png`; tests in `tools/dossier.test.mjs`. `/lab/*` is served `noindex`. Nothing on the production homepage or in the funnel is touched.
+
+## Thinking orb (`assets/orb/`)
+
+The [`thinking-orbs`](https://www.npmjs.com/package/thinking-orbs) loading indicator (MIT, Jakub Antalik) on a site with no React and no build. `assets/orb/engine.js` is the package's own geometry and painter, vendored verbatim; `assets/orb/thinking-orb.js` replaces its React wrapper with `mountOrb(target, props)` and a `<thinking-orb>` custom element that take the same props (`state`, `size`, `theme`, `speed`, `paused`, `color`, `dots`, `dotSize`, `opts`, `label`).
+
+```html
+<script type="module" src="/assets/orb/thinking-orb.js"></script>
+<thinking-orb state="searching" size="64"></thinking-orb>
+```
+
+```js
+import { mountOrb } from '/assets/orb/thinking-orb.js';
+const orb = mountOrb(el, { state: 'searching', size: 20, theme: 'dark' });
+orb.set({ state: 'working' }); orb.destroy();
+```
+
+Nine states (`working searching solving listening connecting weaving composing breathing shaping`), three tuned sizes (64, 32, 20), auto dark/light, reduced motion paints a still frame, offscreen and hidden tabs pause. In use: the Work intake button (`/work/`) shows a 20px `searching` orb while the answers send. Every state at every size: `/lab/thinking-orb/`. Tests: `tools/orb.test.mjs` (`npm test`). To upgrade the engine, re-copy `dist/index-*.js` from the package into `engine.js` and keep its readable export block.
