@@ -170,7 +170,7 @@ Object.assign(commands, {
   async gallery(a: Args) {
     const out = path.join(OUTPUT, 'gallery');
     mkdirSync(out, {recursive: true});
-    const only = a._.length ? a._ : Object.keys(PRESETS);
+    const only = a._.length ? a._ : Object.keys(PRESETS).filter((k) => PRESETS[k].example.gallery !== false);
     const fake = (config: ReturnType<typeof exampleProject>): LoadedProject => ({dir: PROJECTS, folder: '.', publicDir: PROJECTS, file: '', raw: config as never, hash: '', outDir: out});
     const b = await makeBundle(fake(exampleProject(PRESETS[only[0]])));
     for (const id of only) {

@@ -88,9 +88,11 @@ export interface Runtime<D = unknown> {
   path: (id: string) => ResolvedPath;
   /** Mark a QA-visible element: text and marks report bounds at rest. */
   qa: (kind: 'text' | 'mark', rest: boolean) => Record<string, string>;
+  /** Folder project-relative assets resolve against: staticFile(`${assetBase}/${path}`). */
+  assetBase: string;
 }
 
-export type PresetCategory = 'typography' | 'geometry' | 'transition' | 'camera' | 'brand';
+export type PresetCategory = 'typography' | 'geometry' | 'transition' | 'camera' | 'brand' | 'media';
 
 export interface PresetDoc {
   /** Intended visual effect, in one or two sentences. */
@@ -126,7 +128,7 @@ export interface PresetDef<S extends z.ZodTypeAny = z.ZodTypeAny, D = unknown> {
   events?: (params: z.output<S>, ctx: Pick<LayoutContext, 't' | 'fps' | 'theme'>, layer: ResolvedLayer) => number[];
   component: React.FC<{params: z.output<S>; rt: Runtime<D>}>;
   /** A small, self-contained example used by the preset gallery and tests. */
-  example: {params: Record<string, unknown>; from?: TimeExpr; to?: TimeExpr; duration: TimeExpr; note: string};
+  example: {params: Record<string, unknown>; from?: TimeExpr; to?: TimeExpr; duration: TimeExpr; note: string; /** false when the example needs project media to render. */ gallery?: boolean};
 }
 
 export interface Issue {

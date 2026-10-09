@@ -1,0 +1,1269 @@
+{
+ "id": "ai-gold-rush",
+ "title": "The real AI gold rush",
+ "description": "~28 s creator-led reel for Quiet Bands, built on the speaker's own recording. Two hooks, the tool-overload problem, a guided-task demonstration, the TRAINING \u2192 IMPLEMENTATION \u2192 BUSINESS transformation, and a restrained payoff that lands on TEACHING.",
+ "mode": [
+  "voice",
+  "script",
+  "brand"
+ ],
+ "theme": "quiet-bands",
+ "format": "story",
+ "fps": 30,
+ "duration": "28.3s",
+ "scenes": [
+  {
+   "id": "hook1",
+   "start": 0,
+   "end": "3.99s",
+   "title": "Hook 1 \u2014 the gold rush",
+   "purpose": "Open on the face; name the crowd chasing AI tools.",
+   "content": "Face. GET RICH (1.23 s, on \"get\"), BUILDING AI TOOLS by word (2.10 s); generic AI app cards multiply around the face.",
+   "composition": "Face plate in the top two-thirds, fading into black; type on the fade; cards kept off the face.",
+   "transition": "Hard interrupt on \"But\" (3.99 s): cards and type vanish on one frame, the frame punches in 7%, the riser cuts.",
+   "audioCue": "Thump on GET RICH, a tick per card over a rising swell, hard silence on \"But\".",
+   "dependencies": [
+    "Footage",
+    "KineticHeadline",
+    "MaskedTextReveal",
+    "AppSwarm"
+   ]
+  },
+  {
+   "id": "hook2",
+   "start": "hook1.end",
+   "end": "6.44s",
+   "title": "Hook 2 \u2014 the wrong thing",
+   "purpose": "Challenge the assumption; open the curiosity gap without answering it.",
+   "content": "Face (punched in) for \"But what if we're selling the\"; a cream edge sweeps up to a black frame: WRONG (orange) / THING? and holds.",
+   "composition": "Full-frame type, WRONG at display size in the accent, THING? in cream below.",
+   "transition": "Edge sweeps back down to the face on \"Most\".",
+   "audioCue": "Low hit and tick on WRONG; air on the return.",
+   "dependencies": [
+    "DirectionalWipe (edge)",
+    "layer wipes",
+    "KineticHeadline"
+   ]
+  },
+  {
+   "id": "problem",
+   "start": "hook2.end",
+   "end": "13.3s",
+   "title": "More tools vs. better understanding",
+   "purpose": "Show tool overload, then the real need: someone to teach the tools people already have.",
+   "content": "Cards pile up and overlap; on \"app\" they fold into one card; the face closes into it and the card opens into a guided task: Write the client follow-up, four steps ticked as he speaks.",
+   "composition": "Overload around the face, then a single centred panel on black with the orange guide pointing at each step.",
+   "transition": "Iris: face \u2192 card \u2192 demonstration. Edge sweep out to the centrepiece on \"That's\".",
+   "audioCue": "Ticks per card, air on the fold, a tick per completed step.",
+   "dependencies": [
+    "AppSwarm (collapse)",
+    "circle masks",
+    "TaskDemo"
+   ]
+  },
+  {
+   "id": "opportunity",
+   "start": "problem.end",
+   "end": "18.4s",
+   "title": "Training \u2192 implementation \u2192 business",
+   "purpose": "Make the business model tangible as one continuous transformation.",
+   "content": "One word that becomes the next: TRAINING \u2192 IMPLEMENTATION \u2192 BUSINESS (letters shared between words slide, the rest roll); beneath it a rule with three nodes, drawn by the orange point as it steps from node to node on each word.",
+   "composition": "Centred word over a three-node line, black ground, nothing else.",
+   "transition": "Edge sweeps down back to the face on \"Maybe\".",
+   "audioCue": "A rising three-note figure, one note per word.",
+   "dependencies": [
+    "KineticHeadline (swap)",
+    "GridAssembly",
+    "LineDraw follow",
+    "Accent"
+   ]
+  },
+  {
+   "id": "payoff",
+   "start": "opportunity.end",
+   "end": "26.4s",
+   "title": "Payoff",
+   "purpose": "Land the idea: the opportunity is teaching.",
+   "content": "Face, slow push. NOT JUST BUILDING. on \"isn't building\"; TEACHING at display size on \"teaching\"; the orange point lands as its full stop on \"people\".",
+   "composition": "Restrained: face above, two lines of type on the fade, captions below.",
+   "transition": "The face closes into the full stop.",
+   "audioCue": "One tick as the full stop lands.",
+   "dependencies": [
+    "MaskedTextReveal",
+    "KineticHeadline",
+    "Accent",
+    "circle mask"
+   ]
+  },
+  {
+   "id": "sign",
+   "start": "payoff.end",
+   "end": "end",
+   "title": "End frame",
+   "purpose": "Sign quietly.",
+   "content": "The mark opens from the orange point; wordmark; short hold.",
+   "composition": "Lockup centred.",
+   "transition": "Hold.",
+   "audioCue": "One soft tone.",
+   "dependencies": [
+    "BrandLockup"
+   ]
+  }
+ ],
+ "paths": {
+  "progress": {
+   "description": "The point steps node to node: training, implementation, business.",
+   "keys": [
+    {
+     "at": "13.45s",
+     "x": 200,
+     "y": 1040
+    },
+    {
+     "at": "14.6s",
+     "x": 200,
+     "y": 1040
+    },
+    {
+     "at": "14.9s",
+     "x": 540,
+     "y": 1040,
+     "ease": "inOut"
+    },
+    {
+     "at": "16.9s",
+     "x": 540,
+     "y": 1040
+    },
+    {
+     "at": "17.2s",
+     "x": 880,
+     "y": 1040,
+     "ease": "inOut"
+    }
+   ]
+  },
+  "stop": {
+   "description": "TEACHING's full stop, then the end-frame iris origin.",
+   "keys": [
+    {
+     "at": "24.9s",
+     "x": "@teaching.inkEnd+24",
+     "y": "@teaching.end-15"
+    },
+    {
+     "at": "26.6s",
+     "x": "@teaching.inkEnd+24",
+     "y": "@teaching.end-15"
+    },
+    {
+     "at": "27.0s",
+     "x": "@lockup.markCenter",
+     "y": "@lockup.markCenter",
+     "ease": "inOut"
+    }
+   ]
+  }
+ },
+ "layers": [
+  {
+   "id": "face-a",
+   "preset": "Footage",
+   "to": "5.6s",
+   "conceal": {
+    "shape": "wipe",
+    "direction": "up",
+    "at": "5.38s",
+    "duration": 8,
+    "ease": "inOut"
+   },
+   "params": {
+    "src": "assets/source/face.mp4",
+    "x": 0,
+    "y": -200,
+    "width": 1080,
+    "height": 1308,
+    "fadeBottom": {
+     "from": 0.82,
+     "to": 1.0
+    },
+    "keys": [
+     {
+      "at": "3.95s",
+      "scale": 1
+     },
+     {
+      "at": "4.0s",
+      "scale": 1.07,
+      "ease": "step"
+     }
+    ],
+    "grade": {
+     "brightness": 1.05,
+     "contrast": 1.04,
+     "saturate": 1.0
+    }
+   }
+  },
+  {
+   "id": "face-b",
+   "preset": "Footage",
+   "from": "6.3s",
+   "to": "9.5s",
+   "reveal": {
+    "shape": "wipe",
+    "direction": "down",
+    "at": "6.3s",
+    "duration": 8,
+    "ease": "inOut"
+   },
+   "conceal": {
+    "shape": "circle",
+    "at": "8.95s",
+    "duration": 10,
+    "origin": {
+     "x": 540,
+     "y": 1260
+    },
+    "ease": "inOut"
+   },
+   "params": {
+    "src": "assets/source/face.mp4",
+    "x": 0,
+    "y": -200,
+    "width": 1080,
+    "height": 1308,
+    "fadeBottom": {
+     "from": 0.82,
+     "to": 1.0
+    },
+    "grade": {
+     "brightness": 1.05,
+     "contrast": 1.04,
+     "saturate": 1.0
+    }
+   }
+  },
+  {
+   "id": "face-c",
+   "preset": "Footage",
+   "from": "18.35s",
+   "to": "27.0s",
+   "reveal": {
+    "shape": "wipe",
+    "direction": "down",
+    "at": "18.4s",
+    "duration": 10,
+    "ease": "inOut"
+   },
+   "conceal": {
+    "shape": "circle",
+    "at": "26.42s",
+    "duration": 14,
+    "origin": "stop",
+    "ease": "inOut"
+   },
+   "params": {
+    "src": "assets/source/face.mp4",
+    "x": 0,
+    "y": -200,
+    "width": 1080,
+    "height": 1308,
+    "fadeBottom": {
+     "from": 0.82,
+     "to": 1.0
+    },
+    "keys": [
+     {
+      "at": "18.0s",
+      "scale": 1
+     },
+     {
+      "at": "26.4s",
+      "scale": 1.07,
+      "ease": "inOut"
+     }
+    ],
+    "grade": {
+     "brightness": 1.05,
+     "contrast": 1.04,
+     "saturate": 1.0
+    }
+   }
+  },
+  {
+   "id": "swarm-a",
+   "preset": "AppSwarm",
+   "z": 1,
+   "from": "1.9s",
+   "to": "4.0s",
+   "params": {
+    "seed": "hook",
+    "count": 24,
+    "area": {
+     "left": -90,
+     "top": 40,
+     "right": 1170,
+     "bottom": 1880
+    },
+    "avoid": {
+     "left": 110,
+     "top": 100,
+     "right": 970,
+     "bottom": 1430
+    },
+    "build": {
+     "at": "2.05s",
+     "until": "3.9s"
+    },
+    "cut": "3.99s",
+    "cardWidth": 270
+   }
+  },
+  {
+   "id": "getrich",
+   "preset": "KineticHeadline",
+   "z": 3,
+   "from": "1.2s",
+   "to": "4.0s",
+   "params": {
+    "text": "GET RICH",
+    "at": "1.2s",
+    "x": "center",
+    "align": "center",
+    "y": 1290,
+    "fitWidth": 820,
+    "enter": {
+     "style": "rise",
+     "duration": "short"
+    },
+    "exit": {
+     "at": "3.99s",
+     "style": "cut"
+    }
+   }
+  },
+  {
+   "id": "tools",
+   "preset": "MaskedTextReveal",
+   "z": 3,
+   "from": "2s",
+   "to": "4.0s",
+   "params": {
+    "text": "BUILDING AI TOOLS",
+    "at": "2.08s",
+    "x": "center",
+    "align": "center",
+    "y": 1385,
+    "size": 64,
+    "weight": "bold",
+    "width": "condensed",
+    "tracking": "label",
+    "by": "word",
+    "enter": {
+     "stagger": 7
+    },
+    "exit": {
+     "at": "3.99s",
+     "style": "cut"
+    }
+   }
+  },
+  {
+   "id": "edge-1",
+   "preset": "DirectionalWipe",
+   "z": 9,
+   "params": {
+    "at": "5.38s",
+    "duration": 8,
+    "direction": "up",
+    "mode": "edge",
+    "thickness": 5
+   }
+  },
+  {
+   "id": "wrong",
+   "preset": "KineticHeadline",
+   "z": 4,
+   "from": "5.38s",
+   "to": "6.6s",
+   "reveal": {
+    "shape": "wipe",
+    "direction": "up",
+    "at": "5.38s",
+    "duration": 8,
+    "ease": "inOut"
+   },
+   "conceal": {
+    "shape": "wipe",
+    "direction": "down",
+    "at": "6.3s",
+    "duration": 8,
+    "ease": "inOut"
+   },
+   "params": {
+    "text": "WRONG",
+    "at": "5.38s",
+    "x": "center",
+    "align": "center",
+    "y": 900,
+    "fitWidth": 800,
+    "color": "accent",
+    "enter": {
+     "style": "cut"
+    }
+   }
+  },
+  {
+   "id": "thing",
+   "preset": "KineticHeadline",
+   "z": 4,
+   "from": "5.38s",
+   "to": "6.6s",
+   "conceal": {
+    "shape": "wipe",
+    "direction": "down",
+    "at": "6.3s",
+    "duration": 8,
+    "ease": "inOut"
+   },
+   "params": {
+    "text": "THING?",
+    "at": "5.78s",
+    "like": "wrong",
+    "x": "center",
+    "align": "center",
+    "y": "@wrong.end+300",
+    "enter": {
+     "style": "rise",
+     "duration": "short"
+    }
+   }
+  },
+  {
+   "id": "edge-2",
+   "preset": "DirectionalWipe",
+   "z": 9,
+   "params": {
+    "at": "6.30s",
+    "duration": 8,
+    "direction": "down",
+    "mode": "edge",
+    "thickness": 5
+   }
+  },
+  {
+   "id": "swarm-b",
+   "preset": "AppSwarm",
+   "z": 1,
+   "from": "6.5s",
+   "to": "9.5s",
+   "params": {
+    "seed": "problem",
+    "count": 30,
+    "cardWidth": 270,
+    "area": {
+     "left": -40,
+     "top": 120,
+     "right": 1120,
+     "bottom": 1440
+    },
+    "avoid": {
+     "left": 200,
+     "top": 180,
+     "right": 880,
+     "bottom": 930
+    },
+    "build": {
+     "at": "6.6s",
+     "until": "8.3s"
+    },
+    "collapse": {
+     "at": "8.4s",
+     "duration": 16,
+     "to": {
+      "x": 540,
+      "y": 1260
+     }
+    },
+    "keepUntil": "9.15s"
+   }
+  },
+  {
+   "id": "demo",
+   "preset": "TaskDemo",
+   "z": 2,
+   "from": "9.0s",
+   "to": "13.4s",
+   "reveal": {
+    "shape": "circle",
+    "at": "9.05s",
+    "duration": 16,
+    "origin": {
+     "x": 540,
+     "y": 1260
+    },
+    "ease": "inOut"
+   },
+   "conceal": {
+    "shape": "wipe",
+    "direction": "up",
+    "at": "13.25s",
+    "duration": 8,
+    "ease": "inOut"
+   },
+   "params": {
+    "at": "9.05s",
+    "x": 96,
+    "y": 430,
+    "label": "THE AI THEY ALREADY HAVE",
+    "title": "Write the client follow-up",
+    "steps": [
+     {
+      "text": "Paste in the meeting notes",
+      "at": "10.35s"
+     },
+     {
+      "text": "Ask it for a first draft",
+      "at": "11.04s"
+     },
+     {
+      "text": "Make it sound like you",
+      "at": "11.93s"
+     },
+     {
+      "text": "Send it",
+      "at": "12.69s"
+     }
+    ]
+   }
+  },
+  {
+   "id": "edge-3",
+   "preset": "DirectionalWipe",
+   "z": 9,
+   "params": {
+    "at": "13.25s",
+    "duration": 8,
+    "direction": "up",
+    "mode": "edge",
+    "thickness": 5
+   }
+  },
+  {
+   "id": "stage",
+   "preset": "KineticHeadline",
+   "z": 3,
+   "from": "13.3s",
+   "to": "18.7s",
+   "conceal": {
+    "shape": "wipe",
+    "direction": "down",
+    "at": "18.4s",
+    "duration": 10,
+    "ease": "inOut"
+   },
+   "params": {
+    "states": [
+     {
+      "text": "TRAINING",
+      "at": "13.5s"
+     },
+     {
+      "text": "IMPLEMENTATION",
+      "at": "14.82s"
+     },
+     {
+      "text": "BUSINESS",
+      "at": "17.12s"
+     }
+    ],
+    "x": "center",
+    "align": "center",
+    "y": 920,
+    "fitWidth": 888,
+    "change": {
+     "style": "swap",
+     "stagger": 2,
+     "duration": 12,
+     "slide": 18
+    }
+   }
+  },
+  {
+   "id": "nodes",
+   "preset": "GridAssembly",
+   "z": 3,
+   "from": "13.3s",
+   "to": "18.7s",
+   "conceal": {
+    "shape": "wipe",
+    "direction": "down",
+    "at": "18.4s",
+    "duration": 10,
+    "ease": "inOut"
+   },
+   "params": {
+    "cols": 3,
+    "rows": 1,
+    "area": {
+     "left": 200,
+     "top": 1040,
+     "right": 880,
+     "bottom": 1041
+    },
+    "mark": "dot",
+    "size": 18,
+    "color": "inkDim",
+    "assemble": {
+     "at": "13.35s",
+     "order": "rows",
+     "spread": 6
+    }
+   }
+  },
+  {
+   "id": "line",
+   "preset": "LineDraw",
+   "z": 3,
+   "from": "13.3s",
+   "to": "18.7s",
+   "conceal": {
+    "shape": "wipe",
+    "direction": "down",
+    "at": "18.4s",
+    "duration": 10,
+    "ease": "inOut"
+   },
+   "params": {
+    "from": {
+     "x": 200,
+     "y": 1040
+    },
+    "to": {
+     "x": 880,
+     "y": 1040
+    },
+    "follow": "progress",
+    "stroke": 3
+   }
+  },
+  {
+   "id": "step",
+   "preset": "Accent",
+   "z": 5,
+   "from": "13.4s",
+   "to": "18.7s",
+   "conceal": {
+    "shape": "wipe",
+    "direction": "down",
+    "at": "18.4s",
+    "duration": 10,
+    "ease": "inOut"
+   },
+   "params": {
+    "path": "progress",
+    "size": 34,
+    "appear": {
+     "at": "13.45s",
+     "style": "scale"
+    }
+   }
+  },
+  {
+   "id": "edge-4",
+   "preset": "DirectionalWipe",
+   "z": 9,
+   "params": {
+    "at": "18.4s",
+    "duration": 10,
+    "direction": "down",
+    "mode": "edge",
+    "thickness": 5
+   }
+  },
+  {
+   "id": "notjust",
+   "preset": "MaskedTextReveal",
+   "z": 3,
+   "from": "22s",
+   "to": "26.6s",
+   "params": {
+    "text": "NOT JUST BUILDING.",
+    "at": "22.15s",
+    "x": "center",
+    "align": "center",
+    "y": 1180,
+    "size": 60,
+    "weight": "bold",
+    "width": "condensed",
+    "tracking": "label",
+    "by": "word",
+    "enter": {
+     "stagger": 4
+    },
+    "exit": {
+     "at": "26.38s",
+     "style": "drop"
+    }
+   }
+  },
+  {
+   "id": "teaching",
+   "preset": "KineticHeadline",
+   "z": 3,
+   "from": "24.3s",
+   "to": "26.8s",
+   "params": {
+    "text": "TEACHING",
+    "at": "24.42s",
+    "x": "center",
+    "align": "center",
+    "y": 1395,
+    "fitWidth": 800,
+    "enter": {
+     "style": "rise",
+     "stagger": "tight",
+     "duration": "base"
+    },
+    "exit": {
+     "at": "26.38s",
+     "style": "drop"
+    }
+   }
+  },
+  {
+   "id": "lockup",
+   "preset": "BrandLockup",
+   "from": "26.6s",
+   "params": {
+    "x": "center",
+    "y": 880,
+    "width": 380,
+    "mark": {
+     "at": "26.95s",
+     "style": "iris",
+     "origin": "stop",
+     "duration": 16
+    },
+    "wordmark": {
+     "at": "27.15s",
+     "duration": 12
+    }
+   }
+  },
+  {
+   "id": "point",
+   "preset": "Accent",
+   "z": 6,
+   "from": "24.8s",
+   "params": {
+    "path": "stop",
+    "size": 30,
+    "appear": {
+     "at": "24.9s",
+     "style": "scale"
+    },
+    "vanish": {
+     "at": "26.95s",
+     "duration": 8
+    }
+   }
+  },
+  {
+   "id": "captions",
+   "preset": "Captions",
+   "z": 8,
+   "params": {
+    "words": [
+     {
+      "w": "Everybody's",
+      "s": 0.31,
+      "e": 0.9
+     },
+     {
+      "w": "trying",
+      "s": 0.9,
+      "e": 1.17
+     },
+     {
+      "w": "to",
+      "s": 1.17,
+      "e": 1.23
+     },
+     {
+      "w": "get",
+      "s": 1.23,
+      "e": 1.53
+     },
+     {
+      "w": "rich",
+      "s": 1.53,
+      "e": 1.93
+     },
+     {
+      "w": "building",
+      "s": 2.1,
+      "e": 2.47
+     },
+     {
+      "w": "AI",
+      "s": 2.47,
+      "e": 2.99
+     },
+     {
+      "w": "tools.",
+      "s": 2.99,
+      "e": 3.58
+     },
+     {
+      "w": "But",
+      "s": 3.99,
+      "e": 4.11
+     },
+     {
+      "w": "what",
+      "s": 4.11,
+      "e": 4.28
+     },
+     {
+      "w": "if",
+      "s": 4.28,
+      "e": 4.42
+     },
+     {
+      "w": "we're",
+      "s": 4.42,
+      "e": 4.55
+     },
+     {
+      "w": "selling",
+      "s": 4.55,
+      "e": 5.29
+     },
+     {
+      "w": "the",
+      "s": 5.38,
+      "e": 5.46
+     },
+     {
+      "w": "wrong",
+      "s": 5.46,
+      "e": 5.8
+     },
+     {
+      "w": "thing?",
+      "s": 5.8,
+      "e": 6.3
+     },
+     {
+      "w": "Most",
+      "s": 6.44,
+      "e": 6.63
+     },
+     {
+      "w": "people",
+      "s": 6.63,
+      "e": 6.96
+     },
+     {
+      "w": "don't",
+      "s": 6.96,
+      "e": 7.3
+     },
+     {
+      "w": "need",
+      "s": 7.3,
+      "e": 7.63
+     },
+     {
+      "w": "another",
+      "s": 7.63,
+      "e": 8.02
+     },
+     {
+      "w": "AI",
+      "s": 8.02,
+      "e": 8.4
+     },
+     {
+      "w": "app.",
+      "s": 8.4,
+      "e": 8.66
+     },
+     {
+      "w": "They",
+      "s": 9.08,
+      "e": 9.17
+     },
+     {
+      "w": "need",
+      "s": 9.17,
+      "e": 9.4
+     },
+     {
+      "w": "somebody",
+      "s": 9.4,
+      "e": 9.98
+     },
+     {
+      "w": "to",
+      "s": 9.98,
+      "e": 10.05
+     },
+     {
+      "w": "show",
+      "s": 10.05,
+      "e": 10.35
+     },
+     {
+      "w": "them",
+      "s": 10.35,
+      "e": 10.65
+     },
+     {
+      "w": "how",
+      "s": 10.83,
+      "e": 10.97
+     },
+     {
+      "w": "to",
+      "s": 10.97,
+      "e": 11.04
+     },
+     {
+      "w": "use",
+      "s": 11.04,
+      "e": 11.38
+     },
+     {
+      "w": "the",
+      "s": 11.38,
+      "e": 11.46
+     },
+     {
+      "w": "ones",
+      "s": 11.46,
+      "e": 11.93
+     },
+     {
+      "w": "they",
+      "s": 11.93,
+      "e": 12.1
+     },
+     {
+      "w": "already",
+      "s": 12.1,
+      "e": 12.69
+     },
+     {
+      "w": "have.",
+      "s": 12.69,
+      "e": 13.02
+     },
+     {
+      "w": "That's",
+      "s": 13.34,
+      "e": 13.63
+     },
+     {
+      "w": "training.",
+      "s": 13.63,
+      "e": 14.24
+     },
+     {
+      "w": "That's",
+      "s": 14.63,
+      "e": 14.9
+     },
+     {
+      "w": "implementation.",
+      "s": 14.9,
+      "e": 15.91
+     },
+     {
+      "w": "That's",
+      "s": 16.59,
+      "e": 16.83
+     },
+     {
+      "w": "a",
+      "s": 16.83,
+      "e": 16.9
+     },
+     {
+      "w": "whole",
+      "s": 16.9,
+      "e": 17.23
+     },
+     {
+      "w": "business.",
+      "s": 17.23,
+      "e": 17.84
+     },
+     {
+      "w": "Maybe,",
+      "s": 18.0,
+      "e": 18.81
+     },
+     {
+      "w": "just",
+      "s": 19.54,
+      "e": 19.95
+     },
+     {
+      "w": "maybe,",
+      "s": 19.95,
+      "e": 20.49
+     },
+     {
+      "w": "the",
+      "s": 20.82,
+      "e": 20.89
+     },
+     {
+      "w": "real",
+      "s": 20.89,
+      "e": 21.23
+     },
+     {
+      "w": "AI",
+      "s": 21.23,
+      "e": 21.63
+     },
+     {
+      "w": "gold",
+      "s": 21.63,
+      "e": 21.92
+     },
+     {
+      "w": "rush",
+      "s": 21.92,
+      "e": 22.19
+     },
+     {
+      "w": "isn't",
+      "s": 22.19,
+      "e": 22.47
+     },
+     {
+      "w": "building",
+      "s": 22.47,
+      "e": 22.91
+     },
+     {
+      "w": "the",
+      "s": 22.91,
+      "e": 23.02
+     },
+     {
+      "w": "tools.",
+      "s": 23.02,
+      "e": 23.63
+     },
+     {
+      "w": "It's",
+      "s": 24.23,
+      "e": 24.49
+     },
+     {
+      "w": "teaching",
+      "s": 24.49,
+      "e": 24.95
+     },
+     {
+      "w": "people",
+      "s": 24.95,
+      "e": 25.4
+     },
+     {
+      "w": "how",
+      "s": 25.65,
+      "e": 25.84
+     },
+     {
+      "w": "to",
+      "s": 25.84,
+      "e": 25.9
+     },
+     {
+      "w": "use",
+      "s": 25.9,
+      "e": 26.28
+     },
+     {
+      "w": "them.",
+      "s": 26.28,
+      "e": 26.41
+     }
+    ],
+    "y": 1505,
+    "size": 46,
+    "emphasis": [
+     "rich",
+     "wrong",
+     "already",
+     "training",
+     "implementation",
+     "business",
+     "teaching"
+    ],
+    "hide": [
+     {
+      "from": "1.18s",
+      "to": "3.99s"
+     },
+     {
+      "from": "5.38s",
+      "to": "6.40s"
+     },
+     {
+      "from": "13.3s",
+      "to": "18.42s"
+     }
+    ]
+   }
+  }
+ ],
+ "audio": {
+  "tracks": [
+   {
+    "id": "voice",
+    "src": "assets/source/voice.wav",
+    "volume": 1
+   },
+   {
+    "id": "sfx",
+    "synth": "sfx",
+    "volume": 0.24
+   }
+  ],
+  "synth": {
+   "sfx": {
+    "description": "Procedural accents synced to visual events; sits ~15 dB under the voice. Placeholder for licensed SFX/music.",
+    "cues": [
+     {
+      "at": "1.2s",
+      "sound": "thump",
+      "gain": 0.6,
+      "pitch": 60
+     },
+     {
+      "at": "2.05s",
+      "sound": "tick",
+      "gain": 0.2,
+      "pitch": 4300,
+      "sync": {
+       "layer": "swarm-a"
+      }
+     },
+     {
+      "at": "2.1s",
+      "sound": "riser",
+      "gain": 0.3,
+      "until": "3.99s",
+      "pitch": 800
+     },
+     {
+      "at": "5.38s",
+      "sound": "thump",
+      "gain": 0.55,
+      "pitch": 52
+     },
+     {
+      "at": "5.40s",
+      "sound": "tick",
+      "gain": 0.5,
+      "pitch": 2600
+     },
+     {
+      "at": "6.28s",
+      "sound": "air",
+      "gain": 0.25,
+      "duration": 12,
+      "pitch": 1800
+     },
+     {
+      "at": "6.6s",
+      "sound": "tick",
+      "gain": 0.16,
+      "pitch": 4600,
+      "sync": {
+       "layer": "swarm-b",
+       "every": 2
+      }
+     },
+     {
+      "at": "8.4s",
+      "sound": "air",
+      "gain": 0.3,
+      "duration": 22,
+      "pitch": 1200
+     },
+     {
+      "at": "9.0s",
+      "sound": "tick",
+      "gain": 0.35,
+      "pitch": 3200,
+      "sync": {
+       "layer": "demo"
+      }
+     },
+     {
+      "at": "13.5s",
+      "sound": "tone",
+      "gain": 0.3,
+      "pitch": 147,
+      "duration": 40
+     },
+     {
+      "at": "14.82s",
+      "sound": "tone",
+      "gain": 0.3,
+      "pitch": 185,
+      "duration": 40
+     },
+     {
+      "at": "17.12s",
+      "sound": "tone",
+      "gain": 0.32,
+      "pitch": 220,
+      "duration": 50
+     },
+     {
+      "at": "18.38s",
+      "sound": "air",
+      "gain": 0.22,
+      "duration": 12,
+      "pitch": 1500
+     },
+     {
+      "at": "24.9s",
+      "sound": "tick",
+      "gain": 0.5,
+      "pitch": 3000
+     },
+     {
+      "at": "26.95s",
+      "sound": "tone",
+      "gain": 0.3,
+      "pitch": 220,
+      "duration": 45
+     }
+    ]
+   }
+  }
+ },
+ "export": {
+  "targetMB": 30
+ },
+ "qa": {
+  "allowUnsafe": []
+ },
+ "assumptions": [
+  "Word timings come from forced alignment (PocketSphinx) of the words as actually spoken, cross-checked against the recording's own burned-in captions; delivery differs from the written script (\"Maybe, just maybe\", \"how to use them\") and the recording wins.",
+  "The source is 512\u00d7910 with captions burned in by the recording app. The plate is cropped above the caption band (top 620 px) and upscaled to 1080 wide, so the face is softer than native 1080p footage.",
+  "No B-roll was supplied and stock/AI video services are unavailable or unapproved: the demonstration and overload sequences are original code-built animation.",
+  "No licensed music was available; sound accents are procedural placeholders mixed under the voice."
+ ]
+}

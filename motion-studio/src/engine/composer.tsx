@@ -74,7 +74,7 @@ const Loaded: React.FC<{prep: Prepared; assetBase: string; qa?: {frames: number[
     <AbsoluteFill ref={rootRef} style={{background: color(prep.theme, prep.project.background), overflow: 'hidden'}}>
       {ordered.map((layer) => (
         <Sequence key={layer.id} name={layer.id} from={layer.from} durationInFrames={Math.max(1, layer.to - layer.from)} layout="none">
-          <LayerHost prep={prep} layer={layer} layout={layout} />
+          <LayerHost prep={prep} layer={layer} layout={layout} assetBase={assetBase} />
         </Sequence>
       ))}
       <AudioTracks prep={prep} assetBase={assetBase} />
@@ -117,7 +117,7 @@ function maskStyle(prep: Prepared, layout: LayoutMap, m: Mask | undefined, frame
   return `inset(0 0 ${hide} 0)`;
 }
 
-const LayerHost: React.FC<{prep: Prepared; layer: ResolvedLayer; layout: LayoutMap}> = ({prep, layer, layout}) => {
+const LayerHost: React.FC<{prep: Prepared; layer: ResolvedLayer; layout: LayoutMap; assetBase: string}> = ({prep, layer, layout, assetBase}) => {
   const absolute = useCurrentFrame() + layer.from;
   const def = PRESETS[layer.preset];
   const chain = groupChain(prep, layer.group);
@@ -135,6 +135,7 @@ const LayerHost: React.FC<{prep: Prepared; layer: ResolvedLayer; layout: LayoutM
     t: (e) => resolveTime(e, prep.time),
     path: (id) => layout.paths[id],
     qa: (kind, rest) => ({'data-qa': kind, 'data-qa-layer': layer.id, 'data-qa-rest': rest ? '1' : '0'}),
+    assetBase,
   };
   const Component = def.component;
   let node: React.ReactNode = <Component params={layer.params as never} rt={rt} />;

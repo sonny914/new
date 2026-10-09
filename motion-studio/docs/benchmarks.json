@@ -78,5 +78,21 @@
     "deliveryMB": 0.32,
     "cpus": 4,
     "gpu": false
+  },
+  {
+    "project": "ai-gold-rush",
+    "date": "2026-10-09T18:07:48.062Z",
+    "frames": 849,
+    "width": 1080,
+    "height": 1920,
+    "layers": 23,
+    "previewFps": 11.2,
+    "masterFps": 3.65,
+    "masterSeconds": 232.3,
+    "encodeSeconds": 25.1,
+    "peakMemMB": 4660,
+    "deliveryMB": 10.17,
+    "cpus": 4,
+    "gpu": false
   }
 ]
