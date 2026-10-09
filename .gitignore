@@ -1,3 +1,4 @@
 
 # Instagram carousel video renders: temporary per-frame captures
 lab/ig-carousel*/export/.frames*/
+__pycache__/
