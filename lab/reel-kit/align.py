@@ -12,6 +12,8 @@ import io, json, re, subprocess, sys, tarfile, tempfile, types, urllib.request, 
 from pathlib import Path
 
 CACHE = Path.home() / '.cache' / 'reel-kit'
+# words the pronouncing dictionary lacks, aligned by their spoken parts and merged back into one word
+RESPELL = {'chatgpt': ['chat', 'g', 'p', 't'], 'ai': ['a', 'i'], "ai's": ['a', "i's"]}
 VOSK = CACHE / 'vosk-model-small-en-us-0.15'
 
 
@@ -50,12 +52,18 @@ def align(media, transcript, out):
     words = re.findall(r"[a-z0-9']+", text)
     wf = wave.open(str(pcm16k(media)), 'rb'); sr = wf.getframerate(); data = wf.readframes(wf.getnframes())
     d = Decoder(samprate=sr, bestpath=False)
-    missing = [w for w in words if d.lookup_word(w) is None]
-    if missing: sys.exit(f'not in the pronouncing dictionary: {missing} (respell them, e.g. "a i")')
-    d.set_align_text(' '.join(words))
+    spoken = [p for w in words for p in (RESPELL.get(w, [w]) if d.lookup_word(w) is None else [w])]
+    missing = sorted({w for w in spoken if d.lookup_word(w) is None})
+    if missing: sys.exit(f'not in the pronouncing dictionary: {missing} (add them to RESPELL)')
+    d.set_align_text(' '.join(spoken))
     d.start_utt(); d.process_raw(data, full_utt=True); d.end_utt()
     segs = [(re.sub(r'\(\d+\)$', '', s.word), s.start_frame / 100, (s.end_frame + 1) / 100) for s in d.seg()]
-    out_words = [{'w': w, 's': round(a, 2), 'e': round(b, 2)} for w, a, b in segs if w not in ('<s>', '</s>', '<sil>', '(NULL)', '[NOISE]')]
+    parts = [(w, a, b) for w, a, b in segs if w not in ('<s>', '</s>', '<sil>', '(NULL)', '[NOISE]')]
+    out_words, i = [], 0
+    for w in words:                                                  # fold respelled parts back into their word
+        n = len(RESPELL.get(w, [w])) if d.lookup_word(w) is None else 1
+        chunk = parts[i:i + n]; i += n
+        if chunk: out_words.append({'w': w, 's': round(chunk[0][1], 2), 'e': round(chunk[-1][2], 2)})
     if [o['w'] for o in out_words] != words: print('warning: alignment dropped words', file=sys.stderr)
     Path(out).write_text('[' + ',\n'.join(json.dumps(o, separators=(',', ':')) for o in out_words) + ']\n')
     print(' '.join(f"{o['w']}[{o['s']:.2f}-{o['e']:.2f}]" for o in out_words))

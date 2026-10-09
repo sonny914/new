@@ -16,3 +16,6 @@ html,body{background:#000}
 #kit-end{position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:100}
 #kit-end .lockup{width:300px;height:auto;color:var(--cream);overflow:visible}
 #qbmark,#qbword{transform-box:fill-box;transform-origin:50% 50%}
+/* word-synced captions (Kit.wordCaptions): cream, orange emphasis, at most two short lines */
+#cap .em{color:var(--orange)}
+#cap span{transition:none}

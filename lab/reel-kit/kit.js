@@ -17,6 +17,8 @@
     const s = el.querySelector('.mask > span');
     s.style.transform = `translateY(${(1 - outExpo(k)) * 105 - inCubic(out) * 105}%)`;
   };
+  // keyframed value: kf = [[t, v], ...]; eased (inOut) between neighbours, held outside
+  const keys = (t, kf) => { if (t <= kf[0][0]) return kf[0][1]; for (let k = 1; k < kf.length; k++) { const [t1, v1] = kf[k], [t0, v0] = kf[k - 1]; if (t < t1) return lerp(v0, v1, inOut((t - t0) / (t1 - t0 || 1))); } return kf[kf.length - 1][1]; };
   // shrink an element's font until it fits maxW (measure, don't guess)
   const fit = (el, maxW) => { let fs = parseFloat(getComputedStyle(el).fontSize); while (el.scrollWidth > maxW && fs > 10) { fs -= 2; el.style.fontSize = fs + 'px'; } return fs; };
   const SVGNS = 'http://www.w3.org/2000/svg';
@@ -28,6 +30,37 @@
     const c = caps.find(([a, b]) => t >= a && t < b);
     if (el.dataset.html !== (c ? c[2] : '')) { el.innerHTML = c ? c[2] : ''; el.dataset.html = c ? c[2] : ''; }
     el.style.opacity = c ? seg(t, c[0], 0.08) : 0;
+  }
+
+  // word-synced captions. phrases: strings matched to words in order; *word* = orange emphasis; a phrase
+  // starting with ~ consumes its words but isn't shown (the type on screen already says it).
+  // Words not yet spoken sit at 38 %; nothing bounces.
+  function phrases(list, words, clock = 'os') {
+    const norm = (x) => x.toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9']/g, '');
+    let i = 0;
+    const out = list.map((p) => {
+      const hidden = p.startsWith('~'), toks = (hidden ? p.slice(1) : p).trim().split(/\s+/);
+      const t = toks.map((tok) => {
+        const em = /\*/.test(tok), text = tok.replace(/\*/g, '');
+        const parts = text.split('-').map(norm).filter(Boolean);          // hyphenated: copy-and-pasting
+        const w0 = words[i]; parts.forEach((part) => { if (norm(words[i].w) !== part) throw new Error(`caption word "${part}" ≠ spoken "${words[i].w}" (#${i})`); i++; });
+        return { text, em, t: w0[clock] };
+      });
+      return { hidden, toks: t, t0: t[0].t, t1: words[i - 1][clock === 'os' ? 'oe' : 'e'] };
+    });
+    if (i !== words.length) throw new Error(`captions cover ${i} of ${words.length} words`);
+    out.forEach((p, k) => { p.until = Math.min(p.t1 + 0.6, out[k + 1] ? out[k + 1].t0 : Infinity); });
+    return out;
+  }
+  function wordCaptions(el, list, t) {
+    const p = list.find((x) => t >= x.t0 - 0.04 && t < x.until && !x.hidden);
+    const key = p ? list.indexOf(p) : -1;
+    if (+el.dataset.k !== key) {
+      el.dataset.k = key;
+      el.innerHTML = p ? p.toks.map((w) => `<span class="${w.em ? 'em' : ''}">${w.text}</span>`).join(' ') : '';
+    }
+    if (p) [...el.children].forEach((s, k) => { s.style.opacity = t >= p.toks[k].t - 0.02 ? 1 : 0.38; });
+    el.style.opacity = p ? 1 - seg(t, p.until - 0.12, 0.12) : 0;
   }
 
   // the sting (lab/qb-sting/SIGNATURE.md): black arrives over 0.2 s, the mark lands on the hit,
@@ -46,14 +79,19 @@
 
   // boot: window.REEL tells the renderer the timing; ?face=<dir> holds the graded talking-head JPEGs
   // (0001.jpg = t 0); ?play previews live. init() runs once fonts are ready (for canvas text etc.).
-  function boot({ render, fps = 30, offset = 0, frames, face, init }) {
+  function boot({ render, fps = 30, offset = 0, frames, face, init, edit }) {
+    if (edit) { offset = 0; frames = Math.round(edit.duration * fps); }
     window.REEL = { fps, offset, frames };
+    // output time → recording time through the edit's segments (after the last word: hold its last frame)
+    const toSrc = (t) => { if (!edit) return t; let acc = 0; for (const [s, e] of edit.segments) { if (t < acc + e - s) return s + (t - acc); acc += e - s; } const l = edit.segments[edit.segments.length - 1]; return l[1]; };
+    const segAt = (t) => { if (!edit) return 0; let acc = 0; for (let k = 0; k < edit.segments.length; k++) { const [s, e] = edit.segments[k]; acc += e - s; if (t < acc) return k; } return edit.segments.length - 1; };
+    Kit.toSrc = toSrc; Kit.segAt = segAt;
     $('stage').insertAdjacentHTML('beforeend', `<div id="kit-end" style="display:none">${LOCKUP}</div>`);
     const q = new URLSearchParams(location.search);
     const dir = q.get('face') || 'face';
     window.seek = async (t) => {
       if (face) {
-        const n = clamp(Math.floor(t * face.fps + 1e-6) + 1, 1, face.count);
+        const n = clamp(Math.floor(toSrc(t) * face.fps + 1e-6) + 1, 1, face.count);
         const src = `${dir}/${String(n).padStart(4, '0')}.jpg`;
         if (face.img.getAttribute('src') !== src) { face.img.src = src; await face.img.decode().catch(() => {}); }
       }
@@ -67,5 +105,5 @@
     });
   }
 
-  window.Kit = { $, clamp, seg, lerp, outExpo, outCubic, inCubic, inOut, outBack, css, show, maskIn, fit, svg, rng, captions, sting, STING, boot };
+  window.Kit = { $, clamp, seg, lerp, outExpo, outCubic, inCubic, inOut, outBack, css, show, maskIn, keys, fit, svg, rng, captions, phrases, wordCaptions, sting, STING, boot };
 })();

@@ -19,3 +19,17 @@ exactly as it shipped.) Making the next reel:
    One 0.5× preview, fix, then the final. A sound-only change is a remux (`-c:v copy`), not a re-render.
 
 Brand: black, cream `#F2EEE5`, one orange `#FF5A00` accent; captions one orange word per phrase.
+
+## Added with the false confidence reel
+
+- **Jump cuts.** `python3 edit.py words.json . --gap 0.2 --hold I=SEC … --end SEC` trims pauses and keeps
+  every word, writing `edit.json` + `edit.js`. Pass `edit: EDIT` to `Kit.boot` and `edit='edit.json'` to
+  `Reel`: cues are then on the reel's clock (`EDIT.words[i].os`), and the voice is joined from the
+  segments with 12 ms fades.
+- **Word-synced captions.** `Kit.phrases([...], words)` matches phrase strings to the spoken words (and
+  throws if they differ); `*word*` = orange, a leading `~` hides a phrase while on-screen type says it.
+  `Kit.wordCaptions(el, caps, t)` lights words as they're said. Expose `window.CAPS` and
+  `node srt.mjs index.html captions.srt` writes the SRT.
+- **Respell.** `align.py` aligns words the dictionary lacks (ChatGPT, AI) through `RESPELL`.
+- `Kit.keys(t, [[t, v], …])` for keyframed values; `crack()` and `collapse()` in the sound palette;
+  a 30 ms fade-in on the mix (AAC overshoots when a reel opens mid-signal).

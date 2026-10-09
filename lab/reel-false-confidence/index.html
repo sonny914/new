@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>False Confidence Reel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@500;600;700&family=Space+Mono:wght@400;700&display=block" rel="stylesheet">
+<link rel="stylesheet" href="../reel-kit/kit.css">
+<style>
+  /* One object carries the argument: a polished plan (cards) standing on a foundation that spells
+     CONFIDENCE. It cracks on "false confidence", collapses on the last line, and the foundation word is
+     all that survives, until FALSE drops out of its F. UI lives in the lower third; the face stays clear. */
+  #face{inset:0;transform-origin:540px 900px}
+  #face img{display:block;width:1080px;height:1920px}
+  #grad{inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35) 0,rgba(0,0,0,0) 240px,rgba(0,0,0,0) 1000px,rgba(0,0,0,.55) 1300px,rgba(0,0,0,.82) 1560px,rgba(0,0,0,.9) 1920px)}
+  #dim{inset:0;background:#000}
+  .lbl{font:700 20px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--quiet)}
+
+  /* opening: the business plan */
+  #plan{left:100px;top:1080px;width:880px;height:360px;padding:26px 30px}
+  #plan .hd{display:flex;align-items:center;gap:16px}
+  #plan .nm{font:800 54px/1 'Bricolage Grotesque';letter-spacing:-.03em}
+  #plan .tag{margin-top:8px}
+  #rev{position:absolute;right:30px;top:24px;text-align:right}
+  #rev b{display:block;font:800 70px/1 'Bricolage Grotesque';letter-spacing:-.03em}
+  #tam{position:absolute;right:30px;top:132px;font:700 20px 'Space Mono';letter-spacing:.08em;padding:7px 12px;border-radius:999px;background:var(--cream);color:#000}
+  #chart{position:absolute;left:30px;bottom:22px}
+  #stamp{left:220px;top:1110px;width:640px;padding:18px 0 26px;border:12px solid var(--orange);border-radius:28px;color:var(--orange);text-align:center;font:800 124px/.92 'Bricolage Grotesque';letter-spacing:-.03em}
+
+  /* prompts */
+  .bar{left:70px;width:940px;height:100px;border-radius:50px;display:flex;align-items:center;padding:0 106px 0 36px;font:400 26px 'Space Mono',monospace;white-space:nowrap;overflow:hidden}
+  .bar .send{position:absolute;right:12px;top:12px;width:76px;height:76px;border-radius:50%;background:var(--cream)}
+  .bar .send::after{content:"";position:absolute;left:29px;top:23px;border-left:22px solid #000;border-top:15px solid transparent;border-bottom:15px solid transparent}
+  .bar .hot{color:var(--orange)}
+  #reply1{font:600 30px 'Instrument Sans';padding:14px 24px;border-radius:24px 24px 24px 6px;background:var(--cream);color:#000}
+  #risks{left:100px;width:880px;display:flex;gap:14px;align-items:center}
+  #risks .pill{width:76px;height:76px;border-radius:18px;border:2px solid var(--hair);display:flex;align-items:center;justify-content:center;font:700 32px 'Space Mono'}
+  #risks .pill.on{background:var(--cream);color:#000;border-color:var(--cream)}
+
+  /* the structure: three cards on the CONFIDENCE foundation */
+  #struct{left:0;top:0;width:1080px;height:1920px;transform-origin:540px 1090px}
+  .card{width:280px;height:170px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;border-radius:18px}
+  .card .t{font:700 30px/1.02 'Instrument Sans';letter-spacing:-.01em}
+  .cells{display:flex}
+  .cell{width:88px;height:88px;border:2px solid rgba(242,238,229,.55);margin-left:-2px;display:flex;align-items:center;justify-content:center;font:700 50px 'Space Mono',monospace;color:var(--cream);background:#000}
+  .cell.hot{border-color:var(--orange);color:var(--orange);z-index:2;position:relative}
+  #cracks{left:0;top:0;overflow:visible}
+  #fal .cell{position:absolute;color:var(--orange);border-color:var(--orange)}
+  #cap{left:120px;width:840px;top:1478px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="face" class="abs"><img id="faceimg" alt=""></div>
+  <div id="grad" class="abs"></div>
+  <div id="dim" class="abs"></div>
+
+  <!-- opening -->
+  <div id="plan" class="abs panel">
+    <div class="hd">
+      <svg id="logo" width="64" height="64" viewBox="0 0 64 64"><rect x="4" y="4" width="36" height="36" rx="11" fill="#F2EEE5"/><rect x="24" y="24" width="36" height="36" rx="11" fill="none" stroke="#F2EEE5" stroke-width="5"/></svg>
+      <div><div class="nm" id="pname"></div><div class="lbl tag" id="ptag"></div></div>
+    </div>
+    <div id="rev"><b id="revn">$0</b><span class="lbl">ARR by year 3</span></div>
+    <span id="tam">TAM $9.4B</span>
+    <svg id="chart" width="820" height="170" viewBox="0 0 820 170">
+      <g stroke="rgba(242,238,229,.12)" stroke-width="1.5"><line x1="0" y1="30" x2="820" y2="30"/><line x1="0" y1="85" x2="820" y2="85"/><line x1="0" y1="140" x2="820" y2="140"/></g>
+      <path id="area" d="" fill="rgba(242,238,229,.1)"/>
+      <path id="curve" d="" fill="none" stroke="#F2EEE5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle id="cdot" r="10" fill="#F2EEE5"/>
+    </svg>
+  </div>
+  <div id="stamp" class="abs">TERRIBLE<br>IDEA</div>
+
+  <!-- the structure -->
+  <div id="struct" class="abs">
+    <div id="c0" class="abs panel card" style="left:100px;top:1090px"><span class="lbl">v7_final.pdf</span><span class="t">Business<br>plan</span></div>
+    <div id="c1" class="abs panel card" style="left:400px;top:1090px"><span class="lbl" style="display:flex;gap:8px;align-items:center"><svg width="26" height="26" viewBox="0 0 64 64"><rect x="4" y="4" width="36" height="36" rx="11" fill="#F2EEE5"/><rect x="24" y="24" width="36" height="36" rx="11" fill="none" stroke="#F2EEE5" stroke-width="6"/></svg>logo + palette</span><span class="t">Brand<br>identity</span></div>
+    <div id="c2" class="abs panel card" style="left:700px;top:1090px"><span class="lbl">$48M · year 3</span><span class="t">Revenue<br>forecast</span></div>
+    <div id="row" class="abs cells" style="left:100px;top:1280px"></div>
+    <svg id="cracks" class="abs" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+  </div>
+  <div id="fal" class="abs" style="inset:0"></div>
+
+  <!-- prompts -->
+  <div id="bar1" class="abs bar panel"><span id="t1"></span><span class="send"></span></div>
+  <div id="reply1" class="abs">Brilliant. Let’s build it!</div>
+  <div id="bar2" class="abs bar panel"><span id="t2"></span><span class="send"></span></div>
+  <div id="risks" class="abs"><span class="lbl" style="margin-right:6px">Reasons<br>it fails</span></div>
+  <svg id="strike" class="abs" style="left:0;top:0;overflow:visible" width="1080" height="1920"><line id="sline" stroke="#FF5A00" stroke-width="8" stroke-linecap="round"/></svg>
+
+  <div id="cap" class="abs"></div>
+</div>
+
+<script src="edit.js"></script>
+<script src="../reel-kit/kit.js"></script>
+<script>
+const { $, clamp, seg, lerp, outExpo, outCubic, inCubic, inOut, outBack, css, show, keys, svg, rng, phrases, wordCaptions } = Kit;
+// Everything is cued on the edited clock: EDIT.words[i].os is when word i is heard in the reel.
+const WS = EDIT.words;
+const at = (w, n = 1) => { let k = 0; for (const x of WS) if (x.w === w && ++k === n) return x.os; throw new Error('no word ' + w + ' #' + n); };
+const end = (w, n = 1) => { let k = 0; for (const x of WS) if (x.w === w && ++k === n) return x.oe; throw new Error('no word ' + w); };
+
+const T = {
+  terrible: at('terrible'), idea1: at('idea'), and1: at('and'),
+  you3: at('you', 3), it1: at('it'), was: at('was'), idea2e: end('idea', 2), suddenly: at('suddenly'),
+  plan: at('plan'), logo: at('logo'), whole2: at('whole', 2), fals: at('false'), conf1: at('confidence'),
+  try: at('try'), instead: at('instead'), give: at('give'), faile: end('fail'), then: at('then'),
+  ai3: at('ai', 2), its: at("it's"), conf2: at('confidence', 2), ideaEnd: end('idea', 3),
+};
+
+// ---- captions: the delivery, word-synced; ~ = the type on screen already says it -------------------
+const CAPS = phrases([
+  'ChatGPT will help you build', 'a *terrible* business *idea*', 'and make you feel like a genius', 'the whole time.',
+  'That’s the *dangerous* part.', 'You ask it,', '~Was this a good idea?',
+  'Suddenly you got a business plan,', 'a logo, and a whole lot of', '*false* *confidence.*',
+  'Try this instead:', '~Give me five reasons this business could fail.',
+  'Then tell me what *evidence* I need', 'before spending one dollar.',
+  'Now you’re not asking AI', 'to *hype* you up.', 'You’re asking it', 'to find your *blind* *spots.*',
+  'Because the most *expensive* thing', 'AI can give you', 'isn’t a bad answer.', '~It’s confidence in a bad idea.',
+], WS);
+window.CAPS = CAPS;                                             // read by reel-kit/srt.mjs
+
+// ---- opening chart -----------------------------------------------------------------------------------
+const PTS = [[0, 150], [120, 148], [240, 144], [360, 138], [470, 126], [560, 108], [640, 82], [700, 56], [750, 32], [790, 14]];
+const pathTo = (k) => {                                       // the curve drawn up to fraction k
+  const n = Math.max(2, Math.ceil(k * (PTS.length - 1)) + 1), pts = PTS.slice(0, n).map((p) => p.slice());
+  const f = k * (PTS.length - 1) - (n - 2); const a = PTS[n - 2], b = PTS[n - 1] || a;
+  pts[n - 1] = [lerp(a[0], b[0], clamp(f)), lerp(a[1], b[1], clamp(f))];
+  return pts;
+};
+
+// ---- the foundation: CONFIDENCE in cells, cracks, FALSE ----------------------------------------------
+const WORD = 'CONFIDENCE';
+const cells = [...WORD].map((ch, i) => { const c = document.createElement('div'); c.className = 'cell'; c.textContent = ch; $('row').append(c); return c; });
+const r = rng(5);
+const CRACKS = [                                                // across the foundation, then up into the cards
+  [[96, 1300], [190, 1318], [262, 1306], [338, 1334], [430, 1322], [512, 1350], [590, 1330], [676, 1352], [760, 1336], [850, 1358], [984, 1344]],
+  [[430, 1322], [452, 1292], [440, 1266], [468, 1236]],
+  [[676, 1352], [700, 1300], [690, 1270], [722, 1232]],
+  [[262, 1306], [250, 1340], [276, 1372]],
+];
+const crackEls = CRACKS.map((pts) => { const p = svg('polyline', { points: pts.map((q) => q.join(',')).join(' '), fill: 'none', stroke: '#FF5A00', 'stroke-width': 5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, $('cracks')); const L = p.getTotalLength(); p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p.dataset.l = L; return p; });
+const jit = cells.map(() => [r() * 2 - 1, r() * 2 - 1]);
+const FAL = 'ALSE'.split('').map((ch) => { const c = document.createElement('div'); c.className = 'cell'; c.textContent = ch; $('fal').append(c); return c; });
+
+const risks = [1, 2, 3, 4, 5].map((n) => { const p = document.createElement('span'); p.className = 'pill'; p.textContent = n; $('risks').append(p); return p; });
+
+// typed text that follows the spoken words (word by word, as heard)
+const typed = (from, to, t, hot = []) => WS.slice(from, to + 1).filter((w) => t >= w.os).map((w, k) => {
+  const disp = PROMPT2[k] ?? w.w; return hot.includes(k) ? `<span class="hot">${disp}</span>` : disp; }).join(' ');
+const PROMPT2 = ['Give', 'me', 'five', 'reasons', 'this', 'business', 'could', 'fail.'];
+const iGive = WS.findIndex((w) => w.w === 'give');
+
+// face scale per edit segment: punch-ins make the jump cuts read as intentional
+const SCALE = [1.0, 1.08, 1.18, 1.0, 1.07, 1.13, 1.0, 1.05, 1.0, 1.1, 1.0, 1.06, 1.16, 1.0, 1.0];
+
+function render(t) {
+  // ---- face ------------------------------------------------------------------------------------------
+  const k = Kit.segAt(t);
+  let sc = SCALE[k] ?? 1;
+  if (k === 0) sc = lerp(1.1, 1.0, outExpo(seg(t, 0, 0.7)));                 // opening settle
+  if (k === 11 || k === 13) sc += 0.05 * inOut(seg(t, EDIT.cuts[k - 1], 4.5)); // slow push on the long takes
+  css($('face'), { transform: `scale(${sc})` });
+  $('dim').style.opacity = keys(t, [[0, 0.12], [3.1, 0.12], [3.3, 0], [T.suddenly + 0.6, 0], [T.suddenly + 0.9, 0.3], [T.try - 0.15, 0.3],
+    [T.then + 0.1, 0.3], [T.then + 0.4, 0], [T.ai3, 0], [T.ai3 + 0.3, 0.28], [T.its, 0.28], [T.its + 0.45, 0.94], [T.conf2 + 0.5, 1]]);
+
+  // ---- opening: the plan assembles itself, then the stamp ----------------------------------------------
+  const pOn = t < 3.25;
+  show($('plan'), pOn); show($('stamp'), pOn && t >= T.terrible - 0.02);
+  if (pOn) {
+    const out = inCubic(seg(t, 2.78, 0.36));
+    const hit = t >= T.terrible ? Math.sin(Math.min(1, (t - T.terrible) / 0.16) * Math.PI * 3) * 10 * (1 - seg(t, T.terrible, 0.18)) : 0;
+    css($('plan'), { transform: `translate(${hit}px, ${out * 420}px) scale(${lerp(0.97, 1, outExpo(seg(t, 0, 0.3)))})`, opacity: 1 - out });
+    $('pname').textContent = 'SockOS'.slice(0, Math.max(3, Math.ceil(6 * seg(t, -0.12, 0.3))));
+    $('ptag').textContent = 'The operating system for socks'.slice(0, Math.floor(30 * seg(t, -0.05, 0.4)));
+    css($('logo'), { transform: `scale(${lerp(0.55, 1, outBack(seg(t, 0, 0.3)))}) rotate(${lerp(-30, 0, outExpo(seg(t, 0, 0.4)))}deg)` });
+    const rv = seg(t, 0.1, 0.9);
+    $('revn').textContent = '$' + (rv >= 1 ? '48M' : lerp(1.2, 48, outCubic(rv)).toFixed(1) + 'M');
+    css($('tam'), { opacity: seg(t, 1.25, 0.12), transform: `scale(${lerp(0.6, 1, outBack(seg(t, 1.25, 0.25)))})` });
+    const ck = lerp(0.12, 1, outCubic(seg(t, 0.15, 1.3))), pts = pathTo(ck);
+    $('curve').setAttribute('d', 'M' + pts.map((p) => p.join(',')).join(' L'));
+    $('area').setAttribute('d', 'M' + pts.map((p) => p.join(',')).join(' L') + ` L${pts[pts.length - 1][0]},170 L0,170 Z`);
+    const last = pts[pts.length - 1]; $('cdot').setAttribute('cx', last[0]); $('cdot').setAttribute('cy', last[1]); $('cdot').setAttribute('opacity', ck > 0.05 ? 1 : 0);
+    // TERRIBLE IDEA lands on "terrible": hard in, a little overshoot, then leaves with the plan
+    const sk = seg(t, T.terrible, 0.11);
+    css($('stamp'), { opacity: clamp(sk * 3) * (1 - out), transform: `translateY(${out * 420}px) rotate(-8deg) scale(${sk < 1 ? lerp(2.3, 0.94, inCubic(sk)) : lerp(0.94, 1, outBack(seg(t, T.terrible + 0.11, 0.2)))})` });
+  }
+
+  // ---- the weak prompt (asked), then the agreeable answer -------------------------------------------------
+  const b1On = (t >= T.you3 && t < T.suddenly + 0.45) || (t >= T.try - 0.1 && t < T.then + 0.35);
+  const second = t >= T.try - 0.1;
+  show($('bar1'), b1On); show($('reply1'), t >= T.idea2e && t < T.suddenly + 0.45);
+  if (b1On) {
+    const t0 = second ? T.try - 0.1 : T.you3, k1 = seg(t, t0, 0.3);
+    const out = second ? inCubic(seg(t, T.then + 0.02, 0.3)) : inCubic(seg(t, T.suddenly + 0.12, 0.3));
+    const y = second ? 1070 : 1150;
+    css($('bar1'), { top: y + 'px', opacity: clamp(k1 * 3) * (1 - out) * (second ? lerp(1, 0.45, seg(t, T.instead + 0.2, 0.25)) : 1),
+      transform: `translateY(${(1 - outExpo(k1)) * 60 + out * 120}px)` });
+    const q = 'Was this a good idea?';
+    $('t1').textContent = second ? q : q.slice(0, Math.floor(q.length * seg(t, T.was - 0.05, T.idea2e - T.was)));
+    css($('reply1'), { left: '70px', top: '1266px', opacity: clamp(seg(t, T.idea2e, 0.15) * 3) * (1 - out), transform: `translateY(${out * 120}px) scale(${lerp(0.7, 1, outBack(seg(t, T.idea2e, 0.3)))})`, transformOrigin: '0 0' });
+  }
+  // the strike on "instead"
+  const sOn = t >= T.instead && t < T.then + 0.35;
+  $('sline').style.display = sOn ? '' : 'none';
+  if (sOn) {
+    const d = outExpo(seg(t, T.instead, 0.24)), out = inCubic(seg(t, T.then + 0.02, 0.3));
+    const y = 1070 + 50 + out * 120, x0 = 96, x1 = 106 + 21 * 15.6 + 10;
+    $('sline').setAttribute('x1', x0); $('sline').setAttribute('x2', lerp(x0, x1, d)); $('sline').setAttribute('y1', y); $('sline').setAttribute('y2', y);
+    $('sline').setAttribute('opacity', 1 - out);
+  }
+
+  // ---- the better prompt: typed as it's said, five reasons light up -------------------------------------
+  const b2On = t >= T.give - 0.15 && t < T.then + 0.35;
+  show($('bar2'), b2On); show($('risks'), b2On);
+  if (b2On) {
+    const k2 = seg(t, T.give - 0.15, 0.3), out = inCubic(seg(t, T.then + 0.02, 0.3));
+    css($('bar2'), { top: '1192px', opacity: clamp(k2 * 3) * (1 - out), transform: `translateY(${(1 - outExpo(k2)) * 60 + out * 120}px)`, borderColor: 'rgba(242,238,229,.55)' });
+    $('t2').innerHTML = typed(iGive, iGive + 7, t, [2, 3]);
+    css($('risks'), { top: '1316px', opacity: seg(t, T.faile - 0.1, 0.15) * (1 - out), transform: `translateY(${out * 120}px)` });
+    risks.forEach((p, i) => p.classList.toggle('on', t >= T.faile - 0.05 + i * 0.07));
+  }
+
+  // ---- the structure: built from the answer, cracked on "false confidence", rebuilt, collapsed ---------
+  const stOn = (t >= T.plan - 0.12 && t < T.try + 0.2) || (t >= T.ai3 - 0.05);
+  show($('struct'), stOn);
+  const fin = t >= T.ai3 - 0.05;
+  if (stOn) {
+    const pull = fin ? 1 : outCubic(seg(t, T.fals, 0.5));                 // the camera pulls back on "false"
+    const exit = fin ? 0 : inCubic(seg(t, T.try - 0.12, 0.3));
+    const enter = fin ? outExpo(seg(t, T.ai3 - 0.05, 0.45)) : 1;
+    const lift = fin ? inOut(seg(t, T.conf2 - 0.05, 0.55)) : 0;               // the foundation rises to centre
+    css($('struct'), { transform: `translateY(${(1 - enter) * 500 + exit * 520}px) scale(${lerp(1.12, 1, pull)})`, opacity: (1 - exit) });
+    const cardT = fin ? [T.ai3, T.ai3 + 0.06, T.ai3 + 0.12] : [T.plan - 0.12, T.logo - 0.1, T.whole2 - 0.1];
+    ['c0', 'c1', 'c2'].forEach((id, i) => {
+      const kc = fin ? 1 : seg(t, cardT[i], 0.3);
+      const fall = fin ? inCubic(seg(t, T.its + i * 0.07, 0.62)) : 0;
+      css($(id), { opacity: clamp(kc * 3) * (1 - fall * 0.9), transform: `translate(${fall * (i - 1) * 140}px, ${(1 - outExpo(kc)) * 50 + fall * 760}px) rotate(${fall * [-24, 9, 30][i]}deg) scale(${lerp(0.9, 1, outBack(kc))})` });
+    });
+    // foundation row: revealed on the pull-back, broken tiles; in the end it is the last thing standing
+    const rowIn = fin ? 1 : outCubic(seg(t, T.fals + 0.05, 0.4));
+    const broken = fin ? 1 - seg(t, T.its, 0.3) : seg(t, T.conf1, 0.25);
+    const rowY = lerp(1280, 700, lift);
+    css($('row'), { top: rowY + 'px', opacity: rowIn, transform: `translateY(${(1 - rowIn) * 40}px)` });
+    cells.forEach((c, i) => {
+      css(c, { transform: `translate(${jit[i][0] * 3 * broken}px, ${jit[i][1] * 5 * broken}px) rotate(${jit[i][0] * 2.2 * broken}deg)` });
+      c.classList.toggle('hot', fin && i === 3 && t >= T.ideaEnd + 0.22);
+    });
+    crackEls.forEach((p, i) => {
+      const d = fin ? 1 : outCubic(seg(t, i === 0 ? T.fals + 0.1 : T.conf1 + (i - 1) * 0.08, i === 0 ? 0.45 : 0.3));
+      p.style.strokeDashoffset = p.dataset.l * (1 - d);
+      p.style.opacity = fin ? 1 - seg(t, T.its, 0.25) : 1;
+    });
+    $('cracks').style.transform = `translateY(${rowY - 1280}px)`;
+  }
+  // FALSE drops out of the F, crossword-style: the two words share one letter
+  const fOn = t >= T.ideaEnd + 0.3;
+  show($('fal'), fOn);
+  if (fOn) FAL.forEach((c, i) => {
+    const t0 = T.ideaEnd + 0.34 + i * 0.12, kf = seg(t, t0, 0.22);
+    css(c, { left: 98 + 3 * 86 + 'px', top: 700 + (i + 1) * 86 + 'px', opacity: clamp(kf * 4), transform: `translateY(${(1 - outBack(kf)) * -60}px)` });
+  });
+
+  wordCaptions($('cap'), CAPS, t);
+}
+
+Kit.boot({ render, fps: 30, edit: EDIT, face: { img: $('faceimg'), fps: 30, count: 1274 } });
+</script>
+</body>
+</html>

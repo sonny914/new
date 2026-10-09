@@ -89,9 +89,33 @@ def dust(dur=1.1):
     return out / (np.abs(out).max() + 1e-9) * 0.7 + bandnoise(n, 4000, 12000) * (1 - t) ** 2 * np.sin(np.pi * t) * 0.25
 
 
+def crack(dur=0.5):
+    # a structural crack: a dry snap, then splinters thinning out, with a low creak under it
+    n = int(dur * SR); t = np.arange(n) / SR; out = 0.9 * bandnoise(n, 1500, 9000) * env(n, 0.0005, 0.012, 6)
+    for k in range(18):
+        i = int(min(0.9, (k / 18) ** 1.6) * n); g = int(0.006 * SR)
+        out[i:i + g] += bandnoise(g, 2000, 8000)[: n - i] * _rng.uniform(0.2, 0.7) * (1 - k / 18)
+    creak = np.sin(2 * np.pi * np.cumsum(90 + 25 * np.sin(2 * np.pi * 7 * t)) / SR) * env(n, 0.01, 0.3, 3) * 0.35
+    return out + creak
+
+def collapse(dur=1.1):
+    # a structure giving way: staggered thuds and debris over a falling rumble
+    n = int(dur * SR); t = np.linspace(0, 1, n); out = 0.5 * bandnoise(n, 40, 300) * (1 - t) ** 2
+    for k, (at, g) in enumerate([(0.0, 1), (0.12, 0.8), (0.22, 0.7), (0.36, 0.55), (0.5, 0.4)]):
+        x = stamp() * g; i = int(at * SR); out[i:i + len(x)] += x[: n - i]
+    for _ in range(40):
+        i = int(_rng.uniform(0.05, 0.8) * n); g = int(0.01 * SR)
+        out[i:i + g] += bandnoise(g, 1500, 7000)[: n - i] * _rng.uniform(0.05, 0.25)
+    return out
+
+
 # ----------------------------------------------------------------------------------------- reel --
 class Reel:
-    def __init__(self, rec, out, offset, length):
+    def __init__(self, rec, out, offset=0.0, length=None, edit=None):
+        # edit: edit.json from edit.py (jump cuts). Then cue times are OUTPUT seconds, the clock the
+        # composition uses, and the voice is assembled from the edit's segments.
+        self.edit = json.load(open(edit)) if edit else None
+        if self.edit: offset, length = 0.0, self.edit['duration']
         self.rec, self.out, self.offset, self.length = rec, Path(out), offset, length
         self.out.mkdir(parents=True, exist_ok=True)
         self.N = int(length * SR); self.sfx = np.zeros(self.N); self.music = np.zeros(self.N)
@@ -139,7 +163,13 @@ class Reel:
         vf = ('highpass=f=75,lowpass=f=15000,afftdn=nr=6:nf=-32,deesser=i=0.3,'
               'acompressor=threshold=-21dB:ratio=2.4:attack=8:release=160:makeup=2,'
               f'loudnorm=I=-16:TP=-1.5:LRA=9,afade=t=out:st={voice_fade_at - self.offset:.3f}:d=0.12')
-        ff('-ss', str(self.offset), '-t', str(L), '-i', self.rec, '-vn', '-af', vf, '-ar', str(SR), '-ac', '2', o / 'voice.wav')
+        if self.edit:                                    # segments joined with 12 ms fades, so no cut clicks
+            segs = self.edit['segments']; f = 0.012
+            parts = ''.join(f'[0:a]atrim={a}:{b},asetpts=PTS-STARTPTS,afade=t=in:d={f},afade=t=out:st={b - a - f:.3f}:d={f}[a{k}];' for k, (a, b) in enumerate(segs))
+            ff('-i', self.rec, '-filter_complex', parts + ''.join(f'[a{k}]' for k in range(len(segs))) + f'concat=n={len(segs)}:v=0:a=1,{vf},apad=whole_dur={L},atrim=0:{L}[v]',
+               '-map', '[v]', '-ar', str(SR), '-ac', '2', o / 'voice.wav')
+        else:
+            ff('-ss', str(self.offset), '-t', str(L), '-i', self.rec, '-vn', '-af', vf, '-ar', str(SR), '-ac', '2', o / 'voice.wav')
         pad = f'apad=whole_dur={L},atrim=0:{L}[out]'
         ff('-i', o / 'voice.wav', '-i', o / 'music.wav', '-i', o / 'sfx.wav', '-filter_complex',
            '[1:a]volume=0.32[m];[m][0:a]sidechaincompress=threshold=0.03:ratio=6:attack=15:release=300[md];'
@@ -162,7 +192,8 @@ def loudnorm(src, dst, I=-14, TP=-2.0, LRA=10):
                        capture_output=True, text=True, check=True).stderr
     m = json.loads(r[r.rindex('{'):r.rindex('}') + 1])
     ff('-i', src, '-af', f"loudnorm=I={I}:TP={TP}:LRA={LRA}:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
-       f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true", '-ar', str(SR), dst)
+       f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true,"
+       "afade=t=in:d=0.03", '-ar', str(SR), dst)   # 30 ms in: a reel that opens mid-signal makes AAC's first frame overshoot
 
 
 def ff(*args):
