@@ -1,0 +1,71 @@
+1
+00:00:00,310 --> 00:00:01,930
+Everybody's trying to get rich
+
+2
+00:00:02,100 --> 00:00:03,580
+building AI tools.
+
+3
+00:00:03,990 --> 00:00:05,460
+But what if we're selling the
+
+4
+00:00:05,460 --> 00:00:06,300
+wrong thing?
+
+5
+00:00:06,440 --> 00:00:08,020
+Most people don't need another
+
+6
+00:00:08,020 --> 00:00:08,660
+AI app.
+
+7
+00:00:09,080 --> 00:00:10,650
+They need somebody to show them
+
+8
+00:00:10,830 --> 00:00:12,690
+how to use the ones they already
+
+9
+00:00:12,690 --> 00:00:13,020
+have.
+
+10
+00:00:13,340 --> 00:00:14,240
+That's training.
+
+11
+00:00:14,630 --> 00:00:15,910
+That's implementation.
+
+12
+00:00:16,590 --> 00:00:17,840
+That's a whole business.
+
+13
+00:00:18,000 --> 00:00:18,810
+Maybe,
+
+14
+00:00:19,540 --> 00:00:20,490
+just maybe,
+
+15
+00:00:20,820 --> 00:00:22,470
+the real AI gold rush isn't
+
+16
+00:00:22,470 --> 00:00:23,630
+building the tools.
+
+17
+00:00:24,230 --> 00:00:26,280
+It's teaching people how to use
+
+18
+00:00:26,280 --> 00:00:26,410
+them.

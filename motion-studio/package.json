@@ -1,0 +1,47 @@
+{
+  "name": "quiet-bands-motion-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Quiet Bands Motion Studio: a config-driven, frame-accurate motion graphics system on Remotion.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "sync:brand": "tsx scripts/sync-brand.ts",
+    "validate": "tsx scripts/cli.ts validate",
+    "storyboard": "tsx scripts/cli.ts storyboard",
+    "preview": "tsx scripts/cli.ts preview",
+    "render": "tsx scripts/cli.ts render",
+    "verify": "tsx scripts/cli.ts verify",
+    "still": "tsx scripts/cli.ts still",
+    "sound": "tsx scripts/cli.ts sound",
+    "new": "tsx scripts/cli.ts new",
+    "from-script": "tsx scripts/cli.ts from-script",
+    "voice": "tsx scripts/cli.ts voice",
+    "reference": "tsx scripts/cli.ts reference",
+    "catalog": "tsx scripts/cli.ts catalog",
+    "gallery": "tsx scripts/cli.ts gallery",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"tests/**/*.test.ts\""
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@fontsource-variable/hubot-sans": "5.3.0",
+    "@remotion/bundler": "4.0.528",
+    "@remotion/cli": "4.0.528",
+    "@remotion/fonts": "4.0.528",
+    "@remotion/renderer": "4.0.528",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "remotion": "4.0.528",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.8",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3"
+  }
+}

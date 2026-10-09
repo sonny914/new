@@ -1,0 +1,7 @@
+node_modules/
+output/
+previews/
+.cache/
+# Synthesised audio is regenerated from each project's cue sheet on every render
+projects/*/assets/generated/
+projects/*/assets/source/

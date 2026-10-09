@@ -252,3 +252,14 @@ Manipulating them:
 - **Bigger:** `zoom` draws a preset larger (geometry at size × zoom, the preset's dot count kept).
 
 The lab's "Hold one" playground has a slider for every knob and prints the markup for whatever you land on. In use: the Work intake button (`/work/`) shows a 20px `searching` orb while the answers send. Every state at every size: `/lab/thinking-orb/`. Tests: `tools/orb.test.mjs` (`npm test`). To upgrade the engine, re-copy `dist/index-*.js` from the package into `engine.js` and keep its readable export block.
+
+## Motion Studio (`motion-studio/`)
+
+A config-driven motion graphics system for Quiet Bands video (Remotion + React + TypeScript, rendered on the CPU, verified with FFmpeg). One `project.json` per video; shared presets, theme and QA pipeline. It is a separate Node package with its own dependencies; the site build and `npm test` here do not touch it, and `_redirects` keeps it unserved.
+
+```bash
+cd motion-studio && npm install && npm test
+npm run render -- simplicity-is-a-viewpoint    # → motion-studio/output/simplicity-is-a-viewpoint/
+```
+
+Start with `motion-studio/README.md`.

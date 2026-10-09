@@ -1,0 +1,233 @@
+{
+  "id": "automate-the-coordination",
+  "title": "Automate the coordination",
+  "description": "11-second 4:5 feed post. The chores that fill the day pile up, are named for what they are, and are handed over at a cream edge to the line that matters; the period is the live accent and opens into the mark.",
+  "mode": ["brand", "script"],
+  "theme": "quiet-bands",
+  "format": "portrait",
+  "fps": 30,
+  "duration": "11s",
+  "scenes": [
+    {
+      "id": "pile",
+      "start": 0,
+      "end": "3s",
+      "title": "What fills the day",
+      "purpose": "Make the coordination overhead concrete before naming it.",
+      "content": "Caption WHAT FILLS THE DAY; a stack of chores rising one by one: EMAIL, CALENDAR, FOLLOW-UP, STATUS UPDATE, REMINDER, HANDOFF, RE: RE: FWD, WHO OWNS THIS?",
+      "composition": "Left-aligned stack in the lower two thirds; caption at the top; slow upward camera drift with the caption on a shallower plane (parallax).",
+      "transition": "The stack drops away newest-first as the verb arrives.",
+      "audioCue": "None (silent cut; music added at publish).",
+      "dependencies": ["WordStack", "MaskedTextReveal", "camera parallax"]
+    },
+    {
+      "id": "name",
+      "start": "pile.end",
+      "end": "5.5s",
+      "title": "Name it",
+      "purpose": "Call the pile what it is: coordination, which software can carry.",
+      "content": "AUTOMATE converges from wide tracking; THE COORDINATION. rises word by word under a rule drawn from the centre.",
+      "composition": "Verb at full content width above centre, object line small and tracked, rule between them.",
+      "transition": "A cream edge sweeps up the frame: everything below it is already the next scene.",
+      "audioCue": "None.",
+      "dependencies": ["KineticHeadline (track)", "MaskedTextReveal", "LineDraw"]
+    },
+    {
+      "id": "keep",
+      "start": "name.end",
+      "end": "8s",
+      "title": "Keep the human",
+      "purpose": "The counterweight: what must not be automated.",
+      "content": "PRESERVE / THE HUMAN with an orange full stop that arrives last.",
+      "composition": "Two lines at display size, flush left, the stop just after HUMAN.",
+      "transition": "The words leave; the stop stays.",
+      "audioCue": "None.",
+      "dependencies": ["DirectionalWipe (edge)", "layer reveal/conceal wipes", "KineticHeadline", "Accent"]
+    },
+    {
+      "id": "sign",
+      "start": "keep.end",
+      "end": "11s",
+      "title": "Sign-off",
+      "purpose": "Resolve to Quiet Bands.",
+      "content": "The stop travels to centre and opens into the mark; wordmark; quietbands.com.",
+      "composition": "Lockup centred in the safe area.",
+      "transition": "Final hold.",
+      "audioCue": "None.",
+      "dependencies": ["BrandLockup (iris from the accent path)", "MaskedTextReveal"]
+    }
+  ],
+  "paths": {
+    "stop": {
+      "description": "The orange full stop: arrives after HUMAN, then travels to the mark's centre.",
+      "keys": [
+        {"at": "keep+30", "x": "@human.inkEnd+24", "y": "@human.end-14"},
+        {"at": "sign+8", "x": "@human.inkEnd+24", "y": "@human.end-14"},
+        {"at": "sign+24", "x": "@lockup.markCenter", "y": "@lockup.markCenter", "via": {"x": "@human.inkEnd+24", "y": "@lockup.markCenter"}, "ease": "inOut"}
+      ]
+    }
+  },
+  "groups": {
+    "drift": {
+      "camera": [
+        {"at": 0, "y": 30},
+        {"at": "pile.end", "y": -30, "ease": "inOut"}
+      ]
+    }
+  },
+  "layers": [
+    {
+      "id": "caption",
+      "preset": "MaskedTextReveal",
+      "group": "drift",
+      "depth": 0.35,
+      "to": "pile.end",
+      "params": {
+        "text": "WHAT FILLS THE DAY",
+        "at": 2,
+        "x": "safe.left",
+        "y": "safe.top+60",
+        "size": "caption",
+        "weight": "medium",
+        "tracking": "label",
+        "color": "inkDim",
+        "exit": {"at": "pile.end-10", "style": "drop"}
+      }
+    },
+    {
+      "id": "chores",
+      "preset": "WordStack",
+      "group": "drift",
+      "to": "name+10",
+      "params": {
+        "words": ["EMAIL", "CALENDAR", "FOLLOW-UP", "STATUS UPDATE", "REMINDER", "HANDOFF", "RE: RE: FWD", "WHO OWNS THIS?"],
+        "x": "safe.left",
+        "y": 880,
+        "size": 92,
+        "weight": "bold",
+        "width": "condensed",
+        "at": 6,
+        "interval": 6,
+        "visible": 7,
+        "settle": 0.4,
+        "exit": {"at": "pile.end-10", "style": "drop", "stagger": 1}
+      }
+    },
+    {
+      "id": "automate",
+      "preset": "KineticHeadline",
+      "from": "name",
+      "conceal": {"shape": "wipe", "direction": "up", "at": "keep", "duration": 20, "ease": "inOut"},
+      "params": {
+        "text": "AUTOMATE",
+        "at": "name+6",
+        "x": "safe.left",
+        "y": 640,
+        "enter": {"style": "track", "duration": "long", "spread": 0.35}
+      }
+    },
+    {
+      "id": "rule",
+      "preset": "LineDraw",
+      "from": "name",
+      "conceal": {"shape": "wipe", "direction": "up", "at": "keep", "duration": 20, "ease": "inOut"},
+      "params": {
+        "from": {"x": "safe.left", "y": 672},
+        "to": {"x": "safe.right", "y": 672},
+        "draw": {"at": "name+16", "origin": "center", "duration": "long"},
+        "color": "rule"
+      }
+    },
+    {
+      "id": "coordination",
+      "preset": "MaskedTextReveal",
+      "from": "name",
+      "conceal": {"shape": "wipe", "direction": "up", "at": "keep", "duration": 20, "ease": "inOut"},
+      "params": {
+        "text": "THE COORDINATION.",
+        "at": "name+20",
+        "x": "safe.left",
+        "y": 752,
+        "size": "subhead",
+        "tracking": "label",
+        "by": "word"
+      }
+    },
+    {
+      "id": "wipe",
+      "preset": "DirectionalWipe",
+      "z": 4,
+      "params": {"at": "keep", "duration": 20, "direction": "up", "mode": "edge", "thickness": 5, "ease": "inOut"}
+    },
+    {
+      "id": "human",
+      "preset": "KineticHeadline",
+      "from": "keep",
+      "reveal": {"shape": "wipe", "direction": "up", "at": "keep", "duration": 20, "ease": "inOut"},
+      "params": {
+        "text": "THE HUMAN",
+        "at": "keep",
+        "x": "safe.left",
+        "y": 820,
+        "fitWidth": 840,
+        "enter": {"style": "cut"},
+        "exit": {"at": "sign+2", "style": "drop"}
+      }
+    },
+    {
+      "id": "preserve",
+      "preset": "KineticHeadline",
+      "from": "keep",
+      "reveal": {"shape": "wipe", "direction": "up", "at": "keep", "duration": 20, "ease": "inOut"},
+      "params": {
+        "text": "PRESERVE",
+        "at": "keep",
+        "like": "human",
+        "x": "safe.left",
+        "y": 640,
+        "enter": {"style": "cut"},
+        "exit": {"at": "sign", "style": "drop"}
+      }
+    },
+    {
+      "id": "lockup",
+      "preset": "BrandLockup",
+      "from": "sign",
+      "params": {
+        "x": "center",
+        "y": "safe.cy",
+        "width": 400,
+        "mark": {"at": "sign+24", "style": "iris", "origin": "stop"},
+        "wordmark": {"at": "sign+32"}
+      }
+    },
+    {
+      "id": "url",
+      "preset": "MaskedTextReveal",
+      "from": "sign",
+      "params": {
+        "text": "quietbands.com",
+        "at": "sign+40",
+        "x": "center",
+        "align": "center",
+        "y": "@lockup.bottom+84",
+        "size": "caption",
+        "tracking": "label",
+        "color": "inkDim"
+      }
+    },
+    {
+      "id": "dot",
+      "preset": "Accent",
+      "z": 5,
+      "params": {
+        "path": "stop",
+        "size": 28,
+        "appear": {"at": "keep+30", "style": "scale"},
+        "vanish": {"at": "sign+24", "duration": 8}
+      }
+    }
+  ],
+  "qa": {"allowBlank": [{"from": 0, "to": 3}]},
+  "assumptions": ["Silent by design: feed posts usually get music at publish. Add an audio track with a src to include one."]
+}
