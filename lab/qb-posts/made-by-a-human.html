@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Made By A Human</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=block" rel="stylesheet">
+<style>
+  /* Quiet Bands: black ground, cream type, quiet second line; ?v=accent puts the one orange accent on HUMAN.
+     ?ar=4x5 (feed, default) | 9x16 (story/reel cover) | 1x1 */
+  :root{--black:#000;--cream:#F2EEE5;--quiet:#8E887C;--orange:#FF5A00}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:#000}
+  #stage{position:relative;background:var(--black);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .block{font:700 44px/52px 'Space Mono',monospace;text-transform:uppercase;text-align:center;-webkit-font-smoothing:antialiased}
+  .line{display:block;white-space:nowrap}
+  .line span{display:inline-block}
+  .l1{color:var(--cream)}
+  .l2{color:var(--quiet)}
+  .accent .hu{color:var(--orange)}
+</style>
+</head>
+<body>
+<div id="stage"><div class="block" id="block">
+  <span class="line l1"><span id="t1">Made by a <span class="hu">human</span></span></span>
+  <span class="line l2"><span id="t2">is the new luxury</span></span>
+</div></div>
+<script>
+  const q = new URLSearchParams(location.search);
+  const [W, H] = { '4x5': [1080, 1350], '9x16': [1080, 1920], '1x1': [1080, 1080] }[q.get('ar') || '4x5'];
+  Object.assign(document.getElementById('stage').style, { width: W + 'px', height: H + 'px' });
+  if (q.get('v') === 'accent') document.getElementById('block').classList.add('accent');
+  // both lines set to the same measure, as in the reference: track line 1, then justify line 2 to it
+  window.ready = document.fonts.ready.then(() => {
+    const t1 = document.getElementById('t1'), t2 = document.getElementById('t2');
+    const track = (el, em) => { el.style.letterSpacing = em + 'em'; el.style.marginRight = -em + 'em'; };   // no trailing space: optically centred
+    track(t1, 0.1);
+    const target = t1.getBoundingClientRect().width;
+    let lo = -0.1, hi = 0.3;
+    for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; track(t2, m); (t2.getBoundingClientRect().width > target ? hi = m : lo = m); }
+    document.title = `w1 ${target.toFixed(1)} w2 ${t2.getBoundingClientRect().width.toFixed(1)}`;
+  });
+</script>
+</body>
+</html>
