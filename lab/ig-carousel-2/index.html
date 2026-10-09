@@ -192,7 +192,7 @@
   .toast{position:absolute;right:40px;top:150px;z-index:5;background:var(--ivory);color:var(--black);font-family:'Space Mono',monospace;font-size:19px;letter-spacing:.06em;padding:14px 20px;border-radius:14px;box-shadow:0 20px 40px rgba(0,0,0,.5)}
   .toast b{color:var(--live-deep)}
   .snap,.flash,.toast,.caret,.spark{opacity:0}
-  .walk{display:none}
+  .walkf{display:none}
 
   /* ================= MOTION =================
      Only under body.motion (index.html?motion, or render-video.mjs), so the PNG stills never change.
@@ -285,16 +285,10 @@
   @keyframes bar{from{scale:0 1}}
   body.motion #s5 .tier.pop .b{animation:ring 1.2s ease-out 3.6s 3 both}
 
-  /* 6 · CTA: Puppet Jay walks in (8-frame cycle), settles into his standing pose */
-  body.motion #s6 .walk{display:block;opacity:1;position:absolute;left:406px;bottom:113px;width:779px;height:930px;z-index:2;
-    background:url(img/jay-walk.png) 0 0/800% 100% no-repeat;
-    animation:walkf 1s steps(8,end) 0s 2 both, walkx 2s linear 0s both, hide .2s linear 2s forwards}
-  @keyframes walkf{from{background-position:0 0}to{background-position:114.2857% 0}}
-  @keyframes walkx{from{translate:900px 0}to{translate:0 0}}
-  @keyframes hide{to{opacity:0}}
-  body.motion #s6 .jay{animation:land .25s ease-out 1.97s both, pout .45s ease-in 7.45s forwards}
-  @keyframes land{from{opacity:0;translate:0 8px}}
-  body.motion #s6 .floor{animation:fade .6s ease-out 1.2s both, pout .45s ease-in 7.45s forwards}
+  /* 6 · CTA: Puppet Jay walks in (a Kling clip keyed to 61 frames at 12 fps; motionSeek() below picks the frame) */
+  body.motion #s6 .jay{display:none}
+  body.motion #s6 .walkf{display:block;position:absolute;z-index:2;filter:drop-shadow(0 0 40px rgba(255,90,31,.25));animation:pout .45s ease-in 7.45s forwards}
+  body.motion #s6 .floor{animation:fade .6s ease-out 2.8s both, pout .45s ease-in 7.45s forwards}
   body.motion #s6 .copy{animation:pout .45s ease-in 7.45s forwards}
   body.motion #s6 .k{animation:up .5s ease-out .2s both}
   body.motion #s6 .ln{animation:up .6s cubic-bezier(.2,.8,.2,1) .4s both}
@@ -303,8 +297,8 @@
   body.motion #s6 .copy p{animation:up .5s ease-out 1s both}
   body.motion #s6 .btns span{animation:up .5s ease-out 1.2s both}
   body.motion #s6 .btns span + span{animation-delay:1.35s}
-  body.motion #s6 .btns span.solid{animation:up .5s ease-out 1.2s both, ring 1.2s ease-out 2.8s 3}
-  body.motion #s6 .quote{animation:up .5s ease-out 2.5s both, pout .45s ease-in 7.45s forwards}
+  body.motion #s6 .btns span.solid{animation:up .5s ease-out 1.2s both, ring 1.2s ease-out 4.4s 2}
+  body.motion #s6 .quote{animation:up .5s ease-out 4.3s both, pout .45s ease-in 7.45s forwards}
 </style>
 </head>
 <body>
@@ -432,7 +426,7 @@
 <section class="slide cta-s" id="s6">
   <div class="top"><span>@flighty.ai</span><span class="count">6/6</span></div>
   <div class="floor"></div>
-  <div class="walk"></div>
+  <img class="walkf" alt="">
   <img class="jay" src="img/jay-full.png" alt="">
   <div class="copy">
     <span class="k">That's the kit</span>
@@ -444,6 +438,27 @@
   <div class="foot"><span>Thanks for swiping</span><div class="dots"><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div></div>
 </section>
 
-<script>if (new URLSearchParams(location.search).has('motion')) document.body.classList.add('motion');</script>
+<script>
+// Puppet Jay's walk-in: a Kling clip keyed into 61 frames (12 fps). motionSeek(t) shows the frame for
+// time t; ?motion plays it live, and render-video.mjs (?motion&render) seeks it frame by frame.
+const WALK = {"fps":12,"n":61,"w":698,"h":943,"top":293.6,"x":[995.6,995.6,995.6,995.6,995.6,990.2,944.0,935.9,949.4,968.4,968.4,949.4,938.6,906.0,857.1,832.7,816.4,846.3,859.8,854.4,846.3,830.0,797.4,756.7,729.5,732.2,756.7,764.8,756.7,756.7,743.1,702.4,634.5,618.2,601.9,618.2,623.6,618.2,610.1,585.6,561.2,496.0,463.5,441.7,452.6,458.0,449.9,420.0,409.2,414.6,425.4,436.3,449.9,460.7,463.5,463.5,463.5,463.5,463.5,463.5,463.5]};
+const walkSrc = Array.from({ length: WALK.n }, (_, j) => `img/walk/${String(j).padStart(2, '0')}.webp`);
+window.motionReady = Promise.all(walkSrc.map((src) => { const im = new Image(); im.src = src; return im.decode(); }));
+window.motionSeek = async (t) => {
+  const el = document.querySelector('#s6 .walkf');
+  const j = Math.min(WALK.n - 1, Math.max(0, Math.floor(t * WALK.fps)));
+  Object.assign(el.style, { left: WALK.x[j] + 'px', top: WALK.top + 'px', width: WALK.w + 'px', height: WALK.h + 'px' });
+  if (el.getAttribute('src') !== walkSrc[j]) { el.src = walkSrc[j]; await el.decode(); }
+};
+const params = new URLSearchParams(location.search);
+if (params.has('motion')) {
+  document.body.classList.add('motion');
+  if (!params.has('render')) {
+    const t0 = performance.now();
+    const tick = (now) => { window.motionSeek(((now - t0) / 1000) % 8); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
+}
+</script>
 </body>
 </html>
