@@ -6,6 +6,7 @@
 
 # Developer tooling is checked in beside the site; never serve it
 /tools/*                   /404.html   404
+/motion-studio/*           /404.html   404
 /release/*                 /404.html   404
 /DEPLOYMENT_NOTES.md       /404.html   404
 

@@ -1,0 +1,268 @@
+{
+  "id": "simplicity-is-a-viewpoint",
+  "title": "Simplicity is a viewpoint",
+  "description": "15-second Quiet Bands showcase: a structured system crowds into complexity, stops, and is cleared by one orange point that becomes the full stop of the line.",
+  "mode": ["brand", "idea"],
+  "theme": "quiet-bands",
+  "format": "story",
+  "fps": 30,
+  "duration": "15s",
+  "scenes": [
+    {
+      "id": "s1",
+      "start": 0,
+      "end": "3s",
+      "title": "Structure",
+      "purpose": "Open restrained: a system exists before anything goes wrong with it.",
+      "content": "A lattice of small crosses; COMPLEXITY rises through its baseline.",
+      "composition": "Black ground, 6 × 10 lattice filling the safe area, headline set flush left at full content width above centre.",
+      "transition": "The first clutter arrives before the scene ends, so the title never sits alone as a card.",
+      "audioCue": "Soft ticks as the lattice assembles; a low thump as the word lands.",
+      "dependencies": ["GridAssembly", "KineticHeadline"]
+    },
+    {
+      "id": "s2",
+      "start": "s1.end",
+      "end": "6s",
+      "title": "Overload",
+      "purpose": "Show coordination overhead piling up until it is unbearable, then stop it dead.",
+      "content": "Lines, boxes, circles, chores (FOLLOW-UP, RE: RE: FWD, STATUS?) and outlined echoes of COMPLEXITY, arriving faster and faster.",
+      "composition": "Everything snaps to the lattice; the camera pushes in 7% with accelerating ease.",
+      "transition": "Hard freeze at 5.6s: build, camera and sound stop on the same frame.",
+      "audioCue": "A tick per arrival over a rising swell; digital silence at the freeze.",
+      "dependencies": ["Accumulation", "group freeze", "camera push"]
+    },
+    {
+      "id": "s3",
+      "start": "s2.end",
+      "end": "9s",
+      "title": "Clearing",
+      "purpose": "One point of view moves through the mess and removes what is not needed.",
+      "content": "An orange point crosses the frame on the headline's rule; everything it passes un-draws in a ripple; the rule stays behind it.",
+      "composition": "Camera eases back to rest. What remains: the word, one rule, four registration corners and the point.",
+      "transition": "Continuous: the resolved layout is the first frame of the reveal.",
+      "audioCue": "A soft air move with the point; nothing else.",
+      "dependencies": ["Accent", "LineDraw follow", "ObjectDisassembly", "camera pull"]
+    },
+    {
+      "id": "s4",
+      "start": "s3.end",
+      "end": "12s",
+      "title": "The viewpoint",
+      "purpose": "Deliver the line by changing the word, not replacing it.",
+      "content": "COMPLEXITY becomes SIMPLICITY (M P L I T Y hold, C O E X roll through), then IS A, then VIEWPOINT; the orange point lands as its full stop.",
+      "composition": "Three-line block centred in the safe area; heavy condensed display against a small medium-weight connective line; generous black above and below.",
+      "transition": "The full stop stays when the words leave.",
+      "audioCue": "A low tone under the swap; one crisp tick when the full stop lands.",
+      "dependencies": ["KineticHeadline (swap)", "MaskedTextReveal", "Accent anchor @viewpoint.inkEnd"]
+    },
+    {
+      "id": "s5",
+      "start": "s4.end",
+      "end": "15s",
+      "title": "Identity",
+      "purpose": "Resolve to Quiet Bands and hold.",
+      "content": "The words drop away; the point travels to centre and opens into the mark; the wordmark rises; quietbands.com.",
+      "composition": "Lockup centred in the safe area, URL beneath in dim cream.",
+      "transition": "Final hold of just over a second, nothing moving.",
+      "audioCue": "One warm tone as the mark opens, decaying into the hold.",
+      "dependencies": ["BrandLockup (iris from the accent path)", "MaskedTextReveal"]
+    }
+  ],
+  "paths": {
+    "accent-pass": {
+      "description": "The orange point: enters left on the rule, crosses, waits, lands as VIEWPOINT's full stop, then moves to the mark's centre.",
+      "keys": [
+        {"at": "s3+4", "x": -40, "y": 848},
+        {"at": "s3+58", "x": "safe.right", "y": 848, "ease": "inOut"},
+        {"at": "s4+40", "x": "safe.right", "y": 848},
+        {"at": "s4+58", "x": "@viewpoint.inkEnd+26", "y": "@viewpoint.end-16", "via": {"x": "safe.right", "y": "@viewpoint.end-16"}, "ease": "inOut"},
+        {"at": "s5+12", "x": "@viewpoint.inkEnd+26", "y": "@viewpoint.end-16"},
+        {"at": "s5+28", "x": "@lockup.markCenter", "y": "@lockup.markCenter", "via": {"x": "@viewpoint.inkEnd+26", "y": "@lockup.markCenter"}, "ease": "inOut"}
+      ]
+    }
+  },
+  "groups": {
+    "world": {
+      "origin": {"x": "safe.cx", "y": 820},
+      "camera": [
+        {"at": "s2", "scale": 1},
+        {"at": "s2+78", "scale": 1.07, "ease": "in"},
+        {"at": "s3+6", "scale": 1.07},
+        {"at": "s3+60", "scale": 1, "ease": "inOut"}
+      ]
+    },
+    "clutter": {"parent": "world", "time": {"freezeAt": "s2+78"}}
+  },
+  "layers": [
+    {
+      "id": "lattice",
+      "preset": "GridAssembly",
+      "group": "world",
+      "note": "The system. Corners survive the clearing as registration marks.",
+      "params": {
+        "cols": 6,
+        "rows": 10,
+        "mark": "cross",
+        "size": 14,
+        "stroke": 2,
+        "color": "inkDim",
+        "assemble": {"at": "start-8", "order": "center", "spread": 26},
+        "disassemble": {"path": "accent-pass", "window": {"to": "s3+58"}, "ripple": 60, "delay": 2},
+        "keep": "corners",
+        "keepExit": {"at": "s5+4"}
+      }
+    },
+    {
+      "id": "headline",
+      "preset": "KineticHeadline",
+      "group": "world",
+      "z": 2,
+      "params": {
+        "states": [
+          {"text": "COMPLEXITY", "at": 8},
+          {"text": "SIMPLICITY", "at": "s4+4"}
+        ],
+        "x": "safe.left",
+        "y": 820,
+        "enter": {"style": "rise", "stagger": "tight", "duration": "base"},
+        "change": {"style": "swap", "stagger": "base", "duration": "base", "slide": "long"},
+        "exit": {"at": "s5+4", "style": "drop", "stagger": "tight"}
+      }
+    },
+    {
+      "id": "clutter",
+      "preset": "Accumulation",
+      "group": "clutter",
+      "z": 1,
+      "params": {
+        "seed": "simplicity-v1",
+        "cols": 6,
+        "rows": 10,
+        "lines": 20,
+        "rects": 8,
+        "circles": 6,
+        "labels": ["FOLLOW-UP", "RE: RE: FWD", "STATUS?", "APPROVAL v3", "REMINDER", "SYNC 4:00", "PENDING", "CC: ALL", "FINAL_v7", "PING"],
+        "echo": {"layer": "headline", "count": 4, "gap": 0.16, "outline": 1.5},
+        "build": {"at": "s1+56", "until": "s2+76", "curve": "accelerate"},
+        "clear": {"path": "accent-pass", "window": {"to": "s3+58"}, "ripple": 55, "delay": 1},
+        "dim": 0.5
+      }
+    },
+    {
+      "id": "rule",
+      "preset": "LineDraw",
+      "group": "world",
+      "from": "s3",
+      "params": {
+        "from": {"x": "safe.left", "y": 848},
+        "to": {"x": "safe.right", "y": 848},
+        "follow": "accent-pass",
+        "stroke": 2,
+        "color": "ink",
+        "retract": {"at": "s4+2", "duration": "base", "toward": "end"}
+      }
+    },
+    {
+      "id": "is-a",
+      "preset": "MaskedTextReveal",
+      "group": "world",
+      "from": "s4",
+      "params": {
+        "text": "IS A",
+        "at": "s4+18",
+        "x": "safe.left",
+        "y": 894,
+        "size": "subhead",
+        "weight": "medium",
+        "width": "normal",
+        "tracking": "label",
+        "by": "word",
+        "exit": {"at": "s5+4", "style": "drop"}
+      }
+    },
+    {
+      "id": "viewpoint",
+      "preset": "KineticHeadline",
+      "group": "world",
+      "from": "s4",
+      "params": {
+        "text": "VIEWPOINT",
+        "at": "s4+24",
+        "like": "headline",
+        "x": "safe.left",
+        "y": 1062,
+        "exit": {"at": "s5+6", "style": "drop", "stagger": "tight"}
+      }
+    },
+    {
+      "id": "lockup",
+      "preset": "BrandLockup",
+      "from": "s5",
+      "params": {
+        "x": "center",
+        "y": "safe.cy",
+        "width": 440,
+        "mark": {"at": "s5+28", "style": "iris", "origin": "accent-pass", "duration": "long"},
+        "wordmark": {"at": "s5+36", "style": "rise", "duration": "base"}
+      }
+    },
+    {
+      "id": "url",
+      "preset": "MaskedTextReveal",
+      "from": "s5",
+      "params": {
+        "text": "quietbands.com",
+        "at": "s5+44",
+        "x": "center",
+        "align": "center",
+        "y": "@lockup.bottom+96",
+        "size": "caption",
+        "weight": "medium",
+        "width": "normal",
+        "tracking": "label",
+        "color": "inkDim"
+      }
+    },
+    {
+      "id": "point",
+      "preset": "Accent",
+      "group": "world",
+      "z": 5,
+      "params": {
+        "path": "accent-pass",
+        "size": 30,
+        "vanish": {"at": "s5+28", "style": "scale", "duration": 8}
+      }
+    }
+  ],
+  "audio": {
+    "tracks": [{"id": "sound-design", "synth": "sound", "volume": 1}],
+    "synth": {
+      "sound": {
+        "description": "Procedural placeholder sound design, generated from this cue sheet on every render. Replace with licensed music or a voice track by adding an audio track with a src.",
+        "cues": [
+          {"at": 2, "sound": "tick", "gain": 0.25, "pitch": 5200},
+          {"at": 9, "sound": "tick", "gain": 0.22, "pitch": 4800},
+          {"at": 17, "sound": "tick", "gain": 0.2, "pitch": 5600},
+          {"at": 24, "sound": "thump", "gain": 0.7, "pitch": 62},
+          {"at": "s1+56", "sound": "tick", "gain": 0.18, "pitch": 4200, "sync": {"layer": "clutter", "every": 1}},
+          {"at": "s1+80", "sound": "riser", "gain": 0.32, "until": "s2+78", "pitch": 900},
+          {"at": "s3+6", "sound": "air", "gain": 0.3, "duration": 52, "pitch": 1600},
+          {"at": "s4+4", "sound": "tone", "gain": 0.28, "pitch": 110, "duration": 70},
+          {"at": "s4+58", "sound": "tick", "gain": 0.5, "pitch": 3000},
+          {"at": "s5+28", "sound": "tone", "gain": 0.32, "pitch": 220, "duration": 80}
+        ]
+      }
+    }
+  },
+  "export": {"targetMB": 30},
+  "qa": {
+    "allowBlank": [{"from": 0, "to": 3}],
+    "allowUnsafe": [{"layer": "headline", "from": "s2", "to": "s3+60", "reason": "camera push of 7% during the overload; the word stays inside the canvas"}]
+  },
+  "assumptions": [
+    "No voice or music was supplied: timing is designed to the brief's scene boundaries, and the soundtrack is a procedural placeholder.",
+    "quietbands.com is taken from the site's canonical URL (index.html)."
+  ]
+}

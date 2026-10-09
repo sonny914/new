@@ -1,0 +1,1294 @@
+{
+  "generated": "2026-10-09T17:16:35.060Z",
+  "presets": [
+    {
+      "id": "KineticHeadline",
+      "category": "typography",
+      "summary": "Oversized display type that enters glyph by glyph, can change into another word, and leaves through its own baseline.",
+      "covers": [
+        "CharacterReveal",
+        "KineticHeadline",
+        "TrackingExpansion",
+        "TextScaleTransition",
+        "MatchCut (typographic)"
+      ],
+      "anchors": [
+        "start",
+        "end",
+        "inkEnd",
+        "firstEnd",
+        "top",
+        "center",
+        "bottom"
+      ],
+      "params": [
+        {
+          "key": "text",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "key": "states",
+          "type": "object[]",
+          "optional": true
+        },
+        {
+          "key": "at",
+          "type": "number \\| string",
+          "optional": true
+        },
+        {
+          "key": "x",
+          "type": "number \\| string",
+          "default": "\"safe.left\"",
+          "optional": true
+        },
+        {
+          "key": "y",
+          "type": "number \\| string",
+          "default": "\"safe.cy\"",
+          "optional": true
+        },
+        {
+          "key": "align",
+          "type": "\"left\" \\| \"center\" \\| \"right\"",
+          "default": "\"left\"",
+          "optional": true
+        },
+        {
+          "key": "optical",
+          "type": "boolean",
+          "default": "true",
+          "optional": true
+        },
+        {
+          "key": "size",
+          "type": "number \\| \"fit\" \\| \"micro\" \\| \"caption\" \\| \"body\" \\| \"subhead\" \\| \"title\"",
+          "default": "\"fit\"",
+          "optional": true
+        },
+        {
+          "key": "fitWidth",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "key": "fitTo",
+          "type": "\"first\" \\| \"widest\"",
+          "default": "\"widest\"",
+          "optional": true
+        },
+        {
+          "key": "maxSize",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "key": "weight",
+          "type": "number \\| \"light\" \\| \"regular\" \\| \"medium\" \\| \"bold\" \\| \"heavy\" \\| \"black\"",
+          "default": "\"heavy\"",
+          "optional": true
+        },
+        {
+          "key": "width",
+          "type": "number \\| \"condensed\" \\| \"normal\" \\| \"expanded\"",
+          "default": "\"condensed\"",
+          "optional": true
+        },
+        {
+          "key": "tracking",
+          "type": "number \\| \"tight\" \\| \"normal\" \\| \"label\"",
+          "default": "\"tight\"",
+          "optional": true
+        },
+        {
+          "key": "like",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "key": "color",
+          "type": "string",
+          "default": "\"ink\"",
+          "optional": true
+        },
+        {
+          "key": "outline",
+          "type": "number",
+          "default": "0",
+          "optional": true
+        },
+        {
+          "key": "by",
+          "type": "\"glyph\" \\| \"word\" \\| \"line\"",
+          "default": "\"glyph\"",
+          "optional": true
+        },
+        {
+          "key": "enter",
+          "type": "object",
+          "default": "{}",
+          "optional": true
+        },
+        {
+          "key": "change",
+          "type": "object",
+          "default": "{}",
+          "optional": true
+        },
+        {
+          "key": "exit",
+          "type": "object",
+          "optional": true
+        }
+      ],
+      "doc": {
+        "effect": "A single typographic object that persists across scenes. Glyphs rise through a slot at the baseline (CharacterReveal), converge from wide tracking (TrackingExpansion), or fade. A later state swaps only the letters that differ while shared letters slide to their new places (MatchCut / TextScaleTransition).",
+        "timing": "enter: per-unit stagger (tight = 1.5f) over `base` (16f). change: letters that differ roll through their slot as glued pairs, old one slot above new (stagger `base` 3f, each over `base` 16f), while shared letters slide over `long` (24f). exit: per-unit stagger over `short` (10f).",
+        "easing": "Entrances ease out (.23,1,.32,1); exits ease in (the same curve reversed); rolls and slides ease in-out (.77,0,.175,1).",
+        "supports": [
+          "single words",
+          "short lines",
+          "word-to-word transformations",
+          "outlined echoes (outline > 0)"
+        ],
+        "performance": "One <text> per glyph; measurement cached per string + style. Negligible per-frame cost.",
+        "covers": [
+          "CharacterReveal",
+          "KineticHeadline",
+          "TrackingExpansion",
+          "TextScaleTransition",
+          "MatchCut (typographic)"
+        ],
+        "limitations": [
+          "One line per layer: set multi-line headlines as several layers with \"like\" to share size.",
+          "Glyph matching is by character, so ligatures are not modelled."
+        ]
+      },
+      "example": {
+        "duration": "3s",
+        "note": "COMPLEXITY enters, then becomes SIMPLICITY: six shared letters hold, four roll through.",
+        "params": {
+          "states": [
+            {
+              "text": "COMPLEXITY",
+              "at": 4
+            },
+            {
+              "text": "SIMPLICITY",
+              "at": "1.6s"
+            }
+          ],
+          "y": "safe.cy"
+        }
+      }
+    },
+    {
+      "id": "MaskedTextReveal",
+      "category": "typography",
+      "summary": "A supporting line of text that rises through its baseline as a line, word by word, or glyph by glyph.",
+      "covers": [
+        "MaskedTextReveal"
+      ],
+      "anchors": [
+        "start",
+        "end",
+        "inkEnd",
+        "top",
+        "center",
+        "bottom"
+      ],
+      "params": [
+        {
+          "key": "text",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "key": "states",
+          "type": "object[]",
+          "optional": true
+        },
+        {
+          "key": "at",
+          "type": "number \\| string",
+          "optional": true
+        },
+        {
+          "key": "x",
+          "type": "number \\| string",
+          "default": "\"safe.left\"",
+          "optional": true
+        },
+        {
+          "key": "y",
+          "type": "number \\| string",
+          "default": "\"safe.cy\"",
+          "optional": true
+        },
+        {
+          "key": "align",
+          "type": "\"left\" \\| \"center\" \\| \"right\"",
+          "default": "\"left\"",
+          "optional": true
+        },
+        {
+          "key": "optical",
+          "type": "boolean",
+          "default": "true",
+          "optional": true
+        },
+        {
+          "key": "size",
+          "type": "number \\| \"fit\" \\| \"micro\" \\| \"caption\" \\| \"body\" \\| \"subhead\" \\| \"title\"",
+          "default": "\"subhead\"",
+          "optional": true
+        },
+        {
+          "key": "fitWidth",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "key": "fitTo",
+          "type": "\"first\" \\| \"widest\"",
+          "default": "\"widest\"",
+          "optional": true
+        },
+        {
+          "key": "maxSize",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "key": "weight",
+          "type": "number \\| \"light\" \\| \"regular\" \\| \"medium\" \\| \"bold\" \\| \"heavy\" \\| \"black\"",
+          "default": "\"medium\"",
+          "optional": true
+        },
+        {
+          "key": "width",
+          "type": "number \\| \"condensed\" \\| \"normal\" \\| \"expanded\"",
+          "default": "\"normal\"",
+          "optional": true
+        },
+        {
+          "key": "tracking",
+          "type": "number \\| \"tight\" \\| \"normal\" \\| \"label\"",
+          "default": "\"normal\"",
+          "optional": true
+        },
+        {
+          "key": "like",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "key": "color",
+          "type": "string",
+          "default": "\"ink\"",
+          "optional": true
+        },
+        {
+          "key": "outline",
+          "type": "number",
+          "default": "0",
+          "optional": true
+        },
+        {
+          "key": "by",
+          "type": "\"glyph\" \\| \"word\" \\| \"line\"",
+          "default": "\"line\"",
+          "optional": true
+        },
+        {
+          "key": "enter",
+          "type": "object",
+          "default": "{}",
+          "optional": true
+        },
+        {
+          "key": "change",
+          "type": "object",
+          "default": "{}",
+          "optional": true
+        },
+        {
+          "key": "exit",
+          "type": "object",
+          "optional": true
+        }
+      ],
+      "doc": {
+        "effect": "Text appears from behind an invisible edge at its own baseline, so it reads as set into the layout rather than faded onto it.",
+        "timing": "by line: one move over `base` (16f). by word: words stagger by `tight` (1.5f). Exits leave through the same edge.",
+        "easing": "Out on entry, in on exit (theme curves).",
+        "supports": [
+          "subheads",
+          "small connective words",
+          "labels",
+          "URLs",
+          "captions"
+        ],
+        "performance": "Same renderer as KineticHeadline.",
+        "covers": [
+          "MaskedTextReveal"
+        ],
+        "limitations": [
+          "One line per layer."
+        ]
+      },
+      "example": {
+        "duration": "2s",
+        "note": "A connective line set under a headline, revealed word by word.",
+        "params": {
+          "text": "IS A",
+          "by": "word",
+          "at": 4,
+          "y": "safe.cy"
+        }
+      }
+    },
+    {
+      "id": "WordStack",
+      "category": "typography",
+      "summary": "A list that builds one word at a time: each new word rises in at the bottom and pushes the stack up.",
+      "covers": [
+        "WordStack"
+      ],
+      "anchors": [],
+      "params": [
+        {
+          "key": "words",
+          "type": "string[]",
+          "optional": false
+        },
+        {
+          "key": "x",
+          "type": "number \\| string",
+          "default": "\"safe.left\"",
+          "optional": true
+        },
+        {
+          "key": "y",
+          "type": "number \\| string",
+          "default": "\"safe.cy\"",
+          "optional": true
+        },
+        {
+          "key": "size",
+          "type": "number \\| \"micro\" \\| \"caption\" \\| \"body\" \\| \"subhead\" \\| \"title\"",
+          "default": "\"title\"",
+          "optional": true
+        },
+        {
+          "key": "weight",
+          "type": "number \\| \"light\" \\| \"regular\" \\| \"medium\" \\| \"bold\" \\| \"heavy\" \\| \"black\"",
+          "default": "\"bold\"",
+          "optional": true
+        },
+        {
+          "key": "width",
+          "type": "number \\| \"condensed\" \\| \"normal\" \\| \"expanded\"",
+          "default": "\"condensed\"",
+          "optional": true
+        },
+        {
+          "key": "tracking",
+          "type": "number \\| \"tight\" \\| \"normal\" \\| \"label\"",
+          "default": "\"normal\"",
+          "optional": true
+        },
+        {
+          "key": "leading",
+          "type": "number",
+          "default": "1",
+          "optional": true
+        },
+        {
+          "key": "at",
+          "type": "number \\| string",
+          "optional": false
+        },
+        {
+          "key": "interval",
+          "type": "number \\| \"tight\" \\| \"base\" \\| \"loose\"",
+          "default": "8",
+          "optional": true
+        },
+        {
+          "key": "visible",
+          "type": "number",
+          "default": "4",
+          "optional": true
+        },
+        {
+          "key": "color",
+          "type": "string",
+          "default": "\"ink\"",
+          "optional": true
+        },
+        {
+          "key": "settle",
+          "type": "number",
+          "default": "0.45",
+          "optional": true
+        },
+        {
+          "key": "highlight",
+          "type": "number",
+          "optional": true
+        },
+        {
+          "key": "duration",
+          "type": "number \\| \"micro\" \\| \"short\" \\| \"base\" \\| \"long\" \\| \"hold\"",
+          "default": "\"short\"",
+          "optional": true
+        },
+        {
+          "key": "ease",
+          "type": "string \\| tuple",
+          "optional": true
+        },
+        {
+          "key": "exit",
+          "type": "object",
+          "optional": true
+        }
+      ],
+      "doc": {
+        "effect": "Accumulation in type: a growing pile of items (tasks, tools, steps). Older lines settle back and leave through the top once the stack is full.",
+        "timing": "A word every `interval` frames (default 8); each rise and each push take `short` (10f).",
+        "easing": "Out curve for rises and pushes; exit uses the in curve.",
+        "supports": [
+          "lists of chores, tools, features",
+          "counting-up beats",
+          "before/after inventories"
+        ],
+        "performance": "One <text> per word.",
+        "covers": [
+          "WordStack"
+        ],
+        "limitations": [
+          "Left-aligned; one column."
+        ]
+      },
+      "example": {
+        "duration": "3s",
+        "note": "Coordination chores piling up, newest at the bottom.",
+        "params": {
+          "words": [
+            "EMAIL",
+            "CALENDAR",
+            "FOLLOW-UP",
+            "STATUS",
+            "HANDOFF"
+          ],
+          "at": 4,
+          "interval": 9
+        }
+      }
+    },
+    {
+      "id": "LineDraw",
+      "category": "geometry",
+      "summary": "A rule that draws on, can be drawn by a moving accent, can slide to a new place, and retracts.",
+      "covers": [
+        "LineDraw"
+      ],
+      "anchors": [
+        "from",
+        "to",
+        "center"
+      ],
+      "params": [
+        {
+          "key": "from",
+          "type": "object",
+          "optional": false
+        },
+        {
+          "key": "to",
+          "type": "object",
+          "optional": false
+        },
+        {
+          "key": "draw",
+          "type": "object",
+          "optional": true
+        },
+        {
+          "key": "follow",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "key": "retract",
+          "type": "object",
+          "optional": true
+        },
+        {
+          "key": "moves",
+          "type": "object[]",
+          "default": "[]",
+          "optional": true
+        },
+        {
+          "key": "stroke",
+          "type": "number",
+          "default": "2",
+          "optional": true
+        },
+        {
+          "key": "color",
+          "type": "string",
+          "default": "\"ink\"",
+          "optional": true
+        },
+        {
+          "key": "cap",
+          "type": "\"butt\" \\| \"round\" \\| \"square\"",
+          "default": "\"butt\"",
+          "optional": true
+        }
+      ],
+      "doc": {
+        "effect": "Structure appearing as if ruled by hand: a hairline extends from an end or the centre, or trails a moving point so the point leaves the line behind.",
+        "timing": "draw over `long` (24f); retract over `base` (16f); moves over `long`. follow: no timing of its own, it is exactly as far along as the path.",
+        "easing": "Draw eases out, retract eases in, moves ease in-out.",
+        "supports": [
+          "baselines and rules",
+          "connectors",
+          "underlines",
+          "structural grid lines"
+        ],
+        "performance": "One <line> per frame.",
+        "covers": [
+          "LineDraw"
+        ],
+        "limitations": [
+          "Straight segments only; use paths in Accumulation for many lines."
+        ]
+      },
+      "example": {
+        "duration": "2s",
+        "note": "A content-width rule drawn on from the centre, then retracted to the right.",
+        "params": {
+          "from": {
+            "x": "safe.left",
+            "y": "safe.cy"
+          },
+          "to": {
+            "x": "safe.right",
+            "y": "safe.cy"
+          },
+          "draw": {
+            "at": 4,
+            "origin": "center"
+          },
+          "retract": {
+            "at": "1.4s"
+          }
+        }
+      }
+    },
+    {
+      "id": "GridAssembly",
+      "category": "geometry",
+      "summary": "A lattice of small marks that assembles into a visible system, and can be cleared by a passing accent.",
+      "covers": [
+        "GridAssembly",
+        "ObjectDisassembly (sweep)"
+      ],
+      "anchors": [],
+      "params": [
+        {
+          "key": "cols",
+          "type": "number",
+          "default": "6",
+          "optional": true
+        },
+        {
+          "key": "rows",
+          "type": "number",
+          "default": "10",
+          "optional": true
+        },
+        {
+          "key": "area",
+          "type": "object",
+          "default": "{}",
+          "optional": true
+        },
+        {
+          "key": "mark",
+          "type": "\"cross\" \\| \"dot\" \\| \"tick\" \\| \"square\"",
+          "default": "\"cross\"",
+          "optional": true
+        },
+        {
+          "key": "size",
+          "type": "number",
+          "default": "14",
+          "optional": true
+        },
+        {
+          "key": "stroke",
+          "type": "number",
+          "default": "2",
+          "optional": true
+        },
+        {
+          "key": "color",
+          "type": "string",
+          "default": "\"inkDim\"",
+          "optional": true
+        },
+        {
+          "key": "assemble",
+          "type": "object",
+          "optional": true
+        },
+        {
+          "key": "disassemble",
+          "type": "object",
+          "optional": true
+        },
+        {
+          "key": "keep",
+          "type": "\"none\" \\| \"corners\"",
+          "default": "\"none\"",
+          "optional": true
+        },
+        {
+          "key": "keepExit",
+          "type": "object",
+          "optional": true
+        }
+      ],
+      "doc": {
+        "effect": "Registration-style marks snap in across a grid in a deliberate order (from the centre, by rows, diagonally), establishing structure before anything else arrives.",
+        "timing": "Start times spread over `spread` frames in the chosen order; each mark takes `base` (16f). Disassembly: each mark leaves when the path passes closest, plus distance ÷ ripple frames.",
+        "easing": "Marks turn in a quarter turn while scaling in (out curve); leave scaling down (in curve).",
+        "supports": [
+          "opening structure",
+          "backgrounds for diagrams",
+          "registration frames"
+        ],
+        "performance": "rows × cols small elements; 60 marks cost well under a millisecond per frame.",
+        "covers": [
+          "GridAssembly",
+          "ObjectDisassembly (sweep)"
+        ],
+        "limitations": [
+          "Uniform grids only."
+        ]
+      },
+      "example": {
+        "duration": "2s",
+        "note": "A 6 × 10 lattice of crosses assembling from the centre outward.",
+        "params": {
+          "cols": 6,
+          "rows": 10,
+          "assemble": {
+            "at": 0,
+            "order": "center",
+            "spread": 24
+          }
+        }
+      }
+    },
+    {
+      "id": "Accumulation",
+      "category": "geometry",
+      "summary": "Lines, shapes, labels and outlined echoes crowd in on a lattice with accelerating density; a passing path can clear them.",
+      "covers": [
+        "Accumulation",
+        "ObjectDisassembly"
+      ],
+      "anchors": [],
+      "params": [
+        {
+          "key": "seed",
+          "type": "string",
+          "default": "\"field\"",
+          "optional": true
+        },
+        {
+          "key": "area",
+          "type": "object",
+          "default": "{}",
+          "optional": true
+        },
+        {
+          "key": "cols",
+          "type": "number",
+          "default": "6",
+          "optional": true
+        },
+        {
+          "key": "rows",
+          "type": "number",
+          "default": "10",
+          "optional": true
+        },
+        {
+          "key": "lines",
+          "type": "number",
+          "default": "18",
+          "optional": true
+        },
+        {
+          "key": "rects",
+          "type": "number",
+          "default": "8",
+          "optional": true
+        },
+        {
+          "key": "circles",
+          "type": "number",
+          "default": "6",
+          "optional": true
+        },
+        {
+          "key": "labels",
+          "type": "string[]",
+          "default": "[]",
+          "optional": true
+        },
+        {
+          "key": "labelSize",
+          "type": "number \\| \"micro\" \\| \"caption\" \\| \"body\"",
+          "default": "\"micro\"",
+          "optional": true
+        },
+        {
+          "key": "echo",
+          "type": "object",
+          "optional": true
+        },
+        {
+          "key": "build",
+          "type": "object",
+          "optional": false
+        },
+        {
+          "key": "clear",
+          "type": "object",
+          "optional": true
+        },
+        {
+          "key": "stroke",
+          "type": "number",
+          "default": "2",
+          "optional": true
+        },
+        {
+          "key": "color",
+          "type": "string",
+          "default": "\"ink\"",
+          "optional": true
+        },
+        {
+          "key": "dimColor",
+          "type": "string",
+          "default": "\"inkDim\"",
+          "optional": true
+        },
+        {
+          "key": "dim",
+          "type": "number",
+          "default": "0.5",
+          "optional": true
+        }
+      ],
+      "doc": {
+        "effect": "Controlled overload. Everything snaps to one lattice and is drawn on, so the crowd reads as a system choking on itself rather than noise. Paired with a group freeze it stops dead; paired with a path it is undone in a ripple that follows the accent.",
+        "timing": "Arrivals between build.at and build.until; with \"accelerate\", the n-th of N arrives at at + span·√(n/N). Each draws over `base` (16f). Clearing: closest approach of the path + distance ÷ ripple (px/frame), over `short` (10f).",
+        "easing": "Draw-on eases out; un-draw eases in.",
+        "supports": [
+          "complexity / overload beats",
+          "busy diagrams that resolve",
+          "background texture with a payoff"
+        ],
+        "performance": "~60 elements; layout precomputes every start and clear frame, so a frame is only arithmetic. Measured in docs/benchmarks.json.",
+        "covers": [
+          "Accumulation",
+          "ObjectDisassembly"
+        ],
+        "limitations": [
+          "Shapes are lines, rectangles and circles on a uniform lattice.",
+          "Echoes copy the first state of a KineticHeadline."
+        ]
+      },
+      "example": {
+        "duration": "3s",
+        "note": "A crowd builds with accelerating density over two seconds.",
+        "params": {
+          "seed": "example",
+          "labels": [
+            "FOLLOW-UP",
+            "STATUS?",
+            "RE: RE: FWD"
+          ],
+          "build": {
+            "at": 0,
+            "until": "2s"
+          }
+        }
+      }
+    },
+    {
+      "id": "Accent",
+      "category": "geometry",
+      "summary": "The one live element: a point that rides a motion path, can drive other layers, and lands with intent.",
+      "covers": [
+        "Accent (path follow)",
+        "FocusTransition (as an iris origin)"
+      ],
+      "anchors": [],
+      "params": [
+        {
+          "key": "path",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "key": "size",
+          "type": "number",
+          "default": "28",
+          "optional": true
+        },
+        {
+          "key": "shape",
+          "type": "\"dot\" \\| \"square\"",
+          "default": "\"dot\"",
+          "optional": true
+        },
+        {
+          "key": "color",
+          "type": "string",
+          "default": "\"accent\"",
+          "optional": true
+        },
+        {
+          "key": "appear",
+          "type": "object",
+          "optional": true
+        },
+        {
+          "key": "vanish",
+          "type": "object",
+          "optional": true
+        },
+        {
+          "key": "sizes",
+          "type": "object[]",
+          "default": "[]",
+          "optional": true
+        },
+        {
+          "key": "stretch",
+          "type": "number",
+          "default": "0.3",
+          "optional": true
+        }
+      ],
+      "doc": {
+        "effect": "A single accent-coloured point moving through the composition. Other layers key off its path (lines it draws, elements it clears, irises it opens), so the accent visibly causes change instead of decorating it.",
+        "timing": "Entirely from its path keys; appear/vanish over `short` (10f).",
+        "easing": "Per path key (default in-out). A slight stretch along velocity at speed, never a bounce.",
+        "supports": [
+          "a point of view / cursor / agent",
+          "a full stop that lands",
+          "transition origins"
+        ],
+        "performance": "One element; path sampled twice per frame for velocity.",
+        "covers": [
+          "Accent (path follow)",
+          "FocusTransition (as an iris origin)"
+        ],
+        "limitations": [
+          "Dot or square only. One accent per theme by design: the brand allows one live colour."
+        ]
+      },
+      "example": {
+        "duration": "2s",
+        "note": "The accent crosses the frame left to right and settles.",
+        "params": {
+          "path": "example-pass",
+          "size": 28
+        }
+      }
+    },
+    {
+      "id": "DirectionalWipe",
+      "category": "transition",
+      "summary": "A solid panel that travels across the frame to hand one scene to the next.",
+      "covers": [
+        "DirectionalWipe",
+        "MaskTransition (edge mode + layer reveal/conceal wipes)"
+      ],
+      "anchors": [],
+      "params": [
+        {
+          "key": "at",
+          "type": "number \\| string",
+          "optional": false
+        },
+        {
+          "key": "duration",
+          "type": "number \\| \"micro\" \\| \"short\" \\| \"base\" \\| \"long\" \\| \"hold\"",
+          "default": "\"long\"",
+          "optional": true
+        },
+        {
+          "key": "direction",
+          "type": "\"left\" \\| \"right\" \\| \"up\" \\| \"down\"",
+          "default": "\"up\"",
+          "optional": true
+        },
+        {
+          "key": "mode",
+          "type": "\"through\" \\| \"cover\" \\| \"uncover\" \\| \"edge\"",
+          "default": "\"through\"",
+          "optional": true
+        },
+        {
+          "key": "thickness",
+          "type": "number",
+          "default": "6",
+          "optional": true
+        },
+        {
+          "key": "color",
+          "type": "string",
+          "default": "\"ink\"",
+          "optional": true
+        },
+        {
+          "key": "band",
+          "type": "number",
+          "default": "1",
+          "optional": true
+        },
+        {
+          "key": "ease",
+          "type": "string \\| tuple",
+          "optional": true
+        }
+      ],
+      "doc": {
+        "effect": "A deliberate hard edge replacing a cut. In \"through\" mode the frame is fully covered at the midpoint, which is where the outgoing layers should end and incoming ones start.",
+        "timing": "Over `long` (24f). Midpoint = at + duration/2: time the swap there.",
+        "easing": "In-out by default, so the panel accelerates through the cover and decelerates out.",
+        "supports": [
+          "scene changes",
+          "section breaks",
+          "reveals of a new colour field"
+        ],
+        "performance": "One rectangle.",
+        "covers": [
+          "DirectionalWipe",
+          "MaskTransition (edge mode + layer reveal/conceal wipes)"
+        ],
+        "limitations": [
+          "Straight edges only; for shaped masks use a layer \"reveal\" with shape \"circle\"."
+        ]
+      },
+      "example": {
+        "duration": "2s",
+        "note": "A full-frame panel passing upward; the midpoint is fully covered.",
+        "params": {
+          "at": 10,
+          "direction": "up"
+        }
+      }
+    },
+    {
+      "id": "BrandLockup",
+      "category": "brand",
+      "summary": "The verified Quiet Bands lockup (mark over wordmark) drawn from assets/brand, revealed without distorting it.",
+      "covers": [
+        "BrandLockup",
+        "ShapeReveal (iris)",
+        "CircleExpansion"
+      ],
+      "anchors": [
+        "center",
+        "top",
+        "bottom",
+        "markCenter"
+      ],
+      "params": [
+        {
+          "key": "x",
+          "type": "number \\| string",
+          "default": "\"center\"",
+          "optional": true
+        },
+        {
+          "key": "y",
+          "type": "number \\| string",
+          "default": "\"safe.cy\"",
+          "optional": true
+        },
+        {
+          "key": "width",
+          "type": "number",
+          "default": "420",
+          "optional": true
+        },
+        {
+          "key": "color",
+          "type": "string",
+          "default": "\"ink\"",
+          "optional": true
+        },
+        {
+          "key": "mark",
+          "type": "object",
+          "optional": false
+        },
+        {
+          "key": "wordmark",
+          "type": "object",
+          "optional": false
+        },
+        {
+          "key": "exit",
+          "type": "object",
+          "optional": true
+        }
+      ],
+      "doc": {
+        "effect": "Resolves to the identity. The mark opens through an iris from a chosen point (often where the accent comes to rest) or rises into place; the wordmark rises through its own baseline. The mark is never split, outlined, stretched or recoloured per part.",
+        "timing": "mark over `long` (24f), wordmark over `base` (16f); start them a few frames apart so the eye lands on the mark first.",
+        "easing": "Out curves on both.",
+        "supports": [
+          "end cards",
+          "openers",
+          "any brand-mode composition"
+        ],
+        "performance": "Two filled paths and two clip shapes per frame; nothing measured.",
+        "covers": [
+          "BrandLockup",
+          "ShapeReveal (iris)",
+          "CircleExpansion"
+        ],
+        "limitations": [
+          "Needs a theme with a logo (quiet-bands).",
+          "Uses lockup.svg proportions; for other arrangements add a variant here, do not re-typeset the wordmark."
+        ]
+      },
+      "example": {
+        "duration": "2.5s",
+        "note": "The lockup resolves: mark through an iris from its centre, wordmark rising after it.",
+        "params": {
+          "mark": {
+            "at": 4
+          },
+          "wordmark": {
+            "at": 16
+          }
+        }
+      }
+    }
+  ],
+  "projects": [
+    {
+      "id": "automate-the-coordination",
+      "title": "Automate the coordination",
+      "format": "portrait",
+      "duration": "11s",
+      "presets": [
+        "MaskedTextReveal",
+        "WordStack",
+        "KineticHeadline",
+        "LineDraw",
+        "DirectionalWipe",
+        "BrandLockup",
+        "Accent"
+      ],
+      "lastRender": {
+        "date": "2026-10-09T17:16:28.447Z",
+        "bytes": 321180,
+        "checks": "all passed"
+      }
+    },
+    {
+      "id": "simplicity-is-a-viewpoint",
+      "title": "Simplicity is a viewpoint",
+      "format": "story",
+      "duration": "15s",
+      "presets": [
+        "GridAssembly",
+        "KineticHeadline",
+        "Accumulation",
+        "LineDraw",
+        "MaskedTextReveal",
+        "BrandLockup",
+        "Accent"
+      ],
+      "lastRender": {
+        "date": "2026-10-09T17:15:42.955Z",
+        "bytes": 2135573,
+        "checks": "all passed"
+      }
+    }
+  ],
+  "benchmarks": [
+    {
+      "project": "simplicity-is-a-viewpoint",
+      "date": "2026-10-09T16:54:32.288Z",
+      "frames": 450,
+      "width": 1080,
+      "height": 1920,
+      "layers": 9,
+      "previewFps": 15.39,
+      "masterFps": 6.13,
+      "masterSeconds": 73.4,
+      "encodeSeconds": 6.9,
+      "peakMemMB": 1598,
+      "deliveryMB": 1.95,
+      "cpus": 4,
+      "gpu": false
+    },
+    {
+      "project": "simplicity-is-a-viewpoint",
+      "date": "2026-10-09T16:58:51.523Z",
+      "frames": 450,
+      "width": 1080,
+      "height": 1920,
+      "layers": 9,
+      "previewFps": 14.9,
+      "masterFps": 5.86,
+      "masterSeconds": 76.8,
+      "encodeSeconds": 6.3,
+      "peakMemMB": 1724,
+      "deliveryMB": 2.13,
+      "cpus": 4,
+      "gpu": false
+    },
+    {
+      "project": "automate-the-coordination",
+      "date": "2026-10-09T17:03:27.752Z",
+      "frames": 330,
+      "width": 1080,
+      "height": 1350,
+      "layers": 11,
+      "previewFps": 36.93,
+      "masterFps": 18.14,
+      "masterSeconds": 18.2,
+      "encodeSeconds": 2.6,
+      "peakMemMB": 1181,
+      "deliveryMB": 0.32,
+      "cpus": 4,
+      "gpu": false
+    },
+    {
+      "project": "simplicity-is-a-viewpoint",
+      "date": "2026-10-09T17:15:42.955Z",
+      "frames": 450,
+      "width": 1080,
+      "height": 1920,
+      "layers": 9,
+      "previewFps": 14.96,
+      "masterFps": 5.76,
+      "masterSeconds": 78.1,
+      "encodeSeconds": 7,
+      "peakMemMB": 1674,
+      "deliveryMB": 2.14,
+      "cpus": 4,
+      "gpu": false
+    },
+    {
+      "project": "automate-the-coordination",
+      "date": "2026-10-09T17:16:28.447Z",
+      "frames": 330,
+      "width": 1080,
+      "height": 1350,
+      "layers": 11,
+      "previewFps": 36.88,
+      "masterFps": 17.27,
+      "masterSeconds": 19.1,
+      "encodeSeconds": 2.9,
+      "peakMemMB": 1198,
+      "deliveryMB": 0.32,
+      "cpus": 4,
+      "gpu": false
+    }
+  ],
+  "commonFixes": [
+    {
+      "symptom": "Elements survive a sweep and vanish later, when the accent lands somewhere else.",
+      "cause": "Clear times use the closest approach over the whole path, including where it goes after the pass.",
+      "fix": "Set `clear.window.to` (Accumulation) or `disassemble.window.to` (GridAssembly) to the end of the pass.",
+      "found": "simplicity-is-a-viewpoint"
+    },
+    {
+      "symptom": "Letters overlap mid-swap in a KineticHeadline state change.",
+      "cause": "Outgoing and incoming glyphs moved on different curves.",
+      "fix": "Fixed in the engine: changed letters roll as glued pairs (old exactly one slot above new) on one in-out curve.",
+      "found": "simplicity-is-a-viewpoint"
+    },
+    {
+      "symptom": "A rule sits on top of the next line as it rises.",
+      "cause": "The rule retracted after the next text started.",
+      "fix": "Retract structure at the moment the next beat begins, not after.",
+      "found": "simplicity-is-a-viewpoint"
+    },
+    {
+      "symptom": "The first half-second is black.",
+      "cause": "Everything starts at frame 0 from zero.",
+      "fix": "Pre-roll the opening layer with a negative time (e.g. `\"at\": \"start-8\"`) so frame 0 already shows it forming.",
+      "found": "simplicity-is-a-viewpoint"
+    },
+    {
+      "symptom": "QA lists a long still stretch under \"holds\" that was not designed.",
+      "cause": "A beat finishes earlier than the next one starts.",
+      "fix": "Start the next beat earlier or slow the current move; keep only holds you can name.",
+      "found": "simplicity-is-a-viewpoint"
+    },
+    {
+      "symptom": "WordStack lines stay visible after their exit.",
+      "cause": "Exit distance was fixed, but the stack clip spans every line.",
+      "fix": "Fixed in the preset: each line travels to the clip edge.",
+      "found": "automate-the-coordination"
+    },
+    {
+      "symptom": "Preview fails \"dimensions\" by one pixel.",
+      "cause": "4:2:0 video needs even sizes; a 0.5× preview of 1350 px is 675.",
+      "fix": "Fixed in QA: scaled previews expect the even size.",
+      "found": "automate-the-coordination"
+    },
+    {
+      "symptom": "A final render reused a stale preview after code changed.",
+      "cause": "Preview validity was keyed on the project file only.",
+      "fix": "Fixed: previews are keyed on project hash + engine hash.",
+      "found": "automate-the-coordination"
+    },
+    {
+      "symptom": "\"Circular references\" between a path and a layer.",
+      "cause": "A path pins to a layer that also samples that path at layout.",
+      "fix": "Sample at render time: declare the param under `refs.renderPaths` in the preset.",
+      "found": "simplicity-is-a-viewpoint"
+    },
+    {
+      "symptom": "A time like \"intro-a+4\" fails or picks the wrong scene.",
+      "cause": "Scene ids may contain hyphens, which look like minus signs.",
+      "fix": "Fixed: the parser splits at the point where the left side is a known scene.",
+      "found": "engine"
+    }
+  ],
+  "limitations": [
+    "Text layers are single-line; set multi-line copy as several layers sharing a style with \"like\".",
+    "Text measurement uses the browser at render; Node-side validation uses approximate metrics, so anchor positions in the storyboard are estimates.",
+    "The synthesised sound bed is a placeholder: a few procedural voices, not music. Use an audio track with `src` for real music or voice.",
+    "Voice mode cuts at measured pauses only; there are no word-level timestamps.",
+    "Reference analysis measures cuts, motion and audio; it cannot identify typefaces or easing curves.",
+    "Three.js is not installed: there is no real 3D. Depth is simulated with group cameras and per-layer parallax.",
+    "Rendering is CPU-only by design (SwiftShader); roughly 6 fps for a busy 1080×1920 master on 4 cores.",
+    "Remotion is free for individuals and companies of up to three people; larger teams need a Remotion company licence."
+  ]
+}
