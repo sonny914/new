@@ -3,9 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="robots" content="noindex, nofollow" />
 <meta name="theme-color" content="#000000" />
-<title>Quiet Bands — Thinking orb</title>
+<title>Interactive Orb Playground | Quiet Bands</title>
+<meta name="description" content="Grab, rotate, and tune an interactive orb. Explore the controls, visual states, and the build behind the Quiet Bands playground." />
+<link rel="canonical" href="https://quietbands.com/lab/thinking-orb/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Quiet Bands" />
+<meta property="og:title" content="Interactive Orb Playground | Quiet Bands" />
+<meta property="og:description" content="Grab, rotate, and tune an interactive orb. Explore the controls, visual states, and the build behind the Quiet Bands playground." />
+<meta property="og:url" content="https://quietbands.com/lab/thinking-orb/" />
+<meta property="og:image" content="https://quietbands.com/og-bulb.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Interactive Orb Playground | Quiet Bands" />
+<meta name="twitter:description" content="Grab, rotate, and tune an interactive orb. Explore the controls, visual states, and the build behind the Quiet Bands playground." />
+<meta name="twitter:image" content="https://quietbands.com/og-bulb.png" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <style>
   :root{--black:#000000;--cream:#F2EEE5;--quiet:#968D7C;--hair:rgba(242,238,229,.18);--live:#FF5A00}
@@ -53,13 +64,32 @@
   @media(max-width:720px){.play{grid-template-columns:1fr}.stage-box{max-width:280px}}
   button.send{margin-top:14px;font:inherit;font-size:15px;font-weight:600;color:var(--cream);background:transparent;border:1px solid var(--cream);border-radius:5px;padding:13px 28px;cursor:pointer;display:inline-flex;align-items:center;gap:10px;min-height:46px}
   button.send:disabled{color:var(--quiet);cursor:wait}
+  .site{display:flex;flex-wrap:wrap;gap:4px 20px;align-items:center;margin-bottom:26px;font-size:15px}
+  .site a{display:inline-flex;align-items:center;min-height:44px;color:var(--cream)}
+  .site a[aria-current]{color:var(--live)}
+  .site .home{margin-right:auto;font-weight:600}
+  .site a:hover{color:var(--live)}
+  .about{margin:36px 0 0;padding-top:24px;border-top:1px solid var(--hair);max-width:66ch;font-size:15px;color:var(--quiet)}
+  .about h2{font-size:17px;font-weight:500;color:var(--cream);margin:22px 0 6px}
+  .about a{color:var(--cream);text-decoration:underline;text-underline-offset:4px}
+  .learn-cta{display:inline-flex;align-items:center;min-height:46px;margin-top:16px;padding:0 20px;border:1px solid var(--cream);border-radius:999px;color:var(--cream);font-weight:500;text-decoration:none}
+  .learn-cta:hover{border-color:var(--live);color:var(--live)}
+  button.copy{font:inherit;font-size:14px;color:var(--cream);background:transparent;border:1px solid var(--hair);border-radius:4px;padding:7px 12px;min-height:36px;cursor:pointer;margin-top:10px}
 </style>
 </head>
 <body>
+<nav class="site" aria-label="Main">
+  <a class="home" href="/">Quiet Bands</a>
+  <a href="/learn/">Learn AI</a>
+  <a href="/custom-software/">Custom Software</a>
+  <a href="/lab/thinking-orb/" aria-current="page">Playground</a>
+  <a href="/work/">Contact</a>
+</nav>
 <header>
-  <h1>Thinking orb</h1>
+  <h1>Interactive orb playground</h1>
   <p class="k"><code>&lt;thinking-orb state="searching" size="64"&gt;</code> · lab</p>
 </header>
+<p class="intro" style="color:var(--cream);font-size:17px">Grab, rotate, and tune an interactive visual experiment. Pick a state, move the sliders, change the ink, and copy the markup for the look you made. It’s pure animation in your browser: nothing here calls an AI model, and nothing you do is sent anywhere.</p>
 <p class="intro">The <code>thinking-orbs</code> indicator without React: the package's own engine, a vanilla wrapper. The page is <code>data-theme="dark"</code>; the light cell takes its theme from the tree. Reduced motion paints one still frame, and a drag still turns it.</p>
 
 <section class="play" aria-labelledby="play-h">
@@ -79,6 +109,7 @@
       <button type="button" id="play-reset">reset</button>
     </div>
     <pre class="code" id="code" aria-label="Markup for this orb"></pre>
+    <button type="button" class="copy" id="copy">Copy markup</button> <span id="copied" role="status" style="font-size:14px;color:var(--quiet)"></span>
   </div>
 </section>
 
@@ -103,8 +134,20 @@
   <label>size <select id="size"><option>64</option><option>32</option><option>20</option></select></label>
 </div>
 
-<p class="note">The site's one real wait is the Work intake button, which shows the 20px <code>searching</code> orb while the answers send:</p>
-<button type="button" class="send" id="send">Send it to Quiet Bands</button>
+<p class="note">The site’s one real wait is the contact form’s send button, which shows the 20px <code>searching</code> orb while your answers travel. This is a preview of that state; it sends nothing:</p>
+<button type="button" class="send" id="send">Preview the sending state</button>
+
+<section class="about" aria-labelledby="about-h">
+  <h2 id="about-h">How the controls work</h2>
+  <p>Press and hold the big orb to pause it. Drag sideways to spin it; let go mid-swipe to fling it. With the orb focused, arrow keys nudge it and Home resets it. The chips switch between nine states, including <em>shaping</em>, which morphs between a circle, a triangle and a square. If your device asks for reduced motion, each orb shows a still frame and moves only when you move it.</p>
+  <h2>What it is, and what it isn’t</h2>
+  <p>A loading indicator, drawn with plain 2D canvas: no images, no framework, no network calls. A label like “thinking” is just the name of an animation state.</p>
+  <h2>Credit</h2>
+  <p>The orb art and engine are <a href="https://github.com/Jakubantalik/Libraries.dev">thinking-orbs</a> by Jakub Antalik, used under the MIT License (© 2026 Jakub Antalik). Quiet Bands replaced the React wrapper with a framework-free one and added the hold, drag and fling interactions that drive the animation’s clock. The engine file is vendored unchanged with its notice.</p>
+  <h2>Learn to build this</h2>
+  <p>Small interactive pieces like this are a good first build: one idea, a few controls, a real result. Hands-on AI training can start from exactly this kind of project.</p>
+  <a class="learn-cta" href="/learn/">Learn to build this</a>
+</section>
 
 <script type="module">
   import { mountOrb, STATES, DEFAULTS } from '/assets/orb/thinking-orb.js';
@@ -169,6 +212,12 @@
   document.getElementById('play-reset').addEventListener('click', () => { st.common = { speed: 1, dots: 1, dotSize: 1 }; st.opts = {}; stage.reset(); renderKnobs(); apply(); });
   matchMedia('(max-width: 720px)').addEventListener('change', () => stage.set({ zoom: ZOOM() }));
   renderKnobs(); apply();
+  const copied = document.getElementById('copied');
+  document.getElementById('copy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(code.textContent); copied.textContent = 'Copied.'; }
+    catch { const r = document.createRange(); r.selectNodeContents(code); const s = getSelection(); s.removeAllRanges(); s.addRange(r); copied.textContent = 'Selected: press Ctrl/⌘+C to copy.'; }
+    setTimeout(() => { copied.textContent = ''; }, 2500);
+  });
 
   // ---- the grid controls
   const big = () => [...document.querySelectorAll('.cell > thinking-orb')];
@@ -184,8 +233,8 @@
   send.addEventListener('click', () => {
     send.disabled = true; send.textContent = '';
     orb = mountOrb(send, { state: 'searching', size: 20, theme: 'dark', label: null });
-    send.append(document.createTextNode('Sending…'));
-    setTimeout(() => { orb.destroy(); orb = null; send.disabled = false; send.textContent = 'Send it to Quiet Bands'; }, 2600);
+    send.append(document.createTextNode('Sending… (preview)'));
+    setTimeout(() => { orb.destroy(); orb = null; send.disabled = false; send.textContent = 'Preview the sending state'; }, 2600);
   });
 </script>
 <script type="module" src="/assets/orb/thinking-orb.js"></script>

@@ -96,7 +96,7 @@ function sessionId() {
 export async function qbInsert(table, row, { keepalive = false } = {}) {
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method: 'POST', keepalive,
+      method: 'POST', keepalive, signal: AbortSignal.timeout(15000),
       headers: {
         'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`, Prefer: 'return=minimal',

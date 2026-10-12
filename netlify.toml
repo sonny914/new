@@ -36,7 +36,41 @@
     Cache-Control = "public, max-age=3600"
 
 
+# Lab experiments stay out of the index, except the public orb playground (/lab/thinking-orb/).
+# Netlify merges every matching rule, so a broad /lab/* noindex cannot be overridden per page: list each private path.
+# A new lab page is indexable unless it is added here (and given its own robots meta).
 [[headers]]
-  for = "/lab/*"
+  for = "/lab/spatial-hero/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/lab/secure-plate/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/lab/spatial-dossier/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/lab/story-home.html"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/lab/rd-field-guide.html"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+
+[[headers]]
+  for = "/lab/story-home"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/lab/rd-field-guide"
   [headers.values]
     X-Robots-Tag = "noindex"
