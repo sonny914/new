@@ -12,6 +12,9 @@ const carry = document.getElementById('pt-carry');
 const q = new URLSearchParams(location.search);
 const fromPT = q.get('from') === 'pressure-test';
 const saved = pt.load();
+const INTENTS = { training: 'AI training', software: 'Custom software', unsure: 'Not sure yet' };
+const preset = q.get('intent');
+if (preset && INTENTS[preset]) { const r = form.querySelector(`input[name="intent"][value="${preset}"]`); if (r) r.checked = true; }
 
 // Carry the pressure-test context in, if they came from it.
 if (fromPT && saved && saved.result) {
@@ -38,9 +41,9 @@ form.addEventListener('submit', async (e) => {
   errorBox.style.display = 'none';
   const data = Object.fromEntries(new FormData(form));
   if (data.website) return; // honeypot
-  const missing = ['today', 'contact_name', 'company_name', 'email'].find((k) => !String(data[k] || '').trim());
+  const missing = ['today', 'contact_name', 'email'].find((k) => !String(data[k] || '').trim());
   if (missing || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)) {
-    showError(missing ? 'We need at least the first answer, your name, organization and email.' : 'That email doesn’t look right.');
+    showError(missing ? 'We need at least the first answer, your name and email.' : 'That email doesn’t look right.');
     const el = form.querySelector(`[name="${missing || 'email'}"]`); if (el) el.focus();
     return;
   }
@@ -50,19 +53,20 @@ form.addEventListener('submit', async (e) => {
   const orb = mountOrb(btn, { state: 'searching', size: 20, theme: 'dark', label: null });
   btn.append(document.createTextNode('Sending…'));
 
+  const intent = INTENTS[data.intent] ? data.intent : 'unsure';
   const intake = {
-    today: data.today, who: data.who, how_often: data.how_often, systems: data.systems, goes_wrong: data.goes_wrong,
+    intent, today: data.today, who: data.who, how_often: data.how_often, systems: data.systems, goes_wrong: data.goes_wrong,
     tried: data.tried, artifacts: data.artifacts, if_gone: data.if_gone, imagined_build: data.imagined_build,
   };
   const attr = getAttribution();
   const pain_point = [
-    `WHAT IS HAPPENING TODAY: ${data.today}`, data.who && `WHO DOES THIS WORK: ${data.who}`, data.how_often && `HOW OFTEN: ${data.how_often}`,
+    `INTEREST: ${INTENTS[intent]}`, `WHAT IS HAPPENING TODAY: ${data.today}`, data.who && `WHO DOES THIS WORK: ${data.who}`, data.how_often && `HOW OFTEN: ${data.how_often}`,
     data.systems && `SYSTEMS INVOLVED: ${data.systems}`, data.goes_wrong && `WHEN IT GOES WRONG: ${data.goes_wrong}`, data.tried && `ALREADY TRIED: ${data.tried}`,
     data.artifacts && `ARTIFACTS: ${data.artifacts}`, data.if_gone && `IF IT DISAPPEARED: ${data.if_gone}`, data.imagined_build && `IMAGINED BUILD: ${data.imagined_build}`,
   ].filter(Boolean).join('\n');
 
   const row = {
-    contact_name: data.contact_name, company_name: data.company_name, email: data.email,
+    contact_name: data.contact_name, company_name: String(data.company_name || '').trim(), email: data.email,
     pain_point, current_tech: data.systems || null, timeline: data.how_often || null,
     source: fromPT ? 'pressure-test' : 'work-intake', intake, attribution: attr,
     pressure_test: fromPT && saved ? { state: saved.result && saved.result.state, answers: saved.answers, completed_at: saved.completedAt } : null,
@@ -75,7 +79,7 @@ form.addEventListener('submit', async (e) => {
   }
   fetch('/.netlify/functions/score-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...row, intake: undefined, attribution: undefined, pressure_test: undefined }) }).catch(() => {});
   orb.destroy();
-  track('qb_work_intake_complete', { from: fromPT ? 'pressure-test' : 'direct', pt_state: fromPT && saved && saved.result ? saved.result.state : null });
+  track('qb_work_intake_complete', { intent, from: fromPT ? 'pressure-test' : 'direct', pt_state: fromPT && saved && saved.result ? saved.result.state : null });
   container.innerHTML = `<div class="f-success rise in"><div class="stamp">Received</div><h3>Got it.</h3><p>We read every answer. If the work is a fit, Jay replies personally, usually within two business days.</p></div>`;
   container.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });

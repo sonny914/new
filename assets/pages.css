@@ -1,0 +1,19 @@
+/* Quiet Bands · service pages (Learn AI, Custom Software, Privacy). Loaded after rd.css: same ground, cream lines,
+   one family, orange only on the thing you can act on. Adds a page lede, a CTA row and a quiet footer. */
+.lead{padding:64px 0 24px}
+.lead h1{font-size:clamp(36px,7vw,64px);font-weight:560;font-stretch:90%;line-height:1;letter-spacing:-.028em;max-width:14em;text-wrap:balance}
+.lead .sub{margin-top:18px;font-size:clamp(17px,2.2vw,20px);line-height:1.45;color:var(--line-dim);max-width:34em;text-wrap:pretty}
+.cta{display:flex;flex-wrap:wrap;gap:12px 14px;margin-top:28px}
+.btn{display:inline-flex;align-items:center;min-height:48px;padding:0 20px;border:1px solid var(--line);border-radius:999px;font-size:16px;font-weight:500;color:var(--text);transition:color 180ms var(--ease-out),border-color 180ms var(--ease-out),background 180ms var(--ease-out)}
+.btn.primary{background:var(--line);color:var(--ground)}
+.btn:focus-visible{text-decoration:none;outline:1px solid var(--live);outline-offset:3px}
+@media (hover:hover) and (pointer:fine){ .btn:hover{border-color:var(--live);color:var(--live)} .btn.primary:hover{background:var(--live);border-color:var(--live);color:var(--ground)} }
+.btn:active{border-color:var(--live)}
+.trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 28px;margin-top:22px}
+.trio div{padding:16px 0;border-top:1px solid var(--rule)}
+.trio b{display:block;font-weight:500;font-size:19px}
+.trio p{margin-top:6px;color:var(--line-dim)}
+.foot{border-top:1px solid var(--rule);padding:28px 0 calc(36px + env(safe-area-inset-bottom));margin-top:56px;font-size:14px;color:var(--line-dim)}
+.foot .wrap{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center}
+.foot a{display:inline-flex;align-items:center;min-height:44px;color:var(--line)}
+@media (hover:hover) and (pointer:fine){ .foot a:hover{color:var(--live)} }

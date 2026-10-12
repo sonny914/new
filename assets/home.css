@@ -1,0 +1,30 @@
+/* Quiet Bands · home below the bulb: the two offers in plain HTML, readable without the animation. Same tokens as entry.css. */
+.hero{pointer-events:none}
+.hero .hero-sub{margin-top:16px;max-width:30em;font-size:clamp(16px,1.6vw,19px);line-height:1.4;color:var(--line-dim);text-wrap:pretty}
+.hero .hero-cta{display:flex;flex-wrap:wrap;gap:10px 12px;margin-top:20px;pointer-events:auto}
+@media (max-width:760px){ .hero .hero-sub{font-size:15px;max-width:24em} }
+.btn{display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border:1px solid var(--line);border-radius:999px;font-size:15px;font-weight:500;color:var(--text);background:rgba(0,0,0,.55);transition:color 180ms var(--ease-out),border-color 180ms var(--ease-out),background 180ms var(--ease-out)}
+.btn.primary{background:var(--line);color:var(--ground)}
+.btn:focus-visible{text-decoration:none;outline:1px solid var(--live);outline-offset:3px}
+@media (hover:hover) and (pointer:fine){ .btn:hover{border-color:var(--live);color:var(--live)} .btn.primary:hover{background:var(--live);border-color:var(--live);color:var(--ground)} }
+.btn:active{border-color:var(--live)}
+html.nogl .hero .hero-sub,html:not(.js) .hero .hero-sub{color:var(--line-dim)}
+
+.home{position:relative;z-index:1;background:var(--ground);line-height:1.5;font-weight:400}
+.home .wrap{max-width:calc(64ch + 2 * var(--gutter));margin:0 auto;padding:0 var(--gutter)}
+.home section{padding:64px 0 16px;border-top:1px solid rgba(242,238,229,.22)}
+.home h2{font-size:clamp(28px,4.2vw,42px);font-weight:560;font-stretch:92%;letter-spacing:-.02em;line-height:1.08;text-wrap:balance}
+.home p{margin-top:14px;max-width:62ch}
+.home .dim{color:var(--line-dim)}
+.home .cta{display:flex;flex-wrap:wrap;gap:10px 12px;margin-top:24px}
+.home .trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0 28px;margin-top:20px}
+.home .trio div{padding:16px 0;border-top:1px solid rgba(242,238,229,.22)}
+.home .trio b{display:block;font-weight:500;font-size:19px}
+.home .trio p{margin-top:6px;color:var(--line-dim)}
+.home a.text{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--line-dim)}
+.home .orb-tease{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.home .orb-tease thinking-orb{flex:0 0 auto}
+.home footer{padding:40px 0 calc(40px + env(safe-area-inset-bottom));border-top:1px solid rgba(242,238,229,.22);margin-top:48px;font-size:14px;color:var(--line-dim)}
+.home footer .wrap{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center}
+.home footer a{display:inline-flex;align-items:center;min-height:44px;color:var(--line)}
+@media (hover:hover) and (pointer:fine){ .home a.text:hover,.home footer a:hover{color:var(--live);text-decoration-color:var(--live)} }
