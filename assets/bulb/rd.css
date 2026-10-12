@@ -59,3 +59,6 @@ h4{font-size:18px;font-weight:500;margin-top:34px}   /* the parts of a piece */
 @media (prefers-reduced-motion:no-preference){ body{animation:arrive 320ms var(--ease-out) both} }
 @keyframes arrive{from{opacity:0}}
 @media (prefers-reduced-motion:reduce){ a{transition:none} }
+/* a second piece in a section opens on its own breath; a lab heading can carry its live object */
+.body + h3{margin-top:64px}
+h3.lab{display:flex;align-items:center;gap:12px}
