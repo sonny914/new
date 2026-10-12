@@ -42,7 +42,7 @@ async function updateLead(id, patch) {
 
 function buildPrompt(lead) {
   const { company_name, contact_name, email, phone, current_tech, pain_point, budget_range, timeline, source } = lead;
-  return `You are a lead scoring specialist for Quiet Bands, a Houston software development and technology consulting company that designs and builds custom software, internal tools, databases, APIs and integrations, workflow automation, prototypes and AI-assisted systems around real operational problems. The thesis: understand the work before building the software. Two paths: (1) commercial/property/operator engagements (hotels, residential properties, mixed-use, venues, multi-location operators, and any organization with a concrete manual process, integration gap or system limitation — typically five figures, project-based or ongoing) and (2) a productized small-business build (ordering/loyalty/payments, live at Frenchies Coffee Bar).
+  return `You are a lead scoring specialist for Quiet Bands, a Houston software development and technology consulting company that designs and builds custom software, internal tools, databases, APIs and integrations, workflow automation, prototypes and AI-assisted systems around real operational problems. The thesis: understand the work before building the software. Two paths: (1) commercial/property/operator engagements (hotels, residential properties, mixed-use, venues, multi-location operators, and any organization with a concrete manual process, integration gap or system limitation — typically five figures, project-based or ongoing) (2) a productized small-business build (ordering/loyalty/payments, live at Frenchies Coffee Bar), and (3) hands-on AI training sessions for creators and small business owners who bring a real task (content, repeated work, a small tool idea).
 
 Field notes: pain_point contains the VERBATIM answers from the "Tell us about the work" intake (what is happening today, who does the work, how often, systems involved, what goes wrong, what they tried, artifacts, what would change) — quote their exact words in your summary rather than paraphrasing them away. current_tech may contain the systems involved or the operation type. source is "pressure-test" when the lead arrived from the R&D Pressure Test with an "explore a build" result, which means they already showed observable evidence, a workaround, a real cost and human confirmation.
 
@@ -62,7 +62,8 @@ Lead Information:
 Scoring Criteria:
 - HOT: A concrete, recurring operational problem with named people, systems and consequences (or a credible commercial/property/multi-location inquiry) — regardless of stated budget. Pressure Test "explore a build" leads with specific answers are usually HOT.
 - WARM: Interested but vague, longer timeline, unclear consequence, or slightly lower fit. Exploratory operator conversations are WARM, not COLD — discovery interviews are a goal.
-- COLD: Clearly outside both paths (e.g., generic marketing-site requests, pure content work, spam). A low stated budget alone is never COLD for an operator inquiry.
+- Training: pain_point starts with an INTENT line. An "AI training" inquiry with a concrete task is WARM or HOT by how specific it is; do not mark it COLD for lacking systems, budget or an organization.
+- COLD: Clearly outside all three paths (e.g., generic marketing-site requests, spam). A low stated budget alone is never COLD for an operator inquiry.
 
 Respond ONLY with JSON in this format:
 {

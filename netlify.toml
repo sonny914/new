@@ -36,7 +36,30 @@
     Cache-Control = "public, max-age=3600"
 
 
+# Lab experiments stay out of search, except the public orb playground (/lab/thinking-orb/).
+# Netlify headers add up and cannot be unset per path, so each private experiment is listed rather than /lab/*.
 [[headers]]
-  for = "/lab/*"
+  for = "/lab/rd-field-guide.html"
   [headers.values]
     X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/lab/story-home.html"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/lab/secure-plate/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/lab/spatial-dossier/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+[[headers]]
+  for = "/lab/spatial-hero/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+

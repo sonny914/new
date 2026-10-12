@@ -5,9 +5,9 @@
 /pressure-test             /rd/pressure-test/                       301
 
 # Developer tooling is checked in beside the site; never serve it
-/tools/*                   /404.html   404
-/release/*                 /404.html   404
-/DEPLOYMENT_NOTES.md       /404.html   404
+/tools/*                   /404.html   404!
+/release/*                 /404.html   404!
+/DEPLOYMENT_NOTES.md       /404.html   404!
 
 # Legacy property-teams path now lives at /commercial
 /for-property-teams        /commercial/    301!
@@ -24,4 +24,15 @@
 /passive-income/*                  /404.html   404
 
 # Planning documents are checked in beside the site; never serve them
-/docs/*                    /404.html   404
+/docs/*                    /404.html   404!
+
+# Repository files that sit in the published root. Forced (!) because Netlify serves an existing file
+# ahead of an unforced rule, which is why /docs/* and /tools/* above are forced too.
+/README.md                 /404.html   404!
+/package.json              /404.html   404!
+/skills-lock.json          /404.html   404!
+/netlify.toml              /404.html   404!
+/.claude/*                 /404.html   404!
+/.agents/*                 /404.html   404!
+/.impeccable/*             /404.html   404!
+/netlify/*                 /404.html   404!
