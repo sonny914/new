@@ -32,7 +32,7 @@ Finding: the old /docs/* and /tools/* 404 rules were not forced (`404` without `
 - `Only authenticated can read`: SELECT to `authenticated` USING (true) — **still present**. Any signed-in user can read every lead.
 - `anon_insert_leads`: INSERT to anon WITH CHECK (true).
 - auth.users count: 0. Risk depends on whether email sign-up is enabled (Auth settings; not checked here).
-- Proposed fix (not applied, needs owner OK; the score function uses the service role and bypasses RLS, so nothing legitimate breaks):
+- Owner approved 2026-10-13; MCP apply timed out twice, so run in Supabase SQL editor ( the score function uses the service role and bypasses RLS, so nothing legitimate breaks):
   `drop policy "Only authenticated can read" on public.leads;`
   Rollback: `create policy "Only authenticated can read" on public.leads for select to authenticated using (true);`
   Also disable public sign-ups in Supabase Auth if not used.
@@ -50,3 +50,14 @@ Finding: the old /docs/* and /tools/* 404 rules were not forced (`404` without `
 
 ## Known pre-existing issue
 If cdn.jsdelivr.net fails, the homepage gets neither `live` nor `nogl` (module import fails before the boot code), so the still SVG fallback does not show; hero text and the sections below still render. Worth a small fix later (self-host three.js or add a timeout fallback).
+
+## Owner answers (2026-10-13)
+1. Legal name Quiet Bands LLC; privacy contact jason@quietbands.com — confirmed.
+2. Training format — keep "arranged by inquiry"; no format on the site.
+3. Flighty — "@flighty.ai"; platform not yet confirmed, so no link added.
+4. No analytics or pixels outside the repo.
+5. Lead scoring live status unknown — policy says "where enabled".
+6. Retention: 12 months after last contact for leads and rd_events (deletion not yet automated; needs a scheduled job or manual purge).
+7. Recording only with prior consent.
+8. Leads read-policy drop approved — see above.
+Public policy now at /privacy/; docs/privacy-policy-draft.md is superseded.
