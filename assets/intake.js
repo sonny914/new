@@ -30,6 +30,23 @@ if (fromPT && saved && saved.result) {
   if (who && !who.value && a.audience) who.value = a.audience;
 }
 
+// Intent: training, software or unsure. A CTA can preselect it (?intent=training); the person can change it.
+// Training hides the build-only questions; they stay in the DOM so nothing breaks without JS.
+const intentFromUrl = q.get('intent');
+const radios = [...form.querySelectorAll('input[name="intent"]')];
+if (fromPT) radios.forEach((r) => { r.checked = r.value === 'software'; });
+else if (['training', 'software', 'unsure'].includes(intentFromUrl)) radios.forEach((r) => { r.checked = r.value === intentFromUrl; });
+function applyIntent() {
+  const intent = (radios.find((r) => r.checked) || {}).value || 'unsure';
+  const training = intent === 'training';
+  form.querySelectorAll('[data-build]').forEach((el) => { el.hidden = training; });
+  form.querySelectorAll('[data-label-training],[data-hint-training]').forEach((el) => {
+    el.textContent = el.dataset[training ? (el.dataset.labelTraining ? 'labelTraining' : 'hintTraining') : (el.dataset.labelDefault ? 'labelDefault' : 'hintDefault')];
+  });
+}
+radios.forEach((r) => r.addEventListener('change', applyIntent));
+applyIntent();
+
 let started = false;
 form.addEventListener('focusin', () => { if (!started) { started = true; track('qb_work_intake_start', { from: fromPT ? 'pressure-test' : q.get('from') || 'direct' }); } }, { once: false });
 
@@ -38,9 +55,10 @@ form.addEventListener('submit', async (e) => {
   errorBox.style.display = 'none';
   const data = Object.fromEntries(new FormData(form));
   if (data.website) return; // honeypot
-  const missing = ['today', 'contact_name', 'company_name', 'email'].find((k) => !String(data[k] || '').trim());
+  const intent = data.intent || 'unsure';
+  const missing = ['today', 'contact_name', 'email'].find((k) => !String(data[k] || '').trim());
   if (missing || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)) {
-    showError(missing ? 'We need at least the first answer, your name, organization and email.' : 'That email doesn’t look right.');
+    showError(missing ? 'We need at least the first answer, your name and email.' : 'That email doesn’t look right.');
     const el = form.querySelector(`[name="${missing || 'email'}"]`); if (el) el.focus();
     return;
   }
@@ -51,18 +69,19 @@ form.addEventListener('submit', async (e) => {
   btn.append(document.createTextNode('Sending…'));
 
   const intake = {
-    today: data.today, who: data.who, how_often: data.how_often, systems: data.systems, goes_wrong: data.goes_wrong,
+    intent, today: data.today, who: data.who, how_often: data.how_often, systems: data.systems, goes_wrong: data.goes_wrong,
     tried: data.tried, artifacts: data.artifacts, if_gone: data.if_gone, imagined_build: data.imagined_build,
   };
   const attr = getAttribution();
   const pain_point = [
+    `INTENT: ${intent === 'training' ? 'AI training' : intent === 'software' ? 'Custom software' : 'Not sure yet'}`,
     `WHAT IS HAPPENING TODAY: ${data.today}`, data.who && `WHO DOES THIS WORK: ${data.who}`, data.how_often && `HOW OFTEN: ${data.how_often}`,
     data.systems && `SYSTEMS INVOLVED: ${data.systems}`, data.goes_wrong && `WHEN IT GOES WRONG: ${data.goes_wrong}`, data.tried && `ALREADY TRIED: ${data.tried}`,
     data.artifacts && `ARTIFACTS: ${data.artifacts}`, data.if_gone && `IF IT DISAPPEARED: ${data.if_gone}`, data.imagined_build && `IMAGINED BUILD: ${data.imagined_build}`,
   ].filter(Boolean).join('\n');
 
   const row = {
-    contact_name: data.contact_name, company_name: data.company_name, email: data.email,
+    contact_name: data.contact_name, company_name: (data.company_name || '').trim(), email: data.email,
     pain_point, current_tech: data.systems || null, timeline: data.how_often || null,
     source: fromPT ? 'pressure-test' : 'work-intake', intake, attribution: attr,
     pressure_test: fromPT && saved ? { state: saved.result && saved.result.state, answers: saved.answers, completed_at: saved.completedAt } : null,
@@ -70,12 +89,12 @@ form.addEventListener('submit', async (e) => {
   const ok = await qbInsert('leads', row);
   if (!ok) {
     orb.destroy(); btn.classList.remove('sending'); btn.disabled = false; btn.textContent = 'Send it to Quiet Bands';
-    showError('Couldn’t send the form.');
+    showError('Couldn’t send the form. Your answers are still here; try again in a moment.');
     return;
   }
   fetch('/.netlify/functions/score-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...row, intake: undefined, attribution: undefined, pressure_test: undefined }) }).catch(() => {});
   orb.destroy();
-  track('qb_work_intake_complete', { from: fromPT ? 'pressure-test' : 'direct', pt_state: fromPT && saved && saved.result ? saved.result.state : null });
+  track('qb_work_intake_complete', { intent, from: fromPT ? 'pressure-test' : 'direct', pt_state: fromPT && saved && saved.result ? saved.result.state : null });
   container.innerHTML = `<div class="f-success rise in"><div class="stamp">Received</div><h3>Got it.</h3><p>We read every answer. If the work is a fit, Jay replies personally, usually within two business days.</p></div>`;
   container.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });

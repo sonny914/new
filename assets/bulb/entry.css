@@ -134,3 +134,35 @@ html.nogl .nav a:active,html:not(.js) .nav a:active{color:var(--live)}
 @media (hover:hover) and (pointer:fine){ html.nogl .nav a:hover,html:not(.js) .nav a:hover{color:var(--live)} }
 
 @media (prefers-reduced-motion:reduce){ .nav a,.menu,.menu li a,.menu-btn{transition:none} .menu li a{transform:none} }
+
+/* ---------- the arrival says what the business is, in words, before any interaction ---------- */
+html.live .hero{bottom:calc(96px + env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:space-between}
+.hero-foot{max-width:30em}
+.hero-sub{font-size:16px;line-height:1.4;font-weight:450;color:var(--text);text-wrap:pretty;text-shadow:0 0 2px var(--ground),0 0 10px var(--ground)}
+.hero-cta{display:flex;flex-wrap:wrap;gap:0 22px;margin-top:6px}
+.hero-cta a{pointer-events:auto;display:inline-flex;align-items:center;min-height:44px;font-size:16px;color:var(--text);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:6px;text-decoration-color:var(--line-dim);transition:color 180ms var(--ease-out)}
+.hero-cta a:first-child{color:var(--live);text-decoration-color:var(--live)}
+@media (hover:hover) and (pointer:fine){ .hero-cta a:hover{color:var(--live)} }
+@media (min-width:761px){ html.live .hero{justify-content:flex-start;gap:28px;bottom:auto} .hero-sub{font-size:18px} }
+html.nogl .hero-foot,html:not(.js) .hero-foot{margin-top:20px}
+
+/* ---------- after the bulb: the page in plain reading order ---------- */
+.home{padding:0 var(--gutter) calc(40px + env(safe-area-inset-bottom));max-width:1080px;margin:0 auto}
+.home-sec{padding:clamp(56px,9vw,96px) 0 0}
+.home-sec h2{font-size:clamp(28px,5vw,44px);font-weight:560;font-stretch:90%;letter-spacing:-.022em;line-height:1.05;max-width:18em;text-wrap:balance}
+.home-sec > p{margin-top:16px;font-size:17px;line-height:1.5;color:var(--line-dim);max-width:34em}
+.home-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 36px;margin-top:28px}
+.home-trio div{border-top:1px solid var(--line-faint);padding-top:16px}
+.home-trio h3{font-size:22px;font-weight:560}
+.home-trio p{margin-top:6px;color:var(--line-dim);line-height:1.45}
+@media (max-width:760px){ .home-trio{grid-template-columns:1fr} }
+.home-sec .home-note{font-size:15px}
+.home-links{display:flex;flex-wrap:wrap;gap:0 24px}
+.home-links a,.home-foot a{display:inline-flex;align-items:center;min-height:44px;color:var(--text);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:6px;text-decoration-color:var(--line-dim)}
+.home-proof{list-style:none;margin-top:24px;border-top:1px solid var(--line-faint)}
+.home-proof a{display:flex;flex-wrap:wrap;gap:4px 24px;padding:18px 0;border-bottom:1px solid var(--line-faint)}
+.home-proof b{font-weight:560;min-width:12em}
+.home-proof span{color:var(--line-dim)}
+.home-foot{margin-top:clamp(64px,10vw,110px);padding-top:28px;border-top:1px solid var(--line-faint);font-size:15px;color:var(--line-dim)}
+.home-foot .legal{font-size:13px;margin-top:10px}
+@media (hover:hover) and (pointer:fine){ .home-links a:hover,.home-proof a:hover b,.home-foot a:hover{color:var(--live)} }
