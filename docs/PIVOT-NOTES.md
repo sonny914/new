@@ -54,7 +54,7 @@ If cdn.jsdelivr.net fails, the homepage gets neither `live` nor `nogl` (module i
 ## Owner answers (2026-10-13)
 1. Legal name Quiet Bands LLC; privacy contact jason@quietbands.com — confirmed.
 2. Training format — keep "arranged by inquiry"; no format on the site.
-3. Flighty — "@flighty.ai"; platform not yet confirmed, so no link added.
+3. Flighty — Instagram @flighty.ai, linked in footers and Organization sameAs.
 4. No analytics or pixels outside the repo.
 5. Lead scoring live status unknown — policy says "where enabled".
 6. Retention: 12 months after last contact for leads and rd_events (deletion not yet automated; needs a scheduled job or manual purge).
