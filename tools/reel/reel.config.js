@@ -32,8 +32,8 @@ export default {
     { text: 'SET IT IN MOTION.', in: 's3.land-0.4', out: 's4-0.1', style: 'slide' },
   ],
   end: {
-    title: 'QUIET BANDS.', in: 's4.land+0.05',
-    tag: 'Practical AI for creators.', tagIn: 's4.land+0.5',
+    title: 'QUIET BANDS.', in: 's4.land+1.45',  // arrives as the mark settles front-on (presets ending on the band: 's4.land+0.05')
+    tag: 'Practical AI for creators.', tagIn: 's4.land+1.85',
     mark: 'type',                     // 'type' sets the title as text · 'wordmark' uses assets/brand/wordmark.svg (brand rule)
   },
 
@@ -44,7 +44,7 @@ export default {
   //     { to: 'sphere', morph: 'bloom',    at: 2.5,  dur: 0.85 },
   //     { to: 'torus',  morph: 'stretch',  at: 4.55, dur: 1.3 },
   //     { to: 'band',   morph: 'scatter',  at: 7.15, dur: 1.15 } ] },
-  // shapes: dust · core · sphere · torus · band      morphs: converge · bloom · stretch · scatter
+  // shapes: dust · core · sphere · torus · band · logo      morphs: converge · bloom · stretch · scatter
   // (dur is optional; each morph has a tuned default and scales with what you give it)
   // A step may also set bed: 'hum' | 'pulse' | 'drive' | 'resolve' | 'none' to choose its sound bed.
   sequence: null,
@@ -55,7 +55,19 @@ export default {
     shutter: 0.018, trail: 0.07,      // motion blur and the faint trail behind it, in seconds
     seed: 20261020,                   // change for a different scatter of the same design
   },
-  satellites: { count: 3 },           // orange points in orbit; `from: 's2+0.25'` overrides the preset's entrance
+  satellites: { count: 3 },           // they fade out as the logo settles, so its silhouette stays clean
+  // The particle logo: points sampled from this SVG's own geometry (fill mask + outline), at its true proportions.
+  logo: {
+    src: '/assets/brand/mark.svg',    // the QB mark (repo-root path); any single-colour SVG with a viewBox works
+    width: 2.3,                       // world units; ~2.3 fills about 70% of the frame width
+    depth: 0.12,                      // extrusion, so it turns as a solid sculpture
+    edge: 0.25,                       // share of points on the outline (crisper silhouette)
+    seed: 7,
+    spin: 2.6,                        // rad/s it turns while assembling…
+    settle: 0.6,                      // …decelerating over this many seconds…
+    front: 's4.land+1.6',             // …to face the lens, still, from here to the end (keep ≥ 1 s before 'end')
+    grow: 1.45, light: 2.2,           // point size and brightness during the hold (trails stop, so points carry the weight)
+  },           // orange points in orbit; `from: 's2+0.25'` overrides the preset's entrance
 
   // ── 5. CAMERA ─────────────────────────────────────────────────────────────────────────────────
   // intensity scales every move (dolly, roll, spin, flow) around the resting shot: 0.6 calmer · 1 as designed · 1.3 bolder.

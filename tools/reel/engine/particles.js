@@ -2,8 +2,9 @@
 // frame n from nothing but the config, so any frame renders identically in any order, at any resolution.
 import { TAU, clamp, lerp, seg, inOut, inCubic, outExpo, outBack, rng, track, plan as makePlan, rgb } from './timeline.js';
 import { createType } from './type.js';
+import { sampleLogo } from './logo.js';
 
-export function createReel(cfg, canvas, scale = 1) {
+export function createReel(cfg, canvas, scale = 1, assets = {}) {
   const W = cfg.width, H = cfg.height, FPS = cfg.fps, DURATION = cfg.duration;
   const P = makePlan(cfg), { steps } = P;
   const CREAM = rgb(cfg.colors.particles), LIVE = rgb(cfg.colors.accent), GROUND = cfg.colors.ground;
@@ -75,9 +76,34 @@ export function createReel(cfg, canvas, scale = 1) {
       return o;
     },
   };
+  // the brand mark, sampled from its SVG (engine/logo.js). Each point keeps its place in the mark, and the mark has its
+  // own world rotation: it spins in at logo.spin rad/s, decelerates over logo.settle s and faces the lens from logo.front
+  // on, whatever the camera's spin is doing, so the hold is exactly front-on and still.
+  let LX, LY, LZ;
+  const LOGO = cfg.logo ?? {}, front = steps.some((s) => s.to === 'logo') ? P.time(LOGO.front) : Infinity;
+  if (front < Infinity) {
+    if (!assets.logo) throw new Error('the logo shape needs its SVG (config.logo.src), and it did not load');
+    const t = sampleLogo(assets.logo, N, LOGO);
+    // hand out targets in angular order, matched to each point's angle u, so the points sweep into the mark coherently
+    const byU = [...Array(N).keys()].sort((a, b) => U[a] - U[b]);
+    const byAng = [...Array(N).keys()].sort((a, b) => Math.atan2(t.y[a], t.x[a]) - Math.atan2(t.y[b], t.x[b]));
+    LX = new Float32Array(N); LY = new Float32Array(N); LZ = new Float32Array(N);
+    for (let j = 0; j < N; j++) { const i = byU[j], k = byAng[j]; LX[i] = t.x[k]; LY[i] = t.y[k]; LZ[i] = t.z[k]; }
+  }
+  const logoYaw = (t) => {
+    const w = LOGO.spin ?? 2.6, D = LOGO.settle ?? 0.6;
+    if (t >= front) return 0;
+    if (t >= front - D) return -(w * (front - t) ** 2) / (2 * D);
+    return -(w * D) / 2 - w * (front - D - t);
+  };
+  SHAPES.logo = (i, t, o) => { o[0] = LX[i]; o[1] = LY[i]; o[2] = LZ[i]; return spinY(o, logoYaw(t) - look(yawT, t)); };
+  /** 0 while the film moves, 1 once the mark holds: trails and satellites give way so the silhouette reads. */
+  const stillness = (t) => (front < Infinity ? seg(t, front - 0.45, front) : 0);
+
   // waypoints the morphs travel through
   const spindle = (i, o) => { dir(U[i], V[i], o); o[0] *= 0.32; o[2] *= 0.32; o[1] *= 1.9; return o; };
   const cloud = (i, o) => { const r = 1.25 + DR[i] * 1.5; o[0] = DX[i] * r; o[1] = DY[i] * r * 0.75; o[2] = DZ[i] * r; return o; };
+
   for (const s of steps) if (!SHAPES[s.to]) throw new Error(`unknown shape "${s.to}" (use ${Object.keys(SHAPES).join(', ')})`);
 
   // ---------- morphs: each moves every point from shape A to shape B over [st.at, st.land], scaled by st.scale
@@ -161,13 +187,15 @@ export function createReel(cfg, canvas, scale = 1) {
   const cores = steps.filter((s) => s.to === 'core');
 
   function particles(t) {
-    const cam = cameraAt(t), camS = cameraAt(t - SHUTTER), camL = cameraAt(t - TRAIL);
+    const calm = 1 - stillness(t), SH = SHUTTER * calm, TR = TRAIL * calm;
+    const cam = cameraAt(t), camS = cameraAt(t - SH), camL = cameraAt(t - TR);
     for (const b of buckets) b.length = 0;
-    const ref = cam.d, dens = density(t), grow = openingSize(t);
+    // as the logo holds and the trails stop, points grow and brighten so the mark keeps its weight
+    const still = stillness(t), ref = cam.d, dens = density(t) * (1 + ((LOGO.light ?? 1) - 1) * still), grow = openingSize(t) * (1 + ((LOGO.grow ?? 1) - 1) * still);
     for (let i = 0; i < N; i++) {
       const a = project(pos(i, t, P0), cam, S0);
       if (!a) continue;
-      const s = project(pos(i, t - SHUTTER, P1), camS, S1), l = project(pos(i, t - TRAIL, P2), camL, S2);
+      const s = project(pos(i, t - SH, P1), camS, S1), l = project(pos(i, t - TR, P2), camL, S2);
       const z = a[2];
       // depth: the front of the form is bright, the back recedes; anything that flies at the lens goes soft and dim
       let alpha = clamp(0.22 + 0.78 * (ref + 1.2 - z) / 2.4, 0.12, 1) * dens;
@@ -192,13 +220,14 @@ export function createReel(cfg, canvas, scale = 1) {
       }
     }
     // satellites: comet tails sampled across the last 0.18 s
+    const satAlpha = 1 - stillness(t);
     for (let s = 0; s < cfg.satellites.count; s++) {
-      if (t < satFrom - 0.25) break;
+      if (t < satFrom - 0.25 || satAlpha <= 0) break;
       let prev = null;
       for (let j = 10; j >= 0; j--) {
         const tt = t - j * 0.018, p = project(satellite(s, tt, P0), cameraAt(tt), [0, 0, 0]);
         if (!p || p[2] < 1.4) { prev = null; continue; }
-        const w = 5.5 * ref / p[2], al = (1 - j / 11) ** 1.6 * clamp((ref + 1.6 - p[2]) / 2.4, 0.35, 1);
+        const w = 5.5 * ref / p[2], al = satAlpha * (1 - j / 11) ** 1.6 * clamp((ref + 1.6 - p[2]) / 2.4, 0.35, 1);
         if (prev && Math.hypot(p[0] - prev[0], p[1] - prev[1]) < 40) {
           ctx.strokeStyle = `rgba(${LIVE[0]},${LIVE[1]},${LIVE[2]},${(al * 0.9).toFixed(3)})`; ctx.lineWidth = w * (1 - j / 14);
           ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(p[0] + 0.01, p[1]); ctx.stroke();

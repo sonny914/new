@@ -14,13 +14,18 @@
    Query: ?config=/tools/reel/reel.config.js  &scale=0.5  &preset=pulse (try another preset without editing the config) */
 import { resolveConfig } from './presets.js';
 import { createReel } from './particles.js';
+import { loadLogo } from './logo.js';
 
 const q = new URLSearchParams(location.search);
 const raw = (await import(q.get('config') ?? '/tools/reel/reel.config.js')).default;
-const cfg = resolveConfig({ ...raw, ...(q.get('preset') ? { preset: q.get('preset'), sequence: null } : {}) });
-const reel = createReel(cfg, document.getElementById('c'), Number(q.get('scale') ?? 0.5));
+try {
+var cfg = resolveConfig({ ...raw, ...(q.get('preset') ? { preset: q.get('preset'), sequence: null } : {}) });
+var needsLogo = cfg.sequence.steps.some((s) => s.to === 'logo');
+var assets = needsLogo ? { logo: await loadLogo(cfg.logo.src) } : {};
+var reel = createReel(cfg, document.getElementById('c'), Number(q.get('scale') ?? 0.5), assets);
 await reel.ready();
 window.reel = { draw: reel.draw, frames: reel.frames, FPS: cfg.fps, ready: true };
+} catch (e) { window.reel = { error: e.message }; document.getElementById('hud').textContent = e.message; throw e; }
 
 const hud = document.getElementById('hud');
 let frame = 0, playing = false, last = 0;

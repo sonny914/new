@@ -5,24 +5,25 @@
 // All three resolve on the band: the brand's name, said by the particles.
 
 export const PRESETS = {
-  // The approved reel. One point of light becomes a sphere, a spinning ring, then a band.
+  // The approved reel. One point of light becomes a sphere, a spinning ring, then the QB mark itself:
+  // it assembles by ~7.5 s, turns as one rigid sculpture and holds front-on from logo.front (8.75 s) to the end.
   'one-idea': {
     sequence: {
       start: 'dust',
       steps: [
         { to: 'core', morph: 'converge', at: 0, dur: 0.95 },
-        { to: 'sphere', morph: 'bloom', at: 2.5, dur: 0.85 },
-        { to: 'torus', morph: 'stretch', at: 4.55, dur: 1.3 },
-        { to: 'band', morph: 'scatter', at: 7.15, dur: 1.15 },
+        { to: 'sphere', morph: 'bloom', at: 2.4, dur: 0.85 },
+        { to: 'torus', morph: 'stretch', at: 3.9, dur: 1.2 },
+        { to: 'logo', morph: 'scatter', at: 6.0, dur: 1.15 },
       ],
     },
     rhythm: { bpm: 120, origin: 's2' },
     satellites: { count: 3, from: 's2+0.25' },
     camera: {
-      dist: [[0, 6.2], ['s1.land', 3.4], ['s2', 2.2], ['s2+0.75', 4.4], ['s3', 4.2], ['s3.land', 5.0], ['s4-0.25', 4.5], ['s4+0.45', 3.9], ['s4.land', 3.95], ['end', 4.25]],
-      pitch: [[0, 0.1], ['s2', 0.05], ['s3', 0.18], ['s3.land', 0.62], ['s4-0.15', 0.9], ['s4+0.45', 0.4], ['s4.land', 0.62], ['end', 0.72]],
-      roll: [[0, 0.06], ['s2', -0.02], ['s3', 0.04], ['s3.land', -0.1], ['s4-0.05', 0.08], ['s4.land', -0.03], ['end', 0]],
-      cy: [[0, 900], ['s2', 880], ['s3-0.15', 930], ['s3.land-0.55', 860], ['s4-0.05', 900], ['s4+0.65', 930], ['s4.land', 850], ['end', 830]],
+      dist: [[0, 6.2], ['s1.land', 3.4], ['s2', 2.2], ['s2+0.75', 4.4], ['s3', 4.2], ['s3.land', 5.0], ['s4-0.25', 4.5], ['s4+0.45', 3.9], ['s4.land', 4.3], ['s4.land+1.6', 4.45], ['end', 4.45]],
+      pitch: [[0, 0.1], ['s2', 0.05], ['s3', 0.18], ['s3.land', 0.62], ['s4-0.15', 0.9], ['s4+0.45', 0.4], ['s4.land', 0.15], ['s4.land+1.6', 0], ['end', 0]],
+      roll: [[0, 0.06], ['s2', -0.02], ['s3', 0.04], ['s3.land', -0.1], ['s4-0.05', 0.08], ['s4.land', -0.03], ['s4.land+1.6', 0], ['end', 0]],
+      cy: [[0, 900], ['s2', 880], ['s3-0.15', 930], ['s3.land-0.55', 860], ['s4-0.05', 900], ['s4+0.65', 930], ['s4.land', 840], ['s4.land+1.6', 820], ['end', 820]],
       spin: [[0, 0.12], ['s2-0.05', 0.5], ['s2+0.15', 3.2], ['s2+1.1', 0.7], ['s3', 0.9], ['s3.land', 1.4], ['s4-0.55', 2.2], ['s4', 1.6], ['s4.land', 0.55], ['end', 0.32]],
       flow: [[0, 0], ['s3.land-0.3', 0.4], ['s3.land+0.35', 2.6], ['s4', 3.4], ['s4.land', 0.9], ['end', 0.45]],
     },

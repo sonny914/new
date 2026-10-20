@@ -44,7 +44,9 @@ const pages = await Promise.all(Array.from({ length: mode === 'stills' ? 1 : job
   const page = await browser.newPage({ viewport: { width: 600, height: 1000 } });
   page.on('pageerror', (e) => console.error('page:', e.message));
   await page.goto(url);
-  await page.waitForFunction(() => window.reel?.ready, null, { timeout: 60000 });
+  await page.waitForFunction(() => window.reel?.ready || window.reel?.error, null, { timeout: 60000 });
+  const err = await page.evaluate(() => window.reel.error);
+  if (err) throw new Error(err);
   return page;
 }));
 const { frames, FPS } = await pages[0].evaluate(() => ({ frames: window.reel.frames, FPS: window.reel.FPS }));

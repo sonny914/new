@@ -11,14 +11,22 @@ test('the approved design is the default', () => {
   assert.equal(config.preset, 'one-idea');
   const p = plan(resolveConfig(config));
   assert.deepEqual(p.steps.map((s) => [s.to, s.morph, s.at, +s.land.toFixed(2)]), [
-    ['core', 'converge', 0, 0.95], ['sphere', 'bloom', 2.5, 3.35], ['torus', 'stretch', 4.55, 5.85], ['band', 'scatter', 7.15, 8.3]]);
+    ['core', 'converge', 0, 0.95], ['sphere', 'bloom', 2.4, 3.25], ['torus', 'stretch', 3.9, 5.1], ['logo', 'scatter', 6, 7.15]]);
+});
+
+test('the logo turns, then holds front-on for at least a second', () => {
+  const cfg = resolveConfig(config), p = plan(cfg);
+  assert.equal(cfg.logo.src, '/assets/brand/mark.svg');
+  assert.ok(p.time(cfg.logo.front) > p.steps[3].land, 'front comes after the logo lands');
+  assert.ok(cfg.duration - p.time(cfg.logo.front) >= 1, 'hold is under a second');
+  for (const k of ['pitch', 'roll']) assert.equal(p.keys(cfg.camera.keys[k]).at(-1)[1], 0, `${k} must be 0 for the front-on hold`);
 });
 
 test('time references resolve against the sequence', () => {
   const p = plan(resolveConfig(config));
   assert.equal(p.time(1.5), 1.5);
-  assert.equal(p.time('s2'), 2.5);
-  assert.equal(+p.time('s3.land-0.4').toFixed(2), 5.45);
+  assert.equal(p.time('s2'), 2.4);
+  assert.equal(+p.time('s3.land-0.4').toFixed(2), 4.7);
   assert.equal(p.time('end'), config.duration);
   assert.throws(() => p.time('s9'), /4 steps/);
   assert.throws(() => p.time('soon'), /bad time reference/);
