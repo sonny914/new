@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Quiet Bands reel — compositor</title>
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:960px}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script type="module">
+/* The 10-second Quiet Bands reel, drawn frame by frame. One particle system carries the whole film: dust converges
+   to a nucleus ("ONE IDEA."), blooms into a sphere, stretches and collapses into a spinning torus ("SET IT IN MOTION."),
+   scatters past the camera and reconnects as a Möbius band ("QUIET BANDS."). Every particle keeps its own (u, v)
+   coordinates in every shape, so each transition is the same points travelling, never a cut.
+   Deterministic: window.reel.draw(n) paints frame n. tools/reel/render.mjs qb drives it headless with the score
+   from qb-sound.mjs. Open this page directly (any static server at the repo root) to scrub it: ←/→ step, space plays. */
+
+// ---------- edit here
+const W = 1080, H = 1920, FPS = 30, DURATION = 10;
+const CREAM = [242, 238, 229], LIVE = [255, 90, 0];
+const N = 3600;            // particles
+const ORANGE = 0.075;      // share of particles carrying the accent
+const END_MARK = 'type';   // 'type' sets "QUIET BANDS." as asked; 'wordmark' uses the supplied vector (brand rule)
+// Story beats in seconds; qb-sound.mjs scores against these same numbers.
+const T = { IN: 0.95, BLOOM: 2.5, STRETCH: 4.55, TORUS: 5.85, SCATTER: 7.15, RESOLVE: 8.3, BEAT: 0.5 };
+const COPY = [
+  { text: 'ONE IDEA.', at: 1.0, out: 2.42, style: 'rise' },
+  { text: 'SET IT IN MOTION.', at: 5.45, out: 7.05, style: 'slide' },
+];
+const END = { title: 'QUIET BANDS.', tag: 'Practical AI for creators.', at: 8.35, tagAt: 8.8 };
+
+// ---------- maths
+const TAU = Math.PI * 2;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const smooth = (k) => k * k * (3 - 2 * k);
+const inOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
+const inCubic = (k) => k * k * k;
+const outExpo = (k) => (k >= 1 ? 1 : 1 - 2 ** (-10 * k));
+const outBack = (k, s = 1.4) => 1 + (s + 1) * (k - 1) ** 3 + s * (k - 1) ** 2;
+let seed = 20261020;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+/** Smooth keyframe track: [[t, v], ...] → value at t (cubic Hermite with flattened ends, no overshoot past keys' range). */
+function track(keys, t) {
+  if (t <= keys[0][0]) return keys[0][1];
+  const last = keys[keys.length - 1];
+  if (t >= last[0]) return last[1];
+  let i = 0; while (keys[i + 1][0] < t) i++;
+  const [t0, v0] = keys[i], [t1, v1] = keys[i + 1];
+  const k = (t - t0) / (t1 - t0);
+  return lerp(v0, v1, inOut(k) * 0.5 + smooth(k) * 0.5);
+}
+
+// ---------- the camera and the sculpture's own spin
+const CAM = {
+  dist:  [[0, 6.2], [T.IN, 3.4], [T.BLOOM, 2.2], [3.25, 4.4], [T.STRETCH, 4.2], [T.TORUS, 5.0], [6.9, 4.5], [7.6, 3.9], [T.RESOLVE, 3.95], [10, 4.25]],
+  pitch: [[0, 0.1], [T.BLOOM, 0.05], [T.STRETCH, 0.18], [T.TORUS, 0.62], [7.0, 0.9], [7.6, 0.4], [T.RESOLVE, 0.62], [10, 0.72]],
+  roll:  [[0, 0.06], [T.BLOOM, -0.02], [T.STRETCH, 0.04], [T.TORUS, -0.1], [7.1, 0.08], [T.RESOLVE, -0.03], [10, 0]],
+  cy:    [[0, 900], [T.BLOOM, 880], [4.4, 930], [5.3, 860], [7.1, 900], [7.8, 930], [T.RESOLVE, 850], [10, 830]],
+  // object spin speed, rad/s: lazy, kicked by the bloom, driven through motion, coasting at the end
+  spin:  [[0, 0.12], [T.BLOOM - 0.05, 0.5], [T.BLOOM + 0.15, 3.2], [3.6, 0.7], [T.STRETCH, 0.9], [T.TORUS, 1.4], [6.6, 2.2], [T.SCATTER, 1.6], [T.RESOLVE, 0.55], [10, 0.32]],
+  // flow of points along the torus and band, rad/s: this is the "motion"
+  flow:  [[0, 0], [T.TORUS - 0.3, 0.4], [6.2, 2.6], [T.SCATTER, 3.4], [T.RESOLVE, 0.9], [10, 0.45]],
+};
+const F = 1440; // focal length in px
+// integrate spin and flow once, so speed changes never jolt the angle
+const STEP = 1 / 1200, TABLE = Math.ceil((DURATION + 0.5) / STEP) + 2;
+const yawT = new Float64Array(TABLE), flowT = new Float64Array(TABLE);
+for (let j = 1; j < TABLE; j++) {
+  const t = (j - 1) * STEP - 0.25; // table starts at -0.25 s so trails at t=0 exist
+  yawT[j] = yawT[j - 1] + track(CAM.spin, t) * STEP;
+  flowT[j] = flowT[j - 1] + track(CAM.flow, t) * STEP;
+}
+const look = (arr, t) => { const x = (t + 0.25) / STEP + 1, j = Math.floor(x); return lerp(arr[j], arr[j + 1], x - j); };
+
+// ---------- particles: every one keeps (u, v, w) through every shape
+const U = new Float32Array(N), V = new Float32Array(N), Wr = new Float32Array(N), SZ = new Float32Array(N), HOT = new Uint8Array(N);
+const DX = new Float32Array(N), DY = new Float32Array(N), DZ = new Float32Array(N), DR = new Float32Array(N);
+for (let i = 0; i < N; i++) {
+  U[i] = rnd(); V[i] = rnd(); Wr[i] = rnd();
+  HOT[i] = rnd() < ORANGE ? 1 : 0;
+  const s = rnd(); SZ[i] = (s < 0.7 ? 1.3 + s * 1.2 : 2.2 + (s - 0.7) * 6) * (HOT[i] ? 1.25 : 1); // mostly fine dust, a few grains
+  const a = rnd() * TAU, c = rnd() * 2 - 1, r = Math.sqrt(1 - c * c);
+  DX[i] = r * Math.cos(a); DY[i] = c; DZ[i] = r * Math.sin(a); DR[i] = rnd();
+}
+
+// the shapes, in object space (radius ≈ 1)
+const out = [0, 0, 0];
+function dir(u, v, o) { const lon = u * TAU, cy = v * 2 - 1, s = Math.sqrt(1 - cy * cy); o[0] = s * Math.cos(lon); o[1] = cy; o[2] = s * Math.sin(lon); return o; }
+const tmp = [0, 0, 0];
+function dust(i, o) { const r = 1.6 + DR[i] * 4.6; o[0] = DX[i] * r; o[1] = DY[i] * r * 1.4; o[2] = DZ[i] * r; return o; }
+function core(i, t, o) {
+  dir(U[i], V[i], o);
+  const r = 0.25 * Math.cbrt(Wr[i]) * (1 + 0.12 * Math.sin(t * 7.5 + U[i] * 9)) + 0.004 * Math.sin(t * 3 + V[i] * 40);
+  o[0] *= r; o[1] *= r; o[2] *= r; return o;
+}
+const beatPulse = (t) => { const b = ((t - T.BLOOM) % T.BEAT + T.BEAT) % T.BEAT; return Math.exp(-b * 9); };
+function sphere(i, t, o) {
+  dir(U[i], V[i], o);
+  const w = Wr[i];
+  const r = (w < 0.14 ? 0.35 + w * 4 : 1 + (w - 0.5) * 0.07) * (1 + 0.028 * beatPulse(t) * (t > 2.95 ? 1 : 0));
+  o[0] *= r; o[1] *= r; o[2] *= r; return o;
+}
+function spindle(i, o) { dir(U[i], V[i], o); o[0] *= 0.32; o[2] *= 0.32; o[1] *= 1.9; return o; }
+function torus(i, t, o) {
+  const fl = look(flowT, t);
+  const th = U[i] * TAU + fl * (0.8 + 0.4 * V[i]), ph = V[i] * TAU + fl * 1.7;
+  const r = 0.31 * (0.82 + 0.36 * Wr[i]) * (1 + 0.04 * beatPulse(t)), R = 0.93;
+  o[0] = (R + r * Math.cos(ph)) * Math.cos(th); o[1] = r * Math.sin(ph); o[2] = (R + r * Math.cos(ph)) * Math.sin(th); return o;
+}
+function scatter(i, t, o) {
+  const r = 1.25 + DR[i] * 1.5;
+  o[0] = DX[i] * r; o[1] = DY[i] * r * 0.75; o[2] = DZ[i] * r; return o;
+}
+const BAND_TILT = [Math.cos(0.32), Math.sin(0.32)];
+function band(i, t, o) {
+  const a = U[i] * TAU + look(flowT, t) * 0.55, s = (V[i] - 0.5) * 0.52, j = (Wr[i] - 0.5) * 0.035;
+  const ca = Math.cos(a / 2), sa = Math.sin(a / 2);
+  const rr = 1.02 + s * ca;
+  o[0] = rr * Math.cos(a) + j * sa * Math.cos(a); o[1] = s * sa * 1.05 - j * ca; o[2] = rr * Math.sin(a) + j * sa * Math.sin(a);
+  const y = o[1] * BAND_TILT[0] - o[0] * BAND_TILT[1]; o[0] = o[1] * BAND_TILT[1] + o[0] * BAND_TILT[0]; o[1] = y; // lean it, so the turn shows the twist
+  return o;
+}
+// quadratic Bézier through a waypoint: the points travel on curves, not straight lines
+const A = [0, 0, 0], B = [0, 0, 0], M = [0, 0, 0];
+function bez(k, o) { const a = (1 - k) ** 2, b = 2 * k * (1 - k), c = k * k; o[0] = a * A[0] + b * M[0] + c * B[0]; o[1] = a * A[1] + b * M[1] + c * B[1]; o[2] = a * A[2] + b * M[2] + c * B[2]; return o; }
+function spinY(o, ang) { const c = Math.cos(ang), s = Math.sin(ang), x = o[0] * c - o[2] * s; o[2] = o[0] * s + o[2] * c; o[0] = x; return o; }
+
+/** Particle i, object space, at time t. */
+function pos(i, t, o) {
+  if (t < T.IN) {
+    // dust spirals into the nucleus, accelerating
+    const k = inCubic(seg(t, -0.15 + Wr[i] * 0.12, T.IN));
+    dust(i, A); core(i, t, B);
+    o[0] = lerp(A[0], B[0], k); o[1] = lerp(A[1], B[1], k); o[2] = lerp(A[2], B[2], k);
+    return spinY(o, (1 - k) * 2.6);
+  }
+  if (t < T.BLOOM) return spinY(core(i, t, o), (t - T.IN) * (2.2 + V[i] * 1.6)); // the idea churns inside itself
+  if (t < T.STRETCH) {
+    // bloom: the nucleus throws out a sphere, overshoots, settles
+    const k = seg(t, T.BLOOM + V[i] * 0.1 + Wr[i] * 0.05, T.BLOOM + 0.75 + V[i] * 0.1);
+    spinY(core(i, t, A), (T.BLOOM - T.IN) * (2.2 + V[i] * 1.6)); sphere(i, t, B);
+    const e = outBack(outExpo(k) * 0.85 + k * 0.15, 1.1);
+    o[0] = lerp(A[0], B[0], e); o[1] = lerp(A[1], B[1], e); o[2] = lerp(A[2], B[2], e); return o;
+  }
+  if (t < T.TORUS) {
+    // stretch tall, then collapse into the ring
+    const d = Math.abs(V[i] - 0.5) * 0.35;
+    const k = inOut(seg(t, T.STRETCH + d, T.TORUS - 0.35 + d));
+    sphere(i, t, A); spindle(i, M); torus(i, t, B);
+    return bez(k, o);
+  }
+  if (t < T.SCATTER) return torus(i, t, o);
+  if (t < T.RESOLVE + 0.4) {
+    // scatter past the camera, then reconnect as the band
+    const k = seg(t, T.SCATTER + U[i] * 0.18, T.RESOLVE + 0.15 + U[i] * 0.2);
+    const e = k < 0.42 ? 0.42 * outExpo(k / 0.42) : 0.42 + 0.58 * inOut((k - 0.42) / 0.58);
+    torus(i, t, A); scatter(i, t, M); band(i, t, B);
+    return bez(e, o);
+  }
+  return band(i, t, o);
+}
+
+
+// ---------- the three orange satellites: born at the bloom, they stay with the sculpture to the end
+function satellite(s, t, o) {
+  const born = outExpo(seg(t, T.BLOOM + 0.25 + 0.08 * s, T.BLOOM + 1.1));
+  const a = t * (0.9 + 0.25 * s) + s * 2.1 + look(flowT, t) * 0.3, tilt = 0.5 + s * 0.7;
+  const r = (1.42 + 0.12 * s) * born * (t > T.SCATTER && t < T.RESOLVE ? 1 + 0.3 * Math.sin(Math.PI * seg(t, T.SCATTER, T.RESOLVE)) : 1);
+  o[0] = Math.cos(a) * r; o[1] = Math.sin(a) * r * Math.sin(tilt); o[2] = Math.sin(a) * r * Math.cos(tilt); return o;
+}
+
+/** Per-point brightness by moment: crowded moments (nucleus, the burst) dim each point so the sum reads as form. */
+const density = (t) => 1 + 1.6 * (1 - seg(t, 0.15, 0.75)) - 0.55 * seg(t, 0.5, T.IN) * (1 - seg(t, T.BLOOM + 0.1, T.BLOOM + 0.6)) - 0.2 * seg(t, T.TORUS - 0.2, T.TORUS + 0.4) * (1 - seg(t, T.SCATTER, T.SCATTER + 0.3));
+
+// ---------- camera
+function cameraAt(t) {
+  return { d: track(CAM.dist, t), pitch: track(CAM.pitch, t), roll: track(CAM.roll, t), cy: track(CAM.cy, t), yaw: look(yawT, t) };
+}
+/** Object space → screen; returns [x, y, depth] or null behind the lens. */
+function project(p, cam, o) {
+  let x = p[0], y = p[1], z = p[2];
+  const cyw = Math.cos(cam.yaw), syw = Math.sin(cam.yaw);
+  [x, z] = [x * cyw - z * syw, x * syw + z * cyw];
+  const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  [y, z] = [y * cp - z * sp, y * sp + z * cp];
+  const zz = z + cam.d;
+  if (zz < 0.25) return null;
+  let sx = (F * x) / zz, sy = (-F * y) / zz;
+  const cr = Math.cos(cam.roll), sr = Math.sin(cam.roll);
+  o[0] = W / 2 + sx * cr - sy * sr; o[1] = cam.cy + sx * sr + sy * cr; o[2] = zz; return o;
+}
+
+// ---------- drawing
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+const glow = Object.assign(document.createElement('canvas'), { width: W / 4, height: H / 4 }), gctx = glow.getContext('2d');
+const glow2 = Object.assign(document.createElement('canvas'), { width: W / 4, height: H / 4 }), g2 = glow2.getContext('2d');
+const WIDTHS = [1, 1.5, 2.1, 2.9, 4, 5.5, 7.5, 10, 14, 20], ALPHAS = 14;
+const buckets = Array.from({ length: 2 * WIDTHS.length * ALPHAS * 2 }, () => []);
+const P0 = [0, 0, 0], P1 = [0, 0, 0], P2 = [0, 0, 0], S0 = [0, 0, 0], S1 = [0, 0, 0], S2 = [0, 0, 0];
+const SHUTTER = 0.018, TRAIL = 0.07; // motion blur and the faint trail behind it, in seconds
+/** A streak from tail to head, never longer than max px, so fast moments read as motion rather than a white-out. */
+function pushStreak(list, a, b, max) {
+  let dx = b[0] - a[0], dy = b[1] - a[1]; const len = Math.hypot(dx, dy);
+  if (len > max) { dx *= max / len; dy *= max / len; }
+  list.push(a[0], a[1], a[0] + dx, a[1] + dy);
+}
+const wIndex = (w) => { let j = 0; while (j < WIDTHS.length - 1 && WIDTHS[j + 1] <= w) j++; return j; };
+
+function particles(t) {
+  const cam = cameraAt(t), camS = cameraAt(t - SHUTTER), camL = cameraAt(t - TRAIL);
+  for (const b of buckets) b.length = 0;
+  const ref = cam.d;
+  for (let i = 0; i < N; i++) {
+    const a = project(pos(i, t, P0), cam, S0);
+    if (!a) continue;
+    const s = project(pos(i, t - SHUTTER, P1), camS, S1), l = project(pos(i, t - TRAIL, P2), camL, S2);
+    const z = a[2];
+    // depth: the front of the form is bright, the back recedes; anything that flies at the lens goes soft and dim
+    let alpha = clamp(0.22 + 0.78 * (ref + 1.2 - z) / 2.4, 0.12, 1) * density(t);
+    let w = SZ[i] * (ref * 0.95) / z * (1 + 0.6 * (1 - seg(t, 0.2, T.IN)));
+    if (z < 1.6) { const k = z / 1.6; w *= 1 + (1 - k) * 2.5; alpha *= k * k; }
+    if (alpha < 0.02) continue;
+    const hot = HOT[i];
+    const wi = wIndex(w), ai = Math.min(ALPHAS - 1, Math.floor(alpha * ALPHAS));
+    const key = ((hot * WIDTHS.length + wi) * ALPHAS + ai) * 2;
+    if (s) pushStreak(buckets[key], a, s, 22); else buckets[key].push(a[0], a[1], a[0], a[1]);
+    if (l) { const dx = a[0] - l[0], dy = a[1] - l[1]; if (dx * dx + dy * dy > 36) pushStreak(buckets[key + 1], a, l, 64); }
+  }
+  ctx.lineCap = 'round';
+  ctx.globalCompositeOperation = 'lighter';
+  for (let hot = 0; hot < 2; hot++) for (let wi = 0; wi < WIDTHS.length; wi++) for (let ai = 0; ai < ALPHAS; ai++) {
+    const key = ((hot * WIDTHS.length + wi) * ALPHAS + ai) * 2, col = hot ? LIVE : CREAM, al = (ai + 0.5) / ALPHAS;
+    for (const [pass, k, ww] of [[buckets[key + 1], 0.1, 0.7], [buckets[key], hot ? 0.9 : 0.62, 1]]) {
+      if (!pass.length) continue;
+      ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${(al * k).toFixed(3)})`;
+      ctx.lineWidth = WIDTHS[wi] * ww;
+      ctx.beginPath();
+      for (let j = 0; j < pass.length; j += 4) { ctx.moveTo(pass[j + 2], pass[j + 3]); ctx.lineTo(pass[j] + 0.01, pass[j + 1]); }
+      ctx.stroke();
+    }
+  }
+  // satellites: comet tails sampled across the last 0.18 s
+  if (t > T.BLOOM) for (let s = 0; s < 3; s++) {
+    let prev = null;
+    for (let j = 10; j >= 0; j--) {
+      const tt = t - j * 0.018, cc = cameraAt(tt), p = project(satellite(s, tt, P0), cc, [0, 0, 0]);
+      if (!p || p[2] < 1.4) { prev = null; continue; }
+      const w = 5.5 * ref / p[2], al = (1 - j / 11) ** 1.6 * clamp((ref + 1.6 - p[2]) / 2.4, 0.35, 1);
+      if (prev && Math.hypot(p[0] - prev[0], p[1] - prev[1]) < 40) {
+        ctx.strokeStyle = `rgba(255,90,0,${(al * 0.9).toFixed(3)})`; ctx.lineWidth = w * (1 - j / 14);
+        ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(p[0] + 0.01, p[1]); ctx.stroke();
+      }
+      prev = p;
+    }
+  }
+  // the nucleus: a hot point of light while it is one idea
+  const nk = seg(t, 0.55, T.IN) * (1 - seg(t, T.BLOOM, T.BLOOM + 0.35));
+  if (nk > 0) {
+    const p = project([0, 0, 0], cam, [0, 0, 0]);
+    const r = (110 + 18 * Math.sin(t * 7.5)) * nk * (3 / cam.d);
+    const g = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], r);
+    g.addColorStop(0, `rgba(255,140,60,${0.4 * nk})`); g.addColorStop(0.25, `rgba(255,90,0,${0.22 * nk})`); g.addColorStop(1, 'rgba(255,90,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(p[0] - r, p[1] - r, r * 2, r * 2);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  return cam;
+}
+
+function bloomPass() {
+  gctx.globalCompositeOperation = 'copy'; gctx.drawImage(c, 0, 0, W / 4, H / 4);
+  g2.globalCompositeOperation = 'copy'; g2.filter = 'blur(7px)'; g2.drawImage(glow, 0, 0); g2.filter = 'none';
+  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.5;
+  ctx.drawImage(glow2, 0, 0, W, H);
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+}
+
+// ---------- type: cream, small, tracked; it moves with the film rather than sitting on a card
+const FAMILY = 'Inter';
+function letters(s, size, wght, track) {
+  ctx.font = `${wght} ${size}px ${FAMILY}`;
+  const ws = [...s].map((ch) => ctx.measureText(ch).width + track * size);
+  return { ws, total: ws.reduce((a, b) => a + b, 0) - track * size };
+}
+function drawCopy(item, t, drift) {
+  const k = t - item.at, x = W / 2 + drift, y = 1520, size = 42, wght = 500;
+  if (k < 0 || t > item.out + 0.45) return;
+  const ex = seg(t, item.out, item.out + 0.4);
+  const tr = lerp(0.42, 0.26, outExpo(seg(k, 0, 0.9)));
+  const { ws, total } = letters(item.text, size, wght, tr);
+  let cx = x - total / 2;
+  ctx.textBaseline = 'alphabetic';
+  [...item.text].forEach((ch, j) => {
+    const d = j * 0.032, kk = outExpo(seg(k, d, d + 0.55)), ej = smooth(clamp(ex * 1.6 - j * 0.05));
+    let dx = 0, dy = 0, blur = 0, a = kk * (1 - ej);
+    if (item.style === 'rise') { dy = (1 - kk) * size * 1.1 - ej * 26; blur = ej * 6; }
+    else { dx = (1 - kk) * 70 - ej * 120; blur = (1 - kk) * 8 + ej * 9; a = Math.min(1, kk * 1.4) * (1 - ej); }
+    if (a > 0.005) {
+      ctx.save();
+      if (item.style === 'rise') { ctx.beginPath(); ctx.rect(0, y - size * 1.1 - 40, W, size * 1.4 + 40); ctx.clip(); }
+      ctx.filter = blur > 0.3 ? `blur(${blur.toFixed(1)}px)` : 'none';
+      ctx.globalAlpha = a; ctx.fillStyle = `rgb(${CREAM})`; ctx.font = `${wght} ${size}px ${FAMILY}`;
+      ctx.fillText(ch, cx + dx, y + dy);
+      ctx.restore();
+    }
+    cx += ws[j];
+  });
+}
+let wordmark = null;
+async function loadWordmark() {
+  const svg = (await (await fetch('/assets/brand/wordmark.svg')).text()).replaceAll('#000000', '#F2EEE5');
+  const img = new Image(); img.src = 'data:image/svg+xml;base64,' + btoa(svg); await img.decode(); wordmark = img;
+}
+function drawEnd(t, drift) {
+  const k = t - END.at;
+  if (k < 0) return;
+  const kk = outExpo(seg(k, 0, 1.1)), y = 1470, x = W / 2 + drift;
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, kk * 1.25); ctx.filter = kk < 0.98 ? `blur(${((1 - kk) * 10).toFixed(1)}px)` : 'none';
+  if (END_MARK === 'wordmark' && wordmark) {
+    const w = 420 * lerp(1.06, 1, kk), h = (w * 155) / 845;
+    ctx.drawImage(wordmark, x - w / 2, y - h + 8, w, h);
+  } else {
+    const size = 64, tr = lerp(0.55, 0.16, kk);
+    const { ws, total } = letters(END.title, size, 600, tr);
+    let cx = x - total / 2; ctx.fillStyle = `rgb(${CREAM})`; ctx.font = `600 ${size}px ${FAMILY}`;
+    [...END.title].forEach((ch, j) => { ctx.fillText(ch, cx, y); cx += ws[j]; });
+  }
+  ctx.restore();
+  // the tagline rises softly beneath, quieter
+  const tk = outExpo(seg(t - END.tagAt, 0, 0.9));
+  if (tk > 0) {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, y + 30, W, 80); ctx.clip();
+    ctx.globalAlpha = tk * 0.72; ctx.fillStyle = `rgb(${CREAM})`; ctx.font = `400 38px ${FAMILY}`; ctx.textAlign = 'center';
+    ctx.letterSpacing = '1px';
+    ctx.fillText(END.tag, x, y + 78 + (1 - tk) * 40);
+    ctx.restore();
+  }
+  // one orange hairline under the title, drawn from the centre: the only accent outside the particles
+  const lk = outExpo(seg(t - END.at - 0.25, 0, 1));
+  if (lk > 0) { ctx.fillStyle = `rgba(255,90,0,${0.9 * lk})`; const lw = 56 * lk; ctx.fillRect(x - lw / 2, y + 26, lw, 3); }
+}
+
+// ---------- finish: vignette and a breath of grain
+const vig = (() => {
+  const v = document.createElement('canvas'); v.width = W; v.height = H; const g = v.getContext('2d');
+  const r = g.createRadialGradient(W / 2, H * 0.46, H * 0.22, W / 2, H * 0.46, H * 0.72);
+  r.addColorStop(0, 'rgba(0,0,0,0)'); r.addColorStop(1, 'rgba(0,0,0,0.75)'); g.fillStyle = r; g.fillRect(0, 0, W, H); return v;
+})();
+const grains = Array.from({ length: 4 }, () => {
+  const g = document.createElement('canvas'); g.width = W / 2; g.height = H / 2; const x = g.getContext('2d'), im = x.createImageData(W / 2, H / 2);
+  for (let j = 0; j < im.data.length; j += 4) { const v = rnd() * 255; im.data[j] = im.data[j + 1] = im.data[j + 2] = v; im.data[j + 3] = 255; }
+  x.putImageData(im, 0, 0); return g;
+});
+
+function draw(n) {
+  const t = n / FPS;
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none';
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  const cam = particles(t);
+  bloomPass();
+  ctx.drawImage(vig, 0, 0);
+  // type drifts a little against the camera's turn: it lives in the same space, nearer the lens
+  const drift = -Math.sin(cam.yaw * 0.5) * 6 + cam.roll * 60;
+  for (const item of COPY) drawCopy(item, t, drift);
+  drawEnd(t, drift * 0.5);
+  ctx.globalCompositeOperation = 'soft-light'; ctx.globalAlpha = 0.22;
+  ctx.drawImage(grains[n % 4], 0, 0, W, H);
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+}
+
+window.reel = { draw, W, H, FPS, DURATION, frames: DURATION * FPS, cuts: { ...T, copy: COPY.map((c) => c.at), end: [END.at, END.tagAt] } };
+await document.fonts.load(`600 64px ${FAMILY}`); await document.fonts.load(`500 40px ${FAMILY}`); await document.fonts.load(`400 38px ${FAMILY}`);
+if (END_MARK === 'wordmark') await loadWordmark();
+window.reel.ready = true;
+
+// preview: scrub with the arrow keys, space to play
+let frame = Math.round(T.BLOOM * FPS), playing = false, last = 0;
+draw(frame);
+addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') draw((frame = Math.min(frame + 1, window.reel.frames - 1)));
+  if (e.key === 'ArrowLeft') draw((frame = Math.max(frame - 1, 0)));
+  if (e.key === ' ') { playing = !playing; last = performance.now(); requestAnimationFrame(play); }
+});
+function play(now) {
+  if (!playing) return;
+  if (now - last >= 1000 / FPS) { last = now; frame = (frame + 1) % window.reel.frames; draw(frame); }
+  requestAnimationFrame(play);
+}
+</script>
+</body>
+</html>
