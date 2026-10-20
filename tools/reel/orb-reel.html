@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Thinking orb — reel compositor</title>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:960px}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script type="module">
+/* The 15-second Thinking orb reel, drawn frame by frame. Every orb here is the real engine (assets/orb), painted at an
+   explicit time, so a render is deterministic: window.reel.draw(frameIndex) paints frame N of DURATION × FPS.
+   tools/reel/render.mjs drives it headless and pipes the frames to ffmpeg. Open this page directly to preview it. */
+import { makePainter, normalizeProps, STATES, LABELS, inertiaStep } from '/assets/orb/thinking-orb.js';
+import { paintFrame } from '/assets/orb/engine.js';
+
+const W = 1080, H = 1920, FPS = 30, DURATION = 15;
+const CREAM = '#F2EEE5', QUIET = '#968D7C', LIVE = '#FF5A00', HAIR = 'rgba(242,238,229,.18)';
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+
+// ---------- easing, mixing
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const outExpo = (k) => (k >= 1 ? 1 : 1 - 2 ** (-10 * k));
+const inOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
+const outBack = (k) => { const s = 1.7; return 1 + (s + 1) * (k - 1) ** 3 + s * (k - 1) ** 2; };
+
+// ---------- the orb, at any place, size and time
+const painters = new Map();
+function painter(state, extra = {}) {
+  const key = state + JSON.stringify(extra);
+  if (!painters.has(key)) painters.set(key, makePainter(normalizeProps({ ...extra, state, size: extra.size ?? 64, zoom: extra.zoom ?? 10 })));
+  return painters.get(key);
+}
+/** Draw `state` centred at (x, y), `d` px across, at engine-local time `t` seconds (scaled by the preset's speed). */
+function orb(state, x, y, d, t, { color, alpha = 1, opts, dots = 1.6, dotSize = 1.7, size, zoom } = {}) {
+  if (d < 1 || alpha <= 0) return;
+  const p = painter(state, { color, opts, dots, dotSize, size, zoom });
+  const f = p.frame(t * p.effSpeed + 3);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x - d / 2, y - d / 2);
+  ctx.scale(d / p.px, d / p.px);
+  paintFrame(ctx, f, true, p.color ?? (color ? hexTint(color) : undefined));
+  ctx.restore();
+}
+const hexTint = (h) => ({ r: parseInt(h.slice(1, 3), 16), g: parseInt(h.slice(3, 5), 16), b: parseInt(h.slice(5, 7), 16) });
+
+// ---------- type
+const font = (wght, size, wdth = 100) => `${wght} ${size}px "Hubot Sans"`; // wdth via font-stretch below
+function text(s, x, y, { size = 64, wght = 700, color = CREAM, align = 'center', alpha = 1, stretch = 'normal', track = 0 } = {}) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'alphabetic';
+  ctx.font = font(wght, size); ctx.fontStretch = stretch; ctx.letterSpacing = `${track}px`;
+  ctx.fillText(s, x, y);
+  ctx.restore();
+}
+/** A line that rises out of a mask, word by word. */
+function riseText(s, x, y, k, opt = {}) {
+  const words = s.split(' ');
+  ctx.save();
+  ctx.font = font(opt.wght ?? 800, opt.size ?? 96); ctx.fontStretch = opt.stretch ?? 'normal'; ctx.letterSpacing = `${opt.track ?? 0}px`;
+  const sp = ctx.measureText(' ').width, widths = words.map((w) => ctx.measureText(w).width);
+  const total = widths.reduce((a, b) => a + b, 0) + sp * (words.length - 1);
+  const size = opt.size ?? 96;
+  let cx = x - total / 2;
+  ctx.beginPath(); ctx.rect(0, y - size * 1.05, W, size * 1.35); ctx.clip();
+  words.forEach((w, i) => {
+    const kk = outExpo(clamp(k * words.length * 0.9 - i * 0.6));
+    text(w, cx, y + (1 - kk) * size * 1.2, { ...opt, align: 'left', alpha: (opt.alpha ?? 1) * kk });
+    cx += widths[i] + sp;
+  });
+  ctx.restore();
+}
+
+// ---------- chrome shared by every scene
+function grain(n) {
+  ctx.save(); ctx.globalAlpha = 0.05; ctx.fillStyle = CREAM;
+  let s = n * 9301 + 49297;
+  for (let i = 0; i < 900; i++) { s = (s * 9301 + 49297) % 233280; const x = (s / 233280) * W; s = (s * 9301 + 49297) % 233280; const y = (s / 233280) * H; ctx.fillRect(x, y, 2, 2); }
+  ctx.restore();
+}
+function vignette() {
+  const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.75);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.65)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+function frameChrome(t, alpha) {
+  if (alpha <= 0) return;
+  // the supplied vectors, never typeset: mark then wordmark, 10px gap scaled
+  ctx.save(); ctx.globalAlpha = alpha; ctx.drawImage(BRAND.mark, 72, 84, 50, 40); ctx.drawImage(BRAND.word, 72 + 50 + 18, 89, 164, 30); ctx.restore();
+  text('EXPERIMENTS / 01', W - 72, 116, { size: 30, wght: 500, align: 'right', color: QUIET, alpha, stretch: 'expanded', track: 4 });
+  ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = HAIR; ctx.fillRect(72, 150, W - 144, 2);
+  ctx.fillStyle = LIVE; ctx.fillRect(72, 150, (W - 144) * (t / DURATION), 2); ctx.restore();
+}
+function flash(k) { if (k <= 0) return; ctx.save(); ctx.globalAlpha = k; ctx.fillStyle = CREAM; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+
+// ---------- scenes -----------------------------------------------------------------------------------------------
+const CX = W / 2, CY = 900, BIG = 820;
+const S2 = 1.6, PER = 0.42, S3 = S2 + 9 * PER, S4 = S3 + 2.2, S5 = S4 + 2.8, S6 = S5 + 2.0;
+
+function intro(t) {
+  // a single orange dot, a breath, then the orb blooms out of it
+  const pop = seg(t, 0.0, 0.35), bloom = outExpo(seg(t, 0.35, 1.3));
+  if (bloom < 0.02) {
+    ctx.save(); ctx.fillStyle = LIVE; ctx.beginPath(); ctx.arc(CX, CY, Math.max(0, 14 * outBack(pop)), 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
+  const ink = bloom < 0.5 ? LIVE : undefined;
+  orb('breathing', CX, CY, BIG * bloom, t, { color: ink, alpha: bloom });
+  const halo = seg(t, 0.35, 0.9);
+  if (halo > 0 && halo < 1) {
+    ctx.save(); ctx.strokeStyle = LIVE; ctx.globalAlpha = 1 - halo; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(CX, CY, 40 + halo * 620, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  }
+  riseText('Thinking orb', CX, 1560, seg(t, 0.7, 1.4), { size: 132, wght: 850, stretch: 'condensed', track: -2 });
+  text('a loading state with a pulse', CX, 1640, { size: 40, wght: 400, color: QUIET, alpha: seg(t, 1.0, 1.4) });
+}
+
+function montage(t) {
+  const i = Math.min(8, Math.floor((t - S2) / PER)), local = t - S2 - i * PER, k = local / PER;
+  const state = STATES[i];
+  const punch = 1 + 0.1 * (1 - outExpo(clamp(local / 0.22)));
+  const orange = i === 4 || i === 8;
+  orb(state, CX, CY, BIG * punch, t * 1.4, { color: orange ? LIVE : undefined });
+  // the label slams in, the counter ticks
+  const name = LABELS[state];
+  riseText(name, CX, 1560, clamp(local / 0.18), { size: 150, wght: 900, stretch: 'condensed', track: -3, color: orange ? LIVE : CREAM });
+  text(String(i + 1).padStart(2, '0') + ' / 09', CX, 1650, { size: 38, wght: 600, color: QUIET, stretch: 'expanded', track: 6 });
+  // nine ticks, filled as we go
+  const tw = 60, gap = 18, x0 = CX - (9 * tw + 8 * gap) / 2;
+  for (let j = 0; j < 9; j++) { ctx.fillStyle = j < i ? CREAM : j === i ? LIVE : HAIR; ctx.fillRect(x0 + j * (tw + gap), 1700, tw * (j === i ? clamp(k * 1.4) : 1), 6); }
+  flash(0.35 * (1 - clamp(local / 0.08)));
+}
+
+function grid(t) {
+  const k = outExpo(seg(t, S3, S3 + 0.8));
+  const cell = 300, gap = 36, x0 = CX - (3 * cell + 2 * gap) / 2 + cell / 2, y0 = 560;
+  const wave = seg(t, S3 + 1.0, S3 + 1.9) * 1400; // orange ripple from the centre cell
+  STATES.forEach((s, j) => {
+    const gx = x0 + (j % 3) * (cell + gap), gy = y0 + Math.floor(j / 3) * (cell + gap);
+    // the last montage orb (shaping, j = 8) flies from the centre into its cell; the rest stagger in
+    const own = j === 8;
+    const kk = own ? k : outBack(seg(t, S3 + 0.1 + j * 0.05, S3 + 0.6 + j * 0.05));
+    const x = own ? lerp(CX, gx, k) : gx, y = own ? lerp(CY, gy, k) : gy;
+    const d = own ? lerp(BIG, cell - 30, k) : (cell - 30) * kk;
+    const dist = Math.hypot(gx - (x0 + cell + gap), gy - (y0 + cell + gap));
+    const lit = wave > dist && wave - dist < 700;
+    ctx.save(); ctx.strokeStyle = lit ? LIVE : HAIR; ctx.globalAlpha = kk; ctx.lineWidth = 2;
+    ctx.strokeRect(gx - cell / 2, gy - cell / 2, cell, cell); ctx.restore();
+    orb(s, x, y, d, t * 1.2 + j, { color: lit ? LIVE : undefined, alpha: own ? 1 : kk, dots: 1.2, dotSize: 1.4 });
+    text(s, gx - cell / 2 + 16, gy + cell / 2 - 16, { size: 24, wght: 600, align: 'left', color: lit ? LIVE : QUIET, alpha: kk, stretch: 'expanded', track: 2 });
+  });
+  riseText('Nine states.', CX, 1560, seg(t, S3 + 0.3, S3 + 0.8), { size: 120, wght: 900, stretch: 'condensed', track: -2 });
+  riseText('One engine.', CX, 1680, seg(t, S3 + 0.7, S3 + 1.2), { size: 120, wght: 900, stretch: 'condensed', track: -2, color: LIVE });
+  text('zero dependencies · 2D canvas · no React', CX, 1770, { size: 34, wght: 400, color: QUIET, alpha: seg(t, S3 + 1.2, S3 + 1.6) });
+}
+
+// The grab: a scripted hand. Hold freezes the clock, the drag scrubs it, the release flings and coasts back.
+const GRAB_PATH = (() => {
+  // precompute scrub (orb-time offset) for every frame of the scene, with the same decay the component uses
+  const out = []; let scrub = 0, vel = 0, prevX = 0;
+  for (let f = 0; f <= Math.ceil((S5 - S4) * FPS); f++) {
+    const lt = f / FPS; const hx = handX(lt);
+    if (lt >= 0.9 && lt < 1.9) { const d = (hx - prevX) * 0.02; scrub += d; vel = d * FPS * 1.3; }
+    else if (lt >= 1.9) { const [d, v] = inertiaStep(vel, 1 / FPS, 1.6); scrub += d; vel = v; }
+    prevX = hx; out.push({ scrub, vel });
+  }
+  return out;
+})();
+function handX(lt) {
+  if (lt < 0.6) return lerp(W + 120, CX + 120, outExpo(lt / 0.6));
+  if (lt < 0.9) return CX + 120;
+  if (lt < 1.4) return lerp(CX + 120, CX - 260, inOut((lt - 0.9) / 0.5));
+  if (lt < 1.9) return lerp(CX - 260, CX + 330, inOut((lt - 1.4) / 0.5) ** 1.6);
+  return lerp(CX + 330, W + 200, outExpo((lt - 1.9) / 0.9) * 0.0 + inOut(clamp((lt - 2.1) / 0.6)));
+}
+let heldClock = 0;
+function grab(t) {
+  const lt = t - S4, f = Math.min(GRAB_PATH.length - 1, Math.round(lt * FPS));
+  const { scrub, vel } = GRAB_PATH[f];
+  // clock runs until the press, stands still while held, resumes after release
+  const press = 0.6, release = 1.9;
+  const clock = lt < press ? lt : lt < release ? press : lt - (release - press);
+  const enter = outExpo(seg(t, S4, S4 + 0.4));
+  orb('searching', CX, CY, BIG * lerp(0.5, 1, enter), (S4 + clock) * 1.2 + scrub, { alpha: enter });
+  // the hand: a ring that fills while pressed
+  const hx = handX(lt), hy = CY + 40 + Math.sin(lt * 3) * 10, held = lt >= press && lt < release;
+  ctx.save();
+  ctx.strokeStyle = LIVE; ctx.lineWidth = 5; ctx.globalAlpha = seg(lt, 0, 0.3) * (1 - seg(lt, 2.2, 2.6));
+  ctx.beginPath(); ctx.arc(hx, hy, held ? 46 : 58, 0, Math.PI * 2); ctx.stroke();
+  if (held) { ctx.fillStyle = 'rgba(255,90,0,.28)'; ctx.fill(); }
+  ctx.restore();
+  // velocity readout
+  const word = lt < press ? 'Grab it.' : lt < release ? 'Hold it. Spin it.' : 'Fling it.';
+  const wk = lt < press ? seg(lt, 0.15, 0.5) : lt < release ? seg(lt, press, press + 0.3) : seg(lt, release, release + 0.3);
+  riseText(word, CX, 1560, wk, { size: 130, wght: 900, stretch: 'condensed', track: -2, color: lt >= release ? LIVE : CREAM });
+  text(`velocity ${Math.abs(vel).toFixed(1).padStart(4, '0')}`, CX, 1650, { size: 36, wght: 500, color: QUIET, stretch: 'expanded', track: 4, alpha: seg(lt, press, press + 0.2) });
+  text('…and it coasts back to its own pace', CX, 1720, { size: 34, wght: 400, color: QUIET, alpha: seg(lt, 2.2, 2.5) });
+}
+
+function tune(t) {
+  const lt = t - S5, enter = outExpo(seg(lt, 0, 0.4));
+  const nodeN = Math.round(lerp(14, 70, inOut(seg(lt, 0.3, 1.3))));
+  const thr = lerp(0.5, 1.1, inOut(seg(lt, 0.6, 1.6)));
+  const signals = Math.round(lerp(2, 16, inOut(seg(lt, 0.9, 1.8))));
+  const orange = lt > 1.5;
+  orb('connecting', CX, 820, 700 * lerp(0.7, 1, enter), t * 1.2, { color: orange ? LIVE : undefined, alpha: enter, opts: { nodeN, thr, signals, lineW: 2.2 } });
+  riseText('Tune it.', CX, 1300, seg(lt, 0.1, 0.5), { size: 130, wght: 900, stretch: 'condensed', track: -2 });
+  const knobs = [['nodes', nodeN, 14, 70, String(nodeN)], ['reach', thr, 0.5, 1.1, thr.toFixed(2)], ['signals', signals, 2, 16, String(signals)]];
+  knobs.forEach(([name, v, a, b, label], i) => {
+    const y = 1440 + i * 110, x0 = 150, x1 = W - 150, al = seg(lt, 0.2 + i * 0.1, 0.5 + i * 0.1);
+    text(name, x0, y - 22, { size: 34, wght: 500, align: 'left', color: QUIET, alpha: al });
+    text(label, x1, y - 22, { size: 34, wght: 700, align: 'right', color: CREAM, alpha: al });
+    ctx.save(); ctx.globalAlpha = al;
+    ctx.fillStyle = HAIR; ctx.fillRect(x0, y, x1 - x0, 4);
+    const px = lerp(x0, x1, (v - a) / (b - a));
+    ctx.fillStyle = orange ? LIVE : CREAM; ctx.fillRect(x0, y, px - x0, 4);
+    ctx.beginPath(); ctx.arc(px, y + 2, 16, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  });
+  // ink swatches
+  const sw = seg(lt, 1.3, 1.6);
+  [['grey', '#8a8a8a'], ['cream', CREAM], ['orange', LIVE]].forEach(([n, col], i) => {
+    const x = CX - 220 + i * 220, y = 1790;
+    ctx.save(); ctx.globalAlpha = sw; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x - 50, y - 12, 14, 0, Math.PI * 2); ctx.fill();
+    if (i === 2 && orange) { ctx.strokeStyle = LIVE; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x - 50, y - 12, 24, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.restore();
+    text(n, x - 14, y, { size: 30, wght: 500, align: 'left', color: i === 2 && orange ? LIVE : QUIET, alpha: sw });
+  });
+}
+
+function outro(t) {
+  const lt = t - S6;
+  // the button: the orb as it ships, 20px in a real wait, drawn 3× so a phone can see it
+  const b = outExpo(seg(lt, 0, 0.35)), out = inOut(seg(lt, 0.75, 1.05));
+  const bw = 640, bh = 150, by = 760;
+  ctx.save(); ctx.globalAlpha = b * (1 - out); ctx.strokeStyle = CREAM; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.roundRect(CX - bw / 2, by - bh / 2, bw, bh, 15); ctx.stroke(); ctx.restore();
+  orb('searching', CX - 170, by, 84, t * 1.3, { alpha: b * (1 - out), size: 20, zoom: 4.2, dots: 1, dotSize: 2.6 });
+  text('Sending…', CX + 40, by + 18, { size: 54, wght: 700, alpha: b * (1 - out) });
+  text('ships at 64 · 32 · 20 px', CX, by + 160, { size: 34, wght: 400, color: QUIET, alpha: b * (1 - out) });
+  // end card
+  const e = outExpo(seg(lt, 0.8, 1.3)), end = DURATION - S6;
+  // the last quarter second folds the orb back into the dot the reel opened on, so it loops without a seam
+  const fold = inOut(seg(lt, end - 0.3, end - 0.05)), fade = 1 - seg(lt, end - 0.35, end - 0.15);
+  orb('searching', CX, lerp(CY - 120, CY, fold), 640 * e * (1 - fold), t * 1.2, { color: LIVE, alpha: e, dotSize: 2.1 });
+  if (fold > 0) { ctx.save(); ctx.fillStyle = LIVE; ctx.beginPath(); ctx.arc(CX, CY, 14 * (1 - seg(lt, end - 0.08, end)) * fold, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+  riseText('Hold one.', CX, 1440, seg(lt, 0.9, 1.3), { size: 150, wght: 900, stretch: 'condensed', track: -3, alpha: fade });
+  text('quietbands.com/experiments', CX, 1550, { size: 46, wght: 600, color: LIVE, alpha: seg(lt, 1.05, 1.35) * fade, stretch: 'expanded', track: 1 });
+}
+
+function draw(n) {
+  const t = n / FPS;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  if (t < S2) intro(t);
+  else if (t < S3) montage(t);
+  else if (t < S4) grid(t);
+  else if (t < S5) grab(t);
+  else if (t < S6) tune(t);
+  else outro(t);
+  // a white cut on every scene change
+  for (const cut of [S3, S4, S5, S6]) flash(0.5 * (1 - clamp((t - cut) / 0.1)) * (t >= cut ? 1 : 0));
+  vignette();
+  frameChrome(t, seg(t, 0.6, 1.0) * (1 - seg(t, DURATION - 0.35, DURATION - 0.12)));
+  grain(n);
+}
+
+async function cream(url) {
+  const svg = (await (await fetch(url)).text()).replace(/fill="#000000"/g, `fill="${CREAM}"`);
+  const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); await img.decode(); return img;
+}
+const BRAND = { mark: await cream('/assets/brand/mark.svg'), word: await cream('/assets/brand/wordmark.svg') };
+window.reel = { draw, W, H, FPS, DURATION, frames: DURATION * FPS, cuts: { S2, PER, S3, S4, S5, S6 } };
+await document.fonts.load('900 100px "Hubot Sans"'); await document.fonts.load('400 40px "Hubot Sans"'); await document.fonts.ready;
+window.reel.ready = true;
+if (!navigator.webdriver) { let n = 0; const tick = () => { draw(n); n = (n + 1) % (DURATION * FPS); requestAnimationFrame(tick); }; tick(); }
+</script>
+</body>
+</html>

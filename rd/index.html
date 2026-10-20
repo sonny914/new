@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/bulb/rd.css?v=6" />
+<link rel="stylesheet" href="/assets/bulb/rd.css?v=7" />
 </head>
 <body>
 
@@ -82,6 +82,13 @@
 <section id="experiments">
   <div class="wrap">
     <h2>Experiments</h2>
+    <h3 class="lab"><thinking-orb state="searching" size="32" decorative></thinking-orb>Lab 002 · Thinking orb</h3>
+    <div class="body">
+      <p class="dim">A loading indicator, October 2026. Live. Hold one at <a href="/experiments/thinking-orb/">/experiments/thinking-orb/</a>.</p>
+      <p>A wait that shows what kind of work is happening: a globe scanned for searching, a constellation wiring itself for connecting, bands that scramble and click back for solving. Nine states, taken off React onto plain canvas, with one thing the original doesn't do: you can pick it up. Hold it and it stops, drag it and it turns through its own motion, let go and it coasts back to its own pace. It already runs on the Work intake button.</p>
+      <p class="go"><a href="/experiments/thinking-orb/">Hold one</a> <a href="/experiments/thinking-orb/reel.mp4">Watch the reel (15 s)</a></p>
+    </div>
+
     <h3>Lab 001 · Spatial Hero</h3>
     <div class="body">
       <p class="dim">A homepage experiment, September 2026. Retired. The code stays at <a href="/lab/spatial-hero/">/lab/spatial-hero/</a>.</p>
@@ -119,6 +126,7 @@
 
 </main>
 
+<script type="module" src="/assets/orb/thinking-orb.js"></script>
 <script>
   // mark the section in view in the header row; nothing else moves on this page
   (function () {
