@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Reel — engine page</title>
+<style>html,body{margin:0;background:#000;color:#968D7C;font:12px/1.4 ui-monospace,monospace}canvas{display:block;height:92vh;width:auto}p{margin:6px 8px}</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<p id="hud">loading…</p>
+<script type="module">
+/* Hosts the engine for one config. tools/reel/render.mjs drives it headless; open it in a browser (npm run serve, then
+   /tools/reel/engine/page.html) to scrub: ←/→ one frame, shift+←/→ one second, space plays.
+   Query: ?config=/tools/reel/reel.config.js  &scale=0.5  &preset=pulse (try another preset without editing the config) */
+import { resolveConfig } from './presets.js';
+import { createReel } from './particles.js';
+import { loadLogo } from './logo.js';
+
+const q = new URLSearchParams(location.search);
+const raw = (await import(q.get('config') ?? '/tools/reel/reel.config.js')).default;
+try {
+var cfg = resolveConfig({ ...raw, ...(q.get('preset') ? { preset: q.get('preset'), sequence: null } : {}) });
+var needsLogo = cfg.sequence.steps.some((s) => s.to === 'logo');
+var assets = needsLogo ? { logo: await loadLogo(cfg.logo.src) } : {};
+var reel = createReel(cfg, document.getElementById('c'), Number(q.get('scale') ?? 0.5), assets);
+await reel.ready();
+window.reel = { draw: reel.draw, frames: reel.frames, FPS: cfg.fps, ready: true };
+} catch (e) { window.reel = { error: e.message }; document.getElementById('hud').textContent = e.message; throw e; }
+
+const hud = document.getElementById('hud');
+let frame = 0, playing = false, last = 0;
+const show = (n) => { reel.draw((frame = (n + reel.frames) % reel.frames)); hud.textContent = `${cfg.preset} · frame ${frame} · ${(frame / cfg.fps).toFixed(2)} s`; };
+show(0);
+addEventListener('keydown', (e) => {
+  const step = e.shiftKey ? cfg.fps : 1;
+  if (e.key === 'ArrowRight') show(frame + step);
+  if (e.key === 'ArrowLeft') show(frame - step);
+  if (e.key === ' ') { e.preventDefault(); playing = !playing; last = performance.now(); requestAnimationFrame(play); }
+});
+function play(now) {
+  if (!playing) return;
+  if (now - last >= 1000 / cfg.fps) { last = now; show(frame + 1); }
+  requestAnimationFrame(play);
+}
+</script>
+</body>
+</html>
