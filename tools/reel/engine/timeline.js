@@ -2,6 +2,7 @@
 // Any time in a config may be a number of seconds or a reference to the sequence:
 //   's2'        step 2 starts morphing          's2.land'   step 2 has landed (at + dur)
 //   's2+0.15'   offsets work on both forms      'end'       the reel's duration
+//   'settle'    the final form is at rest: the logo's front-on moment if the reel ends on it, else the last landing
 // so retiming a step moves the copy, camera and sound that hang off it.
 
 export const TAU = Math.PI * 2;
@@ -36,10 +37,11 @@ export function plan(cfg) {
   const steps = [];
   const time = (ref) => {
     if (typeof ref === 'number') return ref;
-    const m = /^\s*(end|s(\d+)(\.land)?)\s*([+-]\s*[\d.]+)?\s*$/.exec(String(ref));
-    if (!m) throw new Error(`bad time reference "${ref}" (use seconds, 's2', 's2.land', 's2+0.3' or 'end')`);
+    const m = /^\s*(end|settle|s(\d+)(\.land)?)\s*([+-]\s*[\d.]+)?\s*$/.exec(String(ref));
+    if (!m) throw new Error(`bad time reference "${ref}" (use seconds, 's2', 's2.land', 's2+0.3', 'settle' or 'end')`);
     let base;
     if (m[1] === 'end') base = cfg.duration;
+    else if (m[1] === 'settle') { const last = steps[steps.length - 1]; base = last.to === 'logo' && cfg.logo?.front !== undefined ? time(cfg.logo.front) : last.land; }
     else {
       const st = steps[Number(m[2]) - 1];
       if (!st) throw new Error(`time reference "${ref}": the sequence has ${steps.length} steps`);

@@ -28,6 +28,8 @@ test('time references resolve against the sequence', () => {
   assert.equal(p.time('s2'), 2.4);
   assert.equal(+p.time('s3.land-0.4').toFixed(2), 4.7);
   assert.equal(p.time('end'), config.duration);
+  assert.equal(+p.time('settle').toFixed(2), 8.75); // the logo's front-on moment
+  assert.equal(+p.time('settle-0.15').toFixed(2), 8.6); // the approved end-title timing, unchanged
   assert.throws(() => p.time('s9'), /4 steps/);
   assert.throws(() => p.time('soon'), /bad time reference/);
 });
@@ -39,7 +41,7 @@ for (const name of Object.keys(PRESETS)) {
     assert.equal(p.steps.length, 4);
     p.steps.forEach((s, j) => j && assert.ok(s.at >= p.steps[j - 1].land, `step ${j + 1} starts before step ${j} lands`));
     for (const c of cfg.copy) assert.ok(p.time(c.in) < p.time(c.out) && p.time(c.out) <= cfg.duration, c.text);
-    assert.ok(p.time(cfg.end.in) < cfg.duration);
+    assert.ok(p.time(cfg.end.in) < cfg.duration - 1, 'end title gets at least a second');
     const wav = score(cfg, 8000);
     assert.equal((wav.length - 44) / 4, cfg.duration * 8000);
   });

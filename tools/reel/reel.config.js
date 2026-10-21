@@ -3,6 +3,7 @@
 //
 //  Times can be seconds (2.5) or tied to the morph sequence, so retiming a step moves everything on it:
 //    's2' = step 2 starts · 's2.land' = step 2 has formed · 's2+0.3' / 's3.land-0.4' = offsets · 'end' = duration
+//    'settle' = the final form is at rest (the logo faces the lens, or the last shape has landed)
 //
 //  Preview (fast, 540×960):   npm run reel:preview      → tools/reel/out/preview.mp4
 //  Export  (final, 1080×1920): npm run reel:export       → <output>/reel.mp4 + reel-poster.jpg
@@ -32,8 +33,8 @@ export default {
     { text: 'SET IT IN MOTION.', in: 's3.land-0.4', out: 's4-0.1', style: 'slide' },
   ],
   end: {
-    title: 'QUIET BANDS.', in: 's4.land+1.45',  // arrives as the mark settles front-on (presets ending on the band: 's4.land+0.05')
-    tag: 'Practical AI for creators.', tagIn: 's4.land+1.85',
+    title: 'QUIET BANDS.', in: 'settle-0.15', // 'settle' = the final form at rest (the logo front-on), in every preset
+    tag: 'Practical AI for creators.', tagIn: 'settle+0.25',
     mark: 'type',                     // 'type' sets the title as text · 'wordmark' uses assets/brand/wordmark.svg (brand rule)
   },
 
