@@ -38,8 +38,9 @@ Rendering is deterministic. Every frame is a pure function of the config and its
 - **Times** are seconds, or tied to the morph sequence: `'s2'` (step 2 starts), `'s2.land'` (step 2 has formed), `'s3.land-0.4'`, `'end'`, and `'settle'` (the final form at rest: the logo front-on, or the last shape landed). Copy, camera and sound all use these, so moving a step moves everything on it.
 - **Presets** each have four steps: line 1 on step 1, line 2 on step 3, end title on step 4.
   - `one-idea` (default, approved): point → sphere → ring → **the QB mark**, which turns once and holds front-on for the last 1.25 s. 120 bpm.
-  - `slow-orbit`: band → sphere → ring from above → band. Calm, 100 bpm.
-  - `pulse`: point → ring → spinning sphere → band. Fast, 128 bpm.
+  - `slow-orbit`: band → sphere → ring from above, which spirals into the QB mark. Calm, 100 bpm.
+  - `pulse`: point → ring → spinning sphere, which bursts into the QB mark. Fast, 128 bpm.
+  - All three end the same way: the mark turns once, then holds front-on for at least 1.25 s.
 - **Sequence**: `null` uses the preset's. Shapes: `dust core sphere torus band logo`. Morphs: `converge bloom stretch scatter`.
 - **Logo**: `logo.src` is the SVG the particles form (default `/assets/brand/mark.svg`). Points are sampled from its own fill mask and outline, at its true proportions. If the file can't load, the render stops with an error; it never substitutes a shape. `logo.front` sets when it faces the lens; keep at least 1 s after it, and end the camera's `pitch` and `roll` keys at 0.
 - **Camera**: `intensity` (0.6 calm … 1.3 bold) scales every move. `keys` override single tracks.

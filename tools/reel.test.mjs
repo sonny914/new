@@ -14,8 +14,9 @@ test('the approved design is the default', () => {
     ['core', 'converge', 0, 0.95], ['sphere', 'bloom', 2.4, 3.25], ['torus', 'stretch', 3.9, 5.1], ['logo', 'scatter', 6, 7.15]]);
 });
 
-test('the logo turns, then holds front-on for at least a second', () => {
-  const cfg = resolveConfig(config), p = plan(cfg);
+for (const name of Object.keys(PRESETS)) test(`preset ${name}: the logo turns, then holds front-on for at least a second`, () => {
+  const cfg = resolveConfig({ ...config, preset: name }), p = plan(cfg);
+  assert.equal(p.steps[3].to, 'logo');
   assert.equal(cfg.logo.src, '/assets/brand/mark.svg');
   assert.ok(p.time(cfg.logo.front) > p.steps[3].land, 'front comes after the logo lands');
   assert.ok(cfg.duration - p.time(cfg.logo.front) >= 1, 'hold is under a second');
