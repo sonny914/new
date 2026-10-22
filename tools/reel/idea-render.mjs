@@ -1,4 +1,5 @@
 // Render tools/reel/idea-reel.html to downloads/kill-a-good-idea.mp4 (1080×1350 4:5 feed, 30 fps, 10 s, with sound).
+//   --tall renders the 9:16 Reels cut (1080×1920) to downloads/kill-a-good-idea-reels.mp4 instead.
 //   node tools/reel/render.mjs [--frames=a,b,c]   (frames mode writes PNG stills to tools/reel/out/ for review)
 // Needs ffmpeg on PATH and Playwright (`npm i --no-save playwright`; set CHROMIUM to a browser binary if it has none). Serves the repo itself so the page loads the real brand mark.
 import { createServer } from 'node:http';
@@ -19,9 +20,10 @@ const server = createServer(async (req, res) => {
 const port = server.address().port;
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
-const page = await browser.newPage({ viewport: { width: 540, height: 675 } });
+const TALL = process.argv.includes('--tall'), NAME = TALL ? 'kill-a-good-idea-reels' : 'kill-a-good-idea';
+const page = await browser.newPage({ viewport: { width: 540, height: TALL ? 960 : 675 } });
 page.on('pageerror', (e) => console.error('page:', e.message));
-await page.goto(`http://localhost:${port}/tools/reel/idea-reel.html`);
+await page.goto(`http://localhost:${port}/tools/reel/idea-reel.html${TALL ? '?tall' : ''}`);
 await page.waitForFunction(() => window.reel?.ready, null, { timeout: 30000 });
 const { frames, FPS, cues } = await page.evaluate(() => ({ frames: window.reel.frames, FPS: window.reel.FPS, cues: window.reel.cues }));
 const grab = (n) => page.evaluate((n) => { window.reel.draw(n); return document.getElementById('c').toDataURL('image/png').split(',')[1]; }, n);
@@ -35,7 +37,7 @@ if (only) {
   const wav = join(tmpdir(), 'idea-reel-sound.wav');
   await writeFile(wav, synth(cues, frames / FPS));
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-', '-i', wav,
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '192k', '-shortest', join(OUT, 'kill-a-good-idea.mp4')], { stdio: ['pipe', 'inherit', 'inherit'] });
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '192k', '-shortest', join(OUT, `${NAME}.mp4`)], { stdio: ['pipe', 'inherit', 'inherit'] });
   for (let n = 0; n < frames; n++) {
     const buf = Buffer.from(await grab(n), 'base64');
     if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once('drain', r));
@@ -43,7 +45,7 @@ if (only) {
   ff.stdin.end();
   await new Promise((r, j) => ff.on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
   // the cover is the settled poster: every line set, the bulb cracked and dark
-  await new Promise((r, j) => spawn('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '8.8', '-i', join(OUT, 'kill-a-good-idea.mp4'), '-frames:v', '1', '-q:v', '3', join(OUT, 'kill-a-good-idea.jpg')], { stdio: 'inherit' }).on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
-  console.log('wrote downloads/kill-a-good-idea.mp4 and kill-a-good-idea.jpg');
+  await new Promise((r, j) => spawn('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '8.8', '-i', join(OUT, `${NAME}.mp4`), '-frames:v', '1', '-q:v', '3', join(OUT, `${NAME}.jpg`)], { stdio: 'inherit' }).on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
+  console.log(`wrote downloads/${NAME}.mp4 and ${NAME}.jpg`);
 }
 await browser.close(); server.close();

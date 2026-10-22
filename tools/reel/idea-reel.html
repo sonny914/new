@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <title>Kill a good idea — reel compositor</title>
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&family=Instrument+Serif&display=swap" rel="stylesheet" />
-<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:675px}</style>
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px}</style>
 </head>
 <body>
 <canvas id="c" width="1080" height="1350"></canvas>
@@ -13,9 +13,11 @@
    the symbol between the two halves is the Quiet Bands wireframe bulb (the lathe of tools/bulb.py glass_profile), which
    takes one orange crack per line of "is asking too many people" and goes out on "what they think about it."
    window.reel.draw(n) paints frame n deterministically; tools/reel/idea-render.mjs drives it headless. */
-const W = 1080, H = 1350, FPS = 30, DURATION = 10;
+// ?tall renders the 9:16 Reels cut: the same 4:5 poster, lifted to sit above the caption and buttons Reels lays over the bottom
+const TALL = new URLSearchParams(location.search).has('tall');
+const W = 1080, H = TALL ? 1920 : 1350, OY = TALL ? 230 : 0, FPS = 30, DURATION = 10;
 const CREAM = '#F2EEE5', QUIET = '#968D7C', LIVE = '#FF5A00';
-const c = document.getElementById('c'), ctx = c.getContext('2d');
+const c = Object.assign(document.getElementById('c'), { height: H }), ctx = c.getContext('2d');
 
 // ---------- easing
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -103,7 +105,7 @@ const DUST = (() => { const R = rng(23); return Array.from({ length: 26 }, () =>
 function bulb(t) {
   // big and turning while it draws, then into its slot between the halves, slowing to a stop for the first hit
   const k = inOut(seg(t, T.shrink, T.shrink + 0.9));
-  const big = { x: W / 2, y: H / 2 - 10, s: 220 }, slot = { x: W / 2, y: 542, s: 45 };
+  const big = { x: W / 2, y: H / 2 - 10, s: 220 }, slot = { x: W / 2, y: OY + 542, s: 45 };
   const jolt = HITS.reduce((a, h, i) => a + (t > h ? Math.exp(-(t - h) * 18) * Math.sin((t - h) * 70) * (2 + i * 1.5) : 0), 0);
   const spin = -0.5 + 0.9 * (1 - (1 - clamp(t / (HITS[0] - 0.4))) ** 2.2) + 0.15;
   const view = { x: lerp(big.x, slot.x, k) + jolt, y: lerp(big.y, slot.y, k), s: lerp(big.s, slot.s, k), spin, alpha: 1 - seg(t, T.end - 0.5, T.end - 0.1) };
@@ -239,7 +241,7 @@ function vignette() {
 }
 function chrome(t, alpha) {
   if (alpha <= 0) return;
-  ctx.save(); ctx.globalAlpha = alpha * 0.9; ctx.drawImage(BRAND.mark, 44, H - 66, 30, 24); ctx.restore();
+  ctx.save(); ctx.globalAlpha = alpha * 0.9; ctx.drawImage(BRAND.mark, 44, OY + 1284, 30, 24); ctx.restore();
 }
 
 // ---------- the frame
@@ -257,7 +259,7 @@ function draw(n) {
   const t = n / FPS, fade = 1 - seg(t, T.end - 0.5, T.end - 0.1);
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
   bulb(t);
-  for (const [kind, s, y, at, len] of LINES) (kind === 'slam' ? slam : whisper)(s, y, seg(t, at, at + len), fade);
+  for (const [kind, s, y, at, len] of LINES) (kind === 'slam' ? slam : whisper)(s, OY + y, seg(t, at, at + len), fade);
   vignette();
   chrome(t, seg(t, T.l1, T.l1 + 0.6) * fade);
   grain(n);
