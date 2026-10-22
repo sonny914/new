@@ -105,10 +105,11 @@ function cover(t) {
   if (BRAND.photo) {
     // a slow breathe in and out over the loop, so the last frame meets the first
     const z = 1.04 + 0.03 * (0.5 - 0.5 * Math.cos((2 * Math.PI * t) / DURATION));
-    const ph = BRAND.photo, s = Math.max(W / ph.width, H / ph.height) * z;
-    ctx.drawImage(ph, (W - ph.width * s) / 2, (H - ph.height * s) / 2, ph.width * s, ph.height * s);
-    const g = ctx.createLinearGradient(0, 0, 0, H * 0.55); g.addColorStop(0, 'rgba(0,0,0,.85)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // full width and dropped 200px, so the face (and the blindfold) sits under the title, not behind it
+    const ph = BRAND.photo, s = (W / ph.width) * z, top = 200;
+    ctx.drawImage(ph, (W - ph.width * s) / 2, top - (ph.height * s - ph.height * (W / ph.width)) / 2, ph.width * s, ph.height * s);
+    const g = ctx.createLinearGradient(0, top, 0, top + 380); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, top); ctx.fillStyle = g; ctx.fillRect(0, top, W, 380);
     const b = ctx.createLinearGradient(0, H * 0.75, 0, H); b.addColorStop(0, 'rgba(0,0,0,0)'); b.addColorStop(1, 'rgba(0,0,0,.7)');
     ctx.fillStyle = b; ctx.fillRect(0, 0, W, H);
   } else {
