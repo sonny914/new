@@ -136,7 +136,11 @@ function chrome(t, alpha) {
   ctx.restore();
 }
 
-function draw(n) {
+// The video opens on the settled poster (every line set and the orb spun up, before it folds back into the dot), so a feed that shows the first frame shows the whole line.
+// The timeline below stays in story order; draw(n) starts it START seconds in and wraps, which keeps the loop seamless.
+const START = 7.0;
+const draw = (n) => paint((n + Math.round(START * FPS)) % (DURATION * FPS));
+function paint(n) {
   const t = n / FPS, fade = 1 - seg(t, T.fold - 0.1, T.fold + 0.15);
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
   // a slow push in over the whole reel
@@ -176,7 +180,7 @@ async function cream(url) {
 const BRAND = { mark: await cream('/assets/brand/mark.svg'), word: await cream('/assets/brand/wordmark.svg') };
 await document.fonts.load('900 100px "Hubot Sans"'); await document.fonts.load('italic 400 100px "Instrument Serif"'); await document.fonts.ready;
 sizeType();
-window.reel = { draw, W, H, FPS, DURATION, frames: DURATION * FPS, cues: { ...T, LIFE, SPIN } };
+window.reel = { draw, W, H, FPS, DURATION, START, frames: DURATION * FPS, cues: { ...T, LIFE, SPIN } };
 window.reel.ready = true;
 if (!navigator.webdriver) { let n = 0; const tick = () => { draw(n); n = (n + 1) % (DURATION * FPS); requestAnimationFrame(tick); }; tick(); }
 </script>

@@ -25,7 +25,7 @@ const page = await browser.newPage({ viewport: { width: 540, height: TALL ? 960 
 page.on('pageerror', (e) => console.error('page:', e.message));
 await page.goto(`http://localhost:${port}/tools/reel/idea-reel.html${TALL ? '?tall' : ''}`);
 await page.waitForFunction(() => window.reel?.ready, null, { timeout: 30000 });
-const { frames, FPS, cues } = await page.evaluate(() => ({ frames: window.reel.frames, FPS: window.reel.FPS, cues: window.reel.cues }));
+const { frames, FPS, cues, START } = await page.evaluate(() => ({ frames: window.reel.frames, FPS: window.reel.FPS, cues: window.reel.cues, START: window.reel.START }));
 const grab = (n) => page.evaluate((n) => { window.reel.draw(n); return document.getElementById('c').toDataURL('image/png').split(',')[1]; }, n);
 
 const only = process.argv.find((a) => a.startsWith('--frames='));
@@ -35,7 +35,9 @@ if (only) {
 } else {
   await mkdir(OUT, { recursive: true });
   const wav = join(tmpdir(), 'idea-reel-sound.wav');
-  await writeFile(wav, synth(cues, frames / FPS));
+  // the score is written in story order; turn it the same START seconds the picture is turned
+  const score = synth(cues, frames / FPS), cut = Math.round(START * 44100) * 4, pcm = score.subarray(44);
+  await writeFile(wav, Buffer.concat([score.subarray(0, 44), pcm.subarray(cut), pcm.subarray(0, cut)]));
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-', '-i', wav,
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '192k', '-shortest', join(OUT, `${NAME}.mp4`)], { stdio: ['pipe', 'inherit', 'inherit'] });
   for (let n = 0; n < frames; n++) {
@@ -44,8 +46,8 @@ if (only) {
   }
   ff.stdin.end();
   await new Promise((r, j) => ff.on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
-  // the cover is the settled poster: every line set, the bulb cracked and dark
-  await new Promise((r, j) => spawn('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '8.8', '-i', join(OUT, `${NAME}.mp4`), '-frames:v', '1', '-q:v', '3', join(OUT, `${NAME}.jpg`)], { stdio: 'inherit' }).on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
+  // the cover is the first frame, which is the settled poster
+  await new Promise((r, j) => spawn('ffmpeg', ['-y', '-loglevel', 'error', '-i', join(OUT, `${NAME}.mp4`), '-frames:v', '1', '-q:v', '3', join(OUT, `${NAME}.jpg`)], { stdio: 'inherit' }).on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
   console.log(`wrote downloads/${NAME}.mp4 and ${NAME}.jpg`);
 }
 await browser.close(); server.close();
