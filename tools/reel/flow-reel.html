@@ -12,12 +12,11 @@
 /* The half-screen motion graphics for the "start with one tiny workflow" reel: 1080 × 960, six scenes, one per beat of
    the voiceover, drawn frame by frame so a render is deterministic. window.reel.draw(n) paints frame N.
    tools/reel/render-flow.mjs drives it headless and writes one clip per scene plus the full cut.
-   Open directly to preview: ?scene=first-build loops one scene, ?rate=1534.20 sets the naira rate the bot "sends". */
+   Open directly to preview: ?scene=first-build loops one scene, ?high=74&rain=60 sets the forecast the bot "sends". */
 
 const W = 1080, H = 960, FPS = 30;
 const P = new URLSearchParams(location.search);
-const RATE = Number(P.get('rate') ?? 1500);
-const RATE_TXT = RATE.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const HIGH = Math.round(Number(P.get('high') ?? 74)), RAIN = Math.round(Number(P.get('rain') ?? 60));
 
 const BG = '#0A0B0E', INK = '#F4F4F6', MUTED = '#8A8E99', EDGE = '#4A4D57', LINE = '#3A3C45';
 const GREEN = '#2EE59D', LIVE = '#FF5A00', HOT = '#FF8A3D', RED = '#FF3B4E', BLUE = '#38B6FF', PINK = '#FF4F8B', GOLD = '#F5B53A';
@@ -99,7 +98,7 @@ const ICON = {
   },
   mail(s) { ctx.beginPath(); ctx.roundRect(-0.4 * s, -0.28 * s, 0.8 * s, 0.56 * s, 0.06 * s); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-0.38 * s, -0.24 * s); ctx.lineTo(0, 0.06 * s); ctx.lineTo(0.38 * s, -0.24 * s); ctx.stroke(); },
   code(s) { ctx.font = fontOf('mono', 800, 0.5 * s); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('</>', 0, 0.02 * s); },
-  naira(s) { ctx.font = fontOf('sans', 800, 0.72 * s); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('₦', 0, 0.04 * s); },
+  dollar(s) { ctx.font = fontOf('sans', 800, 0.72 * s); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('$', 0, 0.04 * s); },
   play(s) {
     ctx.beginPath(); ctx.roundRect(-0.42 * s, -0.3 * s, 0.84 * s, 0.6 * s, 0.16 * s); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(-0.1 * s, -0.15 * s); ctx.lineTo(0.18 * s, 0); ctx.lineTo(-0.1 * s, 0.15 * s); ctx.closePath(); ctx.fill();
@@ -286,7 +285,7 @@ function chip(s, x, y, k, { col = INK, family = 'mono', size = 24, fill = 0.08 }
 
 // ========== scenes (t is seconds into the scene) ==========================================================================
 
-// 1 — "don't start with Python … a 400,000 naira course … 20 hours of video tutorials". Each beat is a node that fails.
+// 1 — "don't start with Python … a $2,000 course … 20 hours of video tutorials". Each beat is a node that fails.
 const HOOK = [2.0, 5.0, 8.4];
 function hook(t) {
   const end = HOOK[2] + 0.6;
@@ -294,7 +293,7 @@ function hook(t) {
   ghostNode(540, 430, 190, 190, seg(t, 0.1, 0.5) * (1 - seg(t, HOOK[0] - 0.35, HOOK[0] - 0.05)), t, 'where do I start?');
   const ns = [
     { x: 200, label: 'Python', sub: '"learn to code first"', icon: 'code' },
-    { x: 540, label: '₦400k course', sub: '₦400,000', icon: 'naira' },
+    { x: 540, label: '$2,000 course', sub: '+ upsells', icon: 'dollar' },
     { x: 880, label: '20 hrs of YouTube', sub: 'at 1.5x speed', icon: 'play' },
   ].map((n) => ({ ...n, y: 430, w: 170, h: 170 }));
   const dim = seg(t, end + 0.5, end + 1.0) * 0.55;
@@ -382,7 +381,7 @@ function skeleton(t) {
 // 4 — "Stop studying. Build. … runs by itself for three days … the first time it fires while you're asleep, it clicks."
 function run(t) {
   const on = 3.0, R = [3.8, 5.2, 6.6], click = 9.4;
-  header('naira-rate-bot.json', t < on ? 'Inactive' : 'Active', t < on ? MUTED : GREEN, t);
+  header('morning-bot.json', t < on ? 'Inactive' : 'Active', t < on ? MUTED : GREEN, t);
   // phase A: the two words
   const outA = seg(t, 2.2, 2.6), yA = -outExpo(outA) * 80;
   ctx.save(); ctx.globalAlpha *= 1 - outA;
@@ -441,13 +440,13 @@ function run(t) {
   }
 }
 
-// 5 — "Every morning at 8 a.m., it pulls the naira to dollar rate and sends it to your Telegram … finish tonight."
+// 5 — "Every morning at 8 a.m., it pulls your local forecast and sends it to your phone … finish tonight."
 function first(t) {
   const fire = 2.1, http = 3.4, sent = 4.2;
-  header('naira-rate-bot.json', t < fire ? 'Inactive' : t < sent ? 'Running' : 'Success', t < fire ? MUTED : t < sent ? LIVE : GREEN, t);
+  header('morning-bot.json', t < fire ? 'Inactive' : t < sent ? 'Running' : 'Success', t < fire ? MUTED : t < sent ? LIVE : GREEN, t);
   const mins = lerp(-8, 0, inOut(seg(t, 0.5, 2.0)));
   const S = { x: 190, y: 340, w: 170, h: 170, kind: 'trigger', icon: 'clock', iconOpt: { h: 8, m: mins }, label: 'Every day 8:00', sub: 'SCHEDULE' };
-  const Hn = { x: 540, y: 340, w: 170, h: 170, icon: 'globe', iconColor: BLUE, label: 'Get NGN rate', sub: 'HTTP REQUEST' };
+  const Hn = { x: 540, y: 340, w: 170, h: 170, icon: 'globe', iconColor: BLUE, label: 'Get forecast', sub: 'HTTP REQUEST' };
   const T = { x: 890, y: 340, w: 170, h: 170, icon: 'plane', iconColor: BLUE, label: 'Send message', sub: 'TELEGRAM', noOut: true };
   edge(outPort(S), inPort(Hn), { k: outExpo(seg(t, 0.6, 1.0)), color: t > fire + 0.5 ? GREEN : EDGE, label: '1 item', labelK: seg(t, fire + 0.5, fire + 0.7), pulse: t > fire && t < fire + 0.5 ? (t - fire) / 0.5 : null });
   edge(outPort(Hn), inPort(T), { k: outExpo(seg(t, 0.9, 1.3)), color: t > sent ? GREEN : EDGE, label: '1 item', labelK: seg(t, sent, sent + 0.2), pulse: t > http + 0.2 && t < sent ? (t - http - 0.2) / (sent - http - 0.2) : null });
@@ -460,7 +459,7 @@ function first(t) {
   const hh = Math.floor(clock / 3600), mm = Math.floor((clock % 3600) / 60), ss = clock % 60;
   chip(`${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`, S.x, 190, seg(t, 0.3, 0.6), { col: at8 ? GREEN : INK });
   // the response
-  const json = `{ "NGN": ${RATE.toFixed(2)} }`, typed = Math.floor(json.length * seg(t, http - 0.1, http + 0.4));
+  const json = `{ "high": ${HIGH}, "rain": ${RAIN} }`, typed = Math.floor(json.length * seg(t, http - 0.1, http + 0.4));
   if (typed > 0) chip(json.slice(0, typed) + (typed < json.length ? '▍' : ''), Hn.x, 190, 1, { col: GREEN });
   // the phone buzzes
   const pk = outExpo(seg(t, sent + 0.3, sent + 0.9)), py = lerp(980, 618, pk), buzz = t > sent + 0.9 && t < sent + 1.3 ? Math.sin(t * 90) * 5 : 0;
@@ -471,10 +470,10 @@ function first(t) {
     const g = ctx.createLinearGradient(x + 40, py + 40, x + 120, py + 120); g.addColorStop(0, '#5AC8FA'); g.addColorStop(1, '#1E88E5');
     ctx.save(); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x + 82, py + 98, 44, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     icon('plane', x + 80, py + 100, 46, INK);
-    text('Rate Bot', x + 150, py + 58, { size: 28, wght: 700, align: 'left', color: MUTED });
+    text('Morning Bot', x + 150, py + 58, { size: 28, wght: 700, align: 'left', color: MUTED });
     text('now', x + w - 36, py + 58, { family: 'mono', size: 20, wght: 600, align: 'right', color: MUTED });
     text('Good morning.', x + 150, py + 104, { size: 32, wght: 500, align: 'left' });
-    text(`$1 = ₦${RATE_TXT}`, x + 150, py + 160, { size: 46, wght: 900, align: 'left', color: GREEN, glow: 22 });
+    text(`${HIGH}°F · ${RAIN}% rain`, x + 150, py + 160, { size: 46, wght: 900, align: 'left', color: GREEN, glow: 22 });
   }
   // useful, real, small enough to finish tonight
   [['useful', 8.0], ['real', 8.5], ['finish it tonight', 9.2]].forEach(([s, a], i) => chip(s, [300, 520, 800][i], 890, seg(t, a, a + 0.3), { col: [GREEN, GREEN, HOT][i] }));
@@ -524,7 +523,7 @@ function draw(n) {
 }
 
 window.reel = { draw, W, H, FPS, DURATION, frames: DURATION * FPS, scenes: SCENES.map(({ name, start, dur }) => ({ name, start, dur })) };
-await Promise.all(['400', '500', '700', '800', '900'].map((w) => document.fonts.load(`${w} 40px "Hubot Sans"`, 'A₦'))
+await Promise.all(['400', '500', '700', '800', '900'].map((w) => document.fonts.load(`${w} 40px "Hubot Sans"`, 'A$°'))
   .concat(['400', '600', '800'].map((w) => document.fonts.load(`${w} 40px "JetBrains Mono"`, 'A→'))));
 await document.fonts.ready;
 window.reel.ready = true;

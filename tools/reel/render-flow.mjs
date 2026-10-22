@@ -1,7 +1,7 @@
 // Render tools/reel/flow-reel.html to tools/reel/out/flow/ (1080×960, 30 fps, silent): the full cut plus one clip per scene,
 // so each beat can be laid under the voiceover on its own.
-//   node tools/reel/render-flow.mjs --rate=1534.20            (the naira rate the bot "sends"; use the real one on the day)
-//   node tools/reel/render-flow.mjs --rate=1534.20 --frames=a,b,c   (PNG stills to tools/reel/out/flow/ for review)
+//   node tools/reel/render-flow.mjs [--high=74 --rain=60]   (the forecast the bot "sends" in the first-build scene)
+//   node tools/reel/render-flow.mjs --frames=a,b,c           (PNG stills to tools/reel/out/flow/ for review)
 // Needs ffmpeg on PATH and Playwright (`npm i --no-save playwright`; set CHROMIUM to a browser binary if it has none).
 import { createServer } from 'node:http';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
@@ -12,8 +12,7 @@ import { chromium } from 'playwright';
 const ROOT = resolve(new URL('../..', import.meta.url).pathname);
 const OUT = join(ROOT, 'tools/reel/out/flow');
 const arg = (k) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
-const rate = arg('rate');
-if (!rate || !Number.isFinite(Number(rate))) { console.error('pass --rate=<today\'s naira per dollar>, e.g. --rate=1534.20'); process.exit(1); }
+const forecast = new URLSearchParams({ high: arg('high') ?? '74', rain: arg('rain') ?? '60' });
 
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.svg': 'image/svg+xml' };
 const server = createServer(async (req, res) => {
@@ -25,7 +24,7 @@ const port = server.address().port;
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 const page = await browser.newPage({ viewport: { width: 540, height: 480 } });
 page.on('pageerror', (e) => console.error('page:', e.message));
-await page.goto(`http://localhost:${port}/tools/reel/flow-reel.html?rate=${rate}`);
+await page.goto(`http://localhost:${port}/tools/reel/flow-reel.html?${forecast}`);
 await page.waitForFunction(() => window.reel?.ready, null, { timeout: 30000 });
 const { frames, FPS, scenes } = await page.evaluate(() => ({ frames: window.reel.frames, FPS: window.reel.FPS, scenes: window.reel.scenes }));
 const grab = (n) => page.evaluate((n) => { window.reel.draw(n); return document.getElementById('c').toDataURL('image/png').split(',')[1]; }, n);
