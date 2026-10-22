@@ -1,4 +1,4 @@
-// Render tools/reel/life-reel.html to downloads/life-you-cant-stop-thinking-about.mp4 (1080×1350 4:5 feed, 30 fps, 12 s, with sound).
+// Render tools/reel/life-reel.html to downloads/life-you-cant-stop-thinking-about.mp4 (1080×1350 4:5 feed, 30 fps, 8 s, with sound).
 //   --tall renders the 9:16 Reels cut (1080×1920) to downloads/life-you-cant-stop-thinking-about-reels.mp4 instead.
 //   node tools/reel/render.mjs [--frames=a,b,c]   (frames mode writes PNG stills to tools/reel/out/ for review)
 // Needs ffmpeg on PATH and Playwright (`npm i --no-save playwright`; set CHROMIUM to a browser binary if it has none). Serves the repo itself so the page loads the real brand mark.
@@ -45,7 +45,7 @@ if (only) {
   ff.stdin.end();
   await new Promise((r, j) => ff.on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
   // the cover is the settled poster: every line set, the orb orange and spun up
-  await new Promise((r, j) => spawn('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '10.5', '-i', join(OUT, `${NAME}.mp4`), '-frames:v', '1', '-q:v', '3', join(OUT, `${NAME}.jpg`)], { stdio: 'inherit' }).on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
+  await new Promise((r, j) => spawn('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '7.0', '-i', join(OUT, `${NAME}.mp4`), '-frames:v', '1', '-q:v', '3', join(OUT, `${NAME}.jpg`)], { stdio: 'inherit' }).on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
   console.log(`wrote downloads/${NAME}.mp4 and ${NAME}.jpg`);
 }
 await browser.close(); server.close();

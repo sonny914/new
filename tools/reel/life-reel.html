@@ -9,7 +9,7 @@
 <body>
 <canvas id="c" width="1080" height="1920"></canvas>
 <script type="module">
-/* "You are absolutely capable of creating the life you can't stop thinking about." as a 12-second reel, copy unchanged.
+/* "You are absolutely capable of creating the life you can't stop thinking about." as an 8-second reel, copy unchanged.
    The real Thinking orb engine (assets/orb, the composing globe) spins above the line as it builds; it turns orange
    on "the life", and on "can't stop" it spins up and never settles back. The last beat folds it into the orange dot it
    opened on, so the reel loops. ?tall is the 9:16 Reels cut, the default the 4:5 feed cut.
@@ -18,7 +18,7 @@ import { makePainter, normalizeProps } from '/assets/orb/thinking-orb.js';
 import { paintFrame } from '/assets/orb/engine.js';
 
 const TALL = new URLSearchParams(location.search).has('tall');
-const W = 1080, H = TALL ? 1920 : 1350, FPS = 30, DURATION = 12;
+const W = 1080, H = TALL ? 1920 : 1350, FPS = 30, DURATION = 8;
 const CREAM = '#F2EEE5', QUIET = '#968D7C', LIVE = '#FF5A00', HAIR = 'rgba(242,238,229,.18)';
 const c = Object.assign(document.getElementById('c'), { height: H }), ctx = c.getContext('2d');
 c.style.height = `${(540 * H) / W}px`;
@@ -32,7 +32,7 @@ const inOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
 const outBack = (k) => { const s = 1.7; return 1 + (s + 1) * (k - 1) ** 3 + s * (k - 1) ** 2; };
 
 // ---------- timeline (seconds)
-const T = { pop: 0, bloom: 0.35, l1: 1.35, l2: 1.95, l3: 2.95, l4: 3.65, l5: 4.85, l6: 5.65, fold: DURATION - 0.4 };
+const T = { pop: 0, bloom: 0.35, l1: 1.2, l2: 1.7, l3: 2.5, l4: 3.05, l5: 4.0, l6: 4.6, fold: DURATION - 0.4 };
 const LIFE = T.l4 + 0.5;   // "THE LIFE" lands: the orb goes orange
 const SPIN = T.l5 + 0.45;  // "STOP" lands: the orb spins up instead
 
