@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>100,000 flowers — reel compositor</title>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&family=Mona+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script type="module">
+/* "100,000 flowers": the cream wireframe bulb glows, shatters, and its glass falls as coloured seeds. Each seed lands
+   and grows a flower of its own colour, the bloom spreads back to the horizon, and a counter runs to exactly 100,000.
+   The colour is the bulb's debris (the one multicolour element the brand allows); type and chrome stay cream and orange.
+   ?tall is the 9:16 Reels cut, the default the 4:5 feed cut. window.reel.draw(n) paints frame n deterministically,
+   starting START seconds in so the first frame is the full field; tools/reel/bloom-render.mjs drives it headless. */
+const TALL = new URLSearchParams(location.search).has('tall');
+const W = 1080, H = TALL ? 1920 : 1350, FPS = 30, DURATION = 10;
+const CREAM = '#F2EEE5', QUIET = '#968D7C', LIVE = '#FF5A00', HAIR = 'rgba(242,238,229,.18)';
+const PALETTE = ['#FF5A00', '#FF3D7F', '#FFB800', '#8B6BFF', '#22C3FF', '#2EE6A6', '#F2EEE5', '#FF7AD9'];
+const c = Object.assign(document.getElementById('c'), { height: H }), ctx = c.getContext('2d');
+c.style.height = `${(540 * H) / W}px`;
+
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const outExpo = (k) => (k >= 1 ? 1 : 1 - 2 ** (-10 * k));
+const outBack = (k) => { const s = 1.7; return 1 + (s + 1) * (k - 1) ** 3 + s * (k - 1) ** 2; };
+const inOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
+const rng = (s) => () => ((s = (s * 16807) % 2147483647) / 2147483647);
+
+// ---------- timeline (seconds)
+const T = { glow: 0.2, shatter: 1.5, land0: 2.5, land1: 3.7, field0: 3.5, field1: 7.3, line: 7.5, end: DURATION };
+const START = 8.8;
+const L = TALL
+  ? { chromeY: 96, bulb: { y: 640, s: 150 }, horizon: 1010, count: 520, word: 610, line: 760 }
+  : { chromeY: 64, bulb: { y: 400, s: 105 }, horizon: 700, count: 340, word: 420, line: 540 };
+
+// ---------- the bulb (the bake's profile, as lines)
+const PROFILE = (() => {
+  const p = [[0, 1]], sm = (k) => k * k * (3 - 2 * k);
+  for (let lat = 80; lat >= -30; lat -= 10) { const a = (lat * Math.PI) / 180; p.push([Math.cos(a), Math.sin(a)]); }
+  const r0 = Math.cos(-Math.PI / 6), z0 = Math.sin(-Math.PI / 6);
+  for (let i = 1; i <= 8; i++) { const k = i / 8, e = sm(k) ** 0.8; p.push([r0 + (0.36 - r0) * e, z0 + (-1.55 - z0) * k]); }
+  for (let i = 0; i < 6; i++) p.push([i % 2 ? 0.36 : 0.4, -1.65 - i * 0.1]);
+  p.push([0.2, -2.3]);
+  return p;
+})();
+const MID = -0.65, LONGS = 20;
+function bulbSegments(spin, s, cy) {
+  const P = (r, z, phi) => { const x = r * Math.cos(phi + spin), d = r * Math.sin(phi + spin); return [W / 2 + x * s, cy - ((z - MID) * 0.98 - d * 0.2) * s, d]; };
+  const out = [];
+  for (let i = 0; i < LONGS; i++) { const phi = (i / LONGS) * Math.PI * 2; for (let j = 1; j < PROFILE.length; j++) out.push([P(...PROFILE[j - 1], phi), P(...PROFILE[j], phi)]); }
+  PROFILE.slice(1, -1).forEach(([r, z]) => { for (let i = 0; i < LONGS; i++) out.push([P(r, z, (i / LONGS) * Math.PI * 2), P(r, z, ((i + 1) / LONGS) * Math.PI * 2)]); });
+  return out;
+}
+const spinAt = (t) => 0.5 * Math.min(t, T.shatter);
+// the shatter: every line of the bulb as it stood, flying out and spinning, its colour shifting as it goes
+const SHARDS = (() => {
+  const R = rng(5);
+  return bulbSegments(spinAt(T.shatter), L.bulb.s, L.bulb.y).map(([a, b]) => {
+    const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = mx - W / 2, dy = my - L.bulb.y, d = Math.hypot(dx, dy) || 1;
+    const sp = 500 + R() * 900;
+    return { a, b, mx, my, vx: (dx / d) * sp + (R() - 0.5) * 300, vy: (dy / d) * sp - 200 + (R() - 0.5) * 300, w: (R() - 0.5) * 14, hue: Math.floor(R() * PALETTE.length), back: (a[2] + b[2]) / 2 };
+  });
+})();
+
+// ---------- the field: exactly 100,000 flowers on a ground plane, near ones large, far ones a coloured haze at the horizon
+const N = 100000, HEROES = 360;
+const G = H - L.horizon, ZN = 1.0, ZF = 90, A = (W * 0.62) / G;
+const FX = new Float32Array(N), FY = new Float32Array(N), FS = new Float32Array(N), FT = new Float32Array(N), FP = new Float32Array(N);
+const FC = new Uint8Array(N), FZ = new Float32Array(N);
+const SEEDS = [];
+(() => {
+  const R = rng(17);
+  for (let i = 0; i < N; i++) {
+    const hero = i < HEROES;
+    const z = hero ? lerp(1.15, 4.2, R() ** 1.3) : Math.sqrt(lerp(ZN * ZN, ZF * ZF, R()));
+    const X = (R() * 2 - 1) * z * A * (hero ? 0.8 : 1);
+    FZ[i] = z; FX[i] = W / 2 + (X * G) / z; FY[i] = L.horizon + G / z; FS[i] = 30 / z; FC[i] = Math.floor(R() * PALETTE.length); FP[i] = R() * Math.PI * 2;
+    if (hero) {
+      // a seed from the glass: starts on the bulb, bursts out, falls to its spot
+      const a = R() * Math.PI * 2, rr = Math.sqrt(R());
+      const sx = W / 2 + Math.cos(a) * rr * L.bulb.s, sy = L.bulb.y - L.bulb.s * 0.7 + Math.sin(a) * rr * L.bulb.s * 0.95;
+      const land = lerp(T.land0, T.land1, (R() + R()) / 2);
+      SEEDS.push({ i, sx, sy, cx: sx + (sx - W / 2) * (1.2 + R() * 1.6), cy: sy - 120 - R() * 380, t0: T.shatter + R() * 0.12, land });
+      FT[i] = land + 0.05;
+    } else {
+      // the bloom spreads out from the middle of the field and back towards the horizon
+      const gx = X / (z * A), r = Math.hypot(gx * 1.4, (z - 2) / ZF);
+      FT[i] = lerp(T.field0, T.field1, clamp(r ** 0.75 + (R() - 0.5) * 0.18));
+    }
+  }
+})();
+// draw order: far to near
+const ORDER = Uint32Array.from({ length: N }, (_, i) => i).sort((p, q) => FZ[q] - FZ[p]);
+const SORTED_T = Float32Array.from(FT).sort();
+const bloomedBy = (t) => { let lo = 0, hi = N; while (lo < hi) { const m = (lo + hi) >> 1; if (SORTED_T[m] <= t) lo = m + 1; else hi = m; } return lo; };
+
+function flower(i, t) {
+  const k = seg(t, FT[i], FT[i] + 0.9);
+  if (k <= 0) return;
+  const s = FS[i], col = PALETTE[FC[i]], x = FX[i], y = FY[i];
+  if (s < 2.2) { const r = Math.max(0.8, s * outExpo(k)); ctx.fillStyle = col; ctx.fillRect(x - r / 2, y - r * 1.5, r, r); return; }
+  const sway = Math.sin(t * 1.6 + FP[i]) * s * 0.18 * k;
+  const stem = s * 3.2 * outExpo(seg(k, 0, 0.45)), hx = x + sway, hy = y - stem;
+  ctx.strokeStyle = '#2E7D4F'; ctx.lineWidth = Math.max(1, s * 0.16); ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x, y - stem * 0.6, hx, hy); ctx.stroke();
+  const open = outBack(seg(k, 0.35, 1));
+  if (open <= 0) return;
+  ctx.fillStyle = col;
+  if (s < 7) { ctx.beginPath(); ctx.arc(hx, hy, s * 0.55 * open, 0, Math.PI * 2); ctx.fill(); return; }
+  const petals = 5 + (FC[i] % 3), pr = s * 0.62 * open;
+  for (let p = 0; p < petals; p++) {
+    const a = FP[i] + (p / petals) * Math.PI * 2 + t * 0.15;
+    ctx.beginPath(); ctx.ellipse(hx + Math.cos(a) * pr * 0.6, hy + Math.sin(a) * pr * 0.45, pr * 0.55, pr * 0.32, a, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.fillStyle = FC[i] === 2 ? LIVE : '#FFE7A8'; ctx.beginPath(); ctx.arc(hx, hy, pr * 0.28, 0, Math.PI * 2); ctx.fill();
+}
+
+// ---------- scenes
+function bulb(t) {
+  if (t >= T.shatter) return;
+  const k = outExpo(seg(t, 0, 0.5)), shake = t > T.shatter - 0.35 ? Math.sin(t * 90) * 4 * seg(t, T.shatter - 0.35, T.shatter) : 0;
+  const glow = seg(t, T.glow, T.glow + 0.6) * (1 + 0.6 * seg(t, T.shatter - 0.4, T.shatter));
+  if (glow > 0) {
+    const g = ctx.createRadialGradient(W / 2, L.bulb.y - L.bulb.s * 0.1, 0, W / 2, L.bulb.y, L.bulb.s * 2.2);
+    g.addColorStop(0, `rgba(255,214,150,${0.35 * glow})`); g.addColorStop(1, 'rgba(255,214,150,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  ctx.save(); ctx.translate(shake, 0); ctx.strokeStyle = CREAM; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
+  for (const [a, b] of bulbSegments(spinAt(t), L.bulb.s * lerp(0.92, 1, k), L.bulb.y)) {
+    ctx.globalAlpha = k * (a[2] + b[2] > 0 ? 0.3 : 1); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+  }
+  ctx.restore();
+}
+function shatter(t) {
+  const dt = t - T.shatter;
+  if (dt < 0 || dt > 1.2) return;
+  // a white-hot flash and a ring
+  const f = 1 - seg(dt, 0, 0.25);
+  if (f > 0) { const g = ctx.createRadialGradient(W / 2, L.bulb.y, 0, W / 2, L.bulb.y, L.bulb.s * 3); g.addColorStop(0, `rgba(255,240,220,${0.8 * f})`); g.addColorStop(1, 'rgba(255,240,220,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+  const rk = seg(dt, 0, 0.6);
+  if (rk < 1) { ctx.save(); ctx.strokeStyle = LIVE; ctx.lineWidth = 3; ctx.globalAlpha = 1 - rk; ctx.beginPath(); ctx.arc(W / 2, L.bulb.y, lerp(40, W * 0.8, outExpo(rk)), 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+  ctx.save(); ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+  for (const sh of SHARDS) {
+    const x = sh.mx + sh.vx * dt * (1 - dt * 0.45), y = sh.my + sh.vy * dt * (1 - dt * 0.45) + 900 * dt * dt, a = sh.w * dt;
+    const hx = (sh.b[0] - sh.a[0]) / 2, hy = (sh.b[1] - sh.a[1]) / 2, ca = Math.cos(a), sa = Math.sin(a);
+    ctx.globalAlpha = (1 - seg(dt, 0.3, 1.1)) * (sh.back > 0 ? 0.4 : 1);
+    ctx.strokeStyle = dt < 0.08 ? CREAM : PALETTE[sh.hue];
+    ctx.beginPath(); ctx.moveTo(x - hx * ca + hy * sa, y - hx * sa - hy * ca); ctx.lineTo(x + hx * ca - hy * sa, y + hx * sa + hy * ca); ctx.stroke();
+  }
+  ctx.restore();
+}
+function seeds(t) {
+  ctx.save();
+  for (const sd of SEEDS) {
+    const u = (t - sd.t0) / (sd.land - sd.t0);
+    if (u < 0 || u > 1) continue;
+    const i = sd.i, tx = FX[i], ty = FY[i], col = PALETTE[FC[i]];
+    // out on a burst, then a falling arc down to its own spot
+    const pos = (v) => { const e = v * v * (3 - 2 * v) * 0.35 + v * v * 0.65; return [(1 - e) ** 2 * sd.sx + 2 * (1 - e) * e * sd.cx + e * e * tx + Math.sin(v * 9 + FP[i]) * 14 * v * (1 - v), (1 - e) ** 2 * sd.sy + 2 * (1 - e) * e * sd.cy + e * e * ty]; };
+    const [x, y] = pos(u), [px, py] = pos(Math.max(0, u - 0.06));
+    ctx.strokeStyle = col; ctx.globalAlpha = 0.45; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(x, y); ctx.stroke();
+    ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 0.25; ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fill();
+  }
+  // a little pop where each one lands
+  for (const sd of SEEDS) {
+    const k = seg(t, sd.land, sd.land + 0.4); if (k <= 0 || k >= 1) continue;
+    ctx.strokeStyle = PALETTE[FC[sd.i]]; ctx.globalAlpha = 1 - k; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(FX[sd.i], FY[sd.i], 6 + 30 * k, (6 + 30 * k) * 0.35, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+function field(t) {
+  if (t < T.land0) return;
+  // the ground: a faint glow along the horizon that warms as the field fills
+  const fill = seg(t, T.field0, T.field1);
+  const g = ctx.createLinearGradient(0, L.horizon - 160, 0, H);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.18, `rgba(255,90,0,${0.08 * fill})`); g.addColorStop(0.3, `rgba(30,18,40,${0.6 * fill})`); g.addColorStop(1, 'rgba(8,6,10,1)');
+  ctx.fillStyle = g; ctx.fillRect(0, L.horizon - 160, W, H);
+  for (let j = 0; j < N; j++) flower(ORDER[j], t);
+}
+
+// ---------- type and chrome
+const SANS = (wght, px, stretch = 'condensed') => `${wght} ${stretch} ${px}px "Hubot Sans"`;
+function counter(t, alpha) {
+  const k = seg(t, T.land0 - 0.1, T.land0 + 0.4);
+  if (k <= 0) return;
+  const n = bloomedBy(t), s = n.toLocaleString('en-US'), px = TALL ? 230 : 190;
+  // Mona Sans for the number: Hubot's zero is slashed, and 100,000 has to read at a glance
+  ctx.save(); ctx.font = `900 condensed ${px}px "Mona Sans"`; ctx.fillStyle = CREAM; ctx.globalAlpha = alpha * k; ctx.textBaseline = 'alphabetic';
+  // fixed digit cells, centred on the number as it stands, so digits don't jitter as it counts
+  const dw = ctx.measureText('0').width, cw = ctx.measureText(',').width;
+  const total = [...s].reduce((a, ch) => a + (ch === ',' ? cw : dw), 0);
+  let x = W / 2 - total / 2;
+  for (const ch of s) { const w = ch === ',' ? cw : dw; ctx.fillText(ch, x + (w - ctx.measureText(ch).width) / 2, L.count + (1 - outExpo(k)) * 40); x += w; }
+  ctx.restore();
+  const wk = seg(t, T.land0 + 0.2, T.land0 + 0.7);
+  if (wk > 0) { ctx.save(); ctx.font = SANS(600, TALL ? 46 : 38, 'expanded'); ctx.letterSpacing = '18px'; ctx.textAlign = 'center'; ctx.fillStyle = CREAM; ctx.globalAlpha = alpha * wk; ctx.fillText('FLOWERS', W / 2 + 9, L.word); ctx.restore(); }
+}
+function line(t, alpha) {
+  const k = seg(t, T.line, T.line + 0.6);
+  if (k <= 0) return;
+  ctx.save(); ctx.font = SANS(900, TALL ? 108 : 92); ctx.textAlign = 'center'; ctx.letterSpacing = '-2px';
+  ctx.beginPath(); ctx.rect(0, L.line - 120, W, 150); ctx.clip();
+  ctx.fillStyle = LIVE; ctx.globalAlpha = alpha; ctx.fillText('GO PLANT SOMETHING.', W / 2, L.line + (1 - outExpo(k)) * 130);
+  ctx.restore();
+}
+function chrome(t, alpha) {
+  const y = L.chromeY;
+  ctx.save(); ctx.globalAlpha = alpha;
+  ctx.drawImage(BRAND.mark, 84, y - 20, 50, 40); ctx.drawImage(BRAND.word, 84 + 50 + 18, y - 15, 164, 30);
+  ctx.fillStyle = HAIR; ctx.fillRect(84, y + 46, W - 168, 2);
+  ctx.fillStyle = LIVE; ctx.fillRect(84, y + 46, (W - 168) * (t / DURATION), 2);
+  ctx.restore();
+}
+function grain(n) {
+  ctx.save(); ctx.globalAlpha = 0.05; ctx.fillStyle = CREAM;
+  let s = n * 9301 + 49297;
+  for (let i = 0; i < 1400; i++) { s = (s * 9301 + 49297) % 233280; const x = (s / 233280) * W; s = (s * 9301 + 49297) % 233280; const y = (s / 233280) * H; ctx.fillRect(x, y, 2, 2); }
+  ctx.restore();
+}
+
+function paint(n) {
+  const t = n / FPS, fade = 1 - seg(t, T.end - 0.5, T.end - 0.1);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.globalAlpha = 1;
+  field(t); bulb(t); shatter(t); seeds(t);
+  ctx.restore();
+  counter(t, fade); line(t, fade);
+  chrome(t, seg(t, 0.2, 0.6) * fade);
+  if (fade < 1) { ctx.fillStyle = `rgba(0,0,0,${1 - fade})`; ctx.fillRect(0, 0, W, H); }
+  grain(n);
+}
+// the video opens on the full field (every flower up, the line set), then plays the story from the bulb
+const draw = (n) => paint((n + Math.round(START * FPS)) % (DURATION * FPS));
+
+async function cream(url) {
+  const svg = (await (await fetch(url)).text()).replace(/fill="#000000"/g, `fill="${CREAM}"`);
+  const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); await img.decode(); return img;
+}
+const BRAND = { mark: await cream('/assets/brand/mark.svg'), word: await cream('/assets/brand/wordmark.svg') };
+await document.fonts.load('900 100px "Hubot Sans"'); await document.fonts.load('900 condensed 100px "Mona Sans"'); await document.fonts.ready;
+window.reel = { draw, paint, W, H, FPS, DURATION, START, frames: DURATION * FPS, cues: { ...T, seeds: SEEDS.map((s) => s.land) } };
+window.reel.ready = true;
+if (!navigator.webdriver) { let n = 0; const tick = () => { draw(n); n = (n + 1) % (DURATION * FPS); requestAnimationFrame(tick); }; tick(); }
+</script>
+</body>
+</html>
