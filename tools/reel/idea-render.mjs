@@ -1,4 +1,4 @@
-// Render tools/reel/idea-reel.html to downloads/kill-a-good-idea.mp4 (1080×1350 4:5 feed, 30 fps, 12 s, with sound).
+// Render tools/reel/idea-reel.html to downloads/kill-a-good-idea.mp4 (1080×1350 4:5 feed, 30 fps, 10 s, with sound).
 //   node tools/reel/render.mjs [--frames=a,b,c]   (frames mode writes PNG stills to tools/reel/out/ for review)
 // Needs ffmpeg on PATH and Playwright (`npm i --no-save playwright`; set CHROMIUM to a browser binary if it has none). Serves the repo itself so the page loads the real brand mark.
 import { createServer } from 'node:http';
@@ -43,7 +43,7 @@ if (only) {
   ff.stdin.end();
   await new Promise((r, j) => ff.on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
   // the cover is the settled poster: every line set, the bulb cracked and dark
-  await new Promise((r, j) => spawn('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '10.5', '-i', join(OUT, 'kill-a-good-idea.mp4'), '-frames:v', '1', '-q:v', '3', join(OUT, 'kill-a-good-idea.jpg')], { stdio: 'inherit' }).on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
+  await new Promise((r, j) => spawn('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '8.8', '-i', join(OUT, 'kill-a-good-idea.mp4'), '-frames:v', '1', '-q:v', '3', join(OUT, 'kill-a-good-idea.jpg')], { stdio: 'inherit' }).on('close', (c) => (c ? j(new Error(`ffmpeg ${c}`)) : r())));
   console.log('wrote downloads/kill-a-good-idea.mp4 and kill-a-good-idea.jpg');
 }
 await browser.close(); server.close();

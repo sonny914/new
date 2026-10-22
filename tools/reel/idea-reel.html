@@ -9,11 +9,11 @@
 <body>
 <canvas id="c" width="1080" height="1350"></canvas>
 <script type="module">
-/* "The fastest way to kill a good idea…" as a 12-second 4:5 feed reel. The copy is the mymind poster's, word for word;
+/* "The fastest way to kill a good idea…" as a 10-second 4:5 feed reel. The copy is the mymind poster's, word for word;
    the symbol between the two halves is the Quiet Bands wireframe bulb (the lathe of tools/bulb.py glass_profile), which
    takes one orange crack per line of "is asking too many people" and goes out on "what they think about it."
    window.reel.draw(n) paints frame n deterministically; tools/reel/idea-render.mjs drives it headless. */
-const W = 1080, H = 1350, FPS = 30, DURATION = 12;
+const W = 1080, H = 1350, FPS = 30, DURATION = 10;
 const CREAM = '#F2EEE5', QUIET = '#968D7C', LIVE = '#FF5A00';
 const c = document.getElementById('c'), ctx = c.getContext('2d');
 
@@ -29,7 +29,7 @@ const rng = (s) => () => ((s = (s * 16807) % 2147483647) / 2147483647);
 const T = {
   draw: 0.15, shrink: 2.0, l1: 2.35, l2: 2.85, l3: 3.25,
   l4: 4.25, l5: 4.95, l6: 5.65,          // each lands a crack
-  out: 6.6, l7: 7.0, l8: 7.45, end: DURATION,
+  out: 5.95, l7: 6.05, l8: 6.4, end: DURATION,
 };
 const HITS = [T.l4 + 0.12, T.l5 + 0.12, T.l6 + 0.12];
 
@@ -240,9 +240,6 @@ function vignette() {
 function chrome(t, alpha) {
   if (alpha <= 0) return;
   ctx.save(); ctx.globalAlpha = alpha * 0.9; ctx.drawImage(BRAND.mark, 44, H - 66, 30, 24); ctx.restore();
-  // the line is mymind's: credit it where the poster did, small and quiet, up the right edge
-  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(W - 40, H / 2 + 80); ctx.rotate(-Math.PI / 2);
-  ctx.font = SERIF(26); ctx.fillStyle = QUIET; ctx.textAlign = 'center'; ctx.fillText('mymind.com', 0, 0); ctx.restore();
 }
 
 // ---------- the frame
