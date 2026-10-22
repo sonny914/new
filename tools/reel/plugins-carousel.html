@@ -105,11 +105,15 @@ function cover(t) {
   if (BRAND.photo) {
     // a slow breathe in and out over the loop, so the last frame meets the first
     const z = 1.04 + 0.03 * (0.5 - 0.5 * Math.cos((2 * Math.PI * t) / DURATION));
-    // full width and dropped 200px, so the face (and the blindfold) sits under the title, not behind it
-    const ph = BRAND.photo, s = (W / ph.width) * z, top = 200;
+    // full width and dropped, so the blindfold sits clear under the title, not behind it
+    const ph = BRAND.photo, s = (W / ph.width) * z, top = 330;
     ctx.drawImage(ph, (W - ph.width * s) / 2, top - (ph.height * s - ph.height * (W / ph.width)) / 2, ph.width * s, ph.height * s);
-    const g = ctx.createLinearGradient(0, top, 0, top + 380); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, top); ctx.fillStyle = g; ctx.fillRect(0, top, W, 380);
+    const g = ctx.createLinearGradient(0, top, 0, top + 240); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, top); ctx.fillStyle = g; ctx.fillRect(0, top, W, 240);
+    // the QB mark glowing on the right-hand monitor, as if it were on screen
+    ctx.save(); ctx.globalAlpha = 0.6; ctx.globalCompositeOperation = 'screen';
+    ctx.translate(W / 2, top); ctx.scale(z, z); ctx.translate(-W / 2, -top);
+    ctx.drawImage(BRAND.mark, 936, top + 572, 84, 67); ctx.restore();
     const b = ctx.createLinearGradient(0, H * 0.75, 0, H); b.addColorStop(0, 'rgba(0,0,0,0)'); b.addColorStop(1, 'rgba(0,0,0,.7)');
     ctx.fillStyle = b; ctx.fillRect(0, 0, W, H);
   } else {
