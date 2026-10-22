@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Kill a good idea — reel compositor</title>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&family=Instrument+Serif&display=swap" rel="stylesheet" />
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:675px}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1350"></canvas>
+<script type="module">
+/* "The fastest way to kill a good idea…" as a 12-second 4:5 feed reel. The copy is the mymind poster's, word for word;
+   the symbol between the two halves is the Quiet Bands wireframe bulb (the lathe of tools/bulb.py glass_profile), which
+   takes one orange crack per line of "is asking too many people" and goes out on "what they think about it."
+   window.reel.draw(n) paints frame n deterministically; tools/reel/idea-render.mjs drives it headless. */
+const W = 1080, H = 1350, FPS = 30, DURATION = 12;
+const CREAM = '#F2EEE5', QUIET = '#968D7C', LIVE = '#FF5A00';
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+
+// ---------- easing
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const outExpo = (k) => (k >= 1 ? 1 : 1 - 2 ** (-10 * k));
+const inOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
+const rng = (s) => () => ((s = (s * 16807) % 2147483647) / 2147483647);
+
+// ---------- timeline (seconds)
+const T = {
+  draw: 0.15, shrink: 2.0, l1: 2.35, l2: 2.85, l3: 3.25,
+  l4: 4.25, l5: 4.95, l6: 5.65,          // each lands a crack
+  out: 6.6, l7: 7.0, l8: 7.45, end: DURATION,
+};
+const HITS = [T.l4 + 0.12, T.l5 + 0.12, T.l6 + 0.12];
+
+// ---------- the bulb: the bake's profile, lathed as lines
+const NECK_Z = -1.55, NECK_R = 0.36, LONGS = 24;
+const smooth = (k) => k * k * (3 - 2 * k);
+const PROFILE = (() => {
+  const p = [[0, 1]];
+  for (let lat = 80; lat >= -30; lat -= 10) { const a = (lat * Math.PI) / 180; p.push([Math.cos(a), Math.sin(a)]); }
+  const r0 = Math.cos(-Math.PI / 6), z0 = Math.sin(-Math.PI / 6);
+  for (let i = 1; i <= 8; i++) { const k = i / 8, e = smooth(k) ** 0.8; p.push([r0 + (NECK_R - r0) * e, z0 + (NECK_Z - z0) * k]); }
+  return p;
+})();
+// the screw base: threads in and out under the neck, then the contact
+const BASE = (() => {
+  const p = [[NECK_R, NECK_Z], [NECK_R, NECK_Z - 0.18]];
+  for (let i = 0; i < 7; i++) p.push([i % 2 ? NECK_R : NECK_R + 0.04, NECK_Z - 0.18 - (i + 1) * 0.1]);
+  p.push([NECK_R * 0.86, NECK_Z - 1.0], [NECK_R * 0.55, NECK_Z - 1.12], [0.14, NECK_Z - 1.12]);
+  return p;
+})();
+const TOP = 1, BOTTOM = NECK_Z - 1.12, MID = (TOP + BOTTOM) / 2;   // bulb spans 3.67 units
+const TILT = 0.2;
+function project(r, z, phi, view) {
+  const x = r * Math.cos(phi + view.spin), d = r * Math.sin(phi + view.spin);
+  const y = (z - MID) * Math.cos(TILT) - d * Math.sin(TILT);
+  return [view.x + x * view.s, view.y - y * view.s, d];
+}
+function poly(pts, view, draw, alphaOf) {
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i], k = clamp(draw * (pts.length - 1) - (i - 1));
+    if (k <= 0) break;
+    const A = project(a[0], a[1], a[2], view), B = project(b[0], b[1], b[2], view);
+    ctx.globalAlpha = view.alpha * alphaOf((A[2] + B[2]) / 2);
+    ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(lerp(A[0], B[0], k), lerp(A[1], B[1], k)); ctx.stroke();
+  }
+}
+/** Silhouette of the glass in screen space, for clipping cracks and glow to the glass. */
+function glassPath(view) {
+  ctx.beginPath();
+  const side = (sgn, pts) => pts.forEach(([r, z], i) => { const x = view.x + sgn * r * view.s, y = view.y - (z - MID) * Math.cos(TILT) * view.s; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+  side(1, PROFILE); [...PROFILE].reverse().forEach(([r, z]) => ctx.lineTo(view.x - r * view.s, view.y - (z - MID) * Math.cos(TILT) * view.s));
+  ctx.closePath();
+}
+
+// cracks: seeded branching walks out from three impact points, in bulb units (x right, z up), drawn in order
+const CRACKS = (() => {
+  const R = rng(11), out = [];
+  const impacts = [[0.42, 0.3, 0], [-0.5, -0.12, 1], [0.02, 0.62, 2]];
+  for (const [x0, z0, stage] of impacts) {
+    const arms = stage === 2 ? 5 : 3;
+    for (let a = 0; a < arms; a++) {
+      let ang = (a / arms) * Math.PI * 2 + R() * 0.8, x = x0, z = z0;
+      const pts = [[x, z]], len = (stage === 2 ? 0.6 : 0.4) + R() * 0.4;
+      for (let s = 0; s < 9; s++) {
+        ang += (R() - 0.5) * 0.9; const st = len / 9;
+        x += Math.cos(ang) * st; z += Math.sin(ang) * st; pts.push([x, z]);
+        if (R() < 0.22) { // a short branch
+          let bx = x, bz = z, ba = ang + (R() < 0.5 ? 1 : -1) * (0.6 + R() * 0.5); const b = [[bx, bz]];
+          for (let j = 0; j < 3; j++) { ba += (R() - 0.5) * 0.6; bx += Math.cos(ba) * st * 0.8; bz += Math.sin(ba) * st * 0.8; b.push([bx, bz]); }
+          out.push({ stage, pts: b, delay: (s + 1) / 9 });
+        }
+      }
+      out.push({ stage, pts, delay: 0 });
+    }
+  }
+  return out;
+})();
+// glass dust from the third hit
+const DUST = (() => { const R = rng(23); return Array.from({ length: 26 }, () => ({ x: (R() - 0.5) * 1.4, z: 0.2 + R() * 0.6, vx: (R() - 0.5) * 1.6, vz: 0.4 + R() * 1.2, s: 0.012 + R() * 0.02 })); })();
+
+function bulb(t) {
+  // big and turning while it draws, then into its slot between the halves, slowing to a stop for the first hit
+  const k = inOut(seg(t, T.shrink, T.shrink + 0.9));
+  const big = { x: W / 2, y: H / 2 - 10, s: 220 }, slot = { x: W / 2, y: 542, s: 45 };
+  const jolt = HITS.reduce((a, h, i) => a + (t > h ? Math.exp(-(t - h) * 18) * Math.sin((t - h) * 70) * (2 + i * 1.5) : 0), 0);
+  const spin = -0.5 + 0.9 * (1 - (1 - clamp(t / (HITS[0] - 0.4))) ** 2.2) + 0.15;
+  const view = { x: lerp(big.x, slot.x, k) + jolt, y: lerp(big.y, slot.y, k), s: lerp(big.s, slot.s, k), spin, alpha: 1 - seg(t, T.end - 0.5, T.end - 0.1) };
+  const lw = clamp(view.s * 0.0085, 1.25, 2.6);
+  const drawK = (i, n) => inOut(seg(t, T.draw + (i / n) * 0.25, T.draw + (i / n) * 0.25 + 1.1));
+  // half the lines thin out as it shrinks, so the small bulb reads as a bulb, not a mesh
+  const thin = (i) => (i % 2 ? 1 - k : 1);
+
+  // the filament: on from the draw, flickers after the last hit, out on "what they think"
+  const flick = t < T.out ? 1 : t < T.out + 0.35 ? (Math.sin(t * 90) > 0.2 ? 0.85 : 0.15) * (1 - seg(t, T.out, T.out + 0.35)) : 0;
+  const lit = seg(t, 1.0, 1.6) * flick * view.alpha;
+  if (lit > 0) {
+    ctx.save(); glassPath(view); ctx.clip();
+    const fy = view.y - (-0.35 - MID) * Math.cos(TILT) * view.s;
+    const g = ctx.createRadialGradient(view.x, fy, 0, view.x, fy, view.s * 1.3);
+    g.addColorStop(0, `rgba(242,238,229,${0.32 * lit})`); g.addColorStop(1, 'rgba(242,238,229,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
+  }
+
+  ctx.save(); ctx.strokeStyle = CREAM; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const depth = (d) => (d < 0 ? 1 : lerp(1, 0.28, clamp(d)));
+  // longitudes, crown to base, staggered round the bulb
+  for (let i = 0; i < LONGS; i++) {
+    const phi = (i / LONGS) * Math.PI * 2;
+    poly(PROFILE.map(([r, z]) => [r, z, phi]), view, drawK(i, LONGS), (d) => depth(d) * thin(i));
+  }
+  // rings appear as the longitudes pass them
+  PROFILE.slice(1).forEach(([r, z], j) => {
+    const k = seg(t, T.draw + 0.4 + (j / PROFILE.length) * 0.8, T.draw + 0.9 + (j / PROFILE.length) * 0.8);
+    const pts = Array.from({ length: LONGS + 1 }, (_, i) => [r, z, (i / LONGS) * Math.PI * 2]);
+    poly(pts, view, k, (d) => depth(d) * thin(j));
+  });
+  // base: rings at each thread and eight verticals
+  const bk = seg(t, T.draw + 1.0, T.draw + 1.7);
+  BASE.forEach(([r, z]) => poly(Array.from({ length: LONGS + 1 }, (_, i) => [r, z, (i / LONGS) * Math.PI * 2]), view, bk, depth));
+  for (let i = 0; i < 12; i++) poly(BASE.map(([r, z]) => [r, z, (i / 12) * Math.PI * 2]), view, bk, (d) => depth(d) * thin(i));
+  // filament: two supports and a coil, drawn brighter while lit
+  ctx.lineWidth = lw * 1.1;
+  const fk = seg(t, T.draw + 1.2, T.draw + 1.8);
+  const coil = Array.from({ length: 15 }, (_, i) => [Math.abs(-0.28 + i * 0.04), -0.3 + (i % 2 ? 0.08 : -0.08), i * 0.04 < 0.28 ? Math.PI : 0]);
+  for (const sgn of [0, Math.PI]) poly([[0.06, NECK_Z - 0.05, sgn], [0.1, -0.95, sgn], [0.28, -0.3, sgn]], view, fk, () => 0.8);
+  poly(coil, view, fk, () => 0.6 + 0.4 * (lit || 0.3));
+  ctx.restore();
+
+  // the cracks: orange, out from each impact, clipped to the glass
+  ctx.save(); glassPath(view); ctx.clip();
+  ctx.strokeStyle = LIVE; ctx.lineWidth = Math.max(1.4, lw * 1.1); ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = view.alpha;
+  for (const cr of CRACKS) {
+    const k = outExpo(seg(t, HITS[cr.stage] + cr.delay * 0.12, HITS[cr.stage] + cr.delay * 0.12 + 0.35));
+    if (k <= 0) continue;
+    const n = cr.pts.length - 1, reach = k * n;
+    ctx.beginPath();
+    cr.pts.forEach(([x, z], i) => {
+      if (i > Math.ceil(reach)) return;
+      let px = x, pz = z;
+      if (i > reach) { const [ax, az] = cr.pts[i - 1], f = reach - (i - 1); px = lerp(ax, x, f); pz = lerp(az, z, f); }
+      const sx = view.x + px * view.s, sy = view.y - (pz - MID) * Math.cos(TILT) * view.s;
+      i ? ctx.lineTo(sx, sy) : ctx.moveTo(sx, sy);
+    });
+    ctx.stroke();
+  }
+  ctx.restore();
+  // a ring out of each impact, and glass dust off the last
+  const imp = [[0.42, 0.3], [-0.5, -0.12], [0.02, 0.62]];
+  HITS.forEach((h, i) => {
+    const k = seg(t, h, h + 0.45); if (k <= 0 || k >= 1) return;
+    const [x, z] = imp[i];
+    ctx.save(); ctx.strokeStyle = LIVE; ctx.lineWidth = 2; ctx.globalAlpha = (1 - k) * view.alpha;
+    ctx.beginPath(); ctx.arc(view.x + x * view.s, view.y - (z - MID) * Math.cos(TILT) * view.s, 4 + outExpo(k) * view.s * 1.1, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  });
+  const dt = t - HITS[2];
+  if (dt > 0 && dt < 2.4) {
+    ctx.save(); ctx.fillStyle = CREAM;
+    for (const p of DUST) {
+      const x = p.x + p.vx * dt * 0.6, z = p.z + p.vz * dt * 0.5 - 2.2 * dt * dt;
+      ctx.globalAlpha = (1 - dt / 2.4) * view.alpha;
+      const s = Math.max(1.5, p.s * view.s);
+      ctx.fillRect(view.x + x * view.s, view.y - (z - MID) * Math.cos(TILT) * view.s, s, s);
+    }
+    ctx.restore();
+  }
+}
+
+// ---------- type: the poster's two voices, set to its proportions
+const SANS = (px) => `900 ${px}px "Hubot Sans"`, SERIF = (px) => `400 ${px}px "Instrument Serif"`;
+let BIG_PX, SERIF_PX;
+function sizeType() {
+  // a cap height of 148 px for the heavy lines, 72 px for the serif lines (the poster's, at 1080 wide)
+  ctx.fontStretch = 'condensed'; ctx.font = SANS(100); BIG_PX = 100 * 148 / ctx.measureText('H').actualBoundingBoxAscent;
+  ctx.fontStretch = 'normal'; ctx.font = SERIF(100); SERIF_PX = 100 * 72 / ctx.measureText('H').actualBoundingBoxAscent;
+}
+/** A heavy line whose words rise out of a mask, one after another. */
+function slam(s, y, k, alpha) {
+  if (k <= 0) return;
+  ctx.save();
+  ctx.font = SANS(BIG_PX); ctx.fontStretch = 'condensed'; ctx.letterSpacing = `${-BIG_PX * 0.02}px`;
+  ctx.fillStyle = CREAM; ctx.textBaseline = 'alphabetic';
+  const words = s.split(' '), sp = ctx.measureText(' ').width * 0.95, ws = words.map((w) => ctx.measureText(w).width);
+  let x = W / 2 - (ws.reduce((a, b) => a + b, 0) + sp * (words.length - 1)) / 2;
+  ctx.beginPath(); ctx.rect(0, y - 160, W, 172); ctx.clip();
+  words.forEach((w, i) => {
+    const kk = outExpo(clamp(k * (1 + 0.35 * (words.length - 1)) - i * 0.35));
+    ctx.globalAlpha = alpha * clamp(kk * 3);
+    ctx.fillText(w, x, y + (1 - kk) * 170); x += ws[i] + sp;
+  });
+  ctx.restore();
+}
+/** A serif line that arrives letter by letter, settling up a few pixels. */
+function whisper(s, y, k, alpha) {
+  if (k <= 0) return;
+  ctx.save(); ctx.font = SERIF(SERIF_PX); ctx.fontStretch = 'normal'; ctx.letterSpacing = `${-SERIF_PX * 0.01}px`; ctx.fillStyle = CREAM;
+  const total = ctx.measureText(s).width, x0 = W / 2 - total / 2;
+  [...s].forEach((ch, i) => {
+    const kk = inOut(clamp(k * 2.2 - (i / s.length) * 1.2));
+    if (kk <= 0) return;
+    ctx.globalAlpha = alpha * kk;
+    ctx.fillText(ch, x0 + ctx.measureText(s.slice(0, i)).width, y + (1 - kk) * 14);
+  });
+  ctx.restore();
+}
+
+// ---------- chrome
+function grain(n) {
+  ctx.save(); ctx.globalAlpha = 0.06; ctx.fillStyle = CREAM;
+  let s = n * 9301 + 49297;
+  for (let i = 0; i < 1400; i++) { s = (s * 9301 + 49297) % 233280; const x = (s / 233280) * W; s = (s * 9301 + 49297) % 233280; const y = (s / 233280) * H; ctx.fillRect(x, y, 2, 2); }
+  ctx.restore();
+}
+function vignette() {
+  const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.8);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.55)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+function chrome(t, alpha) {
+  if (alpha <= 0) return;
+  ctx.save(); ctx.globalAlpha = alpha * 0.9; ctx.drawImage(BRAND.mark, 44, H - 66, 30, 24); ctx.restore();
+  // the line is mymind's: credit it where the poster did, small and quiet, up the right edge
+  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(W - 40, H / 2 + 80); ctx.rotate(-Math.PI / 2);
+  ctx.font = SERIF(26); ctx.fillStyle = QUIET; ctx.textAlign = 'center'; ctx.fillText('mymind.com', 0, 0); ctx.restore();
+}
+
+// ---------- the frame
+const LINES = [
+  ['whisper', 'THE FASTEST WAY', 115, T.l1, 0.9],
+  ['slam', 'TO KILL A', 292, T.l2, 0.55],
+  ['slam', 'GOOD IDEA', 460, T.l3, 0.55],
+  ['slam', 'IS ASKING', 773, T.l4, 0.5],
+  ['slam', 'TOO MANY', 935, T.l5, 0.5],
+  ['slam', 'PEOPLE', 1097, T.l6, 0.5],
+  ['whisper', 'WHAT THEY', 1205, T.l7, 0.9],
+  ['whisper', 'THINK ABOUT IT.', 1288, T.l8, 1.0],
+];
+function draw(n) {
+  const t = n / FPS, fade = 1 - seg(t, T.end - 0.5, T.end - 0.1);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  bulb(t);
+  for (const [kind, s, y, at, len] of LINES) (kind === 'slam' ? slam : whisper)(s, y, seg(t, at, at + len), fade);
+  vignette();
+  chrome(t, seg(t, T.l1, T.l1 + 0.6) * fade);
+  grain(n);
+}
+
+async function cream(url) {
+  const svg = (await (await fetch(url)).text()).replace(/fill="#000000"/g, `fill="${CREAM}"`);
+  const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); await img.decode(); return img;
+}
+const BRAND = { mark: await cream('/assets/brand/mark.svg') };
+await document.fonts.load('900 100px "Hubot Sans"'); await document.fonts.load('400 100px "Instrument Serif"'); await document.fonts.ready;
+sizeType();
+window.reel = { draw, W, H, FPS, DURATION, frames: DURATION * FPS, cues: { ...T, HITS } };
+window.reel.ready = true;
+if (!navigator.webdriver) { let n = 0; const tick = () => { draw(n); n = (n + 1) % (DURATION * FPS); requestAnimationFrame(tick); }; tick(); }
+</script>
+</body>
+</html>
