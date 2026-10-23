@@ -1,6 +1,6 @@
 // Render tools/reel/orb-reel.html to experiments/thinking-orb/reel.mp4 (1080×1920, 30 fps, 15 s, with sound).
 //   node tools/reel/render.mjs [--frames=a,b,c]   (frames mode writes PNG stills to tools/reel/out/ for review)
-// Needs ffmpeg on PATH and Playwright (`npm i --no-save playwright`; set CHROMIUM to a browser binary if it has none). Serves the repo itself so the page imports the real orb engine.
+// Needs ffmpeg on PATH and Playwright (`npm install`, then `npx playwright install chromium`, or set CHROMIUM to a browser binary). Serves the repo itself so the page imports the real orb engine.
 import { createServer } from 'node:http';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';

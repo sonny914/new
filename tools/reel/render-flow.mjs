@@ -2,7 +2,7 @@
 // so each beat can be laid under the voiceover on its own.
 //   node tools/reel/render-flow.mjs [--high=74 --rain=60]   (the forecast the bot "sends" in the first-build scene)
 //   node tools/reel/render-flow.mjs --frames=a,b,c           (PNG stills to tools/reel/out/flow/ for review)
-// Needs ffmpeg on PATH and Playwright (`npm i --no-save playwright`; set CHROMIUM to a browser binary if it has none).
+// Needs ffmpeg on PATH and Playwright (`npm install`, then `npx playwright install chromium`, or set CHROMIUM to a browser binary).
 import { createServer } from 'node:http';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
