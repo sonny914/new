@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Trigger, action — reel compositor</title>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:480px}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="960"></canvas>
+<script type="module">
+/* The half-screen motion graphics for the "start with one tiny workflow" reel: 1080 × 960, six scenes, one per beat of
+   the voiceover, drawn frame by frame so a render is deterministic. window.reel.draw(n) paints frame N.
+   tools/reel/render-flow.mjs drives it headless and writes one clip per scene plus the full cut.
+   Open directly to preview: ?scene=first-build loops one scene, ?high=74&rain=60 sets the forecast the bot "sends". */
+
+const W = 1080, H = 960, FPS = 30;
+const P = new URLSearchParams(location.search);
+const HIGH = Math.round(Number(P.get('high') ?? 74)), RAIN = Math.round(Number(P.get('rain') ?? 60));
+
+const BG = '#0A0B0E', INK = '#F4F4F6', MUTED = '#8A8E99', EDGE = '#4A4D57', LINE = '#3A3C45';
+const GREEN = '#2EE59D', LIVE = '#FF5A00', HOT = '#FF8A3D', RED = '#FF3B4E', BLUE = '#38B6FF', PINK = '#FF4F8B', GOLD = '#F5B53A';
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+
+// ---------- easing, mixing
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const outExpo = (k) => (k >= 1 ? 1 : 1 - 2 ** (-10 * k));
+const outBack = (k) => { const s = 1.7; return 1 + (s + 1) * (k - 1) ** 3 + s * (k - 1) ** 2; };
+const inOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
+const hash = (n) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
+const rgba = (h, a) => `rgba(${parseInt(h.slice(1, 3), 16)},${parseInt(h.slice(3, 5), 16)},${parseInt(h.slice(5, 7), 16)},${a})`;
+const flashK = (t, at, len = 0.45) => (t >= at ? 1 - seg(t, at, at + len) : 0);
+
+// ---------- type
+const fontOf = (family, wght, size) => `${wght} ${size}px ${family === 'mono' ? '"JetBrains Mono"' : '"Hubot Sans"'}`;
+function text(s, x, y, { size = 30, wght = 700, color = INK, align = 'center', alpha = 1, family = 'sans', stretch = 'normal', track = 0, glow = 0 } = {}) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.globalAlpha *= alpha; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'alphabetic';
+  ctx.font = fontOf(family, wght, size); ctx.fontStretch = stretch; ctx.letterSpacing = `${track}px`;
+  if (glow) { ctx.shadowColor = color; ctx.shadowBlur = glow; ctx.fillText(s, x, y); }
+  ctx.fillText(s, x, y);
+  ctx.restore();
+}
+/** Text that arrives through an RGB split: `g` is how torn it still is (0 = clean). */
+function glitchText(s, x, y, opt, g) {
+  if (g > 0.01) {
+    const off = g * 14;
+    text(s, x + off, y, { ...opt, color: RED, glow: 0, alpha: (opt.alpha ?? 1) * 0.7 });
+    text(s, x - off, y + g * 3, { ...opt, color: '#3FF2FF', glow: 0, alpha: (opt.alpha ?? 1) * 0.6 });
+  }
+  text(s, x, y, opt);
+}
+function measure(s, family, wght, size, track = 0, stretch = 'normal') {
+  ctx.save(); ctx.font = fontOf(family, wght, size); ctx.fontStretch = stretch; ctx.letterSpacing = `${track}px`; const w = ctx.measureText(s).width; ctx.restore(); return w;
+}
+
+// ---------- icons, drawn at the origin `s` px across
+const ICON = {
+  bolt(s) { ctx.beginPath(); ctx.moveTo(0.12 * s, -0.5 * s); ctx.lineTo(-0.3 * s, 0.08 * s); ctx.lineTo(-0.02 * s, 0.08 * s); ctx.lineTo(-0.12 * s, 0.5 * s); ctx.lineTo(0.3 * s, -0.08 * s); ctx.lineTo(0.02 * s, -0.08 * s); ctx.closePath(); ctx.fill(); },
+  clock(s, { h = 8, m = 0 } = {}) {
+    ctx.beginPath(); ctx.arc(0, 0, 0.42 * s, 0, Math.PI * 2); ctx.stroke();
+    const ha = (((h % 12) + m / 60) / 12) * Math.PI * 2 - Math.PI / 2, ma = (m / 60) * Math.PI * 2 - Math.PI / 2;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(ha) * 0.2 * s, Math.sin(ha) * 0.2 * s); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(ma) * 0.31 * s, Math.sin(ma) * 0.31 * s); ctx.stroke();
+  },
+  globe(s) {
+    ctx.beginPath(); ctx.arc(0, 0, 0.42 * s, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0, 0, 0.17 * s, 0.42 * s, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-0.42 * s, 0); ctx.lineTo(0.42 * s, 0); ctx.moveTo(-0.36 * s, -0.2 * s); ctx.lineTo(0.36 * s, -0.2 * s); ctx.moveTo(-0.36 * s, 0.2 * s); ctx.lineTo(0.36 * s, 0.2 * s); ctx.stroke();
+  },
+  plane(s) {
+    ctx.beginPath(); ctx.moveTo(-0.44 * s, -0.02 * s); ctx.lineTo(0.42 * s, -0.38 * s); ctx.lineTo(0.2 * s, 0.4 * s); ctx.lineTo(-0.02 * s, 0.12 * s); ctx.closePath(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-0.02 * s, 0.12 * s); ctx.lineTo(0.42 * s, -0.38 * s); ctx.moveTo(-0.02 * s, 0.12 * s); ctx.lineTo(-0.06 * s, 0.34 * s); ctx.stroke();
+  },
+  robot(s) {
+    ctx.beginPath(); ctx.roundRect(-0.38 * s, -0.2 * s, 0.76 * s, 0.52 * s, 0.14 * s); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-0.15 * s, 0.06 * s, 0.07 * s, 0, Math.PI * 2); ctx.arc(0.15 * s, 0.06 * s, 0.07 * s, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(0, -0.2 * s); ctx.lineTo(0, -0.34 * s); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, -0.4 * s, 0.06 * s, 0, Math.PI * 2); ctx.fill();
+  },
+  branch(s) {
+    ctx.beginPath(); ctx.moveTo(-0.42 * s, 0); ctx.lineTo(-0.12 * s, 0);
+    ctx.bezierCurveTo(0.05 * s, 0, 0.05 * s, -0.26 * s, 0.32 * s, -0.26 * s);
+    ctx.moveTo(-0.12 * s, 0); ctx.bezierCurveTo(0.05 * s, 0, 0.05 * s, 0.26 * s, 0.32 * s, 0.26 * s); ctx.stroke();
+    for (const y of [-0.26, 0.26]) { ctx.beginPath(); ctx.moveTo(0.2 * s, (y - 0.11) * s); ctx.lineTo(0.34 * s, y * s); ctx.lineTo(0.2 * s, (y + 0.11) * s); ctx.stroke(); }
+  },
+  webhook(s) {
+    const pts = [[0, -0.26], [-0.26, 0.22], [0.26, 0.22]];
+    ctx.beginPath(); ctx.moveTo(0, -0.26 * s); ctx.lineTo(-0.26 * s, 0.22 * s); ctx.lineTo(0.26 * s, 0.22 * s); ctx.stroke();
+    for (const [x, y] of pts) { ctx.beginPath(); ctx.arc(x * s, y * s, 0.12 * s, 0, Math.PI * 2); ctx.save(); ctx.fillStyle = '#1C1D22'; ctx.fill(); ctx.restore(); ctx.stroke(); }
+  },
+  braces(s) { ctx.font = fontOf('mono', 800, 0.62 * s); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('{ }', 0, 0.02 * s); },
+  parser(s) {
+    ctx.font = fontOf('mono', 600, 0.6 * s); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('{  }', 0, 0.02 * s);
+    ctx.beginPath(); ctx.moveTo(-0.12 * s, 0.02 * s); ctx.lineTo(-0.03 * s, 0.11 * s); ctx.lineTo(0.13 * s, -0.08 * s); ctx.stroke();
+  },
+  mail(s) { ctx.beginPath(); ctx.roundRect(-0.4 * s, -0.28 * s, 0.8 * s, 0.56 * s, 0.06 * s); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-0.38 * s, -0.24 * s); ctx.lineTo(0, 0.06 * s); ctx.lineTo(0.38 * s, -0.24 * s); ctx.stroke(); },
+  code(s) { ctx.font = fontOf('mono', 800, 0.5 * s); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('</>', 0, 0.02 * s); },
+  dollar(s) { ctx.font = fontOf('sans', 800, 0.72 * s); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('$', 0, 0.04 * s); },
+  play(s) {
+    ctx.beginPath(); ctx.roundRect(-0.42 * s, -0.3 * s, 0.84 * s, 0.6 * s, 0.16 * s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-0.1 * s, -0.15 * s); ctx.lineTo(0.18 * s, 0); ctx.lineTo(-0.1 * s, 0.15 * s); ctx.closePath(); ctx.fill();
+  },
+  spark(s) {
+    const star = (x, y, r) => { ctx.beginPath(); ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.quadraticCurveTo(x, y, x, y + r); ctx.quadraticCurveTo(x, y, x - r, y); ctx.quadraticCurveTo(x, y, x, y - r); ctx.fill(); };
+    star(-0.06 * s, 0.04 * s, 0.34 * s); star(0.26 * s, -0.26 * s, 0.14 * s);
+  },
+  cog(s) {
+    ctx.save(); for (let i = 0; i < 8; i++) { ctx.rotate(Math.PI / 4); ctx.fillRect(-0.07 * s, -0.44 * s, 0.14 * s, 0.16 * s); } ctx.restore();
+    ctx.beginPath(); ctx.arc(0, 0, 0.3 * s, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, 0.11 * s, 0, Math.PI * 2); ctx.stroke();
+  },
+  comment(s) {
+    ctx.beginPath(); ctx.roundRect(-0.4 * s, -0.32 * s, 0.8 * s, 0.52 * s, 0.14 * s); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-0.18 * s, 0.2 * s); ctx.lineTo(-0.26 * s, 0.38 * s); ctx.lineTo(0.0 * s, 0.2 * s); ctx.stroke();
+    for (const x of [-0.16, 0, 0.16]) { ctx.beginPath(); ctx.arc(x * s, -0.06 * s, 0.045 * s, 0, Math.PI * 2); ctx.fill(); }
+  },
+  check(s) { ctx.beginPath(); ctx.moveTo(-0.3 * s, 0); ctx.lineTo(-0.08 * s, 0.22 * s); ctx.lineTo(0.32 * s, -0.24 * s); ctx.stroke(); },
+  cross(s) { ctx.beginPath(); ctx.moveTo(-0.24 * s, -0.24 * s); ctx.lineTo(0.24 * s, 0.24 * s); ctx.moveTo(0.24 * s, -0.24 * s); ctx.lineTo(-0.24 * s, 0.24 * s); ctx.stroke(); },
+  plus(s) { ctx.beginPath(); ctx.moveTo(-0.26 * s, 0); ctx.lineTo(0.26 * s, 0); ctx.moveTo(0, -0.26 * s); ctx.lineTo(0, 0.26 * s); ctx.stroke(); },
+  cursor(s) {
+    ctx.beginPath(); ctx.moveTo(-0.3 * s, -0.42 * s); ctx.lineTo(-0.3 * s, 0.3 * s); ctx.lineTo(-0.12 * s, 0.14 * s); ctx.lineTo(0.02 * s, 0.44 * s); ctx.lineTo(0.14 * s, 0.38 * s); ctx.lineTo(0.0 * s, 0.1 * s); ctx.lineTo(0.24 * s, 0.1 * s); ctx.closePath();
+    ctx.save(); ctx.fillStyle = INK; ctx.fill(); ctx.restore(); ctx.strokeStyle = BG; ctx.stroke();
+  },
+};
+function icon(name, x, y, s, color, opt) {
+  ctx.save(); ctx.translate(x, y); ctx.strokeStyle = color; ctx.fillStyle = color;
+  ctx.lineWidth = Math.max(3, s * 0.075); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ICON[name](s, opt); ctx.restore();
+}
+
+// ---------- the canvas behind everything: dot grid, two slow glows
+function bg(t) {
+  ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);
+  for (const [x, y, r, col, a] of [[W * 0.22 + Math.sin(t * 0.3) * 90, H * 0.42, 620, LIVE, 0.11], [W * 0.82 + Math.cos(t * 0.23) * 70, H * 0.7, 560, GREEN, 0.07]]) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  const S = 34, ox = (t * 7) % S, oy = (t * 4) % S;
+  ctx.fillStyle = 'rgba(255,255,255,.085)';
+  for (let y = -S + oy; y < H; y += S) for (let x = -S + ox; x < W; x += S) ctx.fillRect(x, y, 2.2, 2.2);
+}
+function post(n) {
+  ctx.fillStyle = 'rgba(0,0,0,.16)'; for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 1);
+  const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.95);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.7)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255,255,255,.05)';
+  for (let i = 0; i < 700; i++) ctx.fillRect(hash(n * 0.37 + i) * W, hash(n * 0.91 + i * 1.7) * H, 2, 2);
+}
+
+// ---------- editor chrome: file name on the left, run status on the right
+function header(name, status, col, t) {
+  text(name, 64, 80, { family: 'mono', size: 24, wght: 600, color: MUTED, align: 'left' });
+  const w = measure(status, 'mono', 600, 22) + 66, x = W - 64 - w, y = 52;
+  ctx.save();
+  ctx.fillStyle = rgba(col, 0.12); ctx.strokeStyle = rgba(col, 0.55); ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(x, y, w, 42, 21); ctx.fill(); ctx.stroke();
+  ctx.shadowColor = col; ctx.shadowBlur = 16; ctx.fillStyle = col; ctx.globalAlpha *= 0.65 + 0.35 * Math.sin(t * 6);
+  ctx.beginPath(); ctx.arc(x + 23, y + 21, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  text(status, x + 42, y + 29, { family: 'mono', size: 22, wght: 600, color: col, align: 'left' });
+  ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fillRect(64, 118, W - 128, 2);
+}
+
+// ---------- nodes
+// n: { x, y (centre), w, h, kind: 'trigger' | 'wide' | 'circle', icon, iconColor, iconOpt, label, sub, inside, outs: [dy…] }
+// s: { appear 0..1, state 'idle' | 'run' | 'ok' | 'err', t, flash 0..1, dim 0..1 }
+const STATE_COL = { ok: GREEN, err: RED, run: LIVE };
+function drawNode(n, s = {}) {
+  const a = s.appear ?? 1; if (a <= 0) return;
+  const { w, h } = n, st = s.state ?? 'idle', col = STATE_COL[st] ?? LINE, fl = s.flash ?? 0, t = s.t ?? 0;
+  const radii = n.kind === 'trigger' ? [h / 2, 20, 20, h / 2] : n.kind === 'circle' ? w / 2 : 20;
+  const shape = () => { ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, radii); };
+  ctx.save();
+  ctx.globalAlpha *= clamp(a * 1.6) * (1 - (s.dim ?? 0) * 0.8);
+  ctx.translate(n.x, n.y); const sc = lerp(0.55, 1, outBack(a)); ctx.scale(sc, sc);
+
+  // the trigger's lightning bolt hangs off its left edge
+  if (n.kind === 'trigger') { ctx.save(); ctx.shadowColor = LIVE; ctx.shadowBlur = 18; icon('bolt', -w / 2 - 34, 0, 40, LIVE); ctx.restore(); }
+  // glow, then body, then border
+  if (st !== 'idle') { ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 36 + 50 * fl; ctx.strokeStyle = col; ctx.lineWidth = 5; shape(); ctx.stroke(); ctx.restore(); }
+  const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2); g.addColorStop(0, '#26272E'); g.addColorStop(1, '#16171C');
+  ctx.fillStyle = g; shape(); ctx.fill();
+  if (fl > 0) { ctx.save(); ctx.globalAlpha *= 0.35 * fl; ctx.fillStyle = col; shape(); ctx.fill(); ctx.restore(); }
+  ctx.lineWidth = st === 'idle' ? 3 : 4; ctx.strokeStyle = col; shape(); ctx.stroke();
+  // running: a hot spark chases the border
+  if (st === 'run') {
+    const per = 2 * (w + h);
+    ctx.save(); ctx.setLineDash([per * 0.2, per * 0.8]); ctx.lineDashOffset = -t * per * 1.4;
+    ctx.strokeStyle = '#FFD2B0'; ctx.lineWidth = 6; ctx.shadowColor = HOT; ctx.shadowBlur = 30; shape(); ctx.stroke(); ctx.restore();
+  }
+  // icon (and the agent's name, which sits inside its node)
+  const ic = n.iconColor ?? INK;
+  if (n.kind === 'wide') {
+    icon(n.icon, -w / 2 + 56, 0, h * 0.4, ic, n.iconOpt);
+    text(n.inside, -w / 2 + 100, 11, { size: 32, wght: 700, align: 'left' });
+    [-0.3, -0.1, 0.1, 0.3].forEach((p) => { ctx.save(); ctx.translate(p * w, h / 2); ctx.rotate(Math.PI / 4); ctx.fillStyle = '#2A2B31'; ctx.strokeStyle = '#70737D'; ctx.lineWidth = 2.5; ctx.fillRect(-8, -8, 16, 16); ctx.strokeRect(-8, -8, 16, 16); ctx.restore(); });
+  } else {
+    if (n.icon) icon(n.icon, 0, 0, Math.min(w, h) * 0.46, ic, n.iconOpt);
+  }
+  // ports
+  const port = (x, y) => { ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fillStyle = '#2A2B31'; ctx.fill(); ctx.strokeStyle = '#70737D'; ctx.lineWidth = 2.5; ctx.stroke(); };
+  if (n.kind !== 'circle') {
+    if (n.kind !== 'trigger') port(-w / 2, 0);
+    if (!n.noOut) for (const dy of n.outs ?? [0]) port(w / 2, dy);
+  }
+  // done / failed badge
+  if (st === 'ok' || st === 'err') {
+    const bx = n.kind === 'circle' ? w * 0.3 : w / 2 - 26, by = n.kind === 'circle' ? h * 0.3 : h / 2 - 26;
+    icon(st === 'ok' ? 'check' : 'cross', bx, by, 36, col);
+  }
+  // labels sit below the node
+  if (n.label) text(n.label, 0, h / 2 + 44, { size: n.labelSize ?? 30, wght: 700 });
+  if (n.sub) text(n.sub, 0, h / 2 + 78, { family: 'mono', size: 20, wght: 600, color: st === 'err' ? RED : MUTED, track: 1 });
+  ctx.restore();
+}
+/** A dashed placeholder node: the empty-canvas "add first step". */
+function ghostNode(x, y, w, h, k, t, label) {
+  if (k <= 0) return;
+  ctx.save(); ctx.globalAlpha *= k; ctx.translate(x, y); const sc = lerp(0.7, 1, outBack(k)); ctx.scale(sc, sc);
+  const breathe = 0.5 + 0.5 * Math.sin(t * 4);
+  ctx.setLineDash([14, 12]); ctx.lineDashOffset = -t * 30; ctx.strokeStyle = rgba(INK, 0.35 + 0.3 * breathe); ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, 22); ctx.stroke(); ctx.setLineDash([]);
+  icon('plus', 0, 0, h * 0.5, rgba(INK, 0.6 + 0.4 * breathe));
+  if (label) text(label, 0, h / 2 + 48, { family: 'mono', size: 24, wght: 600, color: MUTED });
+  ctx.restore();
+}
+function ring(x, y, k, col, r0 = 70, r1 = 260) {
+  if (k <= 0 || k >= 1) return;
+  ctx.save(); ctx.strokeStyle = col; ctx.globalAlpha *= (1 - k) ** 1.5; ctx.lineWidth = 5; ctx.shadowColor = col; ctx.shadowBlur = 24;
+  ctx.beginPath(); ctx.arc(x, y, lerp(r0, r1, outExpo(k)), 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+}
+const outPort = (n, dy = 0) => ({ x: n.x + n.w / 2 + 9, y: n.y + dy });
+const inPort = (n) => ({ x: n.x - n.w / 2 - 12, y: n.y });
+
+// ---------- edges: a bezier that draws on, turns green when data has passed, and carries a comet while it flows
+function bezPts(p0, p1, N = 72) {
+  const dx = Math.max(50, Math.abs(p1.x - p0.x) * 0.5);
+  const b = [p0, { x: p0.x + dx, y: p0.y }, { x: p1.x - dx, y: p1.y }, p1], pts = [];
+  for (let i = 0; i <= N; i++) {
+    const u = i / N, v = 1 - u;
+    pts.push({ x: v ** 3 * b[0].x + 3 * v * v * u * b[1].x + 3 * v * u * u * b[2].x + u ** 3 * b[3].x, y: v ** 3 * b[0].y + 3 * v * v * u * b[1].y + 3 * v * u * u * b[2].y + u ** 3 * b[3].y });
+  }
+  return pts;
+}
+function edge(p0, p1, { k = 1, color = EDGE, label, labelK = 1, pulse = null, dash = false, alpha = 1 } = {}) {
+  if (k <= 0 || alpha <= 0) return;
+  const pts = bezPts(p0, p1), m = Math.max(1, Math.round(k * (pts.length - 1)));
+  ctx.save(); ctx.globalAlpha *= alpha;
+  ctx.strokeStyle = color; ctx.lineWidth = 4; ctx.lineCap = 'round';
+  if (color !== EDGE) { ctx.shadowColor = color; ctx.shadowBlur = 18; }
+  if (dash) { ctx.setLineDash([12, 12]); }
+  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i <= m; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+  ctx.setLineDash([]);
+  if (k >= 1 && !dash) {
+    const e = pts[pts.length - 1], q = pts[pts.length - 4], ang = Math.atan2(e.y - q.y, e.x - q.x);
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(e.x + 4, e.y); ctx.translate(e.x + 4, e.y); ctx.rotate(ang);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-16, -9); ctx.lineTo(-16, 9); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+  if (label && labelK > 0) { const mid = pts[Math.floor(pts.length / 2)]; text(label, mid.x, mid.y - 20, { family: 'mono', size: 20, wght: 600, color: color === EDGE ? MUTED : color, alpha: labelK * alpha }); }
+  if (pulse !== null && pulse >= 0 && pulse <= 1) comet(pts, pulse, alpha);
+}
+function comet(pts, u, alpha = 1) {
+  const N = pts.length - 1;
+  ctx.save(); ctx.globalAlpha *= alpha; ctx.shadowColor = HOT; ctx.shadowBlur = 26;
+  for (let i = 16; i >= 0; i--) {
+    const uu = u - i * 0.013; if (uu < 0) continue;
+    const p = pts[Math.round(uu * N)], f = 1 - i / 17;
+    ctx.fillStyle = i === 0 ? '#FFF4EA' : rgba(HOT, f * 0.9); ctx.beginPath(); ctx.arc(p.x, p.y, (i === 0 ? 9 : 10 * f), 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+/** A pill tag. */
+function chip(s, x, y, k, { col = INK, family = 'mono', size = 24, fill = 0.08 } = {}) {
+  if (k <= 0) return;
+  const w = measure(s, family, 600, size) + 48, h = size + 24;
+  ctx.save(); ctx.globalAlpha *= clamp(k * 1.5); ctx.translate(x, y); const sc = lerp(0.6, 1, outBack(k)); ctx.scale(sc, sc);
+  ctx.fillStyle = rgba(col, fill); ctx.strokeStyle = rgba(col, 0.6); ctx.lineWidth = 2; ctx.shadowColor = col; ctx.shadowBlur = 14;
+  ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, h / 2); ctx.fill(); ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.globalAlpha *= clamp(k * 1.5); text(s, x, y + size * 0.36, { family, size, wght: 600, color: col }); ctx.restore();
+  return w;
+}
+
+// ========== scenes (t is seconds into the scene) ==========================================================================
+
+// 1 — "don't start with Python … a $2,000 course … 20 hours of video tutorials". Each beat is a node that fails.
+const HOOK = [2.0, 5.0, 8.4];
+function hook(t) {
+  const end = HOOK[2] + 0.6;
+  header('learn-ai.json', t < HOOK[0] ? 'Inactive' : t < end ? 'Running' : 'Error', t < HOOK[0] ? MUTED : t < end ? LIVE : RED, t);
+  ghostNode(540, 430, 190, 190, seg(t, 0.1, 0.5) * (1 - seg(t, HOOK[0] - 0.35, HOOK[0] - 0.05)), t, 'where do I start?');
+  const ns = [
+    { x: 200, label: 'Python', sub: '"learn to code first"', icon: 'code' },
+    { x: 540, label: '$2,000 course', sub: '+ upsells', icon: 'dollar' },
+    { x: 880, label: '20 hrs of YouTube', sub: 'at 1.5x speed', icon: 'play' },
+  ].map((n) => ({ ...n, y: 430, w: 170, h: 170 }));
+  const dim = seg(t, end + 0.5, end + 1.0) * 0.55;
+  for (let i = 0; i < 2; i++) edge(outPort(ns[i]), inPort(ns[i + 1]), { k: outExpo(seg(t, HOOK[i + 1] - 0.45, HOOK[i + 1] - 0.1)), color: t > HOOK[i + 1] + 0.45 ? RED : EDGE, alpha: 1 - dim * 0.8 });
+  ns.forEach((n, i) => {
+    const b = HOOK[i], failed = t > b + 0.45, since = t - b - 0.45;
+    const shake = failed ? Math.sin(since * 80) * 16 * Math.max(0, 1 - since / 0.35) : 0;
+    drawNode({ ...n, x: n.x + shake, sub: failed ? 'ERROR' : n.sub }, { appear: seg(t, b - 0.25, b + 0.12), state: t < b ? 'idle' : failed ? 'err' : 'run', t, flash: flashK(t, b + 0.45), dim });
+    ring(n.x, n.y, seg(t, b + 0.45, b + 1.0), RED);
+  });
+  const fk = outExpo(seg(t, end + 0.6, end + 1.0)), jitter = hash(Math.floor(t * 20)) > 0.86 ? 0.5 : 0;
+  glitchText("DON'T START HERE.", 540, 830, { family: 'mono', size: 66, wght: 800, color: RED, alpha: fk, glow: 30, track: 2 }, (1 - fk) + jitter * fk);
+}
+
+// 2 — "Start with one workflow … something happens, and something else fires. Trigger, action."
+function one(t) {
+  const fire = 3.2, land = 4.0;
+  header('my-first-workflow.json', t < fire ? 'Inactive' : t < land ? 'Running' : 'Success', t < fire ? MUTED : t < land ? LIVE : GREEN, t);
+  const A = { x: 300, y: 400, w: 200, h: 200, kind: 'trigger', icon: 'spark', label: 'Something happens', sub: 'TRIGGER' };
+  const B = { x: 780, y: 400, w: 200, h: 200, icon: 'cog', label: 'Something fires', sub: 'ACTION' };
+  // after the first run it keeps firing, so the clip can be held under the voice for as long as it needs
+  const cyc = t > land + 0.4 ? ((t - land - 0.4) % 1.6) / 1.6 : -1;
+  const again = cyc >= 0 && cyc < 0.45 ? cyc / 0.45 : null;
+  edge(outPort(A), inPort(B), { k: outExpo(seg(t, 1.5, 2.2)), color: t > land ? GREEN : EDGE, label: '1 item', labelK: seg(t, land, land + 0.3), pulse: t > fire && t < land ? (t - fire) / (land - fire) : again });
+  const reflash = cyc >= 0 ? Math.max(0, 1 - Math.abs(cyc - 0.47) * 8) : 0;
+  drawNode(A, { appear: seg(t, 0.3, 0.7), state: t > fire ? 'ok' : 'idle', t, flash: flashK(t, fire) });
+  drawNode(B, { appear: seg(t, 1.0, 1.4), state: t > land ? 'ok' : t > fire ? 'run' : 'idle', t, flash: Math.max(flashK(t, land), reflash) });
+  ring(A.x, A.y, seg(t, fire, fire + 0.6), LIVE); ring(B.x, B.y, seg(t, land, land + 0.6), GREEN);
+  const ck = outExpo(seg(t, 5.0, 5.5));
+  glitchText('TRIGGER  →  ACTION', 540, 790 + (1 - ck) * 30, { family: 'mono', size: 64, wght: 800, color: INK, alpha: ck, glow: 24, track: 2 }, (1 - ck) * 0.8);
+  text("that's the whole thing.", 540, 860, { size: 34, wght: 400, color: MUTED, alpha: seg(t, 5.8, 6.3) });
+}
+
+// 3 — "Every n8n build people flex, every WhatsApp bot, every AI agent … same skeleton, stacked."
+function skeleton(t) {
+  const ok = 3.2;
+  header('lead-qualifier.json', t < 1.2 ? 'Inactive' : t < ok ? 'Running' : 'Success', t < 1.2 ? MUTED : t < ok ? LIVE : GREEN, t);
+  const WH = { x: 130, y: 360, w: 150, h: 150, kind: 'trigger', icon: 'webhook', iconColor: PINK, label: 'Webhook' };
+  const AG = { x: 420, y: 360, w: 280, h: 150, kind: 'wide', icon: 'robot', inside: 'AI Agent' };
+  const IF = { x: 705, y: 360, w: 150, h: 150, icon: 'branch', iconColor: GREEN, label: 'Qualify lead?', outs: [-34, 34] };
+  const FM = { x: 960, y: 210, w: 130, h: 130, icon: 'braces', iconColor: GOLD, label: 'Format', labelSize: 26, noOut: true };
+  const EM = { x: 960, y: 530, w: 130, h: 130, icon: 'mail', label: 'Send email', labelSize: 26, noOut: true };
+  const CM = { x: 336, y: 650, w: 112, h: 112, kind: 'circle', icon: 'spark', iconColor: '#D8B4FE', label: 'Chat model', labelSize: 24 };
+  const OP = { x: 504, y: 650, w: 112, h: 112, kind: 'circle', icon: 'parser', label: 'Output parser', labelSize: 24 };
+  const strip = seg(t, 5.2, 5.8), gA = 1 - strip * 0.97;
+  const st = (on, run) => (t > on ? 'ok' : run !== undefined && t > run ? 'run' : 'idle');
+  ctx.save(); ctx.globalAlpha *= gA;
+  edge(outPort(WH), inPort(AG), { k: seg(t, 0.35, 0.7), color: t > 1.6 ? GREEN : EDGE, pulse: t > 1.2 && t < 1.6 ? (t - 1.2) / 0.4 : null });
+  edge(outPort(AG), inPort(IF), { k: seg(t, 0.55, 0.9), color: t > 2.8 ? GREEN : EDGE, pulse: t > 2.4 && t < 2.8 ? (t - 2.4) / 0.4 : null });
+  edge(outPort(IF, -34), inPort(FM), { k: seg(t, 0.75, 1.05), color: t > 3.2 ? GREEN : EDGE, label: 'true', pulse: t > 2.8 && t < 3.2 ? (t - 2.8) / 0.4 : null });
+  edge(outPort(IF, 34), inPort(EM), { k: seg(t, 0.8, 1.1), label: 'false' });
+  for (const [sub, x0] of [[CM, AG.x - 0.3 * AG.w], [OP, AG.x + 0.3 * AG.w]]) {
+    const lit = t > 2.0, k = seg(t, 0.6, 0.9);
+    if (k > 0) { ctx.save(); ctx.strokeStyle = lit ? GREEN : EDGE; ctx.lineWidth = 3; ctx.setLineDash([8, 9]); ctx.lineDashOffset = lit ? -t * 40 : 0; if (lit) { ctx.shadowColor = GREEN; ctx.shadowBlur = 12; } ctx.globalAlpha *= k; ctx.beginPath(); ctx.moveTo(x0, AG.y + AG.h / 2 + 10); ctx.bezierCurveTo(x0, AG.y + 150, sub.x, sub.y - 120, sub.x, sub.y - sub.h / 2); ctx.stroke(); ctx.restore(); }
+  }
+  drawNode(WH, { appear: seg(t, 0.05, 0.35), state: st(1.2), t, flash: flashK(t, 1.2) });
+  drawNode(AG, { appear: seg(t, 0.2, 0.5), state: st(2.4, 1.6), t, flash: flashK(t, 2.4) });
+  drawNode(CM, { appear: seg(t, 0.4, 0.7), state: st(2.0), t, flash: flashK(t, 2.0) });
+  drawNode(OP, { appear: seg(t, 0.5, 0.8), state: st(2.15), t, flash: flashK(t, 2.15) });
+  drawNode(IF, { appear: seg(t, 0.4, 0.7), state: st(2.8), t, flash: flashK(t, 2.8) });
+  drawNode(FM, { appear: seg(t, 0.6, 0.9), state: st(3.2), t, flash: flashK(t, 3.2) });
+  drawNode(EM, { appear: seg(t, 0.7, 1.0), state: 'idle', t });
+  ctx.restore();
+  // the three things people flex, called out on the voice beats
+  const tags = ['n8n builds', 'WhatsApp bots', 'AI agents'], at = [3.4, 3.9, 4.4];
+  const gone = 1 - seg(t, 5.3, 5.6);
+  if (gone > 0) { ctx.save(); ctx.globalAlpha *= gone; tags.forEach((s, i) => chip(s, 250 + i * 290, 860, seg(t, at[i], at[i] + 0.3), { col: [HOT, GREEN, '#D8B4FE'][i] })); ctx.restore(); }
+  // strip it down: the same pair, three times over
+  [['n8n build', HOT], ['WhatsApp bot', GREEN], ['AI agent', '#D8B4FE']].forEach(([s, col], i) => {
+    const t0 = 5.7 + i * 0.35, k = seg(t, t0, t0 + 0.35); if (k <= 0) return;
+    const y = 240 + i * 180 - (1 - outExpo(k)) * 50;
+    const A = { x: 520, y, w: 110, h: 110, kind: 'trigger', icon: 'spark' }, B = { x: 800, y, w: 110, h: 110, icon: 'cog' };
+    const fire = t0 + 0.45, cyc = t > fire ? ((t - fire) % 1.5) / 1.5 : -1;
+    ctx.save(); ctx.globalAlpha *= clamp(k * 1.5);
+    text(s, 360, y + 10, { family: 'mono', size: 28, wght: 600, color: col, align: 'right', glow: 14 });
+    edge(outPort(A), inPort(B), { k: 1, color: t > fire + 0.4 ? GREEN : EDGE, pulse: cyc >= 0 && cyc < 0.4 ? cyc / 0.4 : null });
+    drawNode(A, { appear: k, state: t > fire ? 'ok' : 'idle', t, flash: flashK(t, fire) });
+    drawNode(B, { appear: k, state: t > fire + 0.4 ? 'ok' : 'idle', t, flash: flashK(t, fire + 0.4) });
+    ctx.restore();
+  });
+  const ck = outExpo(seg(t, 7.0, 7.4));
+  glitchText('SAME SKELETON. STACKED.', 540, 850, { family: 'mono', size: 54, wght: 800, color: INK, alpha: ck, glow: 24, track: 2 }, (1 - ck) * 0.8);
+}
+
+// 4 — "Stop studying. Build. … runs by itself for three days … the first time it fires while you're asleep, it clicks."
+function run(t) {
+  const on = 3.0, R = [3.8, 5.2, 6.6], click = 9.4;
+  header('morning-bot.json', t < on ? 'Inactive' : 'Active', t < on ? MUTED : GREEN, t);
+  // phase A: the two words
+  const outA = seg(t, 2.2, 2.6), yA = -outExpo(outA) * 80;
+  ctx.save(); ctx.globalAlpha *= 1 - outA;
+  const k1 = outExpo(seg(t, 0.1, 0.5));
+  text('stop studying.', 540, 400 + yA + (1 - k1) * 40, { size: 128, wght: 900, stretch: 'condensed', alpha: k1, color: MUTED });
+  const sk = outExpo(seg(t, 0.7, 1.0)), sw = measure('stop studying.', 'sans', 900, 128, 0, 'condensed') / 2 + 16;
+  if (sk > 0) { ctx.save(); ctx.strokeStyle = RED; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.shadowColor = RED; ctx.shadowBlur = 24; ctx.beginPath(); ctx.moveTo(540 - sw, 360 + yA); ctx.lineTo(540 - sw + 2 * sw * sk, 360 + yA); ctx.stroke(); ctx.restore(); }
+  const k2 = outExpo(seg(t, 1.1, 1.5));
+  glitchText('build.', 540, 600 + yA + (1 - k2) * 50, { size: 190, wght: 900, stretch: 'condensed', color: GREEN, alpha: k2, glow: 40 }, (1 - k2) * 0.7);
+  ctx.restore();
+  // phase B: switch it on, then leave it alone
+  const kB = seg(t, 2.5, 2.9); if (kB <= 0) return;
+  ctx.save(); ctx.globalAlpha *= kB;
+  const flip = outExpo(seg(t, on, on + 0.3));
+  ctx.save(); ctx.fillStyle = flip > 0.5 ? rgba(GREEN, 0.25) : '#22232A'; ctx.strokeStyle = flip > 0.5 ? GREEN : LINE; ctx.lineWidth = 3;
+  if (flip > 0.5) { ctx.shadowColor = GREEN; ctx.shadowBlur = 30; }
+  ctx.beginPath(); ctx.roundRect(80, 200, 170, 84, 42); ctx.fill(); ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.fillStyle = INK; ctx.shadowColor = flip > 0.5 ? GREEN : 'transparent'; ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(lerp(122, 208, flip), 242, 30, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  ring(208, 242, seg(t, on + 0.2, on + 0.8), GREEN, 40, 160);
+  text(flip > 0.5 ? 'Active' : 'Inactive', 274, 255, { family: 'mono', size: 30, wght: 800, color: flip > 0.5 ? GREEN : MUTED, align: 'left' });
+  const runs = R.filter((r) => t > r).length;
+  text('auto runs', 80, 380, { family: 'mono', size: 22, wght: 600, color: MUTED, align: 'left', track: 2 });
+  text(String(runs), 80, 490, { family: 'mono', size: 110, wght: 800, color: GREEN, align: 'left', glow: 30 + 30 * Math.max(...R.map((r) => flashK(t, r, 0.5))) });
+  text('times you touched it', 80, 580, { family: 'mono', size: 22, wght: 600, color: MUTED, align: 'left', track: 2 });
+  text('0', 80, 690, { family: 'mono', size: 110, wght: 800, color: INK, align: 'left' });
+  // the executions log
+  ctx.save(); ctx.fillStyle = 'rgba(255,255,255,.035)'; ctx.strokeStyle = 'rgba(255,255,255,.1)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(470, 160, 546, 600, 24); ctx.fill(); ctx.stroke(); ctx.restore();
+  text('EXECUTIONS', 506, 214, { family: 'mono', size: 22, wght: 600, color: MUTED, align: 'left', track: 3 });
+  const subs = ['Succeeded in 1.2s', 'Succeeded in 1.1s', "Succeeded · you didn't look"];
+  R.forEach((r, i) => {
+    const k = outExpo(seg(t, r, r + 0.35)); if (k <= 0) return;
+    const y = 250 + i * 160 + (1 - k) * 30;
+    ctx.save(); ctx.globalAlpha *= k;
+    const fl = flashK(t, r, 0.8);
+    ctx.fillStyle = rgba(GREEN, 0.06 + 0.18 * fl); ctx.strokeStyle = rgba(GREEN, 0.3 + 0.6 * fl); ctx.lineWidth = 2; ctx.shadowColor = GREEN; ctx.shadowBlur = 30 * fl;
+    ctx.beginPath(); ctx.roundRect(500, y, 486, 130, 18); ctx.fill(); ctx.stroke(); ctx.restore();
+    ctx.save(); ctx.globalAlpha *= k;
+    ctx.save(); ctx.fillStyle = rgba(GREEN, 0.18); ctx.beginPath(); ctx.arc(560, y + 65, 30, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    icon('check', 560, y + 65, 36, GREEN);
+    text(`Day ${i + 1} · 08:00:00`, 612, y + 60, { size: 32, wght: 800, align: 'left' });
+    text(subs[i], 612, y + 96, { family: 'mono', size: 20, wght: 600, color: MUTED, align: 'left' });
+    // a scan light sweeps the row as it lands
+    const sx = seg(t, r, r + 0.6); if (sx > 0 && sx < 1) { ctx.save(); ctx.beginPath(); ctx.roundRect(500, y, 486, 130, 18); ctx.clip(); const gx = 500 + sx * 600 - 100, g = ctx.createLinearGradient(gx - 80, 0, gx + 80, 0); g.addColorStop(0, rgba(INK, 0)); g.addColorStop(0.5, rgba(INK, 0.22)); g.addColorStop(1, rgba(INK, 0)); ctx.fillStyle = g; ctx.fillRect(500, y, 486, 130); ctx.restore(); }
+    ctx.restore();
+  });
+  ctx.restore();
+  // "it clicks."
+  const ck = outExpo(seg(t, click, click + 0.35));
+  if (ck > 0) {
+    ctx.save(); ctx.fillStyle = `rgba(10,11,14,${0.9 * ck})`; ctx.fillRect(0, 0, W, H); ctx.restore();
+    glitchText('it clicks.', 540, 520, { size: 200, wght: 900, stretch: 'condensed', color: INK, alpha: ck, glow: 50 }, (1 - ck) * 0.8);
+    const cx = 800, cy = 600, press = seg(t, click + 0.3, click + 0.45);
+    ring(cx, cy, seg(t, click + 0.4, click + 1.0), LIVE, 20, 180); ring(cx, cy, seg(t, click + 0.55, click + 1.2), HOT, 20, 260);
+    ctx.save(); ctx.globalAlpha *= ck; icon('cursor', cx + 20 + (1 - ck) * 120, cy + 34 + (1 - ck) * 80, 80 * (1 - 0.15 * Math.sin(press * Math.PI)), INK); ctx.restore();
+  }
+}
+
+// 5 — "Every morning at 8 a.m., it pulls your local forecast and sends it to your phone … finish tonight."
+function first(t) {
+  const fire = 2.1, http = 3.4, sent = 4.2;
+  header('morning-bot.json', t < fire ? 'Inactive' : t < sent ? 'Running' : 'Success', t < fire ? MUTED : t < sent ? LIVE : GREEN, t);
+  const mins = lerp(-8, 0, inOut(seg(t, 0.5, 2.0)));
+  const S = { x: 190, y: 340, w: 170, h: 170, kind: 'trigger', icon: 'clock', iconOpt: { h: 8, m: mins }, label: 'Every day 8:00', sub: 'SCHEDULE' };
+  const Hn = { x: 540, y: 340, w: 170, h: 170, icon: 'globe', iconColor: BLUE, label: 'Get forecast', sub: 'HTTP REQUEST' };
+  const T = { x: 890, y: 340, w: 170, h: 170, icon: 'plane', iconColor: BLUE, label: 'Send message', sub: 'TELEGRAM', noOut: true };
+  edge(outPort(S), inPort(Hn), { k: outExpo(seg(t, 0.6, 1.0)), color: t > fire + 0.5 ? GREEN : EDGE, label: '1 item', labelK: seg(t, fire + 0.5, fire + 0.7), pulse: t > fire && t < fire + 0.5 ? (t - fire) / 0.5 : null });
+  edge(outPort(Hn), inPort(T), { k: outExpo(seg(t, 0.9, 1.3)), color: t > sent ? GREEN : EDGE, label: '1 item', labelK: seg(t, sent, sent + 0.2), pulse: t > http + 0.2 && t < sent ? (t - http - 0.2) / (sent - http - 0.2) : null });
+  drawNode(S, { appear: seg(t, 0.1, 0.45), state: t > fire ? 'ok' : 'idle', t, flash: flashK(t, fire) });
+  drawNode(Hn, { appear: seg(t, 0.4, 0.75), state: t > http ? 'ok' : t > fire + 0.5 ? 'run' : 'idle', t, flash: flashK(t, http) });
+  drawNode(T, { appear: seg(t, 0.7, 1.05), state: t > sent ? 'ok' : 'idle', t, flash: flashK(t, sent) });
+  ring(S.x, S.y, seg(t, fire, fire + 0.6), LIVE); ring(Hn.x, Hn.y, seg(t, http, http + 0.6), GREEN); ring(T.x, T.y, seg(t, sent, sent + 0.6), GREEN);
+  // the clock ticks over to 08:00:00
+  const clock = 8 * 3600 - Math.round(lerp(480, 0, inOut(seg(t, 0.5, 2.0)))), at8 = t >= 2.0;
+  const hh = Math.floor(clock / 3600), mm = Math.floor((clock % 3600) / 60), ss = clock % 60;
+  chip(`${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`, S.x, 190, seg(t, 0.3, 0.6), { col: at8 ? GREEN : INK });
+  // the response
+  const json = `{ "high": ${HIGH}, "rain": ${RAIN} }`, typed = Math.floor(json.length * seg(t, http - 0.1, http + 0.4));
+  if (typed > 0) chip(json.slice(0, typed) + (typed < json.length ? '▍' : ''), Hn.x, 190, 1, { col: GREEN });
+  // the phone buzzes
+  const pk = outExpo(seg(t, sent + 0.3, sent + 0.9)), py = lerp(980, 618, pk), buzz = t > sent + 0.9 && t < sent + 1.3 ? Math.sin(t * 90) * 5 : 0;
+  if (pk > 0) {
+    const x = 150 + buzz, w = 780, h = 196;
+    ctx.save(); ctx.shadowColor = BLUE; ctx.shadowBlur = 40; ctx.fillStyle = 'rgba(28,30,38,.94)'; ctx.strokeStyle = rgba(BLUE, 0.6); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(x, py, w, h, 34); ctx.fill(); ctx.stroke(); ctx.restore();
+    const g = ctx.createLinearGradient(x + 40, py + 40, x + 120, py + 120); g.addColorStop(0, '#5AC8FA'); g.addColorStop(1, '#1E88E5');
+    ctx.save(); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x + 82, py + 98, 44, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    icon('plane', x + 80, py + 100, 46, INK);
+    text('Morning Bot', x + 150, py + 58, { size: 28, wght: 700, align: 'left', color: MUTED });
+    text('now', x + w - 36, py + 58, { family: 'mono', size: 20, wght: 600, align: 'right', color: MUTED });
+    text('Good morning.', x + 150, py + 104, { size: 32, wght: 500, align: 'left' });
+    text(`${HIGH}°F · ${RAIN}% rain`, x + 150, py + 160, { size: 46, wght: 900, align: 'left', color: GREEN, glow: 22 });
+  }
+  // useful, real, small enough to finish tonight
+  [['useful', 8.0], ['real', 8.5], ['finish it tonight', 9.2]].forEach(([s, a], i) => chip(s, [300, 520, 800][i], 890, seg(t, a, a + 0.3), { col: [GREEN, GREEN, HOT][i] }));
+}
+
+// 6 — "Comment BANDS and I'll send it to you … we'll stack the next one."
+function cta(t) {
+  const fire = 2.2, land = 2.8;
+  header('guide-delivery.json', t < fire ? 'Active' : t < land ? 'Running' : 'Success', t < fire ? GREEN : t < land ? LIVE : GREEN, t);
+  const C = { x: 220, y: 250, w: 140, h: 140, kind: 'trigger', icon: 'comment', label: 'New comment', sub: '"BANDS"', labelSize: 28 };
+  const G = { x: 540, y: 250, w: 140, h: 140, icon: 'plane', iconColor: BLUE, label: 'Send guide', sub: 'DM', labelSize: 28 };
+  edge(outPort(C), inPort(G), { k: outExpo(seg(t, 0.4, 0.8)), color: t > land ? GREEN : EDGE, label: '1 item', labelK: seg(t, land, land + 0.2), pulse: t > fire && t < land ? (t - fire) / (land - fire) : null });
+  drawNode(C, { appear: seg(t, 0.05, 0.4), state: t > fire ? 'ok' : 'idle', t, flash: flashK(t, fire) });
+  drawNode(G, { appear: seg(t, 0.3, 0.65), state: t > land ? 'ok' : t > fire ? 'run' : 'idle', t, flash: flashK(t, land) });
+  ring(C.x, C.y, seg(t, fire, fire + 0.6), LIVE); ring(G.x, G.y, seg(t, land, land + 0.6), GREEN);
+  // the next node is already waiting
+  const nk = seg(t, 4.4, 4.8);
+  edge(outPort(G), { x: 860 - 75, y: 250 }, { k: outExpo(nk), dash: true, color: EDGE });
+  ghostNode(860, 250, 140, 140, nk, t, 'next one');
+  // COMMENT / BANDS, neon on
+  text('COMMENT', 540, 540, { family: 'mono', size: 44, wght: 600, color: MUTED, track: 18, alpha: seg(t, 0.6, 0.9) });
+  const on = seg(t, 0.9, 1.5), flick = on >= 1 ? 1 : [0, 1, 0.2, 1, 0, 0.7, 1][Math.floor(on * 7)] ?? 1;
+  const hum = 0.92 + 0.08 * Math.sin(t * 13) * Math.sin(t * 3.1);
+  glitchText('BANDS', 540, 790, { size: 270, wght: 900, stretch: 'condensed', color: LIVE, alpha: flick * hum, glow: 70, track: 4 }, on < 1 ? 0.6 : (hash(Math.floor(t * 15)) > 0.93 ? 0.35 : 0));
+  text("we'll stack the next one.", 540, 892, { size: 34, wght: 400, color: MUTED, alpha: seg(t, 4.8, 5.3) });
+}
+
+const SCENES = [
+  { name: 'hook', dur: 12, draw: hook },
+  { name: 'one-workflow', dur: 8, draw: one },
+  { name: 'same-skeleton', dur: 9, draw: skeleton },
+  { name: 'let-it-run', dur: 12, draw: run },
+  { name: 'first-build', dur: 12, draw: first },
+  { name: 'comment-bands', dur: 7, draw: cta },
+];
+let acc = 0; for (const s of SCENES) { s.start = acc; acc += s.dur; }
+const DURATION = acc;
+
+function draw(n) {
+  const t = n / FPS, s = SCENES.findLast((x) => t >= x.start) ?? SCENES[0], lt = t - s.start;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+  bg(t);
+  s.draw(lt);
+  // every scene opens on a quick light cut, so clips can be dropped in back to back
+  const cut = 1 - seg(lt, 0, 0.12); if (cut > 0 && s.start > 0) { ctx.fillStyle = `rgba(255,255,255,${0.35 * cut})`; ctx.fillRect(0, 0, W, H); }
+  post(n);
+}
+
+window.reel = { draw, W, H, FPS, DURATION, frames: DURATION * FPS, scenes: SCENES.map(({ name, start, dur }) => ({ name, start, dur })) };
+await Promise.all(['400', '500', '700', '800', '900'].map((w) => document.fonts.load(`${w} 40px "Hubot Sans"`, 'A$°'))
+  .concat(['400', '600', '800'].map((w) => document.fonts.load(`${w} 40px "JetBrains Mono"`, 'A→'))));
+await document.fonts.ready;
+window.reel.ready = true;
+if (!navigator.webdriver) {
+  const only = SCENES.find((s) => s.name === P.get('scene'));
+  const a = only ? only.start * FPS : 0, len = (only ? only.dur : DURATION) * FPS;
+  let n = 0; const tick = () => { draw(a + n); n = (n + 1) % len; requestAnimationFrame(tick); }; tick();
+}
+</script>
+</body>
+</html>

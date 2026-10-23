@@ -4,6 +4,8 @@
 
   [build.environment]
     NODE_VERSION = "20"
+    # Playwright is a dev dependency for rendering reels locally; deploys never need its browsers.
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
     # The Supabase project URL and publishable (anon) key are public by design:
     # they ship in the browser so the discovery form can POST leads, and access is
     # controlled by RLS (anon INSERT only; reads require authentication).
