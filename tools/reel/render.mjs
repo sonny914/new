@@ -4,16 +4,17 @@
 import { createServer } from 'node:http';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
-import { extname, join, resolve } from 'node:path';
+import { extname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { chromium } from 'playwright';
 import { synth } from './sound.mjs';
 
-const ROOT = resolve(new URL('../..', import.meta.url).pathname);
+const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const OUT = join(ROOT, 'experiments/thinking-orb');
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.svg': 'image/svg+xml' };
 const server = createServer(async (req, res) => {
-  try { const p = join(ROOT, decodeURIComponent(new URL(req.url, 'http://x').pathname)); res.writeHead(200, { 'content-type': TYPES[extname(p)] ?? 'application/octet-stream' }); res.end(await readFile(p)); }
+  try { const p = join(ROOT, decodeURIComponent(new URL(req.url, 'http://x').pathname)), body = await readFile(p); res.writeHead(200, { 'content-type': TYPES[extname(p)] ?? 'application/octet-stream' }); res.end(body); }
   catch { res.writeHead(404); res.end(); }
 }).listen(0);
 const port = server.address().port;
