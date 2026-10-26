@@ -2,15 +2,20 @@
   "type": "module",
   "name": "quiet-bands",
   "version": "1.0.0",
-  "description": "Quiet Bands \u2014 software built around the work. Static site + zero-dependency Netlify function.",
+  "description": "Quiet Bands — software built around the work. Static site + zero-dependency Netlify function.",
   "private": true,
   "scripts": {
     "test": "node --test \"tools/**/*.test.mjs\"",
     "qa": "node tools/qa.mjs",
     "serve": "npx http-server -p 8080 -c-1 .",
-    "accept:hero": "node tools/hero.accept.mjs"
+    "accept:hero": "node tools/hero.accept.mjs",
+    "reel:orb": "node tools/reel/render.mjs",
+    "reel:flow": "node tools/reel/render-flow.mjs"
   },
   "engines": {
     "node": "20.x"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
   }
 }
