@@ -59,7 +59,7 @@ One speed curve maps one to the other, and that curve is all three moves.
 | 3.20 | south, low (az 88°, 35 mm) | Geography: her in profile at the apex, fork overhead, the Bellwright small and to the right |
 | 4.15 | east (az 2°, 50 mm, 2.3 m) | **Character:** her face under the raised arms, eyes shut, band lifted, rain beads between her and the lens |
 | 5.05 | north (az −88°, 40 mm) | **The sound:** the chain glowing signal in the background |
-| 5.95 | west, high over her shoulder (az −176°, el 24°) | **The trap:** the bell coiled low behind him. She can't see it. |
+| 5.95 | south-west, high and off the line (az −213.6°, el 31°, 7 m) | **The trap:** she fills the left foreground; across the room the coiled bell hums orange beside the Bellwright. She can't see it. |
 | 6.85 | south again | The composition closes; 0.15 s later, the snap |
 
 **MOVE 03 · dodge orbit** (SH030, 7.70–14.20 s), azimuth 108° → 286° around a target 45 cm above her head (the gap):
@@ -108,7 +108,7 @@ Anchors: `L` is the Listener's hips, `Lchest` and `Lhead` her chest and head, `B
 | 3.20 s | 2.802 s | 0.5% | Lchest + (0, 0.2, 0) | 88° | -6° | 3.3 m | 35 mm |
 | 4.15 s | 2.807 s | 0.5% | Lchest + (0, 0.32, 0) | 2° | 0° | 2.3 m | 50 mm |
 | 5.05 s | 2.811 s | 0.5% | Lchest + (0, 0.2, 0) | -88° | 8° | 3 m | 40 mm |
-| 5.95 s | 2.816 s | 0.5% | Lchest | -176° | 24° | 3.4 m | 28 mm |
+| 5.95 s | 2.816 s | 0.5% | Lchest + (2.6, -1.6, -1.1) | -213.6° | 31° | 7 m | 30 mm |
 | 6.85 s | 2.820 s | 0.5% | Lchest + (0, 0.2, 0) | -266° | -5° | 3.3 m | 35 mm |
 | 7.00 s | 2.821 s | 0.5% | Lchest + (0, 0.2, 0) | -271° | -6° | 3.35 m | 35 mm |
 | 7.25 s | 2.947 s | 100% | Lchest + (0, 0.1, 0) | -280° | -9° | 3.9 m | 30 mm |
@@ -183,6 +183,6 @@ For the final mix, record real sources: a struck bronze bell (close and room), c
 - No cut crosses the line.
 
 **Not proved:**
-- The final look.
+- The final look (the first look-dev test is in `lookdev/`).
 - The acting.
 - Whether an AI video model can hold her identity through a 360° orbit. That is the next test; see `../PIPELINE.md`.

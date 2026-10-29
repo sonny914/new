@@ -20,13 +20,13 @@ Status: **preproduction started.** Test 01 previs v1 is blocked out and passes i
 - **Camera language:** MOVE 01 (360° freeze), MOVE 03 (dodge orbit), MOVE 04 (impact transition). Bullet time must reveal something about the action or the character, never decorate.
 - **Test 01 structure:** freeze 0–7.25 s, dodge 7.25–14.65 s, impact transition 14.65–25 s. Animatic timing replaced the provisional 8/8/9 split: the impact transition needs the extra second for impact frames, the ride out and the reveal.
 - **Visual rule:** orange (signal) appears only where sound has force.
+- **Story: an original.** Quiet Bands owns it outright, so it can be taught, sold and licensed without anyone's permission. *Spirited* stays a separate rights conversation and is not a dependency.
+- **Concept: the Listener, the Bellwright and the Drowned Belfry** are the original's starting point, no longer a placeholder.
 
 ## Open decisions
 
 | Decision | Options | Recommendation |
 |---|---|---|
-| **Which story** | Adapt *Spirited* (writer-owned; needs written rights and permission) or build an original | **Original first.** You can teach, sell and license an original without anyone's permission, and the course depends on that. Keep *Spirited* as a separate rights conversation, not a dependency. |
-| **Test 01 concept** | Keep the Listener, the Bellwright and the Drowned Belfry, or swap in other characters | Your call. The camera data is independent of the characters, so a swap costs one pose pass, not a rebuild. |
 | **Final render route** | 3D toon, AI video-to-video, or a hybrid (see `PIPELINE.md`) | Hybrid, after a two-day spike that runs one MOVE 01 orbit through AI video-to-video. |
 | **Master format** | 2.39 film master or 9:16 first | A 2.39 master with a 9:16 safe column. The orbits are centre-weighted, so the vertical cut is nearly free. |
 

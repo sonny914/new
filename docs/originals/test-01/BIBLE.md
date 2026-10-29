@@ -1,6 +1,6 @@
 # TEST 01 · THE DROWNED BELFRY · VISUAL BIBLE
 
-Status: previs v1. Characters, world and story here are a **provisional test concept**, built so the three locked camera moves have something meaningful to reveal. They can be promoted to the real show or swapped out. The camera paths and timing are independent of these designs. The numbers below come from `tools/previs/shots.mjs`, which is the only place to change them.
+Status: previs v2. **This is an original, and this is its concept.** The Listener, the Bellwright and the Drowned Belfry were first built so the three locked camera moves had something meaningful to reveal; they are now the show's starting point. The camera paths and timing stay independent of the designs, so redesigns cost a pose pass, not a rebuild. The numbers below come from `tools/previs/shots.mjs`, which is the only place to change them.
 
 ---
 
@@ -12,7 +12,7 @@ That gives each locked move a reason to exist:
 
 | Move | What it reveals |
 |---|---|
-| 01 · 360° freeze | The trap. Her eyes are shut, so she can't see the bell coiling below her. She can hear it, and the chain glows orange because it is the sound she is tracking. |
+| 01 · 360° freeze | The trap. Her eyes are shut, so she can't see the bell coiling below her. She can hear it, so the chain and the bell glow orange: they are the sound she is tracking. |
 | 03 · Dodge orbit | How she dodges. The bell passes 9 cm over her face while her eyes stay closed. The orbit ends looking along the gap, with the Bellwright small in the window behind the bronze. |
 | 04 · Impact transition | What sound does in this world. The strike makes a ring that packs the rain into a shell, blows the louvers out and carries the camera into the drowned city. |
 
@@ -50,7 +50,9 @@ That gives each locked move a reason to exist:
 
 - **One key: the moon**, low in the south-east, 11° up, direction (0.80, 0.19, 0.57). It is visible as a disc in the final frame and never moves.
 - Inside, moonlight reaches the room through the louvered openings and casts **stripes** across the floor and the characters. Stripes are the room's texture. Keep the louvers in every redesign.
+- **The blade.** Two slats are missing from the south-east opening. The gap throws one blade of moonlight across the apex of the leap, so her face is lit for the freeze. It is a set detail, not a cheat: the gap stays in every shot.
 - **Fill** comes from the broken roof as a dim sky dome.
+- **The hum** is a faint orange glow from the bell during the freeze. It is what she hears, and it lights the Bellwright's mass enough to read.
 - **The strike** is an orange point light at the contact point. It flashes at contact and decays with world time. At 4% speed it lingers for seconds, so the impact hold glows.
 - No rim lights and no glow just for looks. Every light has a source in the world.
 
@@ -115,11 +117,13 @@ Wind blows from the window: (−1.2, −9.0, −0.4) m/s. Keep this rule in fina
 | Screen direction | The action line runs west to east (Listener → Bellwright → window). East is screen-right from SH010 through the start of SH030. The dodge orbit crosses the line *on camera*. From the end of SH030 through SH040, east is screen-left. No cut crosses the line (checked in `tools/previs.test.mjs`). |
 | Moon | South-east, 11° up. Fixed. |
 | Rain | Wind from the east. Streak length is shutter × speed, never stylised per shot. |
-| Band | Worn askew, higher on her right. It does not move in this test. |
+| Band | Worn askew, higher on her right. She lifts it off her right ear to listen, from just before the apex (world time 2.45 s) until she lands (3.55 s). |
+| Eyes | Closed in every bullet-time beat. |
 | Sash | Streams against her velocity. Frozen mid-flutter in the freeze, never limp. |
 | Fork | In her right hand throughout. Tines unlit until contact, then signal, fading. |
 | Bell | Rests in the water north-east of him until world time 2.40 s. Crown always toward his right hand. |
-| Chain | In his right hand. Glows signal only during the freeze. |
+| Chain and bell | In his right hand. Both glow signal only during the freeze: the hum she is tracking. |
+| South-east louvers | Slats 8 and 9 are missing in every shot; the gap is the moonlight blade. |
 | Window | Intact until the ring reaches it (world time 4.35 s, edit 16.97 s). Gone after that. |
 | Water | Ripples at each footfall (world time 0.98, 1.30, 1.60, 1.86 s) and the landing (3.55 s). |
 | Impact frames | Frame 371: signal ground, ink silhouettes. Frame 372: ink ground, bone silhouettes. Only the characters, the fork and the bell; no set. |
