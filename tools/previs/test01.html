@@ -13,6 +13,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--ink); color: var(--bone); font: 15px/1.55 var(--body); }
 .wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; display: grid; gap: 28px; }
 header { display: grid; gap: 6px; }
@@ -120,7 +121,7 @@ body.render .wrap { padding: 0; max-width: none; }
 import * as THREE from 'three';
 import * as S from './shots.mjs';
 
-const RENDER = navigator.webdriver || /[?&]render\b/.test(location.search);
+const RENDER = /[?&]render\b/.test(location.search) || (navigator.webdriver && !/[?&]view\b/.test(location.search));
 if (RENDER) document.body.classList.add('render');
 const C = Object.fromEntries(Object.entries(S.PALETTE).map(([k, v]) => [k, new THREE.Color(v)]));
 

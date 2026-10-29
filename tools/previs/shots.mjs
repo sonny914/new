@@ -357,7 +357,7 @@ export const SHOTS = [
       { t: 7.25, target: 'Lchest', off: [0, 0.10, 0], az: -280, el: -9, dist: 3.9, mm: 30 },
     ] },
   { id: 'SH030', name: 'The Dodge', move: 'MOVE 03 · DODGE ORBIT', t0: 7.25, t1: 14.65,
-    note: 'Cut on the snap. Time drops to 2% as the bell crosses her face; the camera swings 190° around the gap and finds the Bellwright in the window behind it.',
+    note: 'Cut on the snap. Time drops to 2% as the bell crosses her face; the camera swings 178° around the gap and finds the Bellwright in the window behind it.',
     keys: [
       { t: 7.25, target: 'Lhead', off: [0.2, 0.45, 0], az: 132, el: -20, dist: 5.0, mm: 22 },
       { t: 7.70, target: 'Lhead', off: [0.15, 0.45, 0], az: 108, el: 2, dist: 3.0, mm: 32 },
