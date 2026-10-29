@@ -6,11 +6,13 @@
 //   node tools/capture/cli.mjs stills   --key <name> [--at 1,5.5,12] [--formats 16x9]
 //   node tools/capture/cli.mjs script   --key <name>        lines to voice, voice id and the file each must be saved to
 //   node tools/capture/cli.mjs approve  --key <name> --by <who> (--voice <higgsfield voice id> | --silent)   record the founder's approval
+//   node tools/capture/cli.mjs fetch-narration --key <name> download the recorded lines listed in narration/jobs.json
 //   node tools/capture/cli.mjs final    --key <name>        re-time to the recorded narration and render the final cut
 //
 // run = steps 1–7 of the end-of-session flow (finalize, collect, narrate, select scenes, storyboard, silent preview, present).
 // Nothing here spends credits, publishes or deploys. Paid narration happens outside this CLI, only after `approve`.
 import { existsSync, readFileSync, writeFileSync, mkdirSync, statSync, copyFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, resolve, relative, basename } from 'node:path';
 import { ROOT, ARCHIVE, readJSON, readJSONIf, writeJSON, writeText, slugify, sha256File, fmtDate, parts } from './lib/util.mjs';
 import { fromTranscript, fromCcrExport, fromCcrEvents, sessionCommits, sessionAliases, githubPulls, repoSlug } from './lib/ingest.mjs';
@@ -25,7 +27,7 @@ import { sessionReport, logEntry, appendLog } from './lib/report.mjs';
 import { ENV_FLAG, lock, recordIndex } from './lib/guard.mjs';
 
 process.env[ENV_FLAG] = '1'; // anything this process starts knows it is inside a capture
-export const VERSION = '0.2.0'; // bump with CHANGELOG.md
+export const VERSION = '0.2.1'; // bump with CHANGELOG.md
 const LOG_HEADER = '# Production log\n\nHow this recap was made: every run, what it decided, what it validated, and what it cost. Newest last.';
 
 const argv = process.argv.slice(2);
@@ -194,6 +196,20 @@ async function cmdApprove() {
   say('approval recorded');
 }
 
+// Recorded lines are listed (job id, url, spoken text) in narration/jobs.json when they are generated; this puts them in place.
+async function cmdFetchNarration() {
+  const { F } = await loadKey();
+  const jobs = readJSON(join(F.narration, 'jobs.json'));
+  const failed = [];
+  for (const l of jobs.lines) {
+    const out = join(F.narration, l.format, `${l.scene}.${(l.url.match(/\.(wav|mp3|m4a)(\?|$)/) ?? [, 'wav'])[1]}`);
+    mkdirSync(join(F.narration, l.format), { recursive: true });
+    try { execFileSync('curl', ['-sS', '--fail', '--max-time', '60', '-o', out, l.url], { stdio: ['ignore', 'ignore', 'pipe'] }); say(`${l.format}/${l.scene} ✓`); }
+    catch (e) { failed.push(`${l.format}/${l.scene}: ${String(e.stderr ?? e.message).trim().split('\n')[0]}`); }
+  }
+  if (failed.length) throw new Error(`could not download ${failed.length} of ${jobs.lines.length} lines (is ${new URL(jobs.lines[0].url).host} allowed by the environment's network access?)\n${failed.join('\n')}`);
+}
+
 async function cmdFinal() {
   const { key, F, ev, sb: prev, assets } = await loadKey();
   if (!prev.approval) throw new Error('no approval recorded: run `approve` only after the founder says yes');
@@ -221,6 +237,6 @@ async function cmdFinal() {
   recordIndex({ key, session_id: ev.session.id, status: 'final' });
 }
 
-const commands = { run: cmdRun, stills: cmdStills, script: cmdScript, approve: cmdApprove, final: cmdFinal };
-if (!commands[cmd]) { console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 14).map((l) => l.replace(/^\/\/ ?/, '')).join('\n')); process.exit(cmd ? 1 : 0); }
+const commands = { run: cmdRun, stills: cmdStills, script: cmdScript, approve: cmdApprove, 'fetch-narration': cmdFetchNarration, final: cmdFinal };
+if (!commands[cmd]) { console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 15).map((l) => l.replace(/^\/\/ ?/, '')).join('\n')); process.exit(cmd ? 1 : 0); }
 commands[cmd]().catch((e) => { console.error('[capture] error:', e.message); process.exit(1); });

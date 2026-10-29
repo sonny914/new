@@ -4,7 +4,8 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { fmtStamp, fmtZone, fmtDay, fmtDate, fmtTime, parts, words, TZ } from './util.mjs';
+import { fmtStamp, fmtZone, fmtDay, fmtDate, fmtTime, parts, words, TZ, CACHE, sha256File } from './util.mjs';
+import { mkdirSync } from 'node:fs';
 import { sentenceWith, spoken } from './story.mjs';
 import { isWork } from './events.mjs';
 
@@ -237,6 +238,14 @@ export function audioSeconds(file) {
   const out = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8' });
   return +(+out).toFixed(3);
 }
+// A recorded line, trimmed of dead air at both ends (cached), so speech starts where its caption does.
+export function trimmedNarration(file) {
+  const dir = join(CACHE, 'narration'); mkdirSync(dir, { recursive: true });
+  const out = join(dir, `${sha256File(file).slice(0, 16)}.wav`);
+  if (!existsSync(out)) execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', file, '-af',
+    'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.12,areverse', '-ar', '48000', '-ac', '2', out]);
+  return out;
+}
 export function narrationFile(dir, fmt, id) {
   for (const ext of ['wav', 'mp3', 'm4a']) { const f = join(dir, fmt, `${id}.${ext}`); if (existsSync(f)) return f; }
   return null;
@@ -246,9 +255,10 @@ export function timeStoryboard(sb, { narrationDir } = {}) {
   for (const [fmt, f] of Object.entries(sb.formats)) {
     let t = 0;
     for (const s of f.scenes) {
-      const file = narrationDir && s.narration ? narrationFile(narrationDir, fmt, s.id) : null;
+      const raw = narrationDir && s.narration ? narrationFile(narrationDir, fmt, s.id) : null;
+      const file = raw ? trimmedNarration(raw) : null;
       const say = file ? audioSeconds(file) : speechSeconds(s.narration ?? '');
-      s.voice = file ? { file, seconds: say, source: 'recorded' } : s.narration ? { seconds: +say.toFixed(2), source: 'estimate' } : null;
+      s.voice = file ? { file, recording: raw, seconds: say, source: 'recorded' } : s.narration ? { seconds: +say.toFixed(2), source: 'estimate' } : null;
       s.duration = +Math.max(MIN[s.template] ?? 5, LEAD + say + TAIL).toFixed(3);
       s.start = +t.toFixed(3);
       s.speech = s.narration ? { start: +(s.start + LEAD).toFixed(3), end: +(s.start + LEAD + say).toFixed(3) } : null;

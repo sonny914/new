@@ -2,6 +2,11 @@
 
 QB Capture documents its own development here. Sessions that change `tools/capture/` are also recapped like any other work; runs of the capture itself never are (see `lib/guard.mjs`).
 
+## 0.2.1 — 29 Oct 2026
+
+- **Narration:** `fetch-narration` downloads recorded lines from `narration/jobs.json`. `final` trims dead air from each line before timing its scene, so speech starts with its caption.
+- First paid narration (THE BLOCK, 8 lines, 5.9 credits) was generated but couldn't be downloaded: this environment's network access denies Higgsfield's file host. The skill now says to check that first.
+
 ## 0.2.0 — 29 Oct 2026
 
 Built to recap "THE BLOCK Part 1 review export", a Remote Control session on the founder's PC with no git.
