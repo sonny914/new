@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // QB Capture: turn a finished Claude Code session into a cinematic, evidence-backed recap.
 //
-//   node tools/capture/cli.mjs run      --transcript <session.jsonl> | --ccr <export.json>  [--key <name>] [--repo <dir>]
-//                                       [--editorial <file>] [--no-capture] [--offline] [--formats 16x9,9x16] [--plan-only]
+//   node tools/capture/cli.mjs run      --transcript <session.jsonl> | --ccr <export.json> | --events <list_events dump> [--meta <session.json>]
+//                                       [--key <name>] [--repo <dir>] [--editorial <file>] [--footage <file>] [--no-capture] [--offline] [--formats 16x9,9x16] [--plan-only]
 //   node tools/capture/cli.mjs stills   --key <name> [--at 1,5.5,12] [--formats 16x9]
 //   node tools/capture/cli.mjs script   --key <name>        lines to voice, voice id and the file each must be saved to
 //   node tools/capture/cli.mjs approve  --key <name> --by <who> (--voice <higgsfield voice id> | --silent)   record the founder's approval

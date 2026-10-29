@@ -5,6 +5,8 @@ Turns a finished Claude Code session into an evidence-backed motion-graphics rec
 ```
 npm run capture -- run --transcript ~/.claude/projects/<project>/<session>.jsonl   # steps 1–6: evidence → story → storyboard → silent preview
 npm run capture -- run --ccr docs/sessions/<key>/evidence/ccr-session.json --key <key>   # a cloud session exported from the session API
+npm run capture -- run --events <list_events dump> --meta <session.json>   # any session the account can read, incl. Remote Control ones
+npm run capture -- run ... --footage <file>   # add footage the founder supplies; accepted only if its size matches the session's record
 npm run capture -- run ... --plan-only        # stop after the storyboard (fast; use while writing editorial.json)
 npm run capture -- stills --key <key> [--at 3,12.5] [--formats 16x9]   # review frames, no encode
 npm run capture -- script --key <key>         # narration lines and where each recording goes
