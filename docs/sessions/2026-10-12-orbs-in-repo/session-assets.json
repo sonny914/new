@@ -1,0 +1,95 @@
+{
+  "schema": "qb-capture/assets@1",
+  "session_id": "session_01E33KRahnfgaMJD2zhcyZuQ",
+  "assets": [
+    {
+      "id": "thinking-orb-reel-poster",
+      "kind": "image",
+      "path": "experiments/thinking-orb/reel-poster.jpg",
+      "root": "repo",
+      "provenance": {
+        "source": "committed by the session",
+        "commit": "be1b0f3b4ce8824760cca51f137337b4476767f4",
+        "event": "E05"
+      },
+      "sha256": "91d993422cc5c21dacbca049b5dfdfc760bf5543bb52989d942c709630e3493b",
+      "probe": null
+    },
+    {
+      "id": "thinking-orb-reel",
+      "kind": "video",
+      "path": "experiments/thinking-orb/reel.mp4",
+      "root": "repo",
+      "provenance": {
+        "source": "committed by the session",
+        "commit": "be1b0f3b4ce8824760cca51f137337b4476767f4",
+        "event": "E06"
+      },
+      "sha256": "2208a16d73461707fab7e5c0aae396f233185476e242542d76f0a01556aba1a8",
+      "probe": {
+        "width": 1080,
+        "height": 1920,
+        "fps": 30,
+        "duration": 15
+      }
+    },
+    {
+      "id": "screen-experiments-thinking-orb",
+      "kind": "screen",
+      "path": "assets/screen-experiments-thinking-orb.mp4",
+      "root": "archive",
+      "page": "/experiments/thinking-orb/",
+      "provenance": {
+        "source": "recorded from the page as committed",
+        "commit": "20c1a0353cb9e968c4e6a7aab70095852786098a",
+        "event": "E07",
+        "method": "Playwright, clock frozen and stepped 1/30 s per frame, scripted scroll",
+        "viewport": "1440x900",
+        "captured_at": "2026-10-29T18:23:32.908Z"
+      },
+      "sha256": "d2b240f7815eea10feba54a128c884951191e76c866c6014a957f491a2389523",
+      "probe": {
+        "width": 1440,
+        "height": 900,
+        "fps": 30,
+        "duration": 8
+      },
+      "stops": [
+        0,
+        54,
+        870,
+        1454
+      ]
+    },
+    {
+      "id": "ba-rd-before",
+      "kind": "still",
+      "path": "assets/ba-rd-before.png",
+      "root": "archive",
+      "page": "/rd/",
+      "anchor": "experiments",
+      "provenance": {
+        "source": "the page one commit before the session",
+        "commit": "2afcbb8c78ea44830e12910f508a0c305953e001",
+        "method": "Playwright screenshot, 1440x900, clock frozen",
+        "captured_at": "2026-10-29T18:23:33.798Z"
+      },
+      "sha256": "bff8e0b993305c0905fe665fe71d34b164f7735edddc84493bc19ebd2e2da620"
+    },
+    {
+      "id": "ba-rd-after",
+      "kind": "still",
+      "path": "assets/ba-rd-after.png",
+      "root": "archive",
+      "page": "/rd/",
+      "anchor": "experiments",
+      "provenance": {
+        "source": "the page at the session's last commit",
+        "commit": "20c1a0353cb9e968c4e6a7aab70095852786098a",
+        "method": "Playwright screenshot, 1440x900, clock frozen",
+        "captured_at": "2026-10-29T18:23:34.270Z"
+      },
+      "sha256": "f0b510fb4310e02bb03378b1517b58e8acd2841dfd8d8d0d887203ad3c593425"
+    }
+  ]
+}
