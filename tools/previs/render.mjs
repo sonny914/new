@@ -47,7 +47,7 @@ const BOARD = [
   ['SH020', editAt(EV.takeoff) + 0.15, 'Track the charge; she leaves the water.'],
   ['SH020', 3.25, 'MOVE 01 · the apex holds. Rain hangs as beads.'],
   ['SH020', 4.2, 'Orbit east: her face, eyes shut, band lifted.'],
-  ['SH020', 5.95, 'Orbit west: the coiled bell she cannot see.'],
+  ['SH020', 5.95, 'Orbit south-west: the bell hums; she cannot see it.'],
   ['SH030', 7.35, 'Snap to speed. The bell whips up.'],
   ['SH030', 9.2, 'MOVE 03 · 2%. The bell crosses her.'],
   ['SH030', editAt(EV.miss), 'Near miss, 9 cm. The Bellwright behind it.'],
