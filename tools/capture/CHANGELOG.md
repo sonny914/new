@@ -17,6 +17,7 @@ Documentary mode, after the founder's creative-intelligence correction: the THE 
   - **No narration over dialogue:** narration may not overlap any stretch of footage that has dialogue or is meant to be heard. A loud stretch that comes up while a line is still running waits on its previous frame, so a longer recording re-times the cut instead of breaking the rule.
   - **Every number cited:** every number on screen must match a cited fact. Measurement facts (`clip:summary.key`, `clip:speech.i.length`, `clip:gap.i`) are recomputed from the analysis files. Record and by-eye facts are cited.
 - **Mixing:** each stretch of footage sound is cut sample-accurately from its source and levelled to −18 LUFS speech before the final −16 LUFS mix. The bed ducks under footage sound as under narration, and goes silent across `bed: false` scenes.
+- **Loudness with footage sound:** the mix is rendered first, measured, then brought to −16 LUFS with one fixed gain and a peak limiter. Single-pass loudnorm rides the gain, and lifted the hook's held silence from room tone to −22.5 dBFS in the first render; the post-render check caught it.
 - **Plumbing:** `serveDir` takes mounts, so private media is served from outside the repo. `framesFor` takes a cache folder.
 - **`analysis/`:** `mouth_sync.py` (mouth opening against voice, the "mouth moving, no voice" measure) and `track.py` (per-frame mouth and eye positions), from the THE BLOCK creative review.
 - **Tests:** 4 new ones (80 total):

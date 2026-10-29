@@ -54,6 +54,12 @@ async function openStage(browser, port, data) {
   return { page, errors };
 }
 
+async function integratedLoudness(file) {
+  const out = await new Promise((ok) => { let e = ''; const p = spawn('ffmpeg', ['-nostdin', '-hide_banner', '-i', file, '-af', 'ebur128', '-f', 'null', '-'], { stdio: ['ignore', 'ignore', 'pipe'] });
+    p.stderr.on('data', (d) => { e = (e + d).slice(-4000); }); p.on('close', () => ok(e)); });
+  return +(out.match(/Summary:[\s\S]*?I:\s+(-?[\d.]+) LUFS/)?.[1] ?? NaN);
+}
+
 const shot = async (page, f) => { await page.evaluate((f) => window.stage.seek(f), f); return page.screenshot({ type: 'png' }); };
 
 // Stills for review: write PNGs of chosen frames (or seconds) without encoding a video.
@@ -122,8 +128,16 @@ export async function renderVideo(data, out, { narration = [], clips = [], mute 
     ? `${voices.join(';')};[1:a]volume=0.32[bed];[bed]${voices.map((_, i) => `[v${i}]`).join('')}amix=inputs=${voices.length + 1}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11[a]`
     : '[1:a]loudnorm=I=-20:TP=-2:LRA=11[a]';
   const meta = Object.entries(metadata).flatMap(([k, v]) => ['-metadata', `${k}=${v}`]);
-  await run('ffmpeg', ['-y', '-loglevel', 'error', ...inputs, '-filter_complex', mix, '-map', '0:v', '-map', '[a]', '-map', `${subIdx}:s`,
+  const mux = (ins, graph, aMap, sIdx) => run('ffmpeg', ['-y', '-loglevel', 'error', ...ins, ...graph, '-map', '0:v', '-map', aMap, '-map', `${sIdx}:s`,
     '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-c:s', 'mov_text', '-metadata:s:s:0', 'language=eng', '-t', String(data.duration), ...meta, '-movflags', '+faststart', out]);
+  if (clips.length) {
+    // Footage sound: single-pass loudnorm rides the gain and would lift a held silence toward speech level.
+    // Mix first, measure, then apply one fixed gain and a peak limiter, so quiet stays as quiet as it was shot.
+    const wav = join(tmp, 'mix.wav');
+    await run('ffmpeg', ['-y', '-loglevel', 'error', ...inputs.slice(0, -2), '-filter_complex', mix.replace(/,loudnorm=[^[]+\[a\]$/, '[a]'), '-map', '[a]', '-t', String(data.duration), '-c:a', 'pcm_f32le', wav]);
+    const I = await integratedLoudness(wav), gain = Number.isFinite(I) ? -16 - I : 0;
+    await mux(['-i', join(tmp, 'video.mp4'), '-i', wav, '-i', srtFile], ['-af', `volume=${gain.toFixed(2)}dB,alimiter=limit=0.84:attack=5:release=60:level=false`], '1:a', 2);
+  } else await mux(inputs, ['-filter_complex', mix], '[a]', subIdx);
   await rm(tmp, { recursive: true, force: true });
   return { seconds: Math.round((Date.now() - t0) / 1000) };
 }
