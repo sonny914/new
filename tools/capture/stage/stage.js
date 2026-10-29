@@ -4,7 +4,7 @@ const QB = window.__QB__;
 const W = QB.width, H = QB.height, FPS = QB.fps, OVER = 0.8;
 const portrait = H > W;
 const frame = document.getElementById('frame');
-frame.className = portrait ? 'f9x16' : 'f16x9';
+frame.className = `${portrait ? 'f9x16' : 'f16x9'}${QB.doc ? ' doc' : ''}`;
 Object.assign(frame.style, { width: `${W}px`, height: `${H}px` });
 
 // ---- helpers --------------------------------------------------------------------------------------
@@ -68,6 +68,137 @@ let pending = [];
 
 // ---- templates ------------------------------------------------------------------------------------
 const T = {};
+
+// ---- documentary: real footage with its own sound --------------------------------------------------------------
+// One panel of footage (two when a beat sets `b`). Beats map scene time to source time: a stretch playing, or a held
+// frame. The mouth ring, the voice strip and the counters are read from the clip's own measurements per source
+// frame, so what the graphics claim is what the measurement found at that moment.
+const beatAt = (beats, t) => { let b = beats[0]; for (const x of beats) if (t >= x.t0) b = x; return b; };
+const srcAt = (b, t) => (b.kind === 'play' ? clamp(b.src0 + (t - b.t0), b.src0, b.src1) : b.src0);
+const lerpRect = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const vis = (o, t) => (o ? Math.min(E.outCubic(P(t, o.t0, o.t0 + 0.45)), 1 - P(t, o.t1 - 0.3, o.t1)) : 0);
+// the part of the source image shown for a view rect (0-1 units), grown to the panel's shape and kept inside the image
+function viewBox(r, iw, ih, cw, ch) {
+  let w = (r[2] - r[0]) * iw, hh = (r[3] - r[1]) * ih; const cx = ((r[0] + r[2]) / 2) * iw, cy = ((r[1] + r[3]) / 2) * ih, ar = cw / ch;
+  if (w / hh > ar) hh = w / ar; else w = hh * ar;
+  if (w > iw) { w = iw; hh = w / ar; } if (hh > ih) { hh = ih; w = hh * ar; }
+  return { sx: clamp(cx - w / 2, 0, iw - w), sy: clamp(cy - hh / 2, 0, ih - hh), sw: w, sh: hh };
+}
+function clipPanel(cls) {
+  const d = h('div', `cpanel ${cls}`), cv = h('canvas'), tag = h('div', 'ctag mono'), freeze = h('div', 'cfreeze mono'), lab = h('div', 'cdata mono');
+  d.append(cv, tag, freeze, lab);
+  return { d, cv, tag, freeze, lab };
+}
+// draw a source frame into a panel; `after` runs with the geometry once the image is decoded, before the screenshot
+function drawPanel(pn, asset, src, rect, after) {
+  const ctx = pn.cv.getContext('2d'), cw = pn.cv.width, ch = pn.cv.height;
+  pending.push(frameImage(asset, src * asset.frames.fps).then((img) => {
+    const v = viewBox(rect, img.naturalWidth, img.naturalHeight, cw, ch);
+    ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, cw, ch);
+    ctx.drawImage(img, v.sx, v.sy, v.sw, v.sh, 0, 0, cw, ch);
+    // normalised source point → panel pixels
+    after?.((x, y) => [((x * img.naturalWidth - v.sx) / v.sw) * cw, ((y * img.naturalHeight - v.sy) / v.sh) * ch], (len) => (len * img.naturalWidth / v.sw) * cw);
+  }));
+}
+T.clip = (sc) => {
+  const p = sc.props, beats = sc.beats, pair = beats.some((b) => b.b);
+  const el = h('div', `clip${pair ? ' pair' : ''}`), A = clipPanel('a'), B = pair ? clipPanel('b') : null;
+  const scrim = h('div', 'cscrim');
+  const side = h('div', 'cside'), linesEl = h('div', 'clines'), dataEl = h('div', 'cdatas');
+  const strip = p.strip ? h('div', 'cstrip', '<div class="smarks"></div><canvas></canvas><div class="saxis mono"><span>Voice</span><span class="t"></span></div>') : null;
+  side.append(linesEl, dataEl); if (strip) side.append(strip);
+  el.append(A.d, ...(B ? [B.d] : []), scrim, side);
+  const ring = h('div', 'ring'); A.d.append(ring);
+  const lines = (p.lines ?? []).map((o) => { const d = h('h2', 'cline h-head'); linesEl.append(d); return { o, d, ws: words(d, o.text, o.accent) }; });
+  const labels = (p.labels ?? []).map((o) => {
+    const d = h('div', 'dlab mono'); (o.panel === 'a' ? A.lab : o.panel === 'b' ? B?.lab ?? dataEl : dataEl).append(d);
+    const paint = (txt) => { const acc = o.accent && txt.includes(o.accent) ? o.accent : null; d.innerHTML = acc ? esc(txt).replace(esc(acc), `<span class="accent">${esc(acc)}</span>`) : esc(txt); };
+    if (!o.count) paint(o.text);
+    return { o, d, paint };
+  });
+  const marks = (p.marks ?? []).map((o) => {
+    const n = o.at === 'eyes' ? 2 : 1, rings = Array.from({ length: n }, () => h('div', 'ring mark')), tx = h('div', 'mtext mono', esc(o.text ?? ''));
+    A.d.append(...rings, tx); return { o, rings, tx };
+  });
+  const sMarks = strip ? (p.strip.marks ?? []).map((m) => { const d = h('div', 'smark mono', `<i></i><span>${esc(m.text)}</span>`); strip.firstChild.append(d); return { m, d }; }) : [];
+  return { el, stageAt: (t) => beatAt(beats, t).stage ?? sc.stage, mount() { for (const pn of [A, B].filter(Boolean)) { pn.cv.width = pn.cv.clientWidth; pn.cv.height = pn.cv.clientHeight; } if (strip) { const c = strip.querySelector('canvas'); c.width = c.clientWidth; c.height = c.clientHeight; } },
+    pairK: 0,
+    update(t) {
+      const b = beatAt(beats, t), asset = QB.assets[b.clip], src = srcAt(b, t), j = Math.min(asset.db.length - 1, Math.floor(src * asset.srcFps));
+      // two-panel scenes open on one panel; room for the second opens as it arrives
+      if (pair) {
+        const firstB = beats.find((x) => x.b), pk = E.inOutCubic(P(t, firstB.t0, firstB.t0 + 0.7));
+        this.pairK = pk;
+        if (portrait) { A.d.style.bottom = `${50 * pk}%`; A.lab.style.bottom = `${lerp(620, 24, pk)}px`; } else side.style.left = `${lerp(746, 1262, pk)}px`;
+        if (A.cv.height !== A.d.clientHeight || A.cv.width !== A.d.clientWidth) { A.cv.width = A.d.clientWidth; A.cv.height = A.d.clientHeight; }
+      }
+      const prev = beats[b.k - 1], rect = prev && prev.clip === b.clip ? lerpRect(prev.zoom, b.zoom, E.inOutCubic(P(t, b.t0, b.t0 + 0.9))) : b.zoom;
+      A.tag.textContent = asset.label;
+      A.freeze.textContent = b.kind === 'hold' && t >= b.t0 ? `Frozen · ${src.toFixed(1)} s` : '';
+      const rk = vis(p.ring, t), hot = b.kind === 'play' && t >= b.t0 && asset.silent[j] === 1;
+      const mk = marks.map((m) => vis(m.o, t));
+      drawPanel(A, asset, src, rect, (pt, len) => {
+        const m = asset.mouth?.[j];
+        if (m && rk > 0) { const [x, y] = pt(m[0], m[1]), r = Math.max(30, len(m[2]) * 0.95); set(ring, { left: `${x}px`, top: `${y}px`, width: `${2 * r}px`, height: `${2 * r}px`, opacity: rk, transform: `translate(-50%, -50%) scale(${0.85 + 0.15 * rk})` }); }
+        else ring.style.opacity = 0;
+        ring.classList.toggle('hot', hot);
+        marks.forEach(({ o, rings, tx }, i) => {
+          const k = mk[i]; if (!k) { rings.forEach((r) => (r.style.opacity = 0)); tx.style.opacity = 0; return; }
+          const e = asset.eyes?.[j], mo = asset.mouth?.[j];
+          const pts = o.at === 'eyes' && e ? [[e[0], e[1], 0.055], [e[2], e[3], 0.055]] : o.at === 'mouth' && mo ? [[mo[0], mo[1], mo[2] * 0.6]] : Array.isArray(o.at) ? [o.at] : [];
+          let minX = 1e9, maxX = -1e9, maxY = -1e9;
+          rings.forEach((r, q) => { const c = pts[q]; if (!c) { r.style.opacity = 0; return; } const [x, y] = pt(c[0], c[1]), rr = Math.max(18, len(c[2])); minX = Math.min(minX, x - rr); maxX = Math.max(maxX, x + rr); maxY = Math.max(maxY, y + rr); set(r, { left: `${x}px`, top: `${y}px`, width: `${2 * rr}px`, height: `${2 * rr}px`, opacity: k, transform: `translate(-50%, -50%) scale(${0.85 + 0.15 * k})` }); });
+          // the label sits under its rings, centred on them but kept inside the panel
+          const tw = tx.offsetWidth, cx = clamp((minX + maxX) / 2 - tw / 2, 10, A.cv.width - tw - 10);
+          set(tx, { left: `${cx}px`, top: `${maxY + 10}px`, opacity: k });
+        });
+      });
+      // second panel
+      if (B) {
+        const bb = b.b, firstB = beats.find((x) => x.b);
+        const showB = bb ? b : [...beats].reverse().find((x) => x.b && x.t0 <= t);
+        if (showB) {
+          const ba = QB.assets[showB.b.clip], pb = beats[showB.k - 1]?.b, rb = pb && pb.clip === showB.b.clip ? lerpRect(pb.zoom, showB.b.zoom, E.inOutCubic(P(t, showB.t0, showB.t0 + 0.9))) : showB.b.zoom;
+          B.tag.textContent = ba.label; B.freeze.textContent = `Frozen · ${showB.b.src.toFixed(1)} s`; drawPanel(B, ba, showB.b.src, rb);
+        }
+        set(B.d, { opacity: bb ? E.outCubic(P(t, firstB.t0, firstB.t0 + 0.6)) : showB ? 1 : 0, transform: portrait ? '' : `translateX(${(1 - E.outCubic(P(t, firstB.t0, firstB.t0 + 0.7))) * 40}px)` });
+      }
+      // lines and labels
+      lines.forEach(({ o, d, ws }) => { const k = vis(o, t); d.style.opacity = k > 0 ? Math.min(1, k * 2) : 0; d.style.display = t >= o.t0 - 0.05 && t <= o.t1 ? '' : 'none'; rise(ws, t, o.t0, 0.045, 0.7); });
+      labels.forEach(({ o, d, paint }) => {
+        const k = vis(o, t); set(d, { opacity: k, transform: `translateY(${(1 - k) * 8}px)`, display: k > 0 ? '' : 'none' });
+        if (o.count) { const cb = beats[o.beat], cur = b.clip === cb.clip && t >= cb.t0 ? Math.max(cb.src0, src) : cb.src0; let s = 0; const ca = QB.assets[cb.clip];
+          for (let i = Math.floor(o.countFrom * ca.srcFps); i <= Math.floor(cur * ca.srcFps); i++) s += ca.silent[i] ?? 0;
+          paint(o.text.replace('{count}', (t >= o.t1 - 0.35 ? +o.final : s / ca.srcFps).toFixed(o.decimals ?? 1))); }
+      });
+      // voice strip: the clip's whole take, revealed as it plays (or in full from `all`), with a playhead
+      if (strip) {
+        const k = vis(p.strip, t); strip.style.opacity = k;
+        const cv = strip.querySelector('canvas'), ctx = cv.getContext('2d'), n = asset.db.length, W2 = cv.width, H2 = cv.height;
+        let reveal = -1, from = 1e9;
+        for (const x of beats) if (x.clip === b.clip && x.t0 <= t) { if (x.kind === 'play') { from = Math.min(from, x.src0); reveal = Math.max(reveal, srcAt(x, t)); } }
+        const all = p.strip.all != null && t >= beats[p.strip.all].t0 && b.k >= p.strip.all;
+        ctx.clearRect(0, 0, W2, H2);
+        const top = Math.max(...asset.db), bw = W2 / n;
+        ctx.fillStyle = 'rgba(242,238,229,.16)'; ctx.fillRect(0, H2 - 1, W2, 1);
+        for (let i = 0; i < n; i++) {
+          const ts = i / asset.srcFps, shown = (ts >= from - 1e-6 && ts <= reveal + 1e-6) || all;
+          if (!shown) continue;
+          // below the voice threshold is room tone: keep it to the bottom eighth, so "no voice" reads flat
+          const lv = asset.db[i] < asset.thr ? 0.12 * clamp((asset.db[i] - asset.floor) / (asset.thr - asset.floor)) : 0.12 + 0.88 * clamp((asset.db[i] - asset.thr) / (top - asset.thr)), bh = Math.max(1, lv * (H2 - 4));
+          const played = ts >= from - 1e-6 && ts <= reveal + 1e-6;
+          ctx.fillStyle = asset.voiced[i] ? (played ? '#F2EEE5' : 'rgba(242,238,229,.45)') : played ? 'rgba(242,238,229,.42)' : 'rgba(242,238,229,.2)';
+          ctx.fillRect(i * bw + 1, H2 - bh, Math.max(1, bw - 2), bh);
+        }
+        const ph = (src / asset.seconds) * W2; ctx.fillStyle = '#FF5A00'; ctx.fillRect(Math.round(ph) - 1, 0, 2, H2);
+        strip.querySelector('.t').textContent = `${asset.seconds.toFixed(1)} s`;
+        sMarks.forEach(({ m, d }) => {
+          const on = m.clip === b.clip && (all || reveal >= m.span[0]) && t >= (p.strip.t0 ?? 0);
+          set(d, { left: `${(m.span[0] / asset.seconds) * 100}%`, width: `${Math.max(1.2, ((m.span[1] - m.span[0]) / asset.seconds) * 100)}%`, opacity: on ? 1 : 0 });
+        });
+      }
+    } };
+};
 
 T.intro = (sc) => {
   const p = sc.props, el = h('div', 'intro');
@@ -518,12 +649,12 @@ async function build() {
     return { sc, node, tpl, i };
   });
   // chrome
-  const corner = h('div', 'corner mono', `${SVG.mark}<span>Session recap</span>`);
+  const corner = h('div', 'corner mono', `${SVG.mark}<span>${esc(QB.corner ?? 'Session recap')}</span>`);
   const clock = h('div', 'clock mono'), src = h('div', 'src mono');
   const spine = h('div', 'spine mono');
   const stEls = QB.stages.map((s, i) => { const d = h('span', 'st', `<i>${String(i + 1).padStart(2, '0')}</i><span class="w">${esc(s.label)}</span><u></u>`); return { id: s.id, d, u: d.querySelector('u') }; });
   stEls.forEach((s, i) => { if (i) spine.append(h('span', 'sep')); spine.append(s.d); });
-  const cap = h('div', 'cap', '<span></span>');
+  const cap = h('div', 'cap', QB.capTag ? `<span><em class="ctg mono">${esc(QB.capTag)}</em><b></b></span>` : '<span></span>');
   const fadeEl = h('div', 'fade');
   chrome.append(corner, clock, src, spine, cap, fadeEl);
   await document.fonts.ready;
@@ -563,7 +694,9 @@ async function build() {
     });
     // captions
     const cue = QB.cues.find((c) => t >= c.start && t < c.end);
-    const span = cap.firstChild;
+    const span = QB.capTag ? cap.querySelector('b') : cap.firstChild;
+    frame.classList.toggle('pairmode', (best?.tpl.pairK ?? 0) > 0.5);
+    frame.classList.toggle('clipmode', best?.sc.template === 'clip');
     if (cue && QB.captions !== false) {
       span.textContent = cue.text;
       const a = Math.min(P(t, cue.start, cue.start + 0.14), 1 - P(t, cue.end - 0.1, cue.end));

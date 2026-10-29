@@ -12,6 +12,8 @@ import { classify, shouldCapture, ENV_FLAG } from './capture/lib/guard.mjs';
 import { srt } from './capture/lib/captions.mjs';
 import { score } from './capture/lib/score.mjs';
 import { ROOT, readJSON } from './capture/lib/util.mjs';
+import { loadDoc, timeDoc, clipData, silentSeconds } from './capture/lib/documentary.mjs';
+import { execFileSync } from 'node:child_process';
 
 const ORBS = join(ROOT, 'docs/sessions/2026-10-12-orbs-in-repo');
 const line = (o) => JSON.stringify(o) + '\n';
@@ -175,4 +177,47 @@ test('acceptance session: the full arc is found, nothing is invented, and an unb
   const bad = structuredClone(sb);
   bad.formats['16x9'].scenes.find((s) => s.id === 'stats').narration = 'About 12 minutes later, it was done.';
   assert.ok(validateStoryboard(bad, ev, metrics, assets).errors.some((e) => /number 12 /.test(e)));
+});
+
+// documentary mode: a 4 s clip whose only dialogue is 2.0–3.0 s, and whose mouth moves without voice at 0.5–1.0 s
+function docFixture(scenes, facts = []) {
+  const dir = mkdtempSync(join(tmpdir(), 'qb-doc-')), fps = 24, n = 96;
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'sine=f=300:d=4', '-f', 'lavfi', '-i', 'color=c=black:s=64x64:d=4:r=24', '-shortest', '-c:v', 'libx264', '-c:a', 'aac', join(dir, 'clip.mp4')]);
+  const moving = Array.from({ length: n }, (_, i) => (i >= 12 && i < 24) || (i >= 48 && i < 72) ? 1 : 0);
+  writeFileSync(join(dir, 'clip.json'), JSON.stringify({ summary: { fps, seconds: 4, has_audio: true, speech_segments: [[2, 3]], noise_floor_db: -60, speech_threshold_db: -46,
+    silent_mouth_movement_seconds: 0.5, mouth_moving_seconds: 1.5 }, moving, audio_db: Array.from({ length: n }, (_, i) => (i >= 48 && i < 72 ? -20 : -58)) }));
+  const doc = { schema: 'qb-capture/documentary@1', title: 'Fixture', stages: [{ id: 'goal', label: 'Goal' }], clips: { c: { file: 'clip.mp4', analysis: 'clip.json', label: 'Clip' } },
+    narration: { n1: 'This line runs well past the quiet part of the clip before the dialogue begins.', n2: 'Short line.' }, facts, scenes };
+  writeFileSync(join(dir, 'doc.json'), JSON.stringify(doc));
+  return loadDoc(join(dir, 'doc.json'));
+}
+
+test('documentary: silent movement is rebuilt exactly as measured, and a counter ends on it', () => {
+  const doc = docFixture([]), d = clipData(doc.clips.c);
+  assert.equal(silentSeconds(d, 0, 4), 0.5); // 0.5–1.0 s; the 2–3 s movement is dialogue
+  assert.equal(silentSeconds(d, 0, 0.75), 7 / 24); // up to and including the frame on screen at 0.75 s (frames 12–18)
+});
+
+test('documentary: a loud stretch waits for the narration, and narration may not cover dialogue', () => {
+  const ok = timeDoc(docFixture([{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 1.5], audio: 0.2, narr: 'n1' }, { play: [1.5, 3.5] }] }]));
+  assert.deepEqual(ok.problems, []);
+  const [, hold, loud] = ok.scenes[0].beats, n1 = ok.narration[0];
+  assert.equal(hold.auto, true); assert.equal(hold.kind, 'hold'); assert.equal(hold.src0, 1.5); // the last frame before the dialogue is held
+  assert.ok(ok.clips.find((c) => c.src === 1.5).start >= n1.start + n1.seconds, 'the dialogue starts only after the line ends');
+  const bad = timeDoc(docFixture([{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [1.5, 3.5], audio: 0.1, narr: 'n2' }] }]));
+  assert.match(bad.problems.join('\n'), /talk over c's dialogue/);
+});
+
+test('documentary: every number on screen must match the measurement its fact cites', () => {
+  const scene = (text) => [{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 1.5] }], props: { labels: [{ beat: 0, text }] } }];
+  assert.deepEqual(timeDoc(docFixture(scene('No words: 0.5 s'), [{ text: '0.5', from: 'c:summary.silent_mouth_movement_seconds' }])).problems, []);
+  assert.match(timeDoc(docFixture(scene('No words: 0.7 s'), [{ text: '0.7', from: 'c:summary.silent_mouth_movement_seconds' }])).problems.join(), /measures 0\.5/);
+  assert.match(timeDoc(docFixture(scene('Took 9 tries'))).problems.join(), /shows 9, which no fact cites/);
+});
+
+test('the score goes silent across a mute span', () => {
+  const buf = score([{ start: 0, duration: 4, stage: 'goal' }], 4, { mute: [{ start: 1, end: 3 }], rate: 8000 });
+  const at = (s) => Math.abs(buf.readInt16LE(44 + Math.round(s * 8000) * 4));
+  let loud = 0; for (let s = 1.5; s < 2.5; s += 0.01) loud = Math.max(loud, at(s));
+  assert.equal(loud, 0);
 });

@@ -12,7 +12,12 @@ npm run capture -- stills --key <key> [--at 3,12.5] [--formats 16x9]   # review 
 npm run capture -- script --key <key>         # narration lines and where each recording goes
 npm run capture -- approve --key <key> --by "<who said yes>" --voice <higgsfield voice id>   # only after an explicit yes
 npm run capture -- final --key <key>          # re-time to the recorded narration and render the final cut
+npm run capture -- doc <documentary.json> --check   # documentary mode: check a hand-approved storyboard of real footage
+npm run capture -- doc <documentary.json> --stills 2,14 --formats 16x9,9x16   # review frames
+npm run capture -- doc <documentary.json> --formats 16x9,9x16 [--narration <dir>]   # preview (no voice), or the final cut once every line is recorded
 ```
+
+Documentary mode is for creative work, where the footage is the story: see "Documentary mode" in the MVP doc. Its storyboard and media can live outside the repo (frames are cached next to the storyboard), and its measurements come from [`analysis/`](analysis/README.md).
 
 Needs Node 20+, FFmpeg and Playwright's Chromium (preinstalled in cloud sessions; locally `npm i --no-save playwright && npx playwright install chromium`).
 
@@ -28,6 +33,8 @@ Needs Node 20+, FFmpeg and Playwright's Chromium (preinstalled in cloud sessions
 | `lib/assets.mjs` | committed media, page walk-throughs, before/after stills |
 | `lib/render.mjs` | Playwright frames → FFmpeg; score, narration and subtitle mux |
 | `lib/score.mjs` | the synthesized score |
+| `lib/documentary.mjs` | documentary mode: beats, narration placement, the no-talking-over-dialogue and every-number-cited checks |
+| `analysis/` | measurements of footage (mouth movement against voice, mouth and eye tracks), Python + MediaPipe |
 | `stage/` | the motion-graphics templates (`stage.js`), styles and vendored fonts (OFL) |
 
 Tests: `tools/capture.test.mjs` (part of `npm test`). Changes: [`CHANGELOG.md`](CHANGELOG.md).

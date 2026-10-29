@@ -171,7 +171,35 @@ node tools/capture/cli.mjs run --ccr docs/sessions/2026-10-12-orbs-in-repo/evide
 
 The first scan of this archive caught a username in an `ls` listing and a folder path in a tool input. Both rules exist because of it.
 
-## 8. Known limits
+## 8. Documentary mode (creative work)
+
+**Why it exists:** the automatic recap tells the story of what the computer did. For creative work, the founder's correction was that the story is the work itself:
+- what was being made;
+- what went wrong on screen and why;
+- what changed;
+- whether it worked.
+
+**Two outputs, never merged:**
+- **The creative review:** findings labelled verified, suspected, subjective or not established, with frame evidence.
+- **The technical report:** sources, the take map, the measurement method.
+
+The documentary script is written in plain language from the review, never from the technical report.
+
+**How it is built** (`node tools/capture/cli.mjs doc <documentary.json>`):
+- **Footage:** real takes only, each with its own sound. Nothing is generated for the documentary, and no fix is shown that wasn't made. Footage that isn't available marks its scene incomplete; it is never filled with other material.
+- **Narration:** it never talks over dialogue. It speaks over held frames or quiet stretches, and the checker refuses any overlap. If a recording runs long, the next loud stretch waits.
+- **Numbers on screen:** each one is a cited fact. A measurement fact is recomputed from the analysis files and must match to the digit shown.
+- **Freezes and zooms are editorial devices:** every held frame is labelled "Frozen" with its source time, and the take is named on every panel.
+- **Approval gates:** findings, B-roll selections and the script are approved before the final render. Paid narration needs its own yes.
+
+**Measurements** (`tools/capture/analysis/`, see its README):
+- **Mouth opening:** per frame from face landmarks.
+- **Voice:** from band-passed audio.
+- **"Mouth moving, no voice":** mouth movement outside a 0.2 s guard around voice. It is an upper bound, since a smile forming also counts, so long cases are confirmed by eye.
+
+**First use:** THE BLOCK, about 75 s, 16:9 and 9:16. Its storyboard, footage, review and report are private and kept outside this repo.
+
+## 9. Known limits
 
 - Caption timing inside a scene is proportional to characters, not force-aligned to the recorded voice. Scene boundaries are exact.
 - Obstacle detection is rule-based (phrases, PR latency, self-reverts, failures). It misses obstacles the record doesn't state, by design.

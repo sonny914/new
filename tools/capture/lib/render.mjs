@@ -1,5 +1,5 @@
-// Render: drive the stage in headless Chromium frame by frame, encode with FFmpeg, mix the score and any
-// narration, and mux captions as a soft subtitle track. Work is split across parallel pages, then joined.
+// Render: drive the stage in headless Chromium frame by frame, encode with FFmpeg, mix the score, any narration
+// and any footage's own sound, and mux captions as a soft subtitle track. Work is split across parallel pages, then joined.
 import { spawn } from 'node:child_process';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -57,9 +57,9 @@ async function openStage(browser, port, data) {
 const shot = async (page, f) => { await page.evaluate((f) => window.stage.seek(f), f); return page.screenshot({ type: 'png' }); };
 
 // Stills for review: write PNGs of chosen frames (or seconds) without encoding a video.
-export async function stills(data, outDir, times) {
+export async function stills(data, outDir, times, { mounts = {} } = {}) {
   const { chromium } = await loadPlaywright();
-  const srv = await serveDir(ROOT), browser = await chromium.launch();
+  const srv = await serveDir(ROOT, mounts), browser = await chromium.launch();
   try {
     const { page, errors } = await openStage(browser, srv.port, data);
     await mkdir(outDir, { recursive: true });
@@ -70,11 +70,13 @@ export async function stills(data, outDir, times) {
   } finally { await browser.close(); await srv.close(); }
 }
 
-export async function renderVideo(data, out, { narration = [], workers = Math.max(1, Math.min(4, cpus().length - 1)), metadata = {}, log = () => {} } = {}) {
+// `clips` are stretches of footage sound: { file, src, dur, start, gain } plays file from src for dur seconds at
+// start. `mute` spans silence the score.
+export async function renderVideo(data, out, { narration = [], clips = [], mute = [], mounts = {}, workers = Math.max(1, Math.min(4, cpus().length - 1)), metadata = {}, log = () => {} } = {}) {
   const { chromium } = await loadPlaywright();
   const tmp = join(tmpdir(), `qb-capture-${data.format}-${process.pid}`);
   await rm(tmp, { recursive: true, force: true }); await mkdir(tmp, { recursive: true });
-  const srv = await serveDir(ROOT), browser = await chromium.launch();
+  const srv = await serveDir(ROOT, mounts), browser = await chromium.launch();
   const t0 = Date.now();
   try {
     const per = Math.ceil(data.frames / workers);
@@ -97,20 +99,27 @@ export async function renderVideo(data, out, { narration = [], workers = Math.ma
     }));
   } finally { await browser.close(); await srv.close(); }
 
-  // join segments, then audio: score (ducked under speech) + narration clips at their scene offsets
+  // join segments, then audio: score (ducked under speech) + narration and footage sound at their scene offsets
   const list = join(tmp, 'list.txt');
   const segs = Array.from({ length: workers }, (_, w) => join(tmp, `seg${w}.mp4`)).filter(existsSync);
   await writeFile(list, segs.map((s) => `file '${s}'`).join('\n'));
   await run('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', join(tmp, 'video.mp4')]);
-  const speech = narration.map((n) => ({ start: n.start, end: n.start + n.seconds }));
-  await writeFile(join(tmp, 'score.wav'), score(data.scenes, data.duration, { speech }));
+  const speech = [...narration.map((n) => ({ start: n.start, end: n.start + n.seconds })), ...clips.map((c) => ({ start: c.start, end: c.start + c.dur }))];
+  await writeFile(join(tmp, 'score.wav'), score(data.scenes, data.duration, { speech, mute }));
   const srtFile = join(tmp, 'captions.srt');
   await writeFile(srtFile, srt(data.cues));
-  const inputs = ['-i', join(tmp, 'video.mp4'), '-i', join(tmp, 'score.wav'), ...narration.flatMap((n) => ['-i', n.file]), '-i', srtFile];
-  const subIdx = 2 + narration.length;
-  const mix = narration.length
-    // narration lines arrive at speech level; the bed sits well under them (it also ducks under each line)
-    ? `${narration.map((n, i) => `[${i + 2}:a]aresample=44100,aformat=channel_layouts=stereo,adelay=${Math.round(n.start * 1000)}|${Math.round(n.start * 1000)}[n${i}]`).join(';')};[1:a]volume=0.32[bed];[bed]${narration.map((_, i) => `[n${i}]`).join('')}amix=inputs=${narration.length + 1}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11[a]`
+  const inputs = ['-i', join(tmp, 'video.mp4'), '-i', join(tmp, 'score.wav'), ...narration.flatMap((n) => ['-i', n.file]), ...clips.flatMap((c) => ['-i', c.file]), '-i', srtFile];
+  const subIdx = 2 + narration.length + clips.length;
+  const at = (s) => `adelay=${Math.round(s * 1000)}|${Math.round(s * 1000)}`;
+  const voices = [
+    ...narration.map((n, i) => `[${i + 2}:a]aresample=44100,aformat=channel_layouts=stereo,${at(n.start)}[v${i}]`),
+    // each stretch of footage sound is cut sample-accurately from its source, with 20 ms edges so cuts don't click
+    ...clips.map((c, i) => `[${i + 2 + narration.length}:a]atrim=start=${c.src}:duration=${c.dur},asetpts=PTS-STARTPTS,aresample=44100,aformat=channel_layouts=stereo,`
+      + `afade=t=in:d=0.02,afade=t=out:st=${Math.max(0, c.dur - 0.02).toFixed(3)}:d=0.02,volume=${c.gain ?? 1},${at(c.start)}[v${i + narration.length}]`),
+  ];
+  const mix = voices.length
+    // voices arrive at speech level; the bed sits well under them (it also ducks under each one)
+    ? `${voices.join(';')};[1:a]volume=0.32[bed];[bed]${voices.map((_, i) => `[v${i}]`).join('')}amix=inputs=${voices.length + 1}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11[a]`
     : '[1:a]loudnorm=I=-20:TP=-2:LRA=11[a]';
   const meta = Object.entries(metadata).flatMap(([k, v]) => ['-metadata', `${k}=${v}`]);
   await run('ffmpeg', ['-y', '-loglevel', 'error', ...inputs, '-filter_complex', mix, '-map', '0:v', '-map', '[a]', '-map', `${subIdx}:s`,

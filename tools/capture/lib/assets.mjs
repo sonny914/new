@@ -11,11 +11,13 @@ import { git, run, sha256File, loadPlaywright, CACHE, slugify } from './util.mjs
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.mp4': 'video/mp4', '.woff2': 'font/woff2', '.glb': 'model/gltf-binary', '.wav': 'audio/wav', '.mp3': 'audio/mpeg' };
 
-export function serveDir(root) {
+// `mounts` maps a URL prefix to another folder, so private media can be served without copying it into the repo.
+export function serveDir(root, mounts = {}) {
   return new Promise((ok) => {
     const server = createServer(async (req, res) => {
       try {
-        let p = join(root, decodeURIComponent(new URL(req.url, 'http://x').pathname));
+        const path = decodeURIComponent(new URL(req.url, 'http://x').pathname), m = Object.keys(mounts).find((k) => path.startsWith(k));
+        let p = m ? join(mounts[m], path.slice(m.length)) : join(root, path);
         if ((await stat(p)).isDirectory()) p = join(p, 'index.html');
         const body = await readFile(p);
         res.writeHead(200, { 'content-type': TYPES[extname(p).toLowerCase()] ?? 'application/octet-stream', 'cache-control': 'no-store' });
@@ -162,9 +164,9 @@ async function recordScroll(browser, url, file, { seconds, fps }) {
 }
 
 // Decode a video asset to a JPEG sequence the stage can step through frame by frame.
-export async function framesFor(asset, archiveDir, repo, { fps = 30, height = 1280 } = {}) {
+export async function framesFor(asset, archiveDir, repo, { fps = 30, height = 1280, cacheDir = CACHE } = {}) {
   const src = asset.root === 'repo' ? join(repo, asset.path) : join(archiveDir, asset.path);
-  const dir = join(CACHE, 'frames', `${asset.id}-${asset.sha256.slice(0, 10)}-${height}`);
+  const dir = join(cacheDir, 'frames', `${asset.id}-${asset.sha256.slice(0, 10)}-${height}`);
   if (!existsSync(join(dir, 'done'))) {
     await rm(dir, { recursive: true, force: true });
     mkdirSync(dir, { recursive: true });

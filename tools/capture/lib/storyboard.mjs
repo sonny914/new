@@ -234,7 +234,7 @@ function pageHeadings(repo, sha, path) {
 }
 
 // ---- timing -------------------------------------------------------------------------------------
-const speechSeconds = (text) => { const w = words(text).length; return w ? w / WPS + 0.28 * Math.max(0, sentences(text).length - 1) : 0; };
+export const speechSeconds = (text) => { const w = words(text).length; return w ? w / WPS + 0.28 * Math.max(0, sentences(text).length - 1) : 0; };
 export function audioSeconds(file) {
   const out = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8' });
   return +(+out).toFixed(3);

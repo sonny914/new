@@ -1,5 +1,6 @@
 // The recap's score, synthesised so it is deterministic and costs nothing: a low drone, one chord per story
-// stage, a soft thump on each scene change and a riser into it. Under narration the bed ducks by about 9 dB.
+// stage, a soft thump on each scene change and a riser into it. Under narration the bed ducks by about 9 dB,
+// and it goes silent across any `mute` span.
 // Returns a 16-bit stereo WAV buffer.
 const CHORDS = { // root-position voicings in Hz, low to high
   intro: [110, 164.81, 220, 261.63], goal: [110, 164.81, 220, 261.63], process: [87.31, 130.81, 174.61, 220],
@@ -7,7 +8,7 @@ const CHORDS = { // root-position voicings in Hz, low to high
   lesson: [110, 164.81, 220, 329.63], outro: [110, 164.81, 220, 261.63],
 };
 
-export function score(scenes, duration, { speech = [], rate = 44100 } = {}) {
+export function score(scenes, duration, { speech = [], mute = [], rate = 44100 } = {}) {
   const n = Math.ceil(duration * rate), L = new Float32Array(n), R = new Float32Array(n);
   let seed = 11; const noise = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
   const add = (t0, len, fn, pan = 0) => {
@@ -43,6 +44,11 @@ export function score(scenes, duration, { speech = [], rate = 44100 } = {}) {
       g[i] = Math.min(g[i], 0.35 + 0.65 * Math.min(1, k));
     }
     for (let i = 0; i < n; i++) { L[i] *= g[i]; R[i] *= g[i]; }
+  }
+  // silence the bed where a scene needs the room to itself, with 0.3 s fades
+  for (const { start, end } of mute) for (let i = Math.max(0, Math.round((start - 0.3) * rate)); i < Math.min(n, Math.round((end + 0.3) * rate)); i++) {
+    const t = i / rate, k = t < start ? (start - t) / 0.3 : t > end ? (t - end) / 0.3 : 0;
+    L[i] *= Math.min(1, k); R[i] *= Math.min(1, k);
   }
   let peak = 0; for (let i = 0; i < n; i++) peak = Math.max(peak, Math.abs(L[i]), Math.abs(R[i]));
   const gain = 0.5 / (peak || 1), buf = Buffer.alloc(44 + n * 4);

@@ -2,6 +2,30 @@
 
 QB Capture documents its own development here. Sessions that change `tools/capture/` are also recapped like any other work; runs of the capture itself never are (see `lib/guard.mjs`).
 
+## 0.3.0 — 29 Oct 2026
+
+Documentary mode, after the founder's creative-intelligence correction: the THE BLOCK recap documented the computer work, not the film. The engine is extended, not rebuilt.
+
+- **`doc` command:** renders a hand-approved storyboard of real footage (`qb-capture/documentary@1`), 16:9 and 9:16. Without recordings it renders a preview, with the script shown as tagged placeholder captions. With `--narration`, every line must be recorded. Burned-in captions are off by default, per the founder's rule; the soft subtitle track stays.
+- **Clip scenes:** a scene is a run of beats, each either a stretch of a take playing with its own sound or a held frame.
+  - **Holds:** a held frame is marked "Frozen" with its source time, and the narration speaks over it.
+  - **Second panel:** an optional one shows a before/after side by side.
+  - **Mouth ring:** follows the tracked mouth, and turns orange on frames measured as moving with no voice.
+  - **Voice strip:** draws the take's real audio level with a playhead; room tone is kept flat so "no voice" reads as flat.
+  - **Data labels:** can count up from the measurement.
+- **Two checks run before anything renders:**
+  - **No narration over dialogue:** narration may not overlap any stretch of footage that has dialogue or is meant to be heard. A loud stretch that comes up while a line is still running waits on its previous frame, so a longer recording re-times the cut instead of breaking the rule.
+  - **Every number cited:** every number on screen must match a cited fact. Measurement facts (`clip:summary.key`, `clip:speech.i.length`, `clip:gap.i`) are recomputed from the analysis files. Record and by-eye facts are cited.
+- **Mixing:** each stretch of footage sound is cut sample-accurately from its source and levelled to −18 LUFS speech before the final −16 LUFS mix. The bed ducks under footage sound as under narration, and goes silent across `bed: false` scenes.
+- **Plumbing:** `serveDir` takes mounts, so private media is served from outside the repo. `framesFor` takes a cache folder.
+- **`analysis/`:** `mouth_sync.py` (mouth opening against voice, the "mouth moving, no voice" measure) and `track.py` (per-frame mouth and eye positions), from the THE BLOCK creative review.
+- **Tests:** 4 new ones (80 total):
+  - silent movement is rebuilt exactly as measured;
+  - a loud stretch waits for the line;
+  - narration over dialogue is refused;
+  - an uncited or wrong number is refused;
+  - the bed mutes.
+
 ## 0.2.2 — 29 Oct 2026
 
 First narrated final (THE BLOCK, 84 s, the founder's `flighty` voice).

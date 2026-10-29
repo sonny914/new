@@ -8,6 +8,8 @@
 //   node tools/capture/cli.mjs approve  --key <name> --by <who> (--voice <higgsfield voice id> | --silent)   record the founder's approval
 //   node tools/capture/cli.mjs fetch-narration --key <name> download the recorded lines listed in narration/jobs.json
 //   node tools/capture/cli.mjs final    --key <name>        re-time to the recorded narration and render the final cut
+//   node tools/capture/cli.mjs doc      <documentary.json> [--out <dir>] [--formats 16x9,9x16] [--narration <dir>] [--stills 1,5] [--check]
+//                                       render a hand-approved documentary of real footage (preview until --narration is given)
 //
 // run = steps 1–7 of the end-of-session flow (finalize, collect, narrate, select scenes, storyboard, silent preview, present).
 // Nothing here spends credits, publishes or deploys. Paid narration happens outside this CLI, only after `approve`.
@@ -25,9 +27,10 @@ import { payload, renderVideo, stills } from './lib/render.mjs';
 import { srt } from './lib/captions.mjs';
 import { sessionReport, logEntry, appendLog } from './lib/report.mjs';
 import { ENV_FLAG, lock, recordIndex } from './lib/guard.mjs';
+import { loadDoc, timeDoc, docPayload } from './lib/documentary.mjs';
 
 process.env[ENV_FLAG] = '1'; // anything this process starts knows it is inside a capture
-export const VERSION = '0.2.2'; // bump with CHANGELOG.md
+export const VERSION = '0.3.0'; // bump with CHANGELOG.md
 const LOG_HEADER = '# Production log\n\nHow this recap was made: every run, what it decided, what it validated, and what it cost. Newest last.';
 
 const argv = process.argv.slice(2);
@@ -237,6 +240,38 @@ async function cmdFinal() {
   recordIndex({ key, session_id: ev.session.id, status: 'final' });
 }
 
-const commands = { run: cmdRun, stills: cmdStills, script: cmdScript, approve: cmdApprove, 'fetch-narration': cmdFetchNarration, final: cmdFinal };
-if (!commands[cmd]) { console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 15).map((l) => l.replace(/^\/\/ ?/, '')).join('\n')); process.exit(cmd ? 1 : 0); }
+// Documentary: a hand-approved storyboard of real footage. The storyboard and its media stay where the founder keeps
+// them (they may be private); frames are cached next to the storyboard, never in the repo. Without --narration it
+// renders a preview with the script shown as placeholder captions; with it, every line must have a recording.
+async function cmdDoc() {
+  const file = argv[1] && !argv[1].startsWith('--') ? resolve(argv[1]) : null;
+  if (!file) throw new Error('usage: doc <documentary.json> [--out <dir>] [--formats 16x9,9x16] [--narration <dir>] [--stills 1,5] [--check]');
+  const doc = loadDoc(file), out = resolve(opt('out') ?? join(doc.base, 'documentary'));
+  const narrationDir = opt('narration') ? resolve(opt('narration')) : null, preview = !narrationDir;
+  const timed = timeDoc(doc, { narrationDir });
+  const unrecorded = timed.narration.filter((n) => n.source !== 'recorded').map((n) => n.id);
+  if (narrationDir && unrecorded.length) timed.problems.push(`no recording in ${narrationDir} for: ${unrecorded.join(', ')}`);
+  writeJSON(join(out, 'documentary-timing.json'), { generated_by: `QB Capture ${VERSION}`, preview, ...timed });
+  writeText(join(out, 'documentary-captions.srt'), srt(timed.cues));
+  if (timed.problems.length) throw new Error(`storyboard check failed:\n- ${timed.problems.join('\n- ')}`);
+  say(`checked: ${timed.scenes.length} scenes, ${timed.duration.toFixed(1)} s, ${timed.narration.length} narration lines (${preview ? 'estimated, not recorded' : 'recorded'}), ${timed.clips.length} stretches of footage sound`);
+  if (opt('check')) return;
+  const cacheDir = join(doc.base, '.qb-cache'), mounts = { '/__media/': cacheDir };
+  for (const fmt of String(opt('formats') ?? '16x9').split(',')) {
+    const data = await docPayload(doc, timed, fmt, { cacheDir, preview });
+    if (opt('stills')) { const got = await stills(data, join(out, 'stills'), String(opt('stills')).split(',').map(Number), { mounts }); say(`${fmt}: ${got.length} stills in ${join(out, 'stills')}`); continue; }
+    const narration = timed.narration.filter((n) => n.file).map((n) => ({ file: n.file, start: n.start, seconds: n.seconds }));
+    const video = join(out, `documentary-${fmt}${preview ? '-preview' : ''}.mp4`);
+    const r = await renderVideo(data, video, { narration, clips: timed.clips, mute: timed.mute, mounts, log: (m) => say(m),
+      metadata: { title: `${doc.title}${preview ? ' (preview, narration not recorded)' : ''}`, comment: `QB Capture ${VERSION} documentary` } });
+    say(`${fmt}: ${video} (${timed.duration.toFixed(1)} s, rendered in ${r.seconds} s)`);
+  }
+}
+
+const commands = { run: cmdRun, stills: cmdStills, script: cmdScript, approve: cmdApprove, 'fetch-narration': cmdFetchNarration, final: cmdFinal, doc: cmdDoc };
+if (!commands[cmd]) {
+  const head = readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1);
+  console.log(head.slice(0, head.findIndex((l) => !l.startsWith('//'))).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
+  process.exit(cmd ? 1 : 0);
+}
 commands[cmd]().catch((e) => { console.error('[capture] error:', e.message); process.exit(1); });
