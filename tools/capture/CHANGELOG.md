@@ -2,6 +2,21 @@
 
 QB Capture documents its own development here. Sessions that change `tools/capture/` are also recapped like any other work; runs of the capture itself never are (see `lib/guard.mjs`).
 
+## 0.2.0 — 29 Oct 2026
+
+Built to recap "THE BLOCK Part 1 review export", a Remote Control session on the founder's PC with no git.
+
+- **Ingest:** `--events` reads a saved `list_events` dump directly, so evidence is never re-typed. Injected system text is dropped and pasted content unwrapped.
+- **Evidence from tools:** single-probe ffprobe readouts (Windows line endings handled), ffmpeg renders (last call, pass count), `SendUserFile` deliveries, and questions Claude put to the founder.
+- **Story:** a guess Claude flags or asks about, then the founder confirms, is an obstacle and its correction, with the lesson "Flag the guess. Then get the yes."
+  - "Yes, that's it" now counts as a confirmation.
+  - "Not verified" detection needs real phrasing: the project name THE BLOCK had matched `\bblock\b`.
+- **Stage:** five new templates: brief, console, transform, exchange, compare. A scene can now switch the spine's stage partway through.
+  - Console lines used `visibility`, which showed through hidden scenes; they now use `display`.
+- **Validator:** a date or time token that matches no cited event (a ratio such as 9:16) is checked as plain numbers instead of rejected. Comma-grouped numbers parse whole.
+- **Privacy:** home folders become `~`, `ls` owner and group columns are scrubbed, and archived tool output is kept only where it is evidence. The intro names a repo only if the session committed to it.
+- **Footage check:** `--footage` accepts a founder-supplied file only if its size matches the session's own record.
+
 ## 0.1.0 — 29 Oct 2026
 
 First version, built and accepted against the "Orbs in repo" session (`docs/sessions/2026-10-12-orbs-in-repo/`).

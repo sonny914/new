@@ -47,6 +47,7 @@ Measured on the acceptance run (4-core container): about 10 frames per second wi
 | Screenshots and screen recordings | `browser`: a page walk-through recorded with a frozen, stepped clock (deterministic orb animation included) |
 | Real production B-roll | `device`: media the session committed, decoded to frames and played in a device frame |
 | Callouts and diagrams | Note lists with drawn ticks, the git-lane diagram, the strike-through on removed files |
+| Sessions without git | `brief` (a written spec as a sheet), `console` (the logged commands typed out with their readouts), `transform` (bytes in → bytes out, with what must not change), `exchange` (question and answer; the spine moves from Obstacle to Correction on the answer), `compare` (the session's own "asked for / got" table) |
 | Camera-style transitions | Every cut is a push with scale and parallax; the timeline is a three-move camera |
 | Branded intro and ending | `intro` / `outro`: the supplied mark and wordmark SVGs (never typeset) |
 | Narration sync | Scene length = lead + spoken length + tail. Estimated for previews, measured from `narration/<format>/<scene>.mp3` once recorded |
@@ -89,8 +90,8 @@ The editorial pass may re-word anything. It can't add a fact the validator can't
 
 | Step | Command | Who |
 |---|---|---|
-| 1. Finalize the captured activity | `cli.mjs run`: transcript (`--transcript`) or remote export (`--ccr`) → `session-events.json` | automatic |
-| 2. Collect media and file references | commits found by the `Claude-Session` trailer (local and remote ids), PRs via the public GitHub API (cached), committed media, page walk-throughs, before/after stills | automatic |
+| 1. Finalize the captured activity | `cli.mjs run`: transcript (`--transcript`), a saved `list_events` dump (`--events`, plus `--meta`), or an archived record (`--ccr`) → `session-events.json` | automatic |
+| 2. Collect media and file references | commits found by the `Claude-Session` trailer (local and remote ids), PRs via the public GitHub API (cached), committed media, page walk-throughs, before/after stills; for sessions without git, the session's own probes, renders and delivered files | automatic |
 | 3. Factual narrative | `story.mjs` → `session-report.md` | automatic |
 | 4. Select scenes | `storyboard.mjs` | automatic |
 | 5. Build the storyboard | `session-storyboard.json` (+ `editorial.json` if present) → validator | automatic + editorial |
@@ -141,6 +142,34 @@ Reproduce:
 ```
 node tools/capture/cli.mjs run --ccr docs/sessions/2026-10-12-orbs-in-repo/evidence/ccr-session.json --key 2026-10-12-orbs-in-repo
 ```
+
+### Second session: THE BLOCK, Part 1 review export (no git, on the founder's PC)
+
+**Session:** `session_01PegcJMwMrAZEXGSqkcgcwC`, 28 Oct 2026. It ran through Remote Control on the founder's Windows PC, with no repository, so there are no commits or PRs.
+
+**How it was captured:** the evidence is the session's own tool calls.
+- Each single-probe ffprobe readout becomes measurements.
+- The ffmpeg run becomes a render event (two passes).
+- `SendUserFile` becomes the delivered artifact.
+- Claude's question to the founder becomes its own event.
+
+**Story found automatically:**
+- **Goal:** the pasted spec, shown as a spec sheet.
+- **Process:** measured the master (1,104,772,890 bytes, qtrle 1080×1934), two-pass encode, measured the result (1,078,106 bytes, H.264 540×960, 233 frames, 7.778 s).
+- **Obstacle:** no file was called "Part 1 rough v3", so Claude exported the only cut, said so, and asked.
+- **Correction:** "Yes, that's it".
+- **Result:** includes one *not verified* item: no captions were seen, and only one frame was checked.
+- **Lesson:** "Flag the guess. Then get the yes."
+
+**Output:** a 74 s 16:9 preview. The vertical cut was skipped because the session's footage lives on the founder's PC. `run … --footage THE_BLOCK_PART1_REVIEW.mp4` adds it, but only if the file is exactly the 1,078,106 bytes the session recorded.
+
+**Privacy:** raw session dumps are never archived. The archive keeps a redacted record:
+- home folders become `~`;
+- injected system text is dropped;
+- `ls` owner and group columns are scrubbed;
+- tool output is kept only where it became evidence (for probes, only the key=value readout).
+
+The first scan of this archive caught a username in an `ls` listing and a folder path in a tool input. Both rules exist because of it.
 
 ## 8. Known limits
 

@@ -401,6 +401,108 @@ T.outro = (sc) => {
   } };
 };
 
+// A multi-line request, shown as the spec sheet it is.
+T.brief = (sc) => {
+  const p = sc.props, el = h('div', 'brief'), kk = kicker(sc);
+  const hd = h('h2', 'headline h-head'), hw = words(hd, p.title);
+  const rows = h('div', 'rows');
+  const items = p.lines.map((l) => {
+    const m = l.match(/^([A-Za-z][A-Za-z ]{1,24}):\s+(.+)$/);
+    const r = h('div', `row${m ? '' : ' full'}${p.accent?.includes(l) ? ' accent' : ''}`, m ? `<span class="k mono">${esc(m[1])}</span><span>${esc(m[2])}</span>` : `<span>${esc(l)}</span>`);
+    rows.append(r); return r;
+  });
+  const attr = h('div', 'attr mono', `<span class="rule"></span><span>${esc(p.who)}</span><span>${esc(p.when)}</span>${p.via ? `<span>${esc(p.via)}</span>` : ''}`);
+  el.append(kk.el, hd, rows, attr);
+  return { el, update(t) {
+    kk.update(t); rise(hw, t, 0.45, 0.04, 0.8);
+    items.forEach((r, i) => fade(r, E.outCubic(P(t, 1.0 + i * 0.22, 1.5 + i * 0.22)), 12));
+    fade(attr, E.outCubic(P(t, 1.2 + items.length * 0.22, 1.8 + items.length * 0.22)), 8);
+  } };
+};
+
+// The commands as logged, typed out at a steady pace, with the readouts that matter in bold.
+T.console = (sc) => {
+  const p = sc.props, el = h('div', 'console'), kk = kicker(sc);
+  const hd = h('h2', 'headline h-display'), hw = words(hd, p.headline);
+  const term = h('div', 'term', `<div class="bar">${esc(p.where ?? 'commands as logged')}</div>`), body = h('div', 'body');
+  term.append(body); el.append(kk.el, hd, term);
+  const lines = [];
+  for (const st of p.steps) { lines.push({ kind: 'cmd', text: st.cmd }); for (const o of st.out ?? []) lines.push({ kind: 'out', text: o }); }
+  const els = lines.map((l) => { const d = h('div', `ln ${l.kind}`); body.append(d); return d; });
+  const cur = h('span', 'cur');
+  // commands type at 70 chars/s; output lines land whole, a beat later
+  let t0 = 1.0; const sched = lines.map((l) => { const s = { start: t0, dur: l.kind === 'cmd' ? l.text.length / 70 : 0.12 }; t0 += s.dur + (l.kind === 'cmd' ? 0.35 : 0.18); return s; });
+  const fmt = (txt) => esc(txt).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  return { el, update(t, D) {
+    kk.update(t); rise(hw, t, 0.45, 0.06, 0.8);
+    const scale = Math.min(1, (D - 1.6) / Math.max(1, t0)); // fit the typing into the scene
+    let last = null;
+    lines.forEach((l, i) => {
+      const s0 = 1.0 + (sched[i].start - 1.0) * scale, d = sched[i].dur * scale;
+      const k = P(t, s0, s0 + Math.max(0.01, d));
+      // display, not visibility: a visible child would show through its hidden scene
+      if (t < s0) { els[i].style.display = 'none'; return; }
+      els[i].style.display = '';
+      if (l.kind === 'cmd') { els[i].textContent = l.text.slice(0, Math.round(l.text.length * k)); last = els[i]; }
+      else { els[i].innerHTML = fmt(l.text); els[i].style.opacity = E.outCubic(k); last = els[i]; }
+    });
+    if (last) { last.append(cur); cur.style.opacity = Math.floor(t * 2.2) % 2 ? 0.25 : 1; }
+  } };
+};
+
+// What went in and what came out, with the things that must not change.
+T.transform = (sc) => {
+  const p = sc.props, el = h('div', 'transform'), kk = kicker(sc);
+  const hd = h('h2', 'headline h-display'), hw = words(hd, p.headline);
+  const col = (side, x) => h('div', `col ${side}`, `<div class="lbl mono">${esc(x.label)} · ${esc(x.file)}</div><div class="num">0</div><div class="unit mono">${esc(p.unit)}</div><div class="spec mono">${x.spec.map(esc).join('<br>')}</div>`);
+  const a = col('from', p.from), b = col('to', p.to), arrow = h('div', 'arrow');
+  const cols = h('div', 'cols'); cols.append(a, arrow, b);
+  const same = h('div', 'same', p.same.map((x) => `<div><span class="mono">${esc(x.label)}</span>${esc(x.from)}<i>=</i>${esc(x.to)}</div>`).join(''));
+  el.append(kk.el, hd, cols, same);
+  const an = a.querySelector('.num'), bn = b.querySelector('.num');
+  const grp = (n) => Math.round(n).toLocaleString('en-US');
+  return { el, update(t) {
+    kk.update(t); rise(hw, t, 0.45, 0.06, 0.8);
+    fade(a, E.outCubic(P(t, 0.8, 1.4)), 16); an.textContent = grp(p.from.value * E.outExpo(P(t, 0.8, 2.0)));
+    arrow.style.transform = `scaleX(${E.outExpo(P(t, 2.0, 2.8))})`;
+    fade(b, E.outCubic(P(t, 2.4, 3.0)), 16);
+    // the output counts down from the master's size: the shrink is the point
+    const k = E.outQuart(P(t, 2.5, 4.2)); bn.textContent = grp(Math.exp(lerp(Math.log(p.from.value), Math.log(p.to.value), k)));
+    [...same.children].forEach((d, i) => fade(d, E.outCubic(P(t, 4.4 + i * 0.3, 5.0 + i * 0.3)), 10));
+  } };
+};
+
+// The exchange that settled the open question; the spine moves from obstacle to correction on the answer.
+T.exchange = (sc) => {
+  const p = sc.props, el = h('div', 'exchange'), kk = kicker(sc), kk2 = kicker({ ...sc, stageIndex: sc.stageIndex2, stageLabel: sc.stageLabel2 });
+  kk2.el.classList.add('kk2');
+  const msgs = h('div', 'msgs');
+  const items = p.messages.map((m) => { const d = h('div', `msg ${m.who === 'Founder' ? 'founder' : 'claude'}`, `<span class="who">${esc(m.who)} · ${esc(m.when)}</span>${esc(m.text)}`); msgs.append(d); return d; });
+  el.append(kk.el, kk2.el, msgs);
+  return { el, update(t, D) {
+    const n = items.length, at = (i) => lerp(0.6, Math.max(2.5, D - 2.6), i / Math.max(1, n - 1));
+    const sw = at(p.switchAt ?? n - 1);
+    kk.update(t); kk.el.style.opacity = Number(kk.el.style.opacity) * (1 - P(t, sw - 0.2, sw + 0.3));
+    kk2.update(t - sw + 0.3); kk2.el.style.opacity = Number(kk2.el.style.opacity) * P(t, sw - 0.1, sw + 0.4);
+    items.forEach((d, i) => { const k = E.outQuart(P(t, at(i), at(i) + 0.6)); d.style.opacity = k; d.style.transform = `translateY(${(1 - k) * 28}px) scale(${0.98 + 0.02 * k})`; });
+  }, stageAt: (t, D) => { const n = items.length, sw = lerp(0.6, Math.max(2.5, D - 2.6), (p.switchAt ?? n - 1) / Math.max(1, n - 1)); return t >= sw ? sc.stage2 : sc.stage; } };
+};
+
+// Asked for vs got, from the table the session itself produced.
+T.compare = (sc) => {
+  const p = sc.props, el = h('div', 'compare'), kk = kicker(sc);
+  const hd = h('h2', 'headline h-head'), hw = words(hd, p.headline);
+  const tb = h('table', '', `<thead><tr>${p.headers.map((x, i) => `<th>${i ? esc(x) : ''}</th>`).join('')}</tr></thead>`);
+  const body = h('tbody');
+  const rows = p.rows.map((r) => { const tr = h('tr', '', `<td class="k">${esc(r[0])}</td><td class="a">${esc(r[1])}</td><td class="b"><svg viewBox="0 0 22 22"><path pathLength="1" d="M3 12 L9 18 L19 5"/></svg>${esc(r[2])}</td>`); body.append(tr); return { tr, mark: tr.querySelector('path') }; });
+  tb.append(body); el.append(kk.el, hd, tb);
+  return { el, update(t) {
+    kk.update(t); rise(hw, t, 0.45, 0.06, 0.8);
+    fade(tb.tHead, E.outCubic(P(t, 0.8, 1.3)));
+    rows.forEach(({ tr, mark }, i) => { const t0 = 1.1 + i * 0.5; fade(tr, E.outCubic(P(t, t0, t0 + 0.5)), 12); mark.style.strokeDasharray = '1 1'; mark.style.strokeDashoffset = 1 - E.outCubic(P(t, t0 + 0.25, t0 + 0.8)); });
+  } };
+};
+
 // ---- build ----------------------------------------------------------------------------------------
 async function build() {
   const [mark, wordmark] = await Promise.all([QB.brand.mark, QB.brand.wordmark].map((u) => fetch(u).then((r) => r.text())));
@@ -445,7 +547,7 @@ async function build() {
       s.tpl.update(lt, D);
     }
     // chrome follows the scene that holds the frame; brand cards hide it
-    const cur = best?.sc;
+    const cur = best?.sc ? { ...best.sc, stage: best.tpl.stageAt ? best.tpl.stageAt(t - best.sc.start, best.sc.duration) : best.sc.stage } : null;
     const vis = cur && !cur.brand ? 1 : 0;
     const k = Math.min(1, bestW * 1.6);
     clock.textContent = cur?.clockLabel ?? ''; src.innerHTML = cur?.sources ? `<b>Source</b>&nbsp;&nbsp;${esc(cur.sources)}` : '';

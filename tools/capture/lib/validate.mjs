@@ -11,7 +11,8 @@ const TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy:
 // Numbers written as digits ("2.6MB", "65/65", "+653", "06:59"); digits inside identifiers such as "be1b0f3" are skipped.
 export function digitNumbers(s) {
   // skip digits that belong to identifiers: "be1b0f3", "20c1a03", "repo-68l8w7"
-  return [...String(s).matchAll(/(?<![A-Za-z0-9_])\d+(?:\.\d+)?(?![0-9])(?![A-Za-z]+\d)/g)].map((m) => parseFloat(m[0])).filter((n) => !Number.isNaN(n));
+  // "1,078,106" is one number, not three
+  return [...String(s).matchAll(/(?<![A-Za-z0-9_])(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?![0-9])(?![A-Za-z]+\d)/g)].map((m) => parseFloat(m[0].replace(/,/g, ''))).filter((n) => !Number.isNaN(n));
 }
 // Numbers written as words ("fifty-three", "two point six"). "one" and "zero" are left out: they are used as words, not counts.
 export function wordNumbers(s) {
@@ -109,8 +110,9 @@ export function validateStoryboard(sb, events, metrics, assets) {
       for (const a of [sc.props?.asset, sc.props?.before?.asset, sc.props?.after?.asset].filter(Boolean)) if (!assetIds.has(a)) errors.push(`${where}: asset "${a}" is not registered in session-assets.json`);
       const allowed = allowedNumbers(sc.refs ?? [], events, metrics, derived), times = timeTokens(sc.refs ?? [], events);
       const texts = [...textOfProps(sc.props), sc.narration ?? ''].map(splitTimes);
-      for (const tok of texts.flatMap((x) => x.found)) if (!times.has(tok)) errors.push(`${where}: the date or time "${tok}" is not when any cited event happened`);
-      const seen = [...texts.flatMap((x) => digitNumbers(x.rest)), ...wordNumbers(sc.narration ?? '')];
+      // a token that is not a cited event's date or time (a ratio such as 9:16, say) is checked as plain numbers
+      const loose = texts.flatMap((x) => x.found).filter((tok) => !times.has(tok));
+      const seen = [...texts.flatMap((x) => digitNumbers(x.rest)), ...loose.flatMap(digitNumbers), ...wordNumbers(sc.narration ?? '')];
       for (const n of seen) if (!allowed.has(n) && !allowed.has(Math.round(n * 10) / 10)) errors.push(`${where}: the number ${n} is not backed by the events it cites (${(sc.refs ?? []).join(', ') || 'none'})`);
     }
   }

@@ -10,10 +10,10 @@
 //
 // run = steps 1–7 of the end-of-session flow (finalize, collect, narrate, select scenes, storyboard, silent preview, present).
 // Nothing here spends credits, publishes or deploys. Paid narration happens outside this CLI, only after `approve`.
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join, resolve, relative } from 'node:path';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, statSync, copyFileSync } from 'node:fs';
+import { join, resolve, relative, basename } from 'node:path';
 import { ROOT, ARCHIVE, readJSON, readJSONIf, writeJSON, writeText, slugify, sha256File, fmtDate, parts } from './lib/util.mjs';
-import { fromTranscript, fromCcrExport, sessionCommits, sessionAliases, githubPulls, repoSlug } from './lib/ingest.mjs';
+import { fromTranscript, fromCcrExport, fromCcrEvents, sessionCommits, sessionAliases, githubPulls, repoSlug } from './lib/ingest.mjs';
 import { buildEvents, buildMetrics } from './lib/events.mjs';
 import { buildStory } from './lib/story.mjs';
 import { planStoryboard, timeStoryboard, narrationFile } from './lib/storyboard.mjs';
@@ -25,7 +25,7 @@ import { sessionReport, logEntry, appendLog } from './lib/report.mjs';
 import { ENV_FLAG, lock, recordIndex } from './lib/guard.mjs';
 
 process.env[ENV_FLAG] = '1'; // anything this process starts knows it is inside a capture
-export const VERSION = '0.1.0'; // bump with CHANGELOG.md
+export const VERSION = '0.2.0'; // bump with CHANGELOG.md
 const LOG_HEADER = '# Production log\n\nHow this recap was made: every run, what it decided, what it validated, and what it cost. Newest last.';
 
 const argv = process.argv.slice(2);
@@ -41,8 +41,10 @@ const files = (dir) => ({
 
 async function cmdRun() {
   const repo = resolve(opt('repo', ROOT));
-  const src = opt('transcript') ? fromTranscript(resolve(opt('transcript'))) : opt('ccr') ? fromCcrExport(resolve(opt('ccr'))) : null;
-  if (!src) throw new Error('give --transcript <session.jsonl> or --ccr <export.json>');
+  const meta = opt('meta') ? readJSON(resolve(opt('meta'))) : {};
+  const src = opt('transcript') ? fromTranscript(resolve(opt('transcript'))) : opt('ccr') ? fromCcrExport(resolve(opt('ccr'))) : opt('events') ? fromCcrEvents(resolve(opt('events')), meta) : null;
+  if (!src) throw new Error('give --transcript <session.jsonl>, --ccr <export.json> or --events <list_events dump> [--meta <session.json>]');
+  if (opt('meta')) Object.assign(src.session, meta);
   const { session } = src;
   const d = parts(session.created_at);
   const key = opt('key') || `${d.y}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}-${slugify(session.title ?? session.id)}`;
@@ -58,6 +60,18 @@ async function cmdRun() {
   const slug = repoSlug(repo);
   const pulls = githubPulls(slug, g.commits.map((c) => c.sha), F.github, { offline: !!opt('offline') });
   const events = buildEvents({ ...src, git: g, pulls, repo, repoSlug: slug });
+  // A raw event dump is never archived: keep a redacted record (prompts, replies, and only the tool output that became evidence).
+  if (session.source === 'ccr-events') {
+    const used = new Set(events.flatMap((e) => e.refs).filter((r) => r.startsWith('ccr:')).map((r) => r.slice(4)));
+    writeJSON(join(F.dir, 'evidence/ccr-session.json'), { format: 'qb-capture/ccr-export@2', source: 'claude-code-remote list_events, redacted: home folders as ~, injected system text dropped, tool output kept only where it is evidence',
+      exported_at: new Date().toISOString(), session: { ...session, export: undefined, source: undefined }, turns: src.turns,
+      tools: src.tools.map(({ output, ...t }) => {
+        if (!used.has(t.uuid)) return t;
+        // a probe's evidence is its key=value readout; nothing else from that output is kept
+        const isProbe = events.some((e) => e.kind === 'probe' && e.refs.includes(`ccr:${t.uuid}`));
+        return { ...t, output: isProbe ? (output ?? '').split(/\r?\n/).filter((l) => /^[a-z_]+=/.test(l)).join('\n') : output };
+      }) });
+  }
   say(`${events.length} events from ${session.source} (${src.turns.length} turns), ${g.commits.length} commits, ${pulls.length} PRs`);
   log.push(`1. **Finalize**: ${src.turns.length} turns from ${session.source}, ${g.commits.length} commits carrying the session id, ${g.merges.length} merges, ${pulls.length} pull requests → ${events.length} events.`);
 
@@ -65,6 +79,21 @@ async function cmdRun() {
   if (!assets || !opt('no-capture', false)) {
     const list = await collectAssets({ events, repo, archiveDir: F.dir, capture: !opt('no-capture', false), log: (m) => say(m) });
     assets = { schema: 'qb-capture/assets@1', session_id: session.id, assets: list };
+  }
+  // Footage the founder provides (e.g. a file Claude made on their own computer) is accepted only if it is byte-for-byte
+  // the size the session itself recorded for that file.
+  if (opt('footage')) {
+    const file = resolve(opt('footage')), name = basename(file), bytes = statSync(file).size;
+    const recorded = events.find((e) => e.kind === 'probe' && e.data.file === name && e.data.fields.size);
+    const artifact = events.find((e) => e.kind === 'artifact' && e.data.path.split(/[\\/]/).pop() === name) ?? recorded;
+    if (!artifact) throw new Error(`${name} is not a file this session produced`);
+    if (recorded && recorded.data.fields.size !== bytes) throw new Error(`${name} is ${bytes} bytes; the session recorded ${recorded.data.fields.size}. Not the same file.`);
+    mkdirSync(join(F.dir, 'assets'), { recursive: true });
+    copyFileSync(file, join(F.dir, 'assets', name));
+    const id = slugify(name.replace(/\.\w+$/, ''));
+    assets.assets = assets.assets.filter((a) => a.id !== id).concat({ id, kind: 'video', path: `assets/${name}`, root: 'archive',
+      provenance: { source: `provided by the founder; ${recorded ? `size matches the session's ffprobe record (${bytes} bytes)` : 'name matches a file the session delivered'}`, event: artifact.id, matched: recorded?.id ?? null },
+      sha256: sha256File(file), probe: await probe(file) });
   }
   const probes = Object.fromEntries(assets.assets.filter((a) => a.probe).map((a) => [a.path, a.probe]));
   for (const e of events.filter((e) => e.kind === 'artifact' && /\.(mp4|mov|webm)$/i.test(e.data.path) && !probes[e.data.path] && existsSync(join(repo, e.data.path)))) probes[e.data.path] = await probe(join(repo, e.data.path));

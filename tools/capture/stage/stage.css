@@ -215,3 +215,69 @@ html, body { background: var(--bg); overflow: hidden; }
 .outro .meta { font-size: 16px; color: var(--dim); display: grid; gap: 12px; }
 .f9x16 .outro .meta { font-size: 20px; }
 .fade { position: absolute; inset: 0; background: #000; pointer-events: none; }
+
+/* brief: a multi-line request as a spec sheet */
+.brief { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+.brief .headline { font-size: 58px; margin: 30px 0 34px; max-width: 1500px; text-wrap: balance; }
+.brief .rows { display: grid; grid-template-columns: 1fr 1fr; column-gap: 70px; }
+.brief .row { display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: baseline; padding: 14px 0; border-top: 1px solid var(--line); font-size: 26px; line-height: 1.25; }
+.brief .row.full { grid-template-columns: 1fr; }
+.brief .row .k { font-size: 14px; color: var(--dim); }
+.brief .row.accent { color: var(--orange); }
+.brief .attr { margin-top: 30px; font-size: 16px; color: var(--dim); display: flex; gap: 22px; align-items: center; }
+.brief .attr .rule { width: 56px; height: 1px; background: var(--hair); }
+.f9x16 .brief .rows { grid-template-columns: 1fr; } .f9x16 .brief .row { font-size: 28px; grid-template-columns: 170px 1fr; } .f9x16 .brief .headline { font-size: 56px; }
+
+/* console: the session's own commands and readouts, typed out */
+.console { position: relative; height: 100%; }
+.console .headline { font-size: 64px; margin-top: 30px; }
+.console .term { position: absolute; left: 0; right: 0; top: 150px; min-height: 300px; border: 1.5px solid var(--hair); border-radius: 14px; background: #050505; padding: 30px 36px; overflow: hidden;
+  font-family: 'JetBrains Mono', monospace; font-size: 21px; line-height: 1.6; letter-spacing: .01em; }
+.console .term .bar { position: absolute; left: 0; right: 0; top: 0; height: 44px; border-bottom: 1px solid var(--line); display: flex; align-items: center; padding: 0 22px; font-size: 14px; color: var(--faint); letter-spacing: .14em; text-transform: uppercase; }
+.console .term .body { margin-top: 40px; }
+.console .ln { white-space: pre-wrap; word-break: break-all; min-height: 1.6em; }
+.console .ln.cmd { color: var(--cream); }
+.console .ln.cmd::before { content: '$ '; color: var(--faint); }
+.console .ln.out { color: var(--dim); padding-left: 1.4em; }
+.console .ln.out b { color: var(--cream); font-weight: 600; }
+.console .cur { display: inline-block; width: .6em; height: 1.1em; vertical-align: -0.2em; background: var(--orange); margin-left: 2px; }
+.f9x16 .console .term { top: 170px; font-size: 22px; padding: 26px 26px; }
+
+/* transform: what went in, what came out */
+.transform { position: relative; height: 100%; display: flex; flex-direction: column; }
+.transform .headline { font-size: 64px; margin: 30px 0 0; }
+.transform .cols { display: grid; grid-template-columns: 1fr 90px 1fr; align-items: start; margin-top: 64px; }
+.transform .col .lbl { font-size: 15px; color: var(--dim); }
+.transform .col .num { font-weight: 800; font-stretch: 112%; font-size: 92px; letter-spacing: -.035em; line-height: 1; margin-top: 16px; white-space: nowrap; }
+.transform .col .unit { font-size: 18px; margin-top: 12px; color: var(--cream); }
+.transform .col .spec { margin-top: 26px; font-size: 17px; color: var(--dim); line-height: 1.7; letter-spacing: .06em; }
+.transform .col.to .num { color: var(--orange); }
+.transform .arrow { align-self: center; height: 2px; background: var(--hair); margin-top: 30px; transform-origin: 0 50%; position: relative; }
+.transform .arrow::after { content: ''; position: absolute; right: -2px; top: -6px; border: 7px solid transparent; border-left: 10px solid var(--hair); border-right: 0; }
+.transform .same { margin-top: 56px; display: flex; gap: 70px; border-top: 1px solid var(--line); padding-top: 26px; }
+.transform .same div { font-size: 30px; } .transform .same div span { display: block; font-size: 14px; color: var(--dim); margin-bottom: 8px; }
+.transform .same div i { font-style: normal; color: var(--dim); margin: 0 14px; }
+.f9x16 .transform .cols { grid-template-columns: 1fr; row-gap: 40px; } .f9x16 .transform .arrow { display: none; } .f9x16 .transform .col .num { font-size: 96px; }
+.f9x16 .transform .same { flex-direction: column; gap: 26px; }
+
+/* exchange: the question and the answer */
+.exchange { position: relative; height: 100%; }
+.exchange .kk2 { position: absolute; left: 0; top: 0; }
+.exchange .msgs { position: absolute; left: 0; right: 0; top: 80px; display: flex; flex-direction: column; gap: 22px; }
+.exchange .msg { max-width: 1060px; border: 1.5px solid var(--hair); border-radius: 16px; padding: 22px 28px; font-size: 32px; line-height: 1.3; background: #050505; }
+.exchange .msg .who { display: block; font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+.exchange .msg.founder { align-self: flex-end; border-color: var(--orange); }
+.exchange .msg.founder .who { color: var(--orange); }
+.f9x16 .exchange .msg { max-width: 860px; font-size: 34px; }
+
+/* compare: asked for vs got */
+.compare { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+.compare .headline { font-size: 64px; margin: 30px 0 36px; }
+.compare table { border-collapse: collapse; width: 100%; font-size: 29px; }
+.compare th { text-align: left; font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); padding: 0 0 14px; }
+.compare td { padding: 17px 24px 17px 0; border-top: 1px solid var(--line); vertical-align: baseline; }
+.compare td.k { font-family: 'JetBrains Mono', monospace; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); width: 220px; }
+.compare td.a { color: var(--dim); }
+.compare td.b svg { width: 22px; height: 22px; margin-right: 14px; vertical-align: -2px; overflow: visible; }
+.compare td.b svg path { fill: none; stroke: var(--cream); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.f9x16 .compare table { font-size: 28px; } .f9x16 .compare td.k { width: 160px; }

@@ -4,15 +4,16 @@ import { round } from './util.mjs';
 import { classify } from './guard.mjs';
 
 const OBSTACLE_PROMPT = /^(why|how come)\b|\bnot (available|working|showing|live|there|loading)\b|\bbroken\b|\bmissing\b|\bcan'?t (find|see)\b|\bstill (not|no|broken)\b|\bdoesn'?t (work|show|load)\b/i;
-const APPROVAL_PROMPT = /^(yes|yep|yeah|ok(ay)?|do it|go( ahead)?|sure|ship it|merge it|approved?)\W*$/i;
+const APPROVAL_PROMPT = /^(yes|yep|yeah|ok(ay)?|do it|go( ahead)?|sure|ship it|merge it|approved?|correct|right)\b[\s,.!-]*(that'?s (it|right|correct|the one)|it is|go( ahead)?|do it|please)?[\s.!]*$/i;
 const MISTAKE = /\bmistakes? of mine\b|\bmy mistake\b|\bby mistake\b|\baccidentally\b|\bmy fault\b|\bshouldn'?t have\b/i;
-const LIMITATION = /\bblocks?\b|\bblocked\b|\bcouldn'?t\b|\bcould not\b|\bunable to\b|\bnothing has been checked\b|\bnot been (checked|verified)\b/i;
+export const LIMITATION = /\b(network|proxy|firewall|environment)\b[^.\n]{0,40}\bblocks?\b|\b(is|was|were|are|got) blocked\b|\bblocked by\b|\bcouldn'?t\b|\bcould not\b|\bunable to\b|\bnothing has been checked\b|\bnot been (checked|verified)\b|\bhaven'?t (seen|checked|verified)\b/i;
+export const ASSUMPTION = /\bcheck the (source|file|folder|target) first\b|\bno (file|folder|video|branch|page)\b[^.\n]*\b(called|named)\b|\bif [^.\n]* is a different (file|cut|version)\b/i;
 const FIX_COMMIT = /^(fix|remove|revert|correct|undo|restore)\b/i;
 const MEDIA = /\.(mp4|mov|webm|gif|png|jpe?g|webp)$/i;
 const PAGE = /(^|\/)index\.html$|\.html$/i;
 
 export function buildEvents({ session, turns, tools, git: g, pulls, repo, repoSlug }) {
-  const src = session.source === 'ccr-export' ? 'ccr' : 'transcript';
+  const src = session.source === 'ccr-export' || session.source === 'ccr-events' ? 'ccr' : 'transcript';
   const ev = [];
   const push = (e) => { ev.push({ tags: [], data: {}, ...e }); return ev[ev.length - 1]; };
 
@@ -29,6 +30,7 @@ export function buildEvents({ session, turns, tools, git: g, pulls, repo, repoSl
       const rtags = [];
       if (MISTAKE.test(r.text)) rtags.push('mistake');
       if (LIMITATION.test(r.text)) rtags.push('limitation');
+      if (ASSUMPTION.test(r.text)) rtags.push('assumption');
       if (kind !== 'work') rtags.push(kind);
       push({ t: r.created_at, kind: 'reply', actor: 'claude', turn: i, text: r.text, refs: [`${src}:${r.uuid}`], tags: rtags,
         data: { num_turns: r.num_turns ?? null, duration_ms: r.duration_ms ?? null } });
@@ -37,6 +39,24 @@ export function buildEvents({ session, turns, tools, git: g, pulls, repo, repoSl
 
   for (const t of tools) {
     const out = t.output ?? '';
+    const cmd = t.input.command ?? '';
+    const ref = [`${src}:${t.uuid}`];
+    // ffprobe readouts are measurements; keep only key=value fields from a single probe so nothing is misattributed
+    if (t.name === 'Bash' && (cmd.match(/\bffprobe\b/g) ?? []).length === 1 && !t.is_error) {
+      const file = mediaArg(cmd.slice(cmd.indexOf('ffprobe')));
+      const fields = {};
+      for (const m of out.matchAll(/^([a-z_]+)=([^\n]*)$/gm)) { const v = m[2].trim(); if (!(m[1] in fields)) fields[m[1]] = /^-?\d+(\.\d+)?$/.test(v) ? +v : v; }
+      if (file && Object.keys(fields).length) push({ t: t.t, kind: 'probe', actor: 'claude', turn: t.turn, text: `ffprobe ${file}: ${Object.entries(fields).map(([k, v]) => `${k}=${v}`).join(' ')}`, refs: ref, data: { file, fields, command: cmd.slice(0, 700), description: t.input.description ?? null } });
+    }
+    if (t.name === 'Bash' && /\bffmpeg\b/.test(cmd) && !t.is_error) {
+      const seg = cmd.slice(cmd.lastIndexOf('ffmpeg')); // the last ffmpeg call writes the result (earlier ones are passes)
+      const outs = [...seg.matchAll(/(?:"([^"]+\.(?:mp4|mov|webm|mkv|gif|wav|mp3|m4a|png|jpe?g))"|(\S+\.(?:mp4|mov|webm|mkv|gif|wav|mp3|m4a|png|jpe?g)))(?=\s*(?:&&|;|$|\|))/gi)].map((m) => (m[1] ?? m[2]).split(/[\\/]/).pop());
+      const input = mediaArg(seg.slice(seg.indexOf(' -i ')));
+      if (outs.length) push({ t: t.t, kind: 'render', actor: 'claude', turn: t.turn, text: `${t.input.description ?? 'ffmpeg'}: ${input ?? '?'} → ${outs[outs.length - 1]}`, refs: ref,
+        data: { input, output: outs[outs.length - 1], passes: /-pass 2\b/.test(cmd) ? 2 : 1, command: cmd.slice(0, 700), description: t.input.description ?? null } });
+    }
+    if (t.name === 'SendUserFile' && t.input.files) for (const f of t.input.files) push({ t: t.t, kind: 'artifact', actor: 'claude', turn: t.turn, text: `${f} delivered${t.input.caption ? `: ${t.input.caption}` : ''}`, refs: ref, data: { path: f, delivered: true, caption: t.input.caption ?? null } });
+    if (t.input.ask) push({ t: t.t, kind: 'question', actor: 'claude', turn: t.turn, text: t.input.ask, refs: ref, tags: ['assumption'], data: { recap: t.input.recap ?? null } });
     const tests = out.match(/(?:^|\n)\s*#?\s*pass\s+(\d+)[\s\S]*?#?\s*fail\s+(\d+)/i);
     if (tests || t.is_error) push({ t: t.t, kind: tests ? 'test-run' : 'tool-error', actor: 'claude', turn: t.turn, text: `${t.name}: ${t.input.command ?? t.input.file_path ?? ''}`.slice(0, 300),
       refs: [`${src}:${t.uuid}`], tags: [classify({ tools: [t] })].filter((k) => k !== 'work'), data: tests ? { passed: +tests[1], failed: +tests[2] } : { output: out.slice(0, 400) } });
@@ -74,12 +94,14 @@ export function buildEvents({ session, turns, tools, git: g, pulls, repo, repoSl
   }
 
   ev.sort((a, b) => Date.parse(a.t) - Date.parse(b.t) || order(a) - order(b));
-  ev.unshift({ t: session.created_at, kind: 'session', actor: 'system', text: session.title ?? session.id, refs: [session.url ?? `${src}:${session.id}`], tags: [], data: { id: session.id, source: session.source, repo: repoSlug } });
+  // the repo is named only when the session actually committed to it
+  ev.unshift({ t: session.created_at, kind: 'session', actor: 'system', text: session.title ?? session.id, refs: [session.url ?? `${src}:${session.id}`], tags: [], data: { id: session.id, source: session.source, repo: g.commits.length ? repoSlug : null, place: session.place ?? null } });
   ev.forEach((e, i) => (e.id = `E${String(i).padStart(2, '0')}`));
   return ev;
 }
 
-const ORDER = ['session', 'prompt', 'tool-error', 'test-run', 'commit', 'artifact', 'page', 'file-removed', 'pr-open', 'pr-merge', 'merge', 'reply'];
+const ORDER = ['session', 'prompt', 'probe', 'render', 'tool-error', 'test-run', 'commit', 'artifact', 'page', 'file-removed', 'pr-open', 'pr-merge', 'merge', 'question', 'reply'];
+const mediaArg = (s) => { const m = String(s).match(/"([^"]+\.(?:mp4|mov|webm|mkv|gif|wav|mp3|m4a|png|jpe?g))"|(\S+\.(?:mp4|mov|webm|mkv|gif|wav|mp3|m4a|png|jpe?g))/i); return m ? (m[1] ?? m[2]).split(/[\\/]/).pop() : null; };
 const order = (e) => ORDER.indexOf(e.kind);
 export const fmtBytes = (b) => (b == null ? '?' : b >= 1e6 ? `${round(b / 1e6, 1)} MB` : b >= 1e3 ? `${round(b / 1e3)} KB` : `${b} B`);
 
@@ -103,6 +125,7 @@ export function buildMetrics(ev, probes = {}) {
     add('files_touched', files.size, String(files.size), 'files', commits.map((e) => e.id), 'distinct paths across session commits');
   }
   const goal = goalTurn(ev);
+  if (goal?.reply?.data.duration_ms && goal.reply.data.duration_ms < 120000) add('build_seconds', Math.round(goal.reply.data.duration_ms / 1000), String(Math.round(goal.reply.data.duration_ms / 1000)), 's', [goal.reply.id], 'duration of the turn that did the work');
   if (goal?.reply?.data.duration_ms) {
     add('build_minutes', Math.round(goal.reply.data.duration_ms / 60000), String(Math.round(goal.reply.data.duration_ms / 60000)), 'min', [goal.reply.id], 'duration of the turn that did the work');
     if (goal.reply.data.num_turns) add('build_steps', goal.reply.data.num_turns, String(goal.reply.data.num_turns), 'steps', [goal.reply.id], 'agent steps in that turn');
@@ -121,6 +144,13 @@ export function buildMetrics(ev, probes = {}) {
   for (const r of work.filter((e) => e.kind === 'reply')) {
     const t = r.text.match(/tests? pass(?:ed)?\s*\((\d+)\s*\/\s*(\d+)\)|(\d+)\s*\/\s*(\d+)\s+tests? pass/i) || r.text.match(/(\d+) passed, (\d+) failed/i);
     if (t && !m.some((x) => x.key === 'tests_passed')) { const a = +(t[1] ?? t[3]); const b = +(t[2] ?? t[4]); add('tests_passed', a, `${a}/${b}`, 'tests', [r.id], 'test count reported in the reply'); }
+  }
+  for (const p of work.filter((e) => e.kind === 'probe')) {
+    const f = p.data.fields, k = `probe_${p.data.file.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}`;
+    if (f.size) add(`${k}_bytes`, f.size, f.size.toLocaleString('en-US'), 'bytes', [p.id], `ffprobe size of ${p.data.file}`);
+    if (f.width && f.height) add(`${k}_size`, f.width, `${f.width}×${f.height}`, 'px', [p.id], `ffprobe frame size of ${p.data.file}`);
+    if (f.nb_read_frames) add(`${k}_frames`, f.nb_read_frames, String(f.nb_read_frames), 'frames', [p.id], `ffprobe counted frames of ${p.data.file}`);
+    if (f.duration) add(`${k}_seconds`, f.duration, `${f.duration.toFixed(3)} s`, 's', [p.id], `ffprobe duration of ${p.data.file}`);
   }
   for (const t of work.filter((e) => e.kind === 'test-run')) add(`test_run_${t.id}`, t.data.passed, `${t.data.passed}/${t.data.passed + t.data.failed}`, 'tests', [t.id], 'test runner output');
   for (const f of work.filter((e) => e.kind === 'file-removed' && e.data.bytes)) add(`removed_${f.id}_mb`, round(f.data.bytes / 1e6, 1), `${round(f.data.bytes / 1e6, 1)} MB`, 'MB', [f.id], `${f.data.path} blob size`);
@@ -151,6 +181,6 @@ export function goalTurn(ev) {
 export function evidenceLevel(ev) {
   const work = ev.filter((e) => isWork(e) && e.kind !== 'session');
   if (!work.some((e) => e.kind === 'prompt')) return 'none';
-  if (!work.some((e) => ['commit', 'artifact', 'pr-open', 'test-run'].includes(e.kind))) return 'thin';
+  if (!work.some((e) => ['commit', 'artifact', 'pr-open', 'test-run', 'render'].includes(e.kind))) return 'thin';
   return 'full';
 }

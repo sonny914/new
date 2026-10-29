@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { fromTranscript, fromCcrExport, sessionCommits, githubPulls, sessionAliases } from './capture/lib/ingest.mjs';
+import { fromTranscript, fromCcrExport, fromCcrEvents, sessionCommits, githubPulls, sessionAliases, redact } from './capture/lib/ingest.mjs';
 import { buildEvents, buildMetrics, evidenceLevel } from './capture/lib/events.mjs';
 import { buildStory, sentenceWith } from './capture/lib/story.mjs';
 import { planStoryboard, timeStoryboard, cues } from './capture/lib/storyboard.mjs';
@@ -23,6 +23,7 @@ test('numbers: digits inside identifiers are not claims; units and spelled-out c
   assert.deepEqual(digitNumbers('be1b0f3 · 20c1a03 · claude/orbs-in-repo-68l8w7'), []);
   assert.deepEqual(digitNumbers('a 2.6MB file, 65/65 tests, +653 lines, PR #20, 06:59'), [2.6, 65, 65, 653, 20, 6, 59]);
   assert.deepEqual(wordNumbers('fifty-three steps, two point six megabytes, one commit, fourteen files'), [53, 2.6, 14]);
+  assert.deepEqual(digitNumbers('1,078,106 bytes, 540 × 960, 9:16, items 1,2'), [1078106, 540, 960, 9, 16, 1, 2]);
 });
 
 test('sentences come from lines first, so list items are never glued into one claim', () => {
@@ -95,6 +96,44 @@ test('derived counts must list items that appear in the cited text', () => {
   const ev = [{ id: 'E1', text: 'Instagram Reels, TikTok and LinkedIn' }];
   assert.deepEqual(validateDerived([{ key: 'p', value: 3, items: ['Instagram Reels', 'TikTok', 'LinkedIn'], refs: ['E1'] }], ev), []);
   assert.equal(validateDerived([{ key: 'p', value: 5, items: ['Instagram Reels', 'TikTok', 'LinkedIn', 'YouTube'], refs: ['E1'] }], ev).length, 2);
+});
+
+test('a Remote Control session without git: tool readouts are the evidence, home folders are redacted, a checked guess is the arc', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'qbc-'));
+  const f = join(dir, 'events.txt');
+  const at = (s) => `2026-10-28T20:${String(39 + Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}Z`;
+  const ev = (kind, uuid, s, content) => ({ created_at: at(s), [kind]: { uuid, internal_anthropic_catchall: { message: { role: kind, content } } } });
+  const data = [
+    ev('user', 'p1', 0, [{ type: 'text', text: '<system-reminder>\nscratch workspace for account 1234\n</system-reminder>' }, { type: 'text', text: '<pasted_content id="1">\nExport THE BLOCK cut as a review MP4.\nResolution: 540 × 960.\nDo not modify the master.\n</pasted_content id="1">\n C:\\Users\\Neil9\\Downloads\\The Block' }]),
+    ev('assistant', 'a1', 5, [{ type: 'tool_use', id: 't1', name: 'Bash', input: { command: 'cd "/c/Users/Neil9/Downloads/The Block" && ffprobe -v error -show_entries format=size "Master.mov"' } }]),
+    ev('user', 'r1', 6, [{ type: 'tool_result', tool_use_id: 't1', content: 'width=1080\r\nheight=1934\r\nsize=1104772890\r\n' }]),
+    ev('assistant', 'a2', 20, [{ type: 'tool_use', id: 't2', name: 'Bash', input: { command: 'ffmpeg -y -i "Master.mov" -c:v libx264 -b:v 1M -pass 1 -f mp4 NUL && ffmpeg -y -i "Master.mov" -c:v libx264 -b:v 1M -pass 2 OUT.mp4 && echo done' } }]),
+    ev('user', 'r2', 30, [{ type: 'tool_result', tool_use_id: 't2', content: 'done' }]),
+    ev('assistant', 'a3', 31, [{ type: 'tool_use', id: 't3', name: 'Bash', input: { command: 'cd /c/Users/Neil9 && find Downloads -iname "*block*"' } }]),
+    ev('user', 'r3', 32, [{ type: 'tool_result', tool_use_id: 't3', content: 'Downloads/some unrelated private thing' }]),
+    ev('assistant', 'a4', 40, [{ type: 'text', text: 'Exported. **Check the source first.** No file in that folder is called "cut v3". The one frame I checked had no caption, so I haven\'t seen one.' }]),
+    ev('user', 'p2', 100, "Yes, that's it"),
+    ev('assistant', 'a5', 101, [{ type: 'text', text: 'Good, then the export is final.' }]),
+  ];
+  writeFileSync(f, 'untrusted preamble\n' + JSON.stringify({ ccr: { data } }) + '\ntrailer');
+  const src = fromCcrEvents(f, { id: 'session_x', title: 'THE BLOCK test', created_at: at(0) });
+  assert.equal(src.turns.length, 2);
+  assert.ok(!src.turns[0].prompt.text.includes('system-reminder') && !src.turns[0].prompt.text.includes('pasted_content'));
+  assert.ok(src.turns[0].prompt.text.endsWith('~\\Downloads\\The Block'), 'home folder redacted');
+  assert.ok(src.tools.every((t) => !/Neil9/.test(t.input.command ?? '') && !/Neil9/.test(t.output ?? '')));
+  const events = buildEvents({ ...src, git: { commits: [], merges: [] }, pulls: [], repo: ROOT, repoSlug: 'x/y' });
+  const probeE = events.find((e) => e.kind === 'probe');
+  assert.equal(probeE.data.fields.size, 1104772890, 'CRLF readouts parse as numbers');
+  assert.equal(events.find((e) => e.kind === 'render').data.passes, 2);
+  assert.equal(events[0].data.repo, null, 'no commits, so no repo is claimed');
+  const story = buildStory(events, buildMetrics(events));
+  assert.deepEqual(story.stages.map((s) => s.stage), ['goal', 'process', 'obstacle', 'correction', 'result', 'lesson']);
+  assert.equal(story.stages.find((s) => s.stage === 'lesson').claims[0].text, 'Flag the guess. Then get the yes.');
+  assert.ok(story.stages.find((s) => s.stage === 'result').claims.some((c) => c.status === 'unverified' && /haven't seen/.test(c.text)));
+  // a project called THE BLOCK is not a "blocked" limitation
+  const named = buildEvents({ session: { id: 's', created_at: at(0), source: 'transcript' }, turns: [{ prompt: { uuid: 'u', created_at: at(0), text: 'go' }, result: { uuid: 'v', created_at: at(9), text: 'THE BLOCK export is next to the master.' } }], tools: [], git: { commits: [], merges: [] }, pulls: [] });
+  assert.ok(!named.some((e) => e.tags.includes('limitation')));
+  assert.equal(redact('see C:\\Users\\Neil9\\x and /home/sonny/y'), 'see ~\\x and ~/y');
 });
 
 // The acceptance session: real evidence, real git history, the recorded GitHub responses.

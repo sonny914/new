@@ -8,13 +8,43 @@ import { git, readJSON, readJSONIf, writeJSON } from './util.mjs';
 
 const SYSTEM_TEXT = /^\s*<(system-reminder|local-command|command-(name|message|args)|bash-(input|stdout|stderr)|task-notification|user-prompt-submit-hook)/;
 
-const textOf = (content) => (typeof content === 'string' ? content
-  : Array.isArray(content) ? content.filter((b) => b?.type === 'text').map((b) => b.text).join('\n') : '');
+// Text a person typed: injected system blocks dropped, pasted-content wrappers unwrapped.
+const textOf = (content) => (typeof content === 'string' ? (SYSTEM_TEXT.test(content) ? '' : content)
+  : Array.isArray(content) ? content.filter((b) => b?.type === 'text' && !SYSTEM_TEXT.test(b.text)).map((b) => b.text).join('\n') : '')
+  .replace(/<\/?pasted_content[^>]*>/g, '').trim();
+
+// Privacy: home folders become ~, and only the tool output that becomes evidence is kept (see buildEvents).
+export const redact = (s) => String(s ?? '').replace(/[A-Za-z]:\\Users\\[^\\\s"']+/g, '~').replace(/\/c\/Users\/[^/\s"']+/g, '~').replace(/\/(home|Users)\/[^/\s"']+/g, '~')
+  .replace(/^([-dlcbps][rwxsStT-]{9}\S*\s+\d+\s+)\S+(\s+)\S+/gm, '$1user$2group'); // `ls -l` owner and group
 
 // ---- native transcript -------------------------------------------------------------------------
 export function fromTranscript(path) {
   const lines = readFileSync(path, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
-  const session = { id: null, title: null, created_at: null, updated_at: null, source: 'transcript', transcript: path };
+  return parseLines(lines, { source: 'transcript', transcript: path });
+}
+
+// ---- claude-code-remote raw events (list_events output saved to a file) --------------------------
+// Works for any session the account can read, including Remote Control sessions on the founder's own computer.
+export function fromCcrEvents(path, meta = {}) {
+  const raw = readFileSync(path, 'utf8');
+  const body = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
+  const data = (body.ccr ?? body).data ?? [];
+  const results = new Map();
+  const lines = [];
+  for (const e of data) {
+    const kind = Object.keys(e).find((k) => k !== 'created_at'), v = e[kind] ?? {};
+    const inner = v.internal_anthropic_catchall ?? {};
+    if (kind === 'result' && inner.user_message_uuid) results.set(inner.user_message_uuid, inner.num_turns ?? null);
+    const message = inner.message ?? v.message;
+    if ((kind === 'user' || kind === 'assistant') && message) lines.push({ type: kind, uuid: v.uuid, timestamp: e.created_at, message, sessionId: meta.id, clientPlatform: inner.client_platform });
+  }
+  const out = parseLines(lines, { ...meta, source: 'ccr-events', export: path });
+  for (const t of out.turns) if (t.result && results.get(t.prompt.uuid) != null) t.result.num_turns = results.get(t.prompt.uuid);
+  return out;
+}
+
+function parseLines(lines, meta) {
+  const session = { id: null, title: null, created_at: null, updated_at: null, ...meta };
   const turns = [], tools = [], byToolId = new Map();
   let cur = null;
   for (const e of lines) {
@@ -31,17 +61,17 @@ export function fromTranscript(path) {
           if (!tool) continue;
           const out = typeof b.content === 'string' ? b.content : textOf(b.content);
           tool.is_error = !!b.is_error;
-          tool.output = out.length > 1600 ? out.slice(0, 800) + '\n…\n' + out.slice(-800) : out;
+          tool.output = redact(out.length > 1600 ? out.slice(0, 800) + '\n…\n' + out.slice(-800) : out);
         }
         continue;
       }
-      const text = textOf(content);
-      if (!text.trim() || SYSTEM_TEXT.test(text)) continue;
+      const text = redact(textOf(content));
+      if (!text) continue;
       cur = { prompt: { uuid: e.uuid, created_at: e.timestamp, platform: e.clientPlatform ?? null, text }, result: null, steps: 0 };
       turns.push(cur);
     } else if (e.type === 'assistant' && cur && Array.isArray(content)) {
       for (const b of content) {
-        if (b.type === 'text' && b.text.trim()) cur.result = { uuid: e.uuid, created_at: e.timestamp, text: b.text };
+        if (b.type === 'text' && b.text.trim()) cur.result = { uuid: e.uuid, created_at: e.timestamp, text: redact(b.text) };
         if (b.type === 'tool_use') {
           cur.steps++;
           const tool = { id: b.id, uuid: e.uuid, t: e.timestamp, turn: turns.length - 1, name: b.name, input: summarizeInput(b.name, b.input) };
@@ -54,21 +84,24 @@ export function fromTranscript(path) {
     if (t.result) { t.result.num_turns = t.steps; t.result.duration_ms = Date.parse(t.result.created_at) - Date.parse(t.prompt.created_at); }
     delete t.steps;
   }
+  session.id ??= meta.id;
   return { session, turns, tools };
 }
 
 function summarizeInput(name, input = {}) {
-  if (name === 'Bash') return { command: String(input.command ?? '').slice(0, 600), description: input.description ?? null };
-  if (input.file_path) return { file_path: input.file_path };
-  if (input.path || input.pattern) return { path: input.path ?? null, pattern: input.pattern ?? null };
+  if (name === 'Bash') return { command: redact(String(input.command ?? '').slice(0, 900)), description: input.description ?? null };
+  if (Array.isArray(input.files)) return { files: input.files.map(redact), caption: input.caption ?? null };
+  if (input.ask || input.question) return { ask: redact(input.ask ?? input.question), recap: input.recap ? redact(input.recap) : null };
+  if (input.file_path) return { file_path: redact(input.file_path) };
+  if (input.path || input.pattern) return { path: input.path ? redact(input.path) : null, pattern: input.pattern ?? null };
   return { keys: Object.keys(input).slice(0, 8) };
 }
 
 // ---- claude-code-remote export ----------------------------------------------------------------
 export function fromCcrExport(path) {
   const x = readJSON(path);
-  if (x.format !== 'qb-capture/ccr-export@1') throw new Error(`${path}: not a qb-capture/ccr-export@1 file`);
-  return { session: { ...x.session, source: 'ccr-export', export: path }, turns: x.turns, tools: [] };
+  if (!/^qb-capture\/ccr-export@[12]$/.test(x.format)) throw new Error(`${path}: not a qb-capture/ccr-export file`);
+  return { session: { ...x.session, source: 'ccr-export', export: path }, turns: x.turns, tools: x.tools ?? [] };
 }
 
 // ---- git ---------------------------------------------------------------------------------------

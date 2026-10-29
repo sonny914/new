@@ -36,6 +36,7 @@ export async function payload(sb, fmt, { events, assets, archiveDir, repo }) {
     format: fmt, width: f.width, height: f.height, fps: sb.fps, duration: f.duration, frames: f.frames, tz: sb.tz, captions: sb.captions !== false,
     stages, cues: f.cues, assets: map, brand: { mark: '/assets/brand/mark.svg', wordmark: '/assets/brand/wordmark.svg' },
     scenes: f.scenes.map((s) => ({ ...s, stageIndex: stages.findIndex((x) => x.id === s.stage) + 1, stageLabel: stages.find((x) => x.id === s.stage)?.label ?? '',
+      stageIndex2: s.stage2 ? stages.findIndex((x) => x.id === s.stage2) + 1 : null, stageLabel2: s.stage2 ? stages.find((x) => x.id === s.stage2)?.label ?? '' : null,
       sources: sourcesOf(s.refs ?? [], byId), clockLabel: s.clock ? `${fmtStamp(s.clock)} ${fmtZone(s.clock)}` : '' })),
   };
 }
