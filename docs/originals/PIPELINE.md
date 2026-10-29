@@ -41,7 +41,9 @@ Those four failures are what makes AI anime look like a slideshow, a motion comi
 | **B. AI video-to-video** | Feed the control passes and character references to a video model, shot by shot | Fastest route to a rich, painted look | Identity drift across long orbits; hard to art-direct frame to frame |
 | **C. Hybrid** | 3D toon for the orbits (Moves 01 and 03) and anything the camera circles. AI and 2D for impact frames, effects, establishing paintings and the exterior | Consistency where it matters, speed where it doesn't | Two toolchains to keep in one look |
 
-**Recommendation: C.** The orbits are where generative video breaks, and they are the signature. Keep them geometry-driven. Let generation handle the parts that do not need to survive a 360° turn. Before committing, run a two-day spike: one 4-second orbit from MOVE 01 through option B. If identity holds across the turn, B gets a bigger share.
+**Recommendation: C.** The orbits are where generative video breaks, and they are the signature. Keep them geometry-driven. Let generation handle the parts that do not need to survive a 360° turn.
+
+**First spike result** (`test-01/lookdev/`): a 3-second MOVE 01 orbit through option B. The camera held the previs path exactly. Her identity held at close range, but on the wide side of the orbit the model fell back to the grey mannequin's shapes. The previs therefore has to carry final silhouettes, not capsules, before option B can take more of the orbits. That is now the next stage-6 task.
 
 ## The 9:16 cut-down
 
