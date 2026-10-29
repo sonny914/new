@@ -1,2 +1,4 @@
 node_modules/
 tools/reel/out/
+tools/capture/.cache/
+docs/sessions/*/review/
