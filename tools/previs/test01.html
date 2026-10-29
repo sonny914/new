@@ -152,9 +152,10 @@ const toon = (hex, extra = {}) => new THREE.MeshToonMaterial({ color: new THREE.
 const lineMat = new THREE.MeshBasicMaterial({ color: C.ink, side: THREE.BackSide });
 const M = {
   stone: toon('#56617a'), stoneDark: toon('#333b4d'), wood: toon('#47474f'),
-  lBody: toon('#61729a'), lHead: toon('#cfc7b8'), band: toon('#F2EEE5'), sash: toon('#F2EEE5', { side: THREE.DoubleSide }),
+  lBody: toon('#4c5c82'), lHead: toon('#d4c3ae'), hair: toon('#16181f'), coat: toon('#4c5c82', { side: THREE.DoubleSide }),
+  band: toon('#F2EEE5', { side: THREE.DoubleSide }), sash: toon('#F2EEE5', { side: THREE.DoubleSide }),
   fork: toon('#c4beb2', { emissive: C.signal.clone(), emissiveIntensity: 0 }),
-  bBody: toon('#272d3a'), bMask: toon('#d9d2c3'),
+  bBody: toon('#272d3a'), bHood: toon('#1b1f28', { side: THREE.DoubleSide }), bRobe: toon('#232833', { side: THREE.DoubleSide }), bMask: toon('#d9d2c3'),
   chain: new THREE.MeshStandardMaterial({ color: '#2a2a2e', metalness: 0.8, roughness: 0.45, emissive: C.signal.clone(), emissiveIntensity: 0 }),
   bell: new THREE.MeshStandardMaterial({ color: '#8a6a44', metalness: 0.92, roughness: 0.32, emissive: C.signal.clone(), emissiveIntensity: 0 }),
   water: new THREE.MeshStandardMaterial({ color: '#0c111b', metalness: 0.0, roughness: 0.12 }),
@@ -293,9 +294,31 @@ function poseBody(body, state) {
 const L = makeBody(S.RIG_L, M.lBody), Bw = makeBody(S.RIG_B, M.bBody, 0.024);
 L.head.material = M.lHead;
 // the Listener's band, worn askew, and her sash
-const band = new THREE.Mesh(new THREE.TorusGeometry(S.RIG_L.headR + 0.012, 0.024, 8, 32), M.band); L.head.add(band);
+// silhouettes: the shapes a video model will copy, so they are the designed shapes, not capsules
+const shell = (geo, mat, line = 0.012) => { const m = cast(new THREE.Mesh(geo, mat)); if (line) { const o = new THREE.Mesh(geo, lineMat); o.scale.setScalar(1 + line / 0.1); m.add(o); } return m; };
+const hR = S.RIG_L.headR;
+// the Listener: short asymmetric black hair, a wide band, closed eyes, a high collar, a coat skirt split at the front, a sash wrap
+const hairCap = shell(new THREE.SphereGeometry(hR * 1.14, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.6), M.hair, 0.01); hairCap.rotation.x = -0.5; hairCap.position.set(0, 0.012, -0.012); L.head.add(hairCap);
+const fringe = shell(new THREE.SphereGeometry(hR, 18, 12), M.hair, 0.008); fringe.scale.set(0.95, 0.42, 0.62); fringe.position.set(0.035, 0.062, 0.05); fringe.rotation.set(0.3, 0, 0.55); L.head.add(fringe);
+const nape = shell(new THREE.SphereGeometry(hR, 16, 10), M.hair, 0.008); nape.scale.set(0.9, 0.7, 0.55); nape.position.set(-0.02, -0.035, -0.07); L.head.add(nape);
+const band = new THREE.Mesh(new THREE.CylinderGeometry(hR + 0.02, hR + 0.024, 0.052, 40, 1, true), M.band); L.head.add(band);
 for (const x of [-0.036, 0.036]) { const eye = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.007, 0.012), M.flatInk); eye.position.set(x, 0.008, 0.098); eye.rotation.z = x > 0 ? -0.18 : 0.18; L.head.add(eye); } // closed
-const mask = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.17, 0.06), M.bMask); mask.position.set(0, -0.01, 0.13); Bw.head.add(mask);
+const brow = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.03, 0.012), M.flatInk); brow.position.set(0, -0.025, 0.104); L.head.add(brow); // the line of the nose
+const torso = shell(new THREE.CapsuleGeometry(0.13, 0.3, 6, 16), M.coat, 0.012); torso.scale.set(1.32, 1, 0.82); scene.add(torso);
+const collar = shell(new THREE.CylinderGeometry(0.072, 0.095, 0.11, 20, 1, true), M.coat, 0); scene.add(collar);
+const skirt = shell(new THREE.CylinderGeometry(0.155, 0.27, 0.46, 24, 1, true, 0.4, Math.PI * 2 - 0.8), M.coat, 0); scene.add(skirt);
+const wrap = shell(new THREE.TorusGeometry(0.135, 0.03, 8, 24), M.band, 0.006); scene.add(wrap);
+// the Bellwright: a hump of back and shoulder, a deep hood, a bone mask with two slits, a heavy robe to the knee
+const hump = shell(new THREE.SphereGeometry(0.6, 24, 16), M.bBody, 0.02); hump.scale.set(1.3, 0.85, 0.95); scene.add(hump);
+const hood = shell(new THREE.SphereGeometry(S.RIG_B.headR * 1.6, 22, 14, 0, Math.PI * 2, 0, Math.PI * 0.72), M.bHood, 0.012); hood.rotation.x = -0.95; hood.position.set(0, 0.02, -0.03); Bw.head.add(hood);
+const mask = shell(new THREE.SphereGeometry(0.14, 22, 14, -Math.PI / 2, Math.PI, 0, Math.PI), M.bMask, 0.008); mask.scale.set(1, 1.3, 0.5); mask.position.set(0, -0.01, 0.075); Bw.head.add(mask);
+for (const x of [-0.048, 0.048]) { const slit = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.011, 0.02), M.flatInk); slit.position.set(x, 0.035, 0.143); Bw.head.add(slit); }
+const robe = shell(new THREE.CylinderGeometry(0.44, 0.66, 0.95, 24, 1, true, 0.3, Math.PI * 2 - 0.6), M.bRobe, 0); scene.add(robe);
+/** Shapes that ride a joint: [mesh, body state getter, joint, offset in the joint's frame, extra rotation]. */
+const riders = [
+  [torso, 'L', 'spine', [0, 0.2, -0.005], null], [collar, 'L', 'chest', [0, 0.25, -0.005], null], [skirt, 'L', 'hips', [0, -0.2, 0], null], [wrap, 'L', 'spine', [0, -0.02, 0], [Math.PI / 2, 0, 0]],
+  [hump, 'B', 'chest', [0, 0.2, -0.2], null], [robe, 'B', 'hips', [0, -0.42, 0], null],
+].map(([m, who, j, off, rot]) => ({ m, who, j, off, extra: rot ? new THREE.Quaternion().setFromEuler(new THREE.Euler(...rot)) : null }));
 const SASH_N = 16, sashGeo = new THREE.BufferGeometry();
 sashGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(SASH_N * 2 * 3), 3));
 { const idx = []; for (let i = 0; i < SASH_N - 1; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } sashGeo.setIndex(idx); }
@@ -390,7 +413,11 @@ function frame(n) {
   // characters
   const sL = S.bodyAt('L', W), sB = S.bodyAt('B', W);
   poseBody(L, sL); poseBody(Bw, sB);
-  { const lift = S.bandLiftAt(W); band.rotation.set(Math.PI / 2 - 0.42 - 0.25 * lift, 0, 0.18 + 0.55 * lift); band.position.set(-0.03 * lift, 0.01 + 0.035 * lift, 0); }
+  for (const r of riders) {
+    const j = (r.who === 'L' ? sL : sB).joints[r.j]; r.m.position.set(...S.add(j.p, S.qrot(j.q, r.off))); r.m.quaternion.set(...j.q);
+    if (r.extra) r.m.quaternion.multiply(r.extra);
+  }
+  { const lift = S.bandLiftAt(W); band.rotation.set(-0.42 - 0.25 * lift, 0, 0.18 + 0.55 * lift); band.position.set(-0.03 * lift, 0.022 + 0.03 * lift, 0); }
   fork.position.set(...sL.fork.grip); fork.quaternion.setFromUnitVectors(UP, v3(sL.fork.dir));
   fork.rotateY(Math.PI / 2);
   // the sash streams against her velocity; in a freeze it hangs mid-flutter
@@ -400,7 +427,7 @@ function frame(n) {
     for (let i = 0; i < SASH_N; i++) {
       const k = i / (SASH_N - 1), wave = Math.sin(i * 0.75 - W * 11) * 0.35 * k;
       const dir = S.norm(S.add(S.add(S.mul(vel, -0.35), [-0.6, -1.1 + Math.min(1, S.len(vel) * 0.12), 0.25]), [0, wave, wave * 0.6]));
-      const side = S.mul(S.norm([-dir[2], 0, dir[0]]), 0.065 * (1 - k * 0.4));
+      const side = S.mul(S.norm([-dir[2], 0, dir[0]]), 0.085 * (1 - k * 0.35));
       pos.set([p[0] - side[0], p[1] - side[1], p[2] - side[2], p[0] + side[0], p[1] + side[1], p[2] + side[2]], i * 6);
       p = S.add(p, S.mul(dir, 0.13));
     }
