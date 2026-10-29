@@ -30,3 +30,10 @@
 
 # Planning documents are checked in beside the site; never serve them
 /docs/*                    /404.html   404
+
+# Quiet Bands Studio lives entirely under /studio/ (built from tools/studio/, see README). A missing Studio page gets
+# the Studio's own 404, so a visitor who mistypes a link stays inside the section. Real files shadow this rule.
+/studio/*                  /studio/404.html                         404
+
+# Table definitions are checked in beside the site; never serve them
+/db/*                      /404.html   404
