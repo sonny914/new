@@ -90,10 +90,11 @@ export function sessionAliases(session, env = process.env) {
   return [...ids];
 }
 
-// Commits whose message carries this session's id (Claude Code writes a Claude-Session trailer).
+// Commits made in this session: only the Claude-Session trailer counts. A message that merely mentions the id
+// (a recap commit naming the session it documents, say) is not that session's work.
 export function sessionCommits(repo, sessionId) {
   const needles = (Array.isArray(sessionId) ? sessionId : [sessionId]).map((s) => String(s).replace(/^session_/, ''));
-  const raw = git(repo, 'log', '--all', '--reverse', ...needles.map((n) => `--grep=${n}`), '--format=%H%x1f%P%x1f%aI%x1f%cI%x1f%s%x1f%b%x1e');
+  const raw = git(repo, 'log', '--all', '--reverse', '-E', ...needles.map((n) => `--grep=^Claude-Session: .*${n}\\s*$`), '--format=%H%x1f%P%x1f%aI%x1f%cI%x1f%s%x1f%b%x1e');
   const commits = raw.split('\x1e').map((r) => r.trim()).filter(Boolean).map((r) => {
     const [sha, parents, authored, committed, subject, body] = r.split('\x1f');
     return { sha, parents: parents.split(' ').filter(Boolean), authored_at: authored, committed_at: committed, subject, body: body.trim(), files: fileChanges(repo, sha) };

@@ -17,3 +17,7 @@ First version, built and accepted against the "Orbs in repo" session (`docs/sess
 - **Stage:** 12 templates (intro, hook, quote, stats, device, browser, timeline, merge, beforeafter, checklist, lesson, outro), a story spine, an evidence clock and source line, captions; 16:9 and 9:16 layouts.
 - **Render:** parallel Playwright pages → H.264 segments → concat; synthesized score with ducking; loudness normalization; SRT and `mov_text`.
 - **Automation:** `run`, `stills`, `script`, `approve`, `final`; a SessionEnd hook; the `qb-capture` skill; the recursion guard and ledger.
+- **Found by the first self-documentation dry run** (QB Capture on the session that built it):
+  - Commits were matched by the session id anywhere in a message, so a recap commit that names the session it documents became that session's evidence. Now only the `Claude-Session:` trailer counts.
+  - A session with commits and passing tests but no merged PR lost its Result stage. Commits and the last passing test run now stand in.
+  - A recap's own media (a commit that only writes `docs/sessions/`) is tagged capture output, so it never becomes B-roll for the next recap.

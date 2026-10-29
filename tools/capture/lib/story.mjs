@@ -71,6 +71,9 @@ export function buildStory(ev, metrics) {
     ...artifacts.filter((a) => !reverts.some((r) => r.data.path === a.data.path)).map((e) => ({ text: `Artifact: ${e.data.path}`, refs: [e.id], status: 'verified' })),
     ...(tests ? [{ text: `Tests: ${tests.display} passing`, refs: tests.refs, status: 'verified' }] : []),
     ...merged.map((e) => ({ text: `PR #${e.data.number} merged into ${e.data.base}`, refs: [e.id], status: 'verified' })),
+    // without a merged PR, the end state is the commits and the last passing test run
+    ...(merged.length ? [] : work.filter((e) => e.kind === 'commit').map((e) => ({ text: `Committed: ${e.data.subject}`, refs: [e.id], status: 'verified' }))),
+    ...(tests ? [] : work.filter((e) => e.kind === 'test-run').slice(-1).filter((e) => e.data.failed === 0).map((e) => ({ text: `Tests: ${e.data.passed}/${e.data.passed} passing`, refs: [e.id], status: 'verified' }))),
     ...work.filter((e) => e.kind === 'reply' && e.tags.includes('limitation')).map((e) => ({ e, s: sentenceWith(e.text, /block|couldn'?t|could not|unable|not been|nothing has been checked/i) })).filter((x) => x.s).map((x) => ({ text: x.s, refs: [x.e.id], status: 'unverified' }))];
   if (result.length) stages.push({ stage: 'result', claims: result, narration: merged.length ? `It's in ${merged[merged.length - 1].data.base}.` : 'That is where it stands.' });
   else omitted.push({ stage: 'result', reason: 'no end state in the record' });
