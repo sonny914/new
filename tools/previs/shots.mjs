@@ -146,6 +146,10 @@ export const FLOOD = -42;     // the drowned city's water, 42 m below the belfry
 export const STEP_TIMES = [0.98, 1.30, 1.60, 1.86];
 export const MOON = norm([0.80, 0.19, 0.57]); // low in the south-east, about 11 degrees up: the only key light
 
+/** Two slats of the south-east opening are missing: the gap lets one blade of moonlight across the apex of the leap. */
+export const MISSING_SLATS = { opening: 0, slats: [8, 9] };
+/** The Listener lifts her band off her right ear to listen, from just before the apex until she lands. */
+export const bandLiftAt = (W) => smooth(seg(W, 2.45, 2.75)) * (1 - smooth(seg(W, EV.land, EV.land + 0.25)));
 export const BELFRY = {
   pillars: 8, radius: 8.2, pillarW: 1.1, height: 11, sill: 0.9, // pillars stand at 22.5° + 45°k, so +x is an opening
   louverX: 7.62, louverZ: 2.5, louverY: [1.05, 9.0],            // the east opening, with its slats, is the window
@@ -351,7 +355,7 @@ export const SHOTS = [
       { t: 3.20, target: 'Lchest', off: [0, 0.20, 0], az: 88, el: -6, dist: 3.3, mm: 35 },
       { t: 4.15, target: 'Lchest', off: [0, 0.32, 0], az: 2, el: 0, dist: 2.3, mm: 50 },
       { t: 5.05, target: 'Lchest', off: [0, 0.20, 0], az: -88, el: 8, dist: 3.0, mm: 40 },
-      { t: 5.95, target: 'Lchest', off: [0, 0.00, 0], az: -176, el: 24, dist: 3.4, mm: 28 },
+      { t: 5.95, target: 'Lchest', off: [2.6, -1.6, -1.1], az: -213.6, el: 31, dist: 7.0, mm: 30 },
       { t: 6.85, target: 'Lchest', off: [0, 0.20, 0], az: -266, el: -5, dist: 3.3, mm: 35 },
       { t: 7.00, target: 'Lchest', off: [0, 0.20, 0], az: -271, el: -6, dist: 3.35, mm: 35 },
       { t: 7.25, target: 'Lchest', off: [0, 0.10, 0], az: -280, el: -9, dist: 3.9, mm: 30 },

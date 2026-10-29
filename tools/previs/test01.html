@@ -195,6 +195,7 @@ moon.shadow.mapSize.set(2048, 2048); moon.shadow.bias = -0.0006; moon.shadow.nor
 scene.add(moon, moon.target);
 const skyLight = new THREE.HemisphereLight('#5a6c94', '#0b0d12', 1.6); scene.add(skyLight);
 const strike = new THREE.PointLight(C.signal, 0, 40, 1.4); strike.position.set(...S.CONTACT); scene.add(strike);
+const hum = new THREE.PointLight(C.signal, 0, 7, 1.6); scene.add(hum); // in the freeze the bell hums: the sound she is tracking
 
 // ---------- the belfry
 const belfry = new THREE.Group(); scene.add(belfry);
@@ -218,6 +219,7 @@ for (let k = 0; k < B.pillars; k++) {
   lintel.position.set(r * Math.cos(o), 11.0, r * Math.sin(o)); lintel.rotation.y = -o; belfry.add(lintel);
   const east = k === 7; // the opening at 360° is +x: the window, louvered top to bottom; the others only above 5 m
   for (let i = east ? 0 : 7; i < N_SLATS; i++) {
+    if (k === S.MISSING_SLATS.opening && S.MISSING_SLATS.slats.includes(i)) continue;
     const y = B.louverY[0] + (i * (B.louverY[1] - B.louverY[0])) / (N_SLATS - 1);
     const s = cast(new THREE.Mesh(louverGeo, louverMat));
     s.position.set((east ? B.louverX : r) * Math.cos(o), y, (east ? B.louverX : r) * Math.sin(o));
@@ -291,7 +293,8 @@ function poseBody(body, state) {
 const L = makeBody(S.RIG_L, M.lBody), Bw = makeBody(S.RIG_B, M.bBody, 0.024);
 L.head.material = M.lHead;
 // the Listener's band, worn askew, and her sash
-const band = new THREE.Mesh(new THREE.TorusGeometry(S.RIG_L.headR + 0.012, 0.024, 8, 32), M.band); band.rotation.set(Math.PI / 2 - 0.42, 0, 0.18); band.position.y = 0.01; L.head.add(band);
+const band = new THREE.Mesh(new THREE.TorusGeometry(S.RIG_L.headR + 0.012, 0.024, 8, 32), M.band); L.head.add(band);
+for (const x of [-0.036, 0.036]) { const eye = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.007, 0.012), M.flatInk); eye.position.set(x, 0.008, 0.098); eye.rotation.z = x > 0 ? -0.18 : 0.18; L.head.add(eye); } // closed
 const mask = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.17, 0.06), M.bMask); mask.position.set(0, -0.01, 0.13); Bw.head.add(mask);
 const SASH_N = 16, sashGeo = new THREE.BufferGeometry();
 sashGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(SASH_N * 2 * 3), 3));
@@ -345,6 +348,12 @@ const drops = []; // [W0, origin, velocity]
 }
 const dropPts = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ color: C.bone, size: 0.05, transparent: true, opacity: 0.8 }));
 dropPts.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(drops.length * 3), 3)); dropPts.frustumCulled = false; scene.add(dropPts);
+const farDrops = drops.map((d, i) => (d[0] === splashW ? i : -1)).filter((i) => i >= 0);
+const farPts = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ color: C.bone, size: 0.9, transparent: true, opacity: 0.85, depthWrite: false }));
+farPts.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(farDrops.length * 3), 3)); farPts.frustumCulled = false; scene.add(farPts);
+// the column the bell throws up when it meets the flood: it climbs on gravity and falls back
+const column = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 3.2, 1, 24, 1, true), new THREE.MeshBasicMaterial({ color: C.bone, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+scene.add(column);
 
 // ---------- post: tone, the colour script, vignette, grain
 const post = new THREE.ShaderMaterial({
@@ -381,6 +390,7 @@ function frame(n) {
   // characters
   const sL = S.bodyAt('L', W), sB = S.bodyAt('B', W);
   poseBody(L, sL); poseBody(Bw, sB);
+  { const lift = S.bandLiftAt(W); band.rotation.set(Math.PI / 2 - 0.42 - 0.25 * lift, 0, 0.18 + 0.55 * lift); band.position.set(-0.03 * lift, 0.01 + 0.035 * lift, 0); }
   fork.position.set(...sL.fork.grip); fork.quaternion.setFromUnitVectors(UP, v3(sL.fork.dir));
   fork.rotateY(Math.PI / 2);
   // the sash streams against her velocity; in a freeze it hangs mid-flutter
@@ -411,7 +421,8 @@ function frame(n) {
   M.chain.emissiveIntensity = hear * (0.9 + 0.5 * Math.sin(t * 9));
   const ringing = W > S.EV.contact ? Math.exp(-(W - S.EV.contact) * 0.9) : 0;
   M.fork.emissiveIntensity = ringing * 2.2;
-  M.bell.emissiveIntensity = W > S.EV.contact ? Math.exp(-(W - S.EV.contact) * 6) * 0.6 : 0;
+  M.bell.emissiveIntensity = W > S.EV.contact ? Math.exp(-(W - S.EV.contact) * 6) * 0.6 : hear * 0.28;
+  hum.intensity = hear * 9; hum.position.set(bc[0] - 0.4, bc[1] + 0.5, bc[2] + 0.4);
   strike.intensity = W > S.EV.contact ? 140 * Math.exp(-(W - S.EV.contact) * 9) + 12 * ringing : 0;
 
   // the window goes when the ring reaches it
@@ -481,8 +492,13 @@ function frame(n) {
   }
   {
     const dpos = dropPts.geometry.attributes.position.array;
-    drops.forEach(([W0, o, v], i) => { const τ = W - W0; const live = τ > 0 && τ < 2.6; dpos.set(live ? [o[0] + v[0] * τ, o[1] + v[1] * τ - 4.9 * τ * τ, o[2] + v[2] * τ] : [0, -9999, 0], i * 3); });
-    dropPts.geometry.attributes.position.needsUpdate = true;
+    const fpos = farPts.geometry.attributes.position.array;
+    drops.forEach(([W0, o, v], i) => { const τ = W - W0, far = W0 === splashW, live = τ > 0 && τ < (far ? 6 : 2.6), p = live ? [o[0] + v[0] * τ, o[1] + v[1] * τ - 4.9 * τ * τ, o[2] + v[2] * τ] : [0, -9999, 0];
+      if (far) { if (p[1] < S.FLOOD) p[1] = -9999; fpos.set(p, farDrops.indexOf(i) * 3); dpos.set([0, -9999, 0], i * 3); } else dpos.set(p, i * 3); });
+    dropPts.geometry.attributes.position.needsUpdate = true; farPts.geometry.attributes.position.needsUpdate = true;
+    const τ = W - splashW, h = τ > 0 ? Math.max(0, 26 * τ - 4.9 * τ * τ) : 0;
+    column.visible = h > 0.5; column.scale.set(1 + τ * 0.5, h, 1 + τ * 0.5); column.position.set(splashAt[0], S.FLOOD + h / 2, splashAt[2]);
+    column.material.opacity = 0.55 * Math.min(1, h / 6) * (1 - S.smooth(S.seg(τ, 3.5, 5.3)));
   }
 
   // camera
@@ -493,7 +509,8 @@ function frame(n) {
   const imp = n - S.IMPACT_FRAME, flat = imp === 0 || imp === 1;
   scene.overrideMaterial = flat ? (imp === 0 ? M.flatInk : M.flatBone) : null;
   scene.background = flat ? (imp === 0 ? C.signal : C.ink) : null;
-  for (const o of [sky, rainDots, rainLines, belfry, cityGroup, flood, dropPts]) o.visible = !flat;
+  for (const o of [sky, rainDots, rainLines, belfry, cityGroup, flood, dropPts, farPts]) o.visible = !flat;
+  if (flat) column.visible = false;
   if (flat) for (const r of ripples) r.m.visible = false;
   scene.fog.density = flat ? 0 : 0.0065;
 
