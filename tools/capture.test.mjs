@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { fromTranscript, fromCcrExport, fromCcrEvents, sessionCommits, githubPulls, sessionAliases, redact } from './capture/lib/ingest.mjs';
 import { buildEvents, buildMetrics, evidenceLevel } from './capture/lib/events.mjs';
 import { buildStory, sentenceWith } from './capture/lib/story.mjs';
-import { planStoryboard, timeStoryboard, cues } from './capture/lib/storyboard.mjs';
+import { planStoryboard, timeStoryboard, cues, capPauses } from './capture/lib/storyboard.mjs';
 import { digitNumbers, wordNumbers, validateStoryboard, validateDerived } from './capture/lib/validate.mjs';
 import { classify, shouldCapture, ENV_FLAG } from './capture/lib/guard.mjs';
 import { srt } from './capture/lib/captions.mjs';
@@ -82,6 +82,14 @@ test('timing follows the narration: recorded audio sets the scene length and the
   const c = sb.formats['16x9'].cues.filter((x) => x.scene === 'goal');
   assert.ok(Math.abs(c[0].start - goal.speech.start) < 1e-6 && Math.abs(c[c.length - 1].end - goal.speech.end) < 1e-3);
   assert.match(srt(c), /^1\n00:00:\d\d,\d{3} --> 00:00:\d\d,\d{3}\n/);
+});
+
+test('long pauses in a recorded line are held to 0.45 s; speech and short pauses are untouched', () => {
+  const rate = 48000, seg = (sec, amp) => { const n = Math.round(sec * rate), b = Buffer.alloc(n * 4); for (let i = 0; i < n; i++) { const v = Math.round(amp * Math.sin((2 * Math.PI * 200 * i) / rate)); b.writeInt16LE(v, i * 4); b.writeInt16LE(v, i * 4 + 2); } return b; };
+  const pcm = Buffer.concat([seg(0.5, 8000), seg(1.5, 0), seg(0.5, 8000), seg(0.3, 0), seg(0.5, 8000)]);
+  const out = capPauses(pcm, { rate });
+  const sec = out.length / 4 / rate;
+  assert.ok(Math.abs(sec - (0.5 + 0.45 + 0.5 + 0.3 + 0.5)) < 0.03, `got ${sec.toFixed(3)} s`);
 });
 
 test('the score is a valid stereo WAV of the right length, and ducks under speech', () => {

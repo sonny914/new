@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fmtStamp, fmtZone, fmtDay, fmtDate, fmtTime, parts, words, TZ, CACHE, sha256File } from './util.mjs';
 import { mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { sentenceWith, spoken } from './story.mjs';
 import { isWork } from './events.mjs';
 
@@ -238,12 +239,39 @@ export function audioSeconds(file) {
   const out = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8' });
   return +(+out).toFixed(3);
 }
-// A recorded line, trimmed of dead air at both ends (cached), so speech starts where its caption does.
+// A recorded line made ready to mix (cached): dead air trimmed at both ends so speech starts with its caption,
+// pauses over 0.55 s held to 0.45 s (cut from the middle of the pause; no change of speed or pitch), loudness at speech level.
+const TRIM = 'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.12,areverse';
+const PAUSE = { max: 0.55, keep: 0.45, threshold: -42 }, RATE = 48000;
+export function capPauses(pcm, { max = PAUSE.max, keep = PAUSE.keep, threshold = PAUSE.threshold, rate = RATE } = {}) {
+  const frames = pcm.length / 4, win = Math.round(rate * 0.01), lim = 32768 * 10 ** (threshold / 20);
+  const quiet = [];
+  for (let w = 0; w * win < frames; w++) {
+    let s = 0, n = 0;
+    for (let i = w * win; i < Math.min(frames, (w + 1) * win); i++, n++) { const l = pcm.readInt16LE(i * 4), r = pcm.readInt16LE(i * 4 + 2); s += (l * l + r * r) / 2; }
+    quiet.push(Math.sqrt(s / n) < lim);
+  }
+  const cuts = [];
+  for (let w = 0; w < quiet.length;) {
+    if (!quiet[w]) { w++; continue; }
+    let e = w; while (e < quiet.length && quiet[e]) e++;
+    const len = ((e - w) * win) / rate;
+    if (len > max) { const drop = Math.round((len - keep) * rate), a = w * win + Math.round(((len * rate) - drop) / 2); cuts.push([a, a + drop]); }
+    w = e;
+  }
+  if (!cuts.length) return pcm;
+  const parts = []; let at = 0;
+  for (const [a, b] of cuts) { parts.push(pcm.subarray(at * 4, a * 4)); at = b; }
+  parts.push(pcm.subarray(at * 4));
+  return Buffer.concat(parts);
+}
 export function trimmedNarration(file) {
   const dir = join(CACHE, 'narration'); mkdirSync(dir, { recursive: true });
-  const out = join(dir, `${sha256File(file).slice(0, 16)}.wav`);
-  if (!existsSync(out)) execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', file, '-af',
-    'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.12,areverse', '-ar', '48000', '-ac', '2', out]);
+  const out = join(dir, `${sha256File(file).slice(0, 12)}-${createHash('sha256').update(TRIM + JSON.stringify(PAUSE)).digest('hex').slice(0, 6)}.wav`);
+  if (existsSync(out)) return out;
+  const raw = execFileSync('ffmpeg', ['-loglevel', 'error', '-i', file, '-af', TRIM, '-ar', String(RATE), '-ac', '2', '-f', 's16le', '-'], { maxBuffer: 1 << 30, timeout: 60000 });
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 's16le', '-ar', String(RATE), '-ac', '2', '-i', '-', '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ar', String(RATE), out],
+    { input: capPauses(raw), maxBuffer: 1 << 26, timeout: 60000 });
   return out;
 }
 export function narrationFile(dir, fmt, id) {

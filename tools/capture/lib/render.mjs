@@ -109,7 +109,8 @@ export async function renderVideo(data, out, { narration = [], workers = Math.ma
   const inputs = ['-i', join(tmp, 'video.mp4'), '-i', join(tmp, 'score.wav'), ...narration.flatMap((n) => ['-i', n.file]), '-i', srtFile];
   const subIdx = 2 + narration.length;
   const mix = narration.length
-    ? `${narration.map((n, i) => `[${i + 2}:a]aresample=44100,aformat=channel_layouts=stereo,adelay=${Math.round(n.start * 1000)}|${Math.round(n.start * 1000)}[n${i}]`).join(';')};[1:a]${narration.map((_, i) => `[n${i}]`).join('')}amix=inputs=${narration.length + 1}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11[a]`
+    // narration lines arrive at speech level; the bed sits well under them (it also ducks under each line)
+    ? `${narration.map((n, i) => `[${i + 2}:a]aresample=44100,aformat=channel_layouts=stereo,adelay=${Math.round(n.start * 1000)}|${Math.round(n.start * 1000)}[n${i}]`).join(';')};[1:a]volume=0.32[bed];[bed]${narration.map((_, i) => `[n${i}]`).join('')}amix=inputs=${narration.length + 1}:normalize=0,loudnorm=I=-16:TP=-1.5:LRA=11[a]`
     : '[1:a]loudnorm=I=-20:TP=-2:LRA=11[a]';
   const meta = Object.entries(metadata).flatMap(([k, v]) => ['-metadata', `${k}=${v}`]);
   await run('ffmpeg', ['-y', '-loglevel', 'error', ...inputs, '-filter_complex', mix, '-map', '0:v', '-map', '[a]', '-map', `${subIdx}:s`,

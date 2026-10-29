@@ -2,6 +2,14 @@
 
 QB Capture documents its own development here. Sessions that change `tools/capture/` are also recapped like any other work; runs of the capture itself never are (see `lib/guard.mjs`).
 
+## 0.2.2 — 29 Oct 2026
+
+First narrated final (THE BLOCK, 84 s, the founder's `flighty` voice).
+
+- **Pause capping:** pauses longer than 0.55 s are now held to 0.45 s in our own code (`capPauses`), on raw samples, with no change of speed or pitch. This ffmpeg's `silenceremove` stop mode barely trimmed (21.88 → 21.75 s) and hung on a clean tone, so it isn't used.
+- **Levels:** each line is normalized to speech level (−16 LUFS), the bed sits at about −10 dB under the voice before ducking, and the mix lands at −15.9 LUFS with a −1.5 dBFS peak.
+- **Checked:** speech starts in the final mix fall within 0.05 s of where each scene schedules them.
+
 ## 0.2.1 — 29 Oct 2026
 
 - **Narration:** `fetch-narration` downloads recorded lines from `narration/jobs.json`. `final` trims dead air from each line before timing its scene, so speech starts with its caption.
