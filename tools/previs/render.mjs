@@ -1,5 +1,5 @@
 // Render tools/previs/test01.html: the Test 01 animatic, its stills, the storyboard sheet and the plan diagrams.
-//   node tools/previs/render.mjs                 animatic.mp4 (1920×1080, 24 fps, temp sound) + poster, plan, remap, storyboard
+//   node tools/previs/render.mjs                 animatic.mp4 (1920×1080, 24 fps, temp sound) + poster, plan, remap, storyboard.jpg
 //   node tools/previs/render.mjs --frames=77,260 PNG stills to tools/previs/out/ for review (add --clean for no burn-ins)
 //   node tools/previs/render.mjs --board         only the storyboard sheet and the diagrams
 // Needs ffmpeg on PATH, Playwright (`npm i --no-save playwright`) and three (`npm i --no-save three@0.186.1`): the page
@@ -78,9 +78,9 @@ async function board() {
       c.fillStyle = '#FF5A00'; c.font = '600 15px "JetBrains Mono", monospace'; c.fillText(`${String(i + 1).padStart(2, '0')}  ${shot}  ·  ${t.toFixed(2)} s  ·  F ${String(f).padStart(3, '0')}`, x, y + ph + 26);
       c.fillStyle = '#F2EEE5'; c.font = '400 19px "Instrument Sans", "DejaVu Sans", sans-serif'; c.fillText(cap, x, y + ph + 54);
     }
-    return cv.toDataURL('image/png').split(',')[1];
+    return cv.toDataURL('image/jpeg', 0.9).split(',')[1];
   }, { panels, BOARD, FPS });
-  await writeFile(join(OUT, 'storyboard.png'), png(sheet));
+  await writeFile(join(OUT, 'storyboard.jpg'), Buffer.from(sheet, 'base64'));
   await writeFile(join(OUT, 'camera-plan.png'), png((await page.evaluate(() => window.previs.plan())).split(',')[1]));
   await writeFile(join(OUT, 'time-remap.png'), png((await page.evaluate(() => window.previs.remap())).split(',')[1]));
   // the board panels as their own stills, for the docs
@@ -89,7 +89,7 @@ async function board() {
     const f = join(tmpdir(), `belfry-panel-${i}.png`); await writeFile(f, png(panels[i]));
     await run(['-i', f, '-vf', 'crop=1920:804:0:138,scale=960:-2', '-q:v', '3', join(OUT, 'board', `${String(i + 1).padStart(2, '0')}-${BOARD[i][0].toLowerCase()}.jpg`)]);
   }
-  console.log('wrote storyboard.png, camera-plan.png, time-remap.png and board/*.jpg');
+  console.log('wrote storyboard.jpg, camera-plan.png, time-remap.png and board/*.jpg');
 }
 
 const only = process.argv.find((a) => a.startsWith('--frames='));
@@ -105,7 +105,7 @@ if (only) {
   await writeFile(wav, synth());
   const mp4 = join(OUT, 'animatic.mp4');
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-', '-i', wav,
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', '22', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '160k', '-shortest', mp4], { stdio: ['pipe', 'inherit', 'inherit'] });
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', '27', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '160k', '-shortest', mp4], { stdio: ['pipe', 'inherit', 'inherit'] });
   const t0 = Date.now();
   for (let n = 0; n < FRAMES; n++) {
     const buf = png(await grab(n));

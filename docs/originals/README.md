@@ -2,7 +2,7 @@
 
 The entertainment and creator-education division of Quiet Bands LLC. The mandate: anime that plays like animated cinema, made with a pipeline Quiet Bands can teach.
 
-Status: **preproduction started.** Test 01 previs is locked for camera and timing. Look development has not started.
+Status: **preproduction started.** Test 01 previs v1 is blocked out and passes its continuity checks. Camera and timing lock when you sign off on the animatic. Look development has not started.
 
 ## What's here
 
@@ -11,7 +11,7 @@ Status: **preproduction started.** Test 01 previs is locked for camera and timin
 | `PIPELINE.md` | The production pipeline from idea to frame, the stage 8 options with a recommendation, and what becomes the course |
 | `test-01/BIBLE.md` | The visual bible for Test 01: the identity (two inks and a flare), colour script, light, line and shape, character and environment specs, the continuity sheet |
 | `test-01/SHOTS.md` | Shot list, reveal lists for each move, camera path designs (every key), time remap, beats, sound cues, and what the previs proves |
-| `test-01/previs/` | `animatic.mp4` (25 s, 24 fps, temp sound), `storyboard.png`, `board/*.jpg`, `camera-plan.png`, `time-remap.png` |
+| `test-01/previs/` | `animatic.mp4` (25 s, 24 fps, temp sound), `storyboard.jpg`, `board/*.jpg`, `camera-plan.png`, `time-remap.png` |
 | `../../tools/previs/` | The rig: `shots.mjs` (all the numbers), `test01.html` (the three.js previs, scrubbable), `render.mjs`, `sound.mjs` |
 | `../../tools/previs.test.mjs` | Continuity checks, part of `npm test` |
 

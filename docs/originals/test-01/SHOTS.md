@@ -4,7 +4,7 @@
 
 Every table here is generated from `tools/previs/shots.mjs`. If the two disagree, the code is right and this page is stale. Regenerate the stills and the animatic with `node tools/previs/render.mjs`.
 
-![Storyboard](previs/storyboard.png)
+![Storyboard](previs/storyboard.jpg)
 
 ---
 
