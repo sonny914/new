@@ -136,7 +136,7 @@ export async function renderVideo(data, out, { narration = [], clips = [], mute 
     const wav = join(tmp, 'mix.wav');
     await run('ffmpeg', ['-y', '-loglevel', 'error', ...inputs.slice(0, -2), '-filter_complex', mix.replace(/,loudnorm=[^[]+\[a\]$/, '[a]'), '-map', '[a]', '-t', String(data.duration), '-c:a', 'pcm_f32le', wav]);
     const I = await integratedLoudness(wav), gain = Number.isFinite(I) ? -16 - I : 0;
-    await mux(['-i', join(tmp, 'video.mp4'), '-i', wav, '-i', srtFile], ['-af', `volume=${gain.toFixed(2)}dB,alimiter=limit=0.84:attack=5:release=60:level=false`], '1:a', 2);
+    await mux(['-i', join(tmp, 'video.mp4'), '-i', wav, '-i', srtFile], ['-af', `volume=${gain.toFixed(2)}dB,alimiter=limit=0.84:attack=5:release=60:level=false:latency=true`], '1:a', 2);
   } else await mux(inputs, ['-filter_complex', mix], '[a]', subIdx);
   await rm(tmp, { recursive: true, force: true });
   return { seconds: Math.round((Date.now() - t0) / 1000) };
