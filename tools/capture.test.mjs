@@ -1,0 +1,223 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { fromTranscript, fromCcrExport, fromCcrEvents, sessionCommits, githubPulls, sessionAliases, redact } from './capture/lib/ingest.mjs';
+import { buildEvents, buildMetrics, evidenceLevel } from './capture/lib/events.mjs';
+import { buildStory, sentenceWith } from './capture/lib/story.mjs';
+import { planStoryboard, timeStoryboard, cues, capPauses } from './capture/lib/storyboard.mjs';
+import { digitNumbers, wordNumbers, validateStoryboard, validateDerived } from './capture/lib/validate.mjs';
+import { classify, shouldCapture, ENV_FLAG } from './capture/lib/guard.mjs';
+import { srt } from './capture/lib/captions.mjs';
+import { score } from './capture/lib/score.mjs';
+import { ROOT, readJSON } from './capture/lib/util.mjs';
+import { loadDoc, timeDoc, clipData, silentSeconds } from './capture/lib/documentary.mjs';
+import { execFileSync } from 'node:child_process';
+
+const ORBS = join(ROOT, 'docs/sessions/2026-10-12-orbs-in-repo');
+const line = (o) => JSON.stringify(o) + '\n';
+const wav = (seconds, rate = 8000) => { const n = Math.round(seconds * rate), b = Buffer.alloc(44 + n * 2);
+  b.write('RIFF', 0); b.writeUInt32LE(36 + n * 2, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
+  b.writeUInt32LE(rate, 24); b.writeUInt32LE(rate * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36); b.writeUInt32LE(n * 2, 40);
+  for (let i = 0; i < n; i++) b.writeInt16LE(Math.round(8000 * Math.sin((2 * Math.PI * 220 * i) / rate)), 44 + i * 2); // a tone: silence would be trimmed away
+  return b; };
+
+test('numbers: digits inside identifiers are not claims; units and spelled-out counts are', () => {
+  assert.deepEqual(digitNumbers('be1b0f3 · 20c1a03 · claude/orbs-in-repo-68l8w7'), []);
+  assert.deepEqual(digitNumbers('a 2.6MB file, 65/65 tests, +653 lines, PR #20, 06:59'), [2.6, 65, 65, 653, 20, 6, 59]);
+  assert.deepEqual(wordNumbers('fifty-three steps, two point six megabytes, one commit, fourteen files'), [53, 2.6, 14]);
+  assert.deepEqual(digitNumbers('1,078,106 bytes, 540 × 960, 9:16, items 1,2'), [1078106, 540, 960, 9, 16, 1, 2]);
+});
+
+test('sentences come from lines first, so list items are never glued into one claim', () => {
+  const text = 'Intro.\n- An orange dot blooms.\n- Every frame is drawn by the real orb code, so nothing in it is a mock-up.\n- The URL on the last frame works.';
+  assert.equal(sentenceWith(text, /every frame/i), 'Every frame is drawn by the real orb code, so nothing in it is a mock-up.');
+});
+
+test('recursion guard: a capture run is never recapped, and the hook stands down inside one', () => {
+  assert.equal(classify({ prompt: '/qb-capture' }), 'capture-run');
+  assert.equal(classify({ prompt: 'wrap up', tools: [{ name: 'Bash', input: { command: 'node tools/capture/cli.mjs run --transcript x.jsonl' } }, { name: 'Read', input: { file_path: 'docs/sessions/k/session-report.md' } }] }), 'capture-run');
+  assert.equal(classify({ prompt: 'fix the header', tools: [{ name: 'Edit', input: { file_path: 'index.html' } }] }), 'work');
+  // editing the capture system itself is real work: it gets documented like any other change
+  assert.equal(classify({ prompt: 'improve the timeline', tools: [{ name: 'Edit', input: { file_path: 'tools/capture/stage/stage.js' } }] }), 'work');
+  assert.deepEqual(shouldCapture({ env: { [ENV_FLAG]: '1' }, sessionId: 'x', index: { sessions: {} } }), { ok: false, reason: 'already inside a capture run' });
+  assert.equal(shouldCapture({ env: {}, sessionId: 's1', transcriptSha: 'abc', index: { sessions: { k: { key: 'k', session_id: 's1', transcript_sha: 'abc' } } } }).ok, false);
+  assert.equal(shouldCapture({ env: { QB_CAPTURE_AUTO: 'off' }, sessionId: 's1', index: { sessions: {} } }).ok, false);
+});
+
+test('a session that only ran the capture has evidence level none, so it produces no recap', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'qbc-'));
+  const f = join(dir, 's.jsonl');
+  const at = (s) => `2026-10-29T18:00:${String(s).padStart(2, '0')}Z`;
+  writeFileSync(f, [
+    line({ type: 'user', sessionId: 'cap1', uuid: 'u1', timestamp: at(0), message: { role: 'user', content: '/qb-capture' } }),
+    line({ type: 'assistant', sessionId: 'cap1', uuid: 'a1', timestamp: at(5), message: { role: 'assistant', content: [{ type: 'tool_use', id: 't1', name: 'Bash', input: { command: 'node tools/capture/cli.mjs run --transcript prior.jsonl' } }] } }),
+    line({ type: 'user', sessionId: 'cap1', uuid: 'u2', timestamp: at(9), message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: 't1', content: 'wrote docs/sessions/k/session-recap-16x9.mp4' }] } }),
+    line({ type: 'assistant', sessionId: 'cap1', uuid: 'a2', timestamp: at(10), message: { role: 'assistant', content: [{ type: 'text', text: 'Recap ready.' }] } }),
+  ].join(''));
+  const src = fromTranscript(f);
+  assert.equal(src.turns.length, 1);
+  const ev = buildEvents({ ...src, git: { commits: [], merges: [] }, pulls: [], repo: ROOT, repoSlug: 'x/y' });
+  assert.equal(evidenceLevel(ev), 'none');
+  assert.equal(buildStory(ev, buildMetrics(ev)).stages.length, 0);
+});
+
+test('a cloud session is matched to its commits by its remote id as well as its local one', () => {
+  const env = { CLAUDE_CODE_SESSION_ID: 'local-1', CLAUDE_CODE_REMOTE_SDK_URL: 'https://api.anthropic.com/v1/code/sessions/cse_01Abc' };
+  assert.deepEqual(sessionAliases({ id: 'local-1', source: 'transcript' }, env), ['local-1', '01Abc']);
+  assert.deepEqual(sessionAliases({ id: 'session_01Xyz', source: 'ccr-export' }, env), ['01Xyz']);
+});
+
+test('timing follows the narration: recorded audio sets the scene length and the captions span it', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'qbc-'));
+  mkdirSync(join(dir, '16x9'), { recursive: true });
+  writeFileSync(join(dir, '16x9', 'goal.wav'), wav(9.5));
+  const sb = { fps: 30, formats: { '16x9': { width: 1920, height: 1080, scenes: [
+    { id: 'intro', template: 'intro', narration: 'Session recap.' },
+    { id: 'goal', template: 'quote', narration: 'I asked for one thing, and I meant it, so it got built.' }] } } };
+  timeStoryboard(sb, { narrationDir: dir });
+  const [intro, goal] = sb.formats['16x9'].scenes;
+  assert.equal(goal.voice.source, 'recorded');
+  assert.equal(intro.voice.source, 'estimate');
+  assert.ok(Math.abs(goal.duration - (0.75 + 9.5 + 0.7)) < 0.01, `goal lasts its audio plus lead and tail, got ${goal.duration}`);
+  const c = sb.formats['16x9'].cues.filter((x) => x.scene === 'goal');
+  assert.ok(Math.abs(c[0].start - goal.speech.start) < 1e-6 && Math.abs(c[c.length - 1].end - goal.speech.end) < 1e-3);
+  assert.match(srt(c), /^1\n00:00:\d\d,\d{3} --> 00:00:\d\d,\d{3}\n/);
+});
+
+test('long pauses in a recorded line are held to 0.45 s; speech and short pauses are untouched', () => {
+  const rate = 48000, seg = (sec, amp) => { const n = Math.round(sec * rate), b = Buffer.alloc(n * 4); for (let i = 0; i < n; i++) { const v = Math.round(amp * Math.sin((2 * Math.PI * 200 * i) / rate)); b.writeInt16LE(v, i * 4); b.writeInt16LE(v, i * 4 + 2); } return b; };
+  const pcm = Buffer.concat([seg(0.5, 8000), seg(1.5, 0), seg(0.5, 8000), seg(0.3, 0), seg(0.5, 8000)]);
+  const out = capPauses(pcm, { rate });
+  const sec = out.length / 4 / rate;
+  assert.ok(Math.abs(sec - (0.5 + 0.45 + 0.5 + 0.3 + 0.5)) < 0.03, `got ${sec.toFixed(3)} s`);
+});
+
+test('the score is a valid stereo WAV of the right length, and ducks under speech', () => {
+  const scenes = [{ start: 0, duration: 3, template: 'intro' }, { start: 2.2, duration: 3, stage: 'goal' }];
+  const a = score(scenes, 5.2, { rate: 8000 }), b = score(scenes, 5.2, { rate: 8000, speech: [{ start: 2.5, end: 4.5 }] });
+  assert.equal(a.toString('ascii', 0, 4), 'RIFF');
+  assert.equal(a.readUInt16LE(22), 2);
+  assert.equal((a.length - 44) / 4, Math.ceil(5.2 * 8000));
+  const rms = (buf, t0, t1) => { let s = 0, n = 0; for (let i = Math.round(t0 * 8000); i < Math.round(t1 * 8000); i++, n++) { const v = buf.readInt16LE(44 + i * 4); s += v * v; } return Math.sqrt(s / n); };
+  assert.ok(rms(b, 3, 4) / rms(b, 0.6, 1.6) < rms(a, 3, 4) / rms(a, 0.6, 1.6), 'speech span is quieter relative to the open than without ducking');
+});
+
+test('derived counts must list items that appear in the cited text', () => {
+  const ev = [{ id: 'E1', text: 'Instagram Reels, TikTok and LinkedIn' }];
+  assert.deepEqual(validateDerived([{ key: 'p', value: 3, items: ['Instagram Reels', 'TikTok', 'LinkedIn'], refs: ['E1'] }], ev), []);
+  assert.equal(validateDerived([{ key: 'p', value: 5, items: ['Instagram Reels', 'TikTok', 'LinkedIn', 'YouTube'], refs: ['E1'] }], ev).length, 2);
+});
+
+test('a Remote Control session without git: tool readouts are the evidence, home folders are redacted, a checked guess is the arc', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'qbc-'));
+  const f = join(dir, 'events.txt');
+  const at = (s) => `2026-10-28T20:${String(39 + Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}Z`;
+  const ev = (kind, uuid, s, content) => ({ created_at: at(s), [kind]: { uuid, internal_anthropic_catchall: { message: { role: kind, content } } } });
+  const data = [
+    ev('user', 'p1', 0, [{ type: 'text', text: '<system-reminder>\nscratch workspace for account 1234\n</system-reminder>' }, { type: 'text', text: '<pasted_content id="1">\nExport THE BLOCK cut as a review MP4.\nResolution: 540 × 960.\nDo not modify the master.\n</pasted_content id="1">\n C:\\Users\\Neil9\\Downloads\\The Block' }]),
+    ev('assistant', 'a1', 5, [{ type: 'tool_use', id: 't1', name: 'Bash', input: { command: 'cd "/c/Users/Neil9/Downloads/The Block" && ffprobe -v error -show_entries format=size "Master.mov"' } }]),
+    ev('user', 'r1', 6, [{ type: 'tool_result', tool_use_id: 't1', content: 'width=1080\r\nheight=1934\r\nsize=1104772890\r\n' }]),
+    ev('assistant', 'a2', 20, [{ type: 'tool_use', id: 't2', name: 'Bash', input: { command: 'ffmpeg -y -i "Master.mov" -c:v libx264 -b:v 1M -pass 1 -f mp4 NUL && ffmpeg -y -i "Master.mov" -c:v libx264 -b:v 1M -pass 2 OUT.mp4 && echo done' } }]),
+    ev('user', 'r2', 30, [{ type: 'tool_result', tool_use_id: 't2', content: 'done' }]),
+    ev('assistant', 'a3', 31, [{ type: 'tool_use', id: 't3', name: 'Bash', input: { command: 'cd /c/Users/Neil9 && find Downloads -iname "*block*"' } }]),
+    ev('user', 'r3', 32, [{ type: 'tool_result', tool_use_id: 't3', content: 'Downloads/some unrelated private thing' }]),
+    ev('assistant', 'a4', 40, [{ type: 'text', text: 'Exported. **Check the source first.** No file in that folder is called "cut v3". The one frame I checked had no caption, so I haven\'t seen one.' }]),
+    ev('user', 'p2', 100, "Yes, that's it"),
+    ev('assistant', 'a5', 101, [{ type: 'text', text: 'Good, then the export is final.' }]),
+  ];
+  writeFileSync(f, 'untrusted preamble\n' + JSON.stringify({ ccr: { data } }) + '\ntrailer');
+  const src = fromCcrEvents(f, { id: 'session_x', title: 'THE BLOCK test', created_at: at(0) });
+  assert.equal(src.turns.length, 2);
+  assert.ok(!src.turns[0].prompt.text.includes('system-reminder') && !src.turns[0].prompt.text.includes('pasted_content'));
+  assert.ok(src.turns[0].prompt.text.endsWith('~\\Downloads\\The Block'), 'home folder redacted');
+  assert.ok(src.tools.every((t) => !/Neil9/.test(t.input.command ?? '') && !/Neil9/.test(t.output ?? '')));
+  const events = buildEvents({ ...src, git: { commits: [], merges: [] }, pulls: [], repo: ROOT, repoSlug: 'x/y' });
+  const probeE = events.find((e) => e.kind === 'probe');
+  assert.equal(probeE.data.fields.size, 1104772890, 'CRLF readouts parse as numbers');
+  assert.equal(events.find((e) => e.kind === 'render').data.passes, 2);
+  assert.equal(events[0].data.repo, null, 'no commits, so no repo is claimed');
+  const story = buildStory(events, buildMetrics(events));
+  assert.deepEqual(story.stages.map((s) => s.stage), ['goal', 'process', 'obstacle', 'correction', 'result', 'lesson']);
+  assert.equal(story.stages.find((s) => s.stage === 'lesson').claims[0].text, 'Flag the guess. Then get the yes.');
+  assert.ok(story.stages.find((s) => s.stage === 'result').claims.some((c) => c.status === 'unverified' && /haven't seen/.test(c.text)));
+  // a project called THE BLOCK is not a "blocked" limitation
+  const named = buildEvents({ session: { id: 's', created_at: at(0), source: 'transcript' }, turns: [{ prompt: { uuid: 'u', created_at: at(0), text: 'go' }, result: { uuid: 'v', created_at: at(9), text: 'THE BLOCK export is next to the master.' } }], tools: [], git: { commits: [], merges: [] }, pulls: [] });
+  assert.ok(!named.some((e) => e.tags.includes('limitation')));
+  assert.equal(redact('see C:\\Users\\Neil9\\x and /home/sonny/y'), 'see ~\\x and ~/y');
+});
+
+// The acceptance session: real evidence, real git history, the recorded GitHub responses.
+const orbs = existsSync(join(ORBS, 'evidence/ccr-session.json')) && (() => { try { return sessionCommits(ROOT, 'session_01E33KRahnfgaMJD2zhcyZuQ').commits.length === 2; } catch { return false; } })();
+
+test('acceptance session: the full arc is found, nothing is invented, and an unbacked number is refused', { skip: !orbs && 'needs the full git history and the orbs evidence' }, () => {
+  const src = fromCcrExport(join(ORBS, 'evidence/ccr-session.json'));
+  const g = sessionCommits(ROOT, src.session.id);
+  const pulls = githubPulls('sonny914/new', g.commits.map((c) => c.sha), join(ORBS, 'evidence/github.json'), { offline: true });
+  const ev = buildEvents({ ...src, git: g, pulls, repo: ROOT, repoSlug: 'sonny914/new' });
+  const assets = readJSON(join(ORBS, 'session-assets.json'));
+  const probes = Object.fromEntries(assets.assets.filter((a) => a.probe).map((a) => [a.path, a.probe]));
+  const metrics = buildMetrics(ev, probes);
+  const m = (k) => metrics.find((x) => x.key === k)?.value;
+  assert.equal(m('build_minutes'), 10);
+  assert.equal(m('pr20_wait_days'), 8);
+  assert.equal(m('tests_passed'), 65);
+  const story = buildStory(ev, metrics);
+  assert.deepEqual(story.stages.map((s) => s.stage), ['goal', 'process', 'obstacle', 'correction', 'result', 'lesson']);
+  const obstacle = story.stages.find((s) => s.stage === 'obstacle');
+  assert.ok(obstacle.types.includes('unmerged') && obstacle.types.filter((t) => t === 'mistake').length === 1, 'one admitted mistake, not two');
+  assert.ok(story.stages.find((s) => s.stage === 'result').claims.some((c) => c.status === 'unverified' && /quietbands\.com/.test(c.text)), 'the blocked live check is reported as not verified');
+
+  const editorial = readJSON(join(ORBS, 'editorial.json'));
+  const sb = timeStoryboard(planStoryboard({ session: src.session, story, events: ev, metrics, assets: assets.assets, repo: ROOT, editorial }));
+  assert.ok(sb.formats['9x16'], 'real footage and an arc: the vertical cut is made');
+  assert.deepEqual(validateStoryboard(sb, ev, metrics, assets).errors, []);
+  // the same storyboard with one invented number must fail
+  const bad = structuredClone(sb);
+  bad.formats['16x9'].scenes.find((s) => s.id === 'stats').narration = 'About 12 minutes later, it was done.';
+  assert.ok(validateStoryboard(bad, ev, metrics, assets).errors.some((e) => /number 12 /.test(e)));
+});
+
+// documentary mode: a 4 s clip whose only dialogue is 2.0–3.0 s, and whose mouth moves without voice at 0.5–1.0 s
+function docFixture(scenes, facts = []) {
+  const dir = mkdtempSync(join(tmpdir(), 'qb-doc-')), fps = 24, n = 96;
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'sine=f=300:d=4', '-f', 'lavfi', '-i', 'color=c=black:s=64x64:d=4:r=24', '-shortest', '-c:v', 'libx264', '-c:a', 'aac', join(dir, 'clip.mp4')]);
+  const moving = Array.from({ length: n }, (_, i) => (i >= 12 && i < 24) || (i >= 48 && i < 72) ? 1 : 0);
+  writeFileSync(join(dir, 'clip.json'), JSON.stringify({ summary: { fps, seconds: 4, has_audio: true, speech_segments: [[2, 3]], noise_floor_db: -60, speech_threshold_db: -46,
+    silent_mouth_movement_seconds: 0.5, mouth_moving_seconds: 1.5 }, moving, audio_db: Array.from({ length: n }, (_, i) => (i >= 48 && i < 72 ? -20 : -58)) }));
+  const doc = { schema: 'qb-capture/documentary@1', title: 'Fixture', stages: [{ id: 'goal', label: 'Goal' }], clips: { c: { file: 'clip.mp4', analysis: 'clip.json', label: 'Clip' } },
+    narration: { n1: 'This line runs well past the quiet part of the clip before the dialogue begins.', n2: 'Short line.' }, facts, scenes };
+  writeFileSync(join(dir, 'doc.json'), JSON.stringify(doc));
+  return loadDoc(join(dir, 'doc.json'));
+}
+
+test('documentary: silent movement is rebuilt exactly as measured, and a counter ends on it', () => {
+  const doc = docFixture([]), d = clipData(doc.clips.c);
+  assert.equal(silentSeconds(d, 0, 4), 0.5); // 0.5–1.0 s; the 2–3 s movement is dialogue
+  assert.equal(silentSeconds(d, 0, 0.75), 7 / 24); // up to and including the frame on screen at 0.75 s (frames 12–18)
+});
+
+test('documentary: a loud stretch waits for the narration, and narration may not cover dialogue', () => {
+  const ok = timeDoc(docFixture([{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 1.5], audio: 0.2, narr: 'n1' }, { play: [1.5, 3.5] }] }]));
+  assert.deepEqual(ok.problems, []);
+  const [, hold, loud] = ok.scenes[0].beats, n1 = ok.narration[0];
+  assert.equal(hold.auto, true); assert.equal(hold.kind, 'hold'); assert.equal(hold.src0, 1.5); // the last frame before the dialogue is held
+  assert.ok(ok.clips.find((c) => c.src === 1.5).start >= n1.start + n1.seconds, 'the dialogue starts only after the line ends');
+  const bad = timeDoc(docFixture([{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [1.5, 3.5], audio: 0.1, narr: 'n2' }] }]));
+  assert.match(bad.problems.join('\n'), /talk over c's dialogue/);
+});
+
+test('documentary: every number on screen must match the measurement its fact cites', () => {
+  const scene = (text) => [{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 1.5] }], props: { labels: [{ beat: 0, text }] } }];
+  assert.deepEqual(timeDoc(docFixture(scene('No words: 0.5 s'), [{ text: '0.5', from: 'c:summary.silent_mouth_movement_seconds' }])).problems, []);
+  assert.match(timeDoc(docFixture(scene('No words: 0.7 s'), [{ text: '0.7', from: 'c:summary.silent_mouth_movement_seconds' }])).problems.join(), /measures 0\.5/);
+  assert.match(timeDoc(docFixture(scene('Took 9 tries'))).problems.join(), /shows 9, which no fact cites/);
+});
+
+test('the score goes silent across a mute span', () => {
+  const buf = score([{ start: 0, duration: 4, stage: 'goal' }], 4, { mute: [{ start: 1, end: 3 }], rate: 8000 });
+  const at = (s) => Math.abs(buf.readInt16LE(44 + Math.round(s * 8000) * 4));
+  let loud = 0; for (let s = 1.5; s < 2.5; s += 0.01) loud = Math.max(loud, at(s));
+  assert.equal(loud, 0);
+});

@@ -8,7 +8,8 @@
     "test": "node --test \"tools/**/*.test.mjs\"",
     "qa": "node tools/qa.mjs",
     "serve": "npx http-server -p 8080 -c-1 .",
-    "accept:hero": "node tools/hero.accept.mjs"
+    "accept:hero": "node tools/hero.accept.mjs",
+    "capture": "node tools/capture/cli.mjs"
   },
   "engines": {
     "node": "20.x"

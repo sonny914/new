@@ -1,0 +1,19 @@
+{
+  "schema": "qb-capture/index@1",
+  "sessions": {
+    "2026-10-12-orbs-in-repo": {
+      "key": "2026-10-12-orbs-in-repo",
+      "session_id": "session_01E33KRahnfgaMJD2zhcyZuQ",
+      "title": "The orb gets a page",
+      "status": "awaiting review",
+      "level": "full",
+      "formats": [
+        "16x9",
+        "9x16"
+      ],
+      "transcript_sha": null,
+      "source": "ccr-export",
+      "updated_at": "2026-10-29T18:30:18.571Z"
+    }
+  }
+}

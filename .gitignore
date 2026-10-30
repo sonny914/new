@@ -1,2 +1,7 @@
 node_modules/
 tools/reel/out/
+tools/capture/.cache/
+docs/sessions/*/review/
+tools/capture/analysis/*.task
+tools/capture/analysis/.venv/
+tools/capture/analysis/__pycache__/
