@@ -2,5 +2,5 @@ node_modules/
 tools/reel/out/
 tools/capture/.cache/
 docs/sessions/*/review/
-tools/capture/analysis/face_landmarker.task
+tools/capture/analysis/*.task
 tools/capture/analysis/.venv/
