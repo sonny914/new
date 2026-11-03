@@ -1,0 +1,29 @@
+name: Night Shift tests
+
+on:
+  push:
+    paths: ['nightshift/**', '.github/workflows/nightshift*.yml']
+  pull_request:
+    paths: ['nightshift/**', '.github/workflows/nightshift*.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: nightshift
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: nightshift/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - name: Dry-run shift (scripted agent, no model, nothing sent)
+        run: node src/cli.mjs --dry-run --state "$RUNNER_TEMP/state"

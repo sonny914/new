@@ -1,0 +1,142 @@
+# Night Shift: one agent shift per night per company (nightshift/README.md).
+#
+# Code lives in this public repo; memory, journal, outbox and the approval inbox live in a PRIVATE
+# "HQ" repo, because they carry leads, drafts and strategy. Until the setup below exists, every run
+# stops at the first step with a notice and does nothing.
+#
+#   Variable  NIGHTSHIFT_HQ_REPO         owner/name of the private HQ repo (initialised with a README)
+#   Secret    NIGHTSHIFT_TOKEN           fine-grained token: HQ repo contents+issues RW, this repo contents+PRs RW
+#   Secret    ANTHROPIC_API_KEY          the model
+#   Optional  SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   metrics (counts only)
+#   Optional  RESEND_API_KEY             sends approved emails
+#   Optional  NIGHTSHIFT_POST_WEBHOOK    receives approved posts
+
+name: Night Shift
+
+on:
+  schedule:
+    - cron: '17 9 * * *' # 03:17 in Houston on standard time, 04:17 on daylight time
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Scripted agent; nothing sent, no model calls, nothing saved
+        type: boolean
+        default: false
+
+concurrency:
+  group: nightshift
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  shift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      HQ_REPO: ${{ vars.NIGHTSHIFT_HQ_REPO }}
+      HAS_TOKEN: ${{ secrets.NIGHTSHIFT_TOKEN != '' }}
+      HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+      DRY_RUN: ${{ inputs.dry_run == true }}
+    steps:
+      - name: Check setup
+        id: setup
+        run: |
+          missing=""
+          [ -n "$HQ_REPO" ] || missing="$missing NIGHTSHIFT_HQ_REPO (variable)"
+          [ "$HAS_TOKEN" = "true" ] || missing="$missing NIGHTSHIFT_TOKEN (secret)"
+          [ "$HAS_KEY" = "true" ] || [ "$DRY_RUN" = "true" ] || missing="$missing ANTHROPIC_API_KEY (secret)"
+          if [ -n "$missing" ]; then
+            echo "::notice::Night Shift is not set up yet, so it did nothing. Missing:$missing. See nightshift/README.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out the product
+        if: steps.setup.outputs.ready == 'true'
+        uses: actions/checkout@v4
+        with:
+          path: site
+          persist-credentials: false # the agent works in here; no token on disk
+
+      - name: Check out the HQ
+        if: steps.setup.outputs.ready == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.NIGHTSHIFT_HQ_REPO }}
+          token: ${{ secrets.NIGHTSHIFT_TOKEN }}
+          path: hq
+          persist-credentials: false
+
+      - name: Set up Node
+        if: steps.setup.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/nightshift/package-lock.json
+
+      - name: Install
+        if: steps.setup.outputs.ready == 'true'
+        run: npm ci --prefix site/nightshift --no-audit --no-fund
+
+      - name: Work the shift
+        if: steps.setup.outputs.ready == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NIGHTSHIFT_TOKEN: ${{ secrets.NIGHTSHIFT_TOKEN }}
+          NIGHTSHIFT_HQ_REPO: ${{ vars.NIGHTSHIFT_HQ_REPO }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NIGHTSHIFT_POST_WEBHOOK: ${{ secrets.NIGHTSHIFT_POST_WEBHOOK }}
+          NIGHTSHIFT_QUIET: '1' # this repo is public, so are its run logs
+        run: |
+          args=(--state hq/state --workspace site --out "$RUNNER_TEMP/shift.json")
+          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+          node site/nightshift/src/cli.mjs "${args[@]}"
+
+      - name: Save memory, journal and outbox to the HQ
+        if: always() && steps.setup.outputs.ready == 'true' && env.DRY_RUN != 'true'
+        env:
+          TOKEN: ${{ secrets.NIGHTSHIFT_TOKEN }}
+        run: |
+          cd hq
+          [ -d state ] || exit 0
+          git config user.name "night-shift"
+          git config user.email "night-shift@users.noreply.github.com"
+          git add state
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Night shift $(date -u +%F)"
+          branch=$(git symbolic-ref --short -q HEAD || echo main)
+          git push -q "https://x-access-token:${TOKEN}@github.com/${HQ_REPO}.git" "HEAD:refs/heads/${branch}"
+
+      - name: Open a pull request for product changes
+        if: success() && steps.setup.outputs.ready == 'true' && env.DRY_RUN != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.NIGHTSHIFT_TOKEN }}
+          REPO: ${{ github.repository }}
+          BASE: ${{ github.event.repository.default_branch }}
+        run: |
+          cd site
+          # Stage only the paths the companies allow the builder to write; anything else stays out.
+          mapfile -t writable < <(jq -r '.workspace.writable[]?' nightshift/companies/*/company.json | sort -u)
+          for p in "${writable[@]}"; do [ -e "$p" ] && git add -A -- "$p"; done
+          if git diff --cached --quiet; then echo "No product changes tonight."; exit 0; fi
+          # The guard already blocks these; this is the second lock.
+          if git diff --cached --name-only | grep -Eq '^(\.github/|netlify/|nightshift/|db/|netlify\.toml$|_redirects$|package(-lock)?\.json$)'; then
+            echo "::error::The shift changed protected files. No pull request opened."
+            exit 1
+          fi
+          title=$(jq -r '[.[] | .pr.title // empty][0] // "Night shift: product changes"' "$RUNNER_TEMP/shift.json")
+          jq -r '[.[] | .pr.body // empty][0] // "Changes from the night shift."' "$RUNNER_TEMP/shift.json" > "$RUNNER_TEMP/pr.md"
+          printf '\n\n---\n_Opened by the Night Shift. Merging deploys it; review it like any other change._\n' >> "$RUNNER_TEMP/pr.md"
+          branch="nightshift/$(date -u +%Y-%m-%d-%H%M)"
+          git config user.name "night-shift"
+          git config user.email "night-shift@users.noreply.github.com"
+          git checkout -q -b "$branch"
+          git commit -q -m "$title"
+          git push -q "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:refs/heads/${branch}"
+          gh pr create --repo "$REPO" --draft --base "$BASE" --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/pr.md"
