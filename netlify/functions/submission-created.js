@@ -107,18 +107,43 @@ export default async (req) => {
 
   const lead = leadFrom(form, payload.data || {});
   if (!lead.email) return new Response('no email');
-  if (!ANTHROPIC_API_KEY) { console.error('submission-created: missing ANTHROPIC_API_KEY'); return new Response('config'); }
+
+  // Every lead gets a lead-scores row, so a scoring failure shows up next to the lead instead of only in the logs.
+  let triage;
+  if (!ANTHROPIC_API_KEY) {
+    console.error('submission-created: missing ANTHROPIC_API_KEY');
+    triage = unscored('ANTHROPIC_API_KEY is not set in Netlify.');
+  } else {
+    try {
+      triage = (await scoreWithClaude(lead)) || { score: 'WARM', reasoning: 'Unable to auto-score', next_step: 'Review manually' };
+    } catch (error) {
+      console.error('Scoring error:', error);
+      triage = unscored(failureReason(error));
+    }
+  }
 
   try {
-    const triage = (await scoreWithClaude(lead)) || { score: 'WARM', reasoning: 'Unable to auto-score', next_step: 'Review manually' };
     await saveScore({
       score: triage.score, reasoning: triage.reasoning, next_step: triage.next_step,
       email: lead.email, contact_name: lead.contact_name || '', company_name: lead.company_name || '',
       source: lead.source || '', lead_form: form, lead_id: payload.id || '',
     });
-    return new Response(triage.score);
   } catch (error) {
-    console.error('Scoring error:', error);
+    console.error('Saving score failed:', error);
     return new Response('error', { status: 500 });
   }
+  return new Response(triage.score);
 };
+
+const unscored = (reason) => ({ score: 'UNSCORED', reasoning: `Scoring failed: ${reason}`, next_step: 'Review manually' });
+
+/** A short, readable reason for the dashboard; the full error stays in the function log. Pure; exported for tests. */
+export function failureReason(error) {
+  const m = String(error && error.message || error).match(/Anthropic request failed: (\d{3})/);
+  if (!m) return 'unexpected error (see the submission-created function log).';
+  const status = Number(m[1]);
+  if (status === 401 || status === 403) return `the Anthropic API key was rejected (${status}). Replace ANTHROPIC_API_KEY in Netlify and redeploy.`;
+  if (status === 429) return 'Anthropic rate limit or credit limit reached (429).';
+  if (status >= 500) return `Anthropic was unavailable (${status}).`;
+  return `Anthropic returned ${status} (see the submission-created function log).`;
+}
