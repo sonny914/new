@@ -63,7 +63,7 @@
         <li><span class="run-n">04</span><b>The paper</b><span>The scene is written and approved before anything is generated.</span></li>
       </ol>
     </div>
-    <div class="hero-form" id="top"><form class="signup" data-signup="commission" data-campaign="" data-where="commission" novalidate>
+    <div class="hero-form" id="top"><form class="signup" data-signup="commission" data-campaign="" data-where="commission" data-backend="netlify" name="studio-commission" data-netlify="true" netlify-honeypot="website" novalidate>
     <div class="fields">
       <div class="field"><label for="brief-name">Your name</label><input class="input" type="text" id="brief-name" name="first_name" autocomplete="name" maxlength="80" required /></div>
       <div class="field"><label for="brief-email">Email</label><input class="input" type="email" id="brief-email" name="email" autocomplete="email" inputmode="email" required /></div>
@@ -71,7 +71,7 @@
     <div class="field"><label for="brief-org">Brand, company or project <span class="opt">optional</span></label><input class="input" type="text" id="brief-org" name="org" autocomplete="organization" maxlength="120" /></div>
     <div class="field"><label for="brief-what">What do you want made?</label><textarea class="input" id="brief-what" name="what" rows="5" maxlength="2000" required placeholder="What it is, where it will run, and anything it has to say or show."></textarea></div>
     <div class="field"><label for="brief-when">When do you need it? <span class="opt">optional</span></label><select class="input" id="brief-when" name="when"><option value="">Pick one</option><option>This month</option><option>In the next three months</option><option>Just exploring</option></select></div>
-    <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
+    <div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div><input type="hidden" name="kind" /><input type="hidden" name="campaign" /><input type="hidden" name="where" /><input type="hidden" name="source" /><input type="hidden" name="path" /><input type="hidden" name="attribution" />
     <button class="btn btn-live btn-block" type="submit">Send the brief</button>
     <p class="fine">Flighty reads every brief. No pricing is published: every piece is quoted on what it needs.</p>
     <p class="form-error" role="alert" hidden></p>
@@ -101,6 +101,6 @@
   </div>
 </footer>
 
-<script type="module" src="../assets/studio.js?v=1"></script>
+<script type="module" src="../assets/studio.js?v=2"></script>
 </body>
 </html>

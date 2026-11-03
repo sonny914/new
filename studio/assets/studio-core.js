@@ -36,6 +36,21 @@ export function buildSignup(kind, data, { campaign = '', where = '', attribution
   return { ok: true, row };
 }
 
+/** The same row as a Netlify Forms post: flat, url-encoded, named for the form. Netlify keeps only the fields the
+    built form declares (lib.mjs), so this sends every column and lets it drop what that form doesn't have. */
+export function netlifyBody(formName, row) {
+  const b = row.brief || {};
+  const fields = {
+    'form-name': formName, kind: row.kind, email: row.email, first_name: row.first_name, makes: row.makes,
+    workshop_optin: row.workshop_optin ? '1' : '', org: b.org, what: b.what, when: b.when, idea: b.idea,
+    campaign: row.campaign, where: row.attribution?.where, source: row.source, path: row.path,
+    attribution: JSON.stringify(row.attribution || {}),
+  };
+  const p = new URLSearchParams();
+  for (const [k, v] of Object.entries(fields)) if (v != null && v !== '') p.append(k, String(v));
+  return p.toString();
+}
+
 /** What a Supabase REST insert status means for the visitor. 409 is a repeat address: they're already on the list. */
 export function outcome(status) {
   if (status === 201 || status === 200 || status === 204) return 'ok';

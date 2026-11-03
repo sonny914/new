@@ -1,8 +1,8 @@
 /* Quiet Bands Studio: menu, dock, forms, copy buttons, the pack gate and the hero timecode.
-   Reuses the parent's runtime: qb.js for attribution, analytics and the Supabase project; the thinking orb for the wait. */
+   Reuses the parent's runtime: qb.js for attribution and analytics; the thinking orb for the wait. Forms post to Netlify Forms or Supabase. */
 import { SUPABASE_URL, SUPABASE_ANON_KEY, track, getAttribution } from '/assets/qb.js';
 import { mountOrb } from '/assets/orb/thinking-orb.js';
-import { buildSignup, outcome, readState, writeState, timecode, TABLE } from './studio-core.js';
+import { buildSignup, outcome, readState, writeState, timecode, netlifyBody, TABLE } from './studio-core.js';
 
 const root = document.documentElement;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -41,15 +41,18 @@ const onScroll = () => bar && bar.classList.toggle('solid', scrollY > 8);
 addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
 /* ---------- forms ---------- */
-async function insert(row) {
+/** Send one row where the form says (data-backend, set from SITE.forms): Netlify Forms, or the studio_signups table. */
+async function insert(row, form) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), 15000);
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
-      method: 'POST', signal: ctl.signal,
-      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, Prefer: 'return=minimal' },
-      body: JSON.stringify(row),
-    });
+    const res = form.dataset.backend === 'netlify'
+      ? await fetch('/', { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: netlifyBody(form.getAttribute('name'), row) })
+      : await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
+        method: 'POST', signal: ctl.signal,
+        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, Prefer: 'return=minimal' },
+        body: JSON.stringify(row),
+      });
     return res.status;
   } catch { return 0; } finally { clearTimeout(timer); }
 }
@@ -95,7 +98,7 @@ document.querySelectorAll('form[data-signup]').forEach((form) => {
     const orb = mountOrb(btn, { state: 'searching', size: 20, theme: 'dark', label: null });
     btn.append(document.createTextNode('Sending…'));
 
-    const result = outcome(await insert(built.row));
+    const result = outcome(await insert(built.row, form));
     orb.destroy(); btn.disabled = false; btn.classList.remove('sending'); btn.textContent = label;
     if (result === 'error') {
       track('studio_signup_error', { kind, where });

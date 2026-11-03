@@ -52,15 +52,20 @@ export function workshopWhen() {
 /* ---------- forms: one component, three kinds. studio.js posts them to studio_signups. ---------- */
 
 const MAKES = ['Reels and shorts', 'Short films or a series', 'Content for a brand or clients', 'Just starting'];
+const formName = (kind) => `studio-${kind}`;
+const NETLIFY_EXTRA = ['kind', 'campaign', 'where', 'source', 'path', 'attribution'];
 
 export function signupForm(L, { kind = 'pack', id = 'f', campaign = '', where = '' } = {}) {
   const f = (name) => `${id}-${name}`;
   const email = `<div class="field"><label for="${f('email')}">Email</label><input class="input" type="email" id="${f('email')}" name="email" autocomplete="email" inputmode="email" required /></div>`;
   const first = `<div class="field"><label for="${f('first')}">First name <span class="opt">optional</span></label><input class="input" type="text" id="${f('first')}" name="first_name" autocomplete="given-name" maxlength="80" /></div>`;
   const makes = `<div class="field"><label for="${f('makes')}">What do you make? <span class="opt">optional</span></label><select class="input" id="${f('makes')}" name="makes"><option value="">Pick one</option>${MAKES.map((m) => `<option>${esc(m)}</option>`).join('')}</select></div>`;
-  const hp = `<div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>`;
   const err = `<p class="form-error" role="alert" hidden></p>`;
-  const attrs = `class="signup" data-signup="${kind}" data-campaign="${esc(campaign)}" data-where="${esc(where)}" novalidate`;
+  // Netlify registers a form, and the fields it keeps, from the built HTML, so the extra fields studio.js sends are
+  // declared here as empty hidden inputs. It strips data-netlify at deploy; data-backend is what studio.js reads.
+  const netlify = SITE.forms === 'netlify';
+  const attrs = `class="signup" data-signup="${kind}" data-campaign="${esc(campaign)}" data-where="${esc(where)}" data-backend="${SITE.forms}"${netlify ? ` name="${formName(kind)}" data-netlify="true" netlify-honeypot="website"` : ''} novalidate`;
+  const hp = `<div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>${netlify ? NETLIFY_EXTRA.map((n) => `<input type="hidden" name="${n}" />`).join('') : ''}`;
 
   if (kind === 'pack') {
     const ws = SITE.workshop.public;
@@ -219,7 +224,7 @@ ${body}
 </main>
 ${footer(page, L)}
 ${dock(page, L)}
-<script type="module" src="${L('assets/studio.js')}?v=1"></script>
+<script type="module" src="${L('assets/studio.js')}?v=2"></script>
 </body>
 </html>
 `;

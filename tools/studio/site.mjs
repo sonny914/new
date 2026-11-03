@@ -15,6 +15,9 @@ export const SITE = {
   // Leave `date` null and the page collects names for the next one;
   // set it (ISO with offset, e.g. '2026-11-20T19:00:00-06:00') and every page shows the date instead.
   workshop: { public: false, date: null, where: 'Live, online', length: null },
+  // Where the forms send. 'netlify': Netlify Forms (submissions in the Netlify dashboard; needs form detection on,
+  // Site configuration → Forms). 'supabase': the studio_signups table (apply db/studio_signups.sql first).
+  forms: 'netlify',
 };
 
 // The bar and the menu sheet, in this order.

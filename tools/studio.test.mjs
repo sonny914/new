@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync, statSync } from 'node:fs';
-import { buildSignup, outcome, readState, writeState, validEmail, KINDS, TABLE } from '../studio/assets/studio-core.js';
+import { buildSignup, outcome, readState, writeState, validEmail, netlifyBody, KINDS, TABLE } from '../studio/assets/studio-core.js';
 import { renderAll } from './studio/build.mjs';
 import { parseRedirects, matchRule } from './studio/serve.mjs';
 import { SITE, NAV } from './studio/site.mjs';
@@ -133,4 +133,43 @@ test('the PDF and the share images the pages name are committed', () => {
 
 test('the pack stays free', () => {
   for (const { html } of pages) assert.doesNotMatch(html, /\$\d|checkout|buy now|price:/i);
+});
+
+/* ---------- Netlify Forms (SITE.forms) ---------- */
+
+test('forms post to Netlify Forms while Supabase is off', () => {
+  assert.equal(SITE.forms, 'netlify');
+  for (const { out, html } of pages) {
+    for (const [tag] of html.matchAll(/<form [^>]*>/g)) {
+      assert.match(tag, /data-backend="netlify"/, out);
+      assert.match(tag, /name="studio-(pack|commission)" data-netlify="true" netlify-honeypot="website"/, out);
+    }
+  }
+});
+
+test('every field a submission sends is declared in its built form, or Netlify drops it', () => {
+  const rows = {
+    pack: buildSignup('pack', { email: 'a@b.co', first_name: 'A', makes: 'Just starting' }, { campaign: 'same-face', where: 'go-same-face', attribution: { source: 'ig', utm_source: 'ig' }, path: '/studio/go/same-face/' }).row,
+    commission: buildSignup('commission', { email: 'a@b.co', first_name: 'A', org: 'O', what: 'W', when: 'This month' }, { where: 'commission', path: '/studio/commission/' }).row,
+  };
+  const seen = new Set();
+  for (const { out, html } of pages) {
+    for (const m of html.matchAll(/<form [^>]*name="studio-(\w+)"[^>]*>([\s\S]*?)<\/form>/g)) {
+      const [, kind, inner] = m; seen.add(kind);
+      const declared = new Set([...inner.matchAll(/\sname="([^"]+)"/g)].map((n) => n[1]));
+      const sent = [...new URLSearchParams(netlifyBody(`studio-${kind}`, { ...rows[kind], source: 'ig' })).keys()].filter((k) => k !== 'form-name');
+      for (const k of sent) assert.ok(declared.has(k), `${out || 'home'}: studio-${kind} sends "${k}" but doesn't declare it`);
+    }
+  }
+  assert.deepEqual([...seen].sort(), ['commission', 'pack']);
+});
+
+test('the Netlify body is url-encoded, named, and carries attribution as JSON', () => {
+  const row = buildSignup('commission', { email: 'a@b.co', first_name: 'Ana', what: 'A & B = film', org: '' }, { where: 'commission', attribution: { utm_source: 'ig' } }).row;
+  const p = new URLSearchParams(netlifyBody('studio-commission', row));
+  assert.equal(p.get('form-name'), 'studio-commission');
+  assert.equal(p.get('what'), 'A & B = film');
+  assert.equal(p.get('org'), null);                       // empty values are left out
+  assert.equal(JSON.parse(p.get('attribution')).utm_source, 'ig');
+  assert.equal(p.get('where'), 'commission');
 });
