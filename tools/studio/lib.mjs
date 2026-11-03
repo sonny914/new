@@ -63,13 +63,14 @@ export function signupForm(L, { kind = 'pack', id = 'f', campaign = '', where = 
   const attrs = `class="signup" data-signup="${kind}" data-campaign="${esc(campaign)}" data-where="${esc(where)}" novalidate`;
 
   if (kind === 'pack') {
+    const ws = SITE.workshop.public;
     return `<form ${attrs}>
       <div class="fields">${email}${first}</div>
       ${makes}
-      <label class="check"><input type="checkbox" name="workshop_optin" value="1" /><span>Also save me a seat at the next free Mini-Drama Workshop</span></label>
+      ${ws ? '<label class="check"><input type="checkbox" name="workshop_optin" value="1" /><span>Also save me a seat at the next free Mini-Drama Workshop</span></label>' : ''}
       ${hp}
       <button class="btn btn-live btn-block" type="submit">Send me the pack</button>
-      <p class="fine">Free. You get the pack now, then new packs and workshop dates. To come off the list, email <a href="mailto:${SITE.email}">${SITE.email}</a>.</p>
+      <p class="fine">Free. You get the pack now, then new packs${ws ? ' and workshop dates' : ' and guides'}. To come off the list, email <a href="mailto:${SITE.email}">${SITE.email}</a>.</p>
       ${err}
     </form>
     <div class="done" data-done="pack" tabindex="-1" hidden>
@@ -77,7 +78,7 @@ export function signupForm(L, { kind = 'pack', id = 'f', campaign = '', where = 
       <p class="done-h">The pack is open.</p>
       <p class="done-p">Twelve parts on the web, with copy buttons on every prompt, or the same thing as a PDF.</p>
       <p class="done-go">${button(L('pack/inside/'), 'Open the pack', { live: true, track: 'open_pack', where })} <a class="btn" href="${L(packPdf())}" download data-track="studio_pdf_download" data-track-props='{"where":"${esc(where)}"}'>Download the PDF</a></p>
-      <p class="done-next" data-if-no-workshop>Next: <a href="${L('workshop/')}">save a seat at the free Mini-Drama Workshop</a>.</p>
+      ${ws ? `<p class="done-next" data-if-no-workshop>Next: <a href="${L('workshop/')}">save a seat at the free Mini-Drama Workshop</a>.</p>` : ''}
     </div>`;
   }
 
@@ -208,7 +209,7 @@ ${page.noindex ? '<meta name="robots" content="noindex" />\n' : ''}<link rel="ca
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="${L('assets/studio.css')}?v=1" />
+<link rel="stylesheet" href="${L('assets/studio.css')}?v=2" />
 <script>document.documentElement.classList.add('js');</script>
 ${page.jsonld ? `<script type="application/ld+json">${JSON.stringify(page.jsonld)}</script>\n` : ''}</head>
 <body class="${esc(page.bodyClass || '')}" data-page-view="studio_page_view">

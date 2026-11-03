@@ -262,7 +262,7 @@ ONE PROP: ` },
       { table: { head: ['Day', 'Post', 'Ask'], rows: [
         ['1', 'The episode, 30 to 60 seconds.', 'Nothing. Let it be a show.'],
         ['3', 'The breakdown reel: one technique from the episode.', 'One line: comment a keyword for the pack.'],
-        ['5', 'A carousel: the shot list or the prompts, made to be saved.', 'One line: the workshop.'],
+        ['5', 'A carousel: the shot list or the prompts, made to be saved.', 'One line: your free offer.'],
         ['Daily', 'Stories: the process, a poll on the ending, the misses.', 'Polls and replies, not links.'],
       ] } },
       { table: { head: ['Week', 'Episode', 'Breakdown', 'Carousel'], rows: [

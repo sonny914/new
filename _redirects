@@ -31,6 +31,11 @@
 # Planning documents are checked in beside the site; never serve them
 /docs/*                    /404.html   404
 
+# The Studio's Mini-Drama Workshop isn't launching yet (SITE.workshop.public in tools/studio/site.mjs): its URL goes to
+# the free guides, temporarily, so the address can come back when the workshop does. Must sit above the Studio 404.
+/studio/workshop           /studio/learn/                           302!
+/studio/workshop/*         /studio/learn/                           302!
+
 # Quiet Bands Studio lives entirely under /studio/ (built from tools/studio/, see README). A missing Studio page gets
 # the Studio's own 404, so a visitor who mistypes a link stays inside the section. Real files shadow this rule.
 /studio/*                  /studio/404.html                         404

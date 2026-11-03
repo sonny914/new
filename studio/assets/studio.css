@@ -348,8 +348,10 @@ textarea.input{min-height:150px;resize:vertical}
   @page{size:Letter;margin:16mm 15mm 18mm}
   html,body{background:var(--ground)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{font-size:11.5pt}
+  *{animation:none!important}   /* the print-only cover lockup would otherwise start its entrance at opacity 0 */
   .bar,.sheet,.foot,.dock,.skip,.print-hide,.gate,.copy,.frame::before{display:none!important}
   .gated-off [data-gated],[data-gated]{display:block!important}
+  .print-hide[data-gated]{display:none!important}   /* the gated web-only sections (the closing offers) stay out of the PDF */
   .print-only{display:block}
   .hero-inside{padding-top:0;min-height:calc(100vh - 34mm);display:flex;flex-direction:column;break-after:page}
   .hero-inside .wrap{display:flex;flex-direction:column;flex:1;padding:0}

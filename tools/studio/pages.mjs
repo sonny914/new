@@ -54,6 +54,17 @@ function faq(items) {
 
 function offers(L, where, { skipPack = false } = {}) {
   const w = workshopWhen();
+  const second = SITE.workshop.public ? `<li class="offer">
+      <p class="offer-tag"><span>02</span><span>Free · ${esc(SITE.workshop.where)}</span></p>
+      <h3 class="offer-title">Mini-Drama Workshop</h3>
+      <p>One sentence in, one finished scene out, in one sitting, next to other people making theirs. <span class="offer-when">${esc(w.line)}.</span></p>
+      ${button(L('workshop/'), w.known ? 'Save a seat' : 'Get the date', { live: skipPack, track: 'workshop', where })}
+    </li>` : `<li class="offer">
+      <p class="offer-tag"><span>02</span><span>Free · No email</span></p>
+      <h3 class="offer-title">Free guides</h3>
+      <p>Three parts of the pack, open to everyone: the 60-second drama, character lock and the camera moves AI video understands.</p>
+      ${button(L('learn/'), 'Read the guides', { live: skipPack, track: 'learn', where })}
+    </li>`;
   return `<ol class="offers">
     ${skipPack ? '' : `<li class="offer">
       <p class="offer-tag"><span>01</span><span>Free · PDF + web</span></p>
@@ -61,12 +72,7 @@ function offers(L, where, { skipPack = false } = {}) {
       <p>The idea test, a 60-second beat sheet, character lock, 24 shot prompts, camera and light words, the edit, 25 hooks and a four-week posting plan.</p>
       ${button(L('pack/'), 'Get the pack', { live: true, track: 'pack', where })}
     </li>`}
-    <li class="offer">
-      <p class="offer-tag"><span>02</span><span>Free · ${esc(SITE.workshop.where)}</span></p>
-      <h3 class="offer-title">Mini-Drama Workshop</h3>
-      <p>One sentence in, one finished scene out, in one sitting, next to other people making theirs. <span class="offer-when">${esc(w.line)}.</span></p>
-      ${button(L('workshop/'), w.known ? 'Save a seat' : 'Get the date', { live: skipPack, track: 'workshop', where })}
-    </li>
+    ${second}
     <li class="offer">
       <p class="offer-tag"><span>03</span><span>By brief</span></p>
       <h3 class="offer-title">Commission</h3>
@@ -85,7 +91,7 @@ function guideList(L) {
 const home = {
   out: '', section: '', title: 'Quiet Bands Studio · AI filmmaking and creator education',
   ogTitle: 'Quiet Bands Studio',
-  description: 'Free prompts, a working process and live workshops for making short dramas and Reels with AI. Run by Flighty, part of Quiet Bands.',
+  get description() { return `Free prompts, a working process and ${SITE.workshop.public ? 'live workshops' : 'free guides'} for making short dramas and Reels with AI. Run by Flighty, part of Quiet Bands.`; },
   dock: { href: 'pack/', label: 'Get the free pack', text: 'AI Content Pack 001 · free', track: 'pack' },
   jsonld: { '@context': 'https://schema.org', '@type': 'Organization', name: 'Quiet Bands Studio', url: SITE.origin + SITE.base, parentOrganization: { '@type': 'Organization', name: 'Quiet Bands', url: SITE.origin + '/' }, sameAs: [SITE.instagram.url] },
   body(L) {
@@ -98,8 +104,10 @@ const home = {
     <div class="hero-copy">
       ${kicker('AI filmmaking + creator education')}
       <h1 class="display">Turn ideas into cinematic content.</h1>
-      <p class="lede">Free prompts, a working process and live workshops for making short dramas and Reels with AI. Run by Flighty, part of Quiet Bands.</p>
-      <p class="cta-row">${button(L('pack/'), 'Get the free pack', { live: true, track: 'pack', where: 'home-hero' })}${button(L('workshop/'), w.known ? 'Save a workshop seat' : 'Join the free workshop', { track: 'workshop', where: 'home-hero' })}</p>
+      <p class="lede">${esc(home.description)}</p>
+      <p class="cta-row">${button(L('pack/'), 'Get the free pack', { live: true, track: 'pack', where: 'home-hero' })}${SITE.workshop.public
+        ? button(L('workshop/'), w.known ? 'Save a workshop seat' : 'Join the free workshop', { track: 'workshop', where: 'home-hero' })
+        : button(L('learn/'), 'Read the free guides', { track: 'learn', where: 'home-hero' })}</p>
     </div>
     <p class="tc" aria-hidden="true"><span data-timecode>00:00:00:00</span></p>
   </div>
@@ -222,7 +230,7 @@ const pack = {
       ['Is it really free?', 'Yes. You give an email and the pack opens on the next screen, as web pages and a PDF.'],
       ['Which AI tools does it work with?', 'Any. The prompts describe shots in film language, which image and video generators share. Part 12 maps tools to the jobs they do.'],
       ['Do I need experience?', 'No. It starts at the idea and assumes nothing after it.'],
-      ['What happens to my email?', `It goes on the Quiet Bands Studio list: new packs and workshop dates. It isn’t sold or shared. To come off it, email <a href="mailto:${SITE.email}">${SITE.email}</a>.`],
+      ['What happens to my email?', `It goes on the Quiet Bands Studio list: new packs and ${SITE.workshop.public ? 'workshop dates' : 'guides'}. It isn’t sold or shared. To come off it, email <a href="mailto:${SITE.email}">${SITE.email}</a>.`],
     ])}
   </div>
 </section>
@@ -240,7 +248,9 @@ const inside = {
   out: 'pack/inside/', section: 'pack/', title: 'AI Content Pack 001, inside', noindex: true, hideBarCta: true, bodyClass: 'page-inside',
   description: 'The full AI Content Pack 001 from Quiet Bands Studio: twelve parts from idea to posted episode.',
   canonical: SITE.origin + SITE.base + 'pack/', og: 'og-pack.png',
-  dock: { href: 'workshop/', label: workshopWhen().known ? 'Save a seat' : 'Get the date', text: 'Free Mini-Drama Workshop', track: 'workshop' },
+  dock: SITE.workshop.public
+    ? { href: 'workshop/', label: workshopWhen().known ? 'Save a seat' : 'Get the date', text: 'Free Mini-Drama Workshop', track: 'workshop' }
+    : { href: 'commission/', label: 'Send a brief', text: 'Need a piece made?', track: 'commission' },
   body(L) {
     return `
 <section class="hero hero-inside">
@@ -273,7 +283,7 @@ const inside = {
 <section class="sec print-hide" data-gated>
   <div class="wrap">
     ${kicker('Next')}
-    <h2 class="h2">Make one with people.</h2>
+    <h2 class="h2">${SITE.workshop.public ? 'Make one with people.' : 'Keep going.'}</h2>
     ${offers(L, 'inside-end', { skipPack: true })}
   </div>
 </section>`;
@@ -433,7 +443,7 @@ const commission = {
 
 const links = {
   out: 'links/', section: '', title: 'Flighty · links', noindex: true, bodyClass: 'page-links', hideBarCta: true,
-  description: 'Everything from Flighty and Quiet Bands Studio in one place: the free AI Content Pack, the free Mini-Drama Workshop, guides and commissions.',
+  get description() { return `Everything from Flighty and Quiet Bands Studio in one place: the free AI Content Pack, ${SITE.workshop.public ? 'the free Mini-Drama Workshop, ' : ''}guides and commissions.`; },
   body(L) {
     const w = workshopWhen();
     const item = (href, title, sub, { live, track, ext } = {}) => `<li><a class="link${live ? ' link-live' : ''}" href="${esc(href)}"${ext ? ' rel="noopener"' : ''} data-track="studio_cta" data-track-props='{"cta":"${track}","where":"links"}'><span class="link-t">${esc(title)}</span><span class="link-s">${esc(sub)}</span></a></li>`;
@@ -444,7 +454,7 @@ const links = {
     <h1 class="display display-md">Turn ideas into cinematic content.</h1>
     <ul class="links">
       ${item(L('pack/'), 'Free AI Content Pack', '12 parts: prompts, process, posting plan', { live: true, track: 'pack' })}
-      ${item(L('workshop/'), 'Free Mini-Drama Workshop', w.line, { track: 'workshop' })}
+      ${SITE.workshop.public ? item(L('workshop/'), 'Free Mini-Drama Workshop', w.line, { track: 'workshop' }) : ''}
       ${item(L('learn/'), 'Free guides', 'Beat sheet, character lock, camera moves', { track: 'learn' })}
       ${item(L('commission/'), 'Commission a piece', 'Send a brief', { track: 'commission' })}
       ${item(SITE.instagram.url, 'THE BLOCK', `Built in public on Instagram, ${SITE.instagram.handle}`, { track: 'instagram', ext: true })}
@@ -491,5 +501,6 @@ const notFound = {
   },
 };
 
-export const PAGES = [home, pack, inside, workshop, learn, ...guidePages, commission, links, ...campaigns, notFound];
+// The workshop page is kept, unbuilt, while SITE.workshop.public is false (see site.mjs).
+export const PAGES = [home, pack, inside, ...(SITE.workshop.public ? [workshop] : []), learn, ...guidePages, commission, links, ...campaigns, notFound];
 export { linker };
