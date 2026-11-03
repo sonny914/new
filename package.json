@@ -11,7 +11,8 @@
     "accept:hero": "node tools/hero.accept.mjs",
     "studio:build": "node tools/studio/build.mjs",
     "studio:render": "node tools/studio/render.mjs",
-    "studio:serve": "node tools/studio/serve.mjs 8080"
+    "studio:serve": "node tools/studio/serve.mjs 8080",
+    "studio:carousel": "node tools/studio/carousel.mjs"
   },
   "engines": {
     "node": "20.x"

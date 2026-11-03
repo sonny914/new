@@ -1,6 +1,7 @@
 node_modules/
 tools/reel/out/
 tools/studio/out/
+social/*/preview.html
 
 # Local Netlify folder
 .netlify
