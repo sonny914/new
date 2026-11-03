@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { formBody } from '../assets/qb.js';
-import scorer, { leadFrom } from '../netlify/functions/submission-created.js';
+import scorer, { leadFrom, failureReason } from '../netlify/functions/submission-created.js';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 /** The field names a built form declares, by form name. */
@@ -64,4 +64,29 @@ test('the scorer ignores the Studio forms and its own lead-scores posts', async 
   const run = async (form_name, data = { email: 'a@b.co' }) => (await scorer(new Request('http://x/', { method: 'POST', body: JSON.stringify({ payload: { form_name, data } }) }))).text();
   for (const f of ['studio-pack', 'studio-commission', 'lead-scores']) assert.equal(await run(f), 'not a lead form');
   assert.equal(await run('note-lead', {}), 'no email');
+});
+
+test('a failed score is still recorded, as UNSCORED with a readable reason', async () => {
+  const posts = [];
+  const real = globalThis.fetch;
+  globalThis.fetch = async (url, init) => { posts.push({ url: String(url), body: new URLSearchParams(init.body) }); return new Response('', { status: 200 }); };
+  try {
+    const res = await scorer(new Request('http://x/', { method: 'POST', body: JSON.stringify({ payload: { id: 's1', form_name: 'work-intake', data: { email: 'a@b.co', today: 'x', contact_name: 'A' } } }) }));
+    assert.equal(await res.text(), 'UNSCORED');   // no ANTHROPIC_API_KEY under test
+  } finally { globalThis.fetch = real; }
+  assert.equal(posts.length, 1);
+  const b = posts[0].body;
+  assert.equal(b.get('form-name'), 'lead-scores');
+  assert.equal(b.get('score'), 'UNSCORED');
+  assert.match(b.get('reasoning'), /ANTHROPIC_API_KEY is not set/);
+  assert.equal(b.get('next_step'), 'Review manually');
+  assert.equal(b.get('lead_id'), 's1');
+});
+
+test('failure reasons name the fix without dumping the raw error', () => {
+  assert.match(failureReason(new Error('Anthropic request failed: 401 {"type":"error","error":{"message":"invalid x-api-key"}}')), /key was rejected \(401\)\. Replace ANTHROPIC_API_KEY/);
+  assert.match(failureReason(new Error('Anthropic request failed: 429 slow down')), /rate limit/);
+  assert.match(failureReason(new Error('Anthropic request failed: 529 overloaded')), /unavailable \(529\)/);
+  assert.match(failureReason(new TypeError('fetch failed')), /unexpected error/);
+  assert.doesNotMatch(failureReason(new Error('Anthropic request failed: 401 {"secret":"x"}')), /secret/);
 });
