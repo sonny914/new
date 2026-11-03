@@ -1,13 +1,14 @@
-/* Quiet Bands — shared runtime: attribution, analytics, first-party insert.
+/* Quiet Bands — shared runtime: attribution, analytics, form posts.
    No framework. Loaded as an ES module by pages that need it.
 
    Events are dispatched to every sink that exists:
      1. window.dataLayer (GTM) and window.gtag (GA4) if a tag is installed
      2. window.plausible if Plausible is installed
-     3. the first-party Supabase table rd_events (anon insert only)
-     4. a DOM CustomEvent 'qb:track' for anything else on the page
+     3. a DOM CustomEvent 'qb:track' for anything else on the page
+   Forms post to Netlify Forms (formPost); there is no database behind the site.
    Set localStorage.qb_debug = '1' to mirror events to the console. */
 
+// Only the Studio's optional 'supabase' forms backend (tools/studio/site.mjs) still reads these.
 export const SUPABASE_URL = 'https://jkilmecbhjepltbianof.supabase.co';
 export const SUPABASE_ANON_KEY = 'sb_publishable__s8Dc6XKGrrw_fZjBDvDeg_Nv7c0nYg';
 
@@ -90,19 +91,23 @@ function sessionId() {
   return id;
 }
 
-/* ---------- first-party insert ---------- */
+/* ---------- form posts ---------- */
 
-/** Insert one row through Supabase REST. Resolves true/false; never throws. */
-export async function qbInsert(table, row, { keepalive = false } = {}) {
+/** Flatten fields for a Netlify Forms post: objects become JSON, empty values are left out. Pure; exported for tests. */
+export function formBody(name, fields) {
+  const p = new URLSearchParams({ 'form-name': name });
+  for (const [k, v] of Object.entries(fields)) {
+    if (v == null || v === '') continue;
+    p.append(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
+  }
+  return p.toString();
+}
+
+/** Submit to the Netlify form `name`. Netlify keeps only the fields the form declares in its HTML.
+    Resolves true/false; never throws. */
+export async function formPost(name, fields) {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method: 'POST', keepalive,
-      headers: {
-        'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`, Prefer: 'return=minimal',
-      },
-      body: JSON.stringify(row),
-    });
+    const res = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formBody(name, fields) });
     return res.ok;
   } catch { return false; }
 }
@@ -120,13 +125,6 @@ export function track(event, props = {}) {
   try { if (typeof window.gtag === 'function') window.gtag('event', event, { source: attr.source, ...props }); } catch { /* ignore */ }
   try { if (typeof window.plausible === 'function') window.plausible(event, { props: { source: attr.source, ...flat(props) } }); } catch { /* ignore */ }
   try { window.dispatchEvent(new CustomEvent('qb:track', { detail: payload })); } catch { /* ignore */ }
-
-  // first-party sink, fire-and-forget
-  qbInsert('rd_events', {
-    event, source: attr.source, path: payload.path, session_id: payload.session_id,
-    props, attribution: { utm_source: attr.utm_source, utm_medium: attr.utm_medium, utm_campaign: attr.utm_campaign, utm_content: attr.utm_content, src: attr.src, referrer: attr.referrer, landing: attr.landing },
-    user_agent: navigator.userAgent.slice(0, 200),
-  }, { keepalive: true });
 }
 function flat(o) { const out = {}; for (const k in o) out[k] = typeof o[k] === 'object' ? JSON.stringify(o[k]) : o[k]; return out; }
 

@@ -215,7 +215,8 @@
     <p class="sec-lead rise">We're collecting examples of promises that become unexpectedly difficult to deliver repeatedly. Or email directly: <a href="mailto:jason@quietbands.com" style="color:var(--brass);font-weight:600">jason@quietbands.com</a>.</p>
 
     <div id="form-container" style="margin-top:clamp(32px,5vw,44px)">
-      <form class="form rise" id="triage-form-el">
+      <form class="form rise" id="triage-form-el" name="note-lead" data-netlify="true">
+        <input type="hidden" name="source" value="note-the-coffee-credit" />
         <div id="form-error" class="f-error" style="display:none"></div>
         <div class="f-row">
           <div class="f-group">
@@ -263,13 +264,9 @@
   </div>
 </footer>
 
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // Form handling — identical behavior sitewide. Verbatim answer in pain_point.
   (function(){
-    var SUPABASE_URL = 'https://jkilmecbhjepltbianof.supabase.co';
-    var SUPABASE_ANON_KEY = 'sb_publishable__s8Dc6XKGrrw_fZjBDvDeg_Nv7c0nYg';
-
     var form = document.getElementById('triage-form-el');
     var formContainer = document.getElementById('form-container');
     var errorBox = document.getElementById('form-error');
@@ -291,17 +288,13 @@
       var data = Object.fromEntries(new FormData(form));
 
       try {
-        if (!window.supabase) throw new Error('Form service failed to load — check your connection and refresh.');
-        var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        var res = await client.from('leads').insert([data]);
-        if (res.error) throw res.error;
-
-        fetch('/.netlify/functions/score-lead', {
+        // Netlify Forms (form "note-lead"); netlify/functions/submission-created.js scores it with Claude.
+        var res = await fetch('/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        }).catch(function(){ console.log('Scoring in background'); });
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(Object.assign({ 'form-name': 'note-lead' }, data)).toString(),
+        });
+        if (!res.ok) throw new Error('Couldn’t send the form.');
 
         formContainer.innerHTML =
           '<div class="f-success rise in">' +
