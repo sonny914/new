@@ -1,0 +1,40 @@
+{
+  "name": "Quiet Bands",
+  "enabled": true,
+  "founders": ["sonny914"],
+  "model": "claude-opus-5-5",
+  "effort": "high",
+  "budget": {
+    "maxUsdPerShift": 3,
+    "maxTurns": 60,
+    "taskTokens": 250000,
+    "maxProposalsPerShift": 8
+  },
+  "proposalTtlDays": 7,
+  "workspace": {
+    "repo": "sonny914/new",
+    "baseBranch": "main",
+    "writable": ["notes/", "sitemap.xml"]
+  },
+  "tools": {
+    "web": true,
+    "bash": false
+  },
+  "metrics": [
+    { "name": "leads_7d", "label": "New leads, last 7 days", "source": "supabase", "table": "leads", "since": "7d" },
+    { "name": "hot_leads_7d", "label": "HOT leads, last 7 days", "source": "supabase", "table": "leads", "since": "7d", "filter": { "triage_score": "eq.HOT" } },
+    { "name": "leads_30d", "label": "New leads, last 30 days", "source": "supabase", "table": "leads", "since": "30d" },
+    { "name": "studio_signups_7d", "label": "Studio sign-ups, last 7 days", "source": "supabase", "table": "studio_signups", "since": "7d" }
+  ],
+  "actions": {
+    "email": {
+      "from": "",
+      "replyTo": "",
+      "maxPerShift": 5
+    },
+    "post": {
+      "webhookEnv": "NIGHTSHIFT_POST_WEBHOOK"
+    }
+  },
+  "mcp": {}
+}
