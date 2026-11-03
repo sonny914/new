@@ -54,7 +54,7 @@
 <section class="sec pad-b">
   <div class="wrap">
     <div id="form-container">
-      <form class="form intake rise in" id="intake-form" novalidate>
+      <form class="form intake rise in" id="intake-form" name="work-intake" data-netlify="true" netlify-honeypot="website" novalidate>
         <div class="pt-carry" id="pt-carry"></div>
         <div id="form-error" class="f-error" style="display:none"></div>
 
@@ -140,11 +140,14 @@
             <input type="email" id="f-email" class="f-input" name="email" autocomplete="email" required />
           </div>
           <div class="f-group" style="position:absolute;left:-9999px" aria-hidden="true"><label for="f-website">Website</label><input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off" /></div>
+          <input type="hidden" name="source" /><input type="hidden" name="attribution" /><input type="hidden" name="pressure_test" />
         </fieldset>
 
         <button type="submit" class="f-submit">Send it to Quiet Bands</button>
         <p class="f-fine">We read every answer. If the work is a fit, Jay replies personally. If it isn’t, we’ll say so and point you somewhere useful.</p>
       </form>
+      <!-- Netlify registers this from the HTML; only netlify/functions/submission-created.js posts to it. -->
+      <form name="lead-scores" data-netlify="true" hidden aria-hidden="true"><input type="hidden" name="score" /><input type="hidden" name="reasoning" /><input type="hidden" name="next_step" /><input type="hidden" name="email" /><input type="hidden" name="contact_name" /><input type="hidden" name="company_name" /><input type="hidden" name="source" /><input type="hidden" name="lead_form" /><input type="hidden" name="lead_id" /></form>
     </div>
   </div>
 </section>

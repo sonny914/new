@@ -14,7 +14,7 @@ Complete site with integrated lead form that automatically scores inbound leads 
 ✅ **og.png** — Social share image
 ✅ **_redirects** — Legacy URL redirects
 ✅ **netlify.toml** — Netlify config with CSP headers
-✅ **netlify/functions/score-lead.js** — Claude scoring function (zero dependencies, built-in fetch)
+✅ **netlify/functions/submission-created.js** — Claude lead scoring, run by Netlify after each lead form submission (zero dependencies, built-in fetch)
 ✅ **package.json** — No dependencies; scripts for tests and QA
 
 ## Deploy to Netlify (2 min)
@@ -199,12 +199,12 @@ sitemap.xml, robots.txt
 
 ```
 /                      Homepage — "Software built around the work", two ways in (real work / an idea)
-/work/                 Project intake — "Tell us about the work" (Supabase leads + score-lead)
+/work/                 Project intake — "Tell us about the work" (Netlify form work-intake, scored by submission-created)
 /rd/                   R&D landing — Field Guide + method, from Flighty.ai
 /rd/pressure-test/     Interactive evidence review → research / humans / manual / build / park
 /downloads/flighty-rd-field-guide.pdf   The Field Guide (replace the file to ship a new edition)
 /field-guide           Short link → the PDF
-assets/qb.js           Attribution + analytics (rd_events) + Supabase REST insert
+assets/qb.js           Attribution + analytics + Netlify Forms posts (formPost)
 assets/triage.js       Triage rules (pure; `npm test`)
 assets/pressure-test.js, assets/intake.js   Page runtimes
 tools/                 Unit tests and the Playwright QA runner (never served)
