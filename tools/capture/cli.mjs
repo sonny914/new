@@ -10,12 +10,14 @@
 //   node tools/capture/cli.mjs final    --key <name>        re-time to the recorded narration and render the final cut
 //   node tools/capture/cli.mjs doc      <documentary.json> [--out <dir>] [--formats 16x9,9x16] [--narration <dir>] [--stills 1,5] [--check]
 //                                       render a hand-approved documentary of real footage (preview until --narration is given)
+//   node tools/capture/cli.mjs notes    intake <review.zip|dir> | draft <workdir> --topic <n> | package <storyboard.json>
+//                                       HARLEM '88 Production Notes: ranked topics, draft episodes, approval packages
 //
 // run = steps 1–7 of the end-of-session flow (finalize, collect, narrate, select scenes, storyboard, silent preview, present).
 // Nothing here spends credits, publishes or deploys. Paid narration happens outside this CLI, only after `approve`.
 import { existsSync, readFileSync, writeFileSync, mkdirSync, statSync, copyFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { join, resolve, relative, basename } from 'node:path';
+import { join, resolve, relative, basename, dirname } from 'node:path';
 import { ROOT, ARCHIVE, readJSON, readJSONIf, writeJSON, writeText, slugify, sha256File, fmtDate, parts } from './lib/util.mjs';
 import { fromTranscript, fromCcrExport, fromCcrEvents, sessionCommits, sessionAliases, githubPulls, repoSlug } from './lib/ingest.mjs';
 import { buildEvents, buildMetrics } from './lib/events.mjs';
@@ -28,9 +30,10 @@ import { srt } from './lib/captions.mjs';
 import { sessionReport, logEntry, appendLog } from './lib/report.mjs';
 import { ENV_FLAG, lock, recordIndex } from './lib/guard.mjs';
 import { loadDoc, timeDoc, docPayload } from './lib/documentary.mjs';
+import { intake, draftEpisode, packageEpisode } from './lib/notes.mjs';
 
 process.env[ENV_FLAG] = '1'; // anything this process starts knows it is inside a capture
-export const VERSION = '0.3.0'; // bump with CHANGELOG.md
+export const VERSION = '0.4.0'; // bump with CHANGELOG.md
 const LOG_HEADER = '# Production log\n\nHow this recap was made: every run, what it decided, what it validated, and what it cost. Newest last.';
 
 const argv = process.argv.slice(2);
@@ -254,6 +257,7 @@ async function cmdDoc() {
   writeJSON(join(out, 'documentary-timing.json'), { generated_by: `QB Capture ${VERSION}`, preview, ...timed });
   writeText(join(out, 'documentary-captions.srt'), srt(timed.cues));
   if (timed.problems.length) throw new Error(`storyboard check failed:\n- ${timed.problems.join('\n- ')}`);
+  for (const w of timed.warnings ?? []) say(`warning: ${w}`);
   say(`checked: ${timed.scenes.length} scenes, ${timed.duration.toFixed(1)} s, ${timed.narration.length} narration lines (${preview ? 'estimated, not recorded' : 'recorded'}), ${timed.clips.length} stretches of footage sound`);
   if (opt('check')) return;
   const cacheDir = join(doc.base, '.qb-cache'), mounts = { '/__media/': cacheDir };
@@ -268,7 +272,30 @@ async function cmdDoc() {
   }
 }
 
-const commands = { run: cmdRun, stills: cmdStills, script: cmdScript, approve: cmdApprove, 'fetch-narration': cmdFetchNarration, final: cmdFinal, doc: cmdDoc };
+// Production Notes: a creative review export in, ranked topics, draft episodes and approval packages out.
+//   notes intake <review.zip|dir> [--out <dir>]          unpack safely, inventory, parse the review, rank topics (topics.md)
+//   notes draft <workdir> --topic <n> [--episode <n>]     write ep<NN>/<slug>.json (documentary storyboard) and script.md
+//   notes package <storyboard.json> [--render <dir>] [--out <dir>]   captions, post copy, production notes, approval.json
+async function cmdNotes() {
+  const sub = argv[1], target = argv[2] && !argv[2].startsWith('--') ? resolve(argv[2]) : null;
+  if (!['intake', 'draft', 'package'].includes(sub) || !target) throw new Error('usage: notes intake <review.zip|dir> [--out <dir>] | notes draft <workdir> --topic <n> [--episode <n>] | notes package <storyboard.json> [--render <dir>] [--out <dir>]');
+  if (sub === 'intake') {
+    const out = resolve(opt('out') ?? join(dirname(target), `${basename(target).replace(/\.zip$/i, '')}-notes`));
+    const r = intake(target, out);
+    say(`intake: ${r.inv.files.length} files, ${r.findings.length} findings, ${r.topics.filter((t) => t.ready).length} makeable topics → ${join(out, 'topics.md')}`);
+    r.topics.slice(0, 5).forEach((t, i) => say(`  ${i + 1}. [${t.score}] §${t.n} ${t.title}${t.ready ? '' : ' (no footage)'}`));
+    say(`next: node tools/capture/cli.mjs notes draft ${out} --topic ${r.topics[0]?.n ?? 1} --episode <n>`);
+  } else if (sub === 'draft') {
+    const r = draftEpisode(target, opt('topic') ?? 1, { episode: +(opt('episode') ?? 1) });
+    say(`draft: ${r.file} (+ script.md). ${r.notes.length} things to check before rendering.`);
+    say(`next: edit the script, then node tools/capture/cli.mjs doc ${r.file} --formats 9x16 --check, then --stills, then a silent preview`);
+  } else {
+    const r = packageEpisode(target, { renderDir: opt('render') ? resolve(opt('render')) : undefined, out: opt('out') ? resolve(opt('out')) : undefined });
+    say(`package: ${r.out} (${r.videos.length} video, captions.srt, social.md, production-notes.md, approval.json: ${r.approval.status})`);
+  }
+}
+
+const commands = { run: cmdRun, stills: cmdStills, script: cmdScript, approve: cmdApprove, 'fetch-narration': cmdFetchNarration, final: cmdFinal, doc: cmdDoc, notes: cmdNotes };
 if (!commands[cmd]) {
   const head = readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1);
   console.log(head.slice(0, head.findIndex((l) => !l.startsWith('//'))).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));

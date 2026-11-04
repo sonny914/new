@@ -12,7 +12,9 @@ import { classify, shouldCapture, ENV_FLAG } from './capture/lib/guard.mjs';
 import { srt } from './capture/lib/captions.mjs';
 import { score } from './capture/lib/score.mjs';
 import { ROOT, readJSON } from './capture/lib/util.mjs';
-import { loadDoc, timeDoc, clipData, silentSeconds } from './capture/lib/documentary.mjs';
+import { loadDoc, timeDoc, clipData, silentSeconds, docPayload } from './capture/lib/documentary.mjs';
+import { parseReview, rankTopics, inventory, extractReview, sentence, intake, draftEpisode, packageEpisode } from './capture/lib/notes.mjs';
+import { stills } from './capture/lib/render.mjs';
 import { execFileSync } from 'node:child_process';
 
 const ORBS = join(ROOT, 'docs/sessions/2026-10-12-orbs-in-repo');
@@ -220,4 +222,147 @@ test('the score goes silent across a mute span', () => {
   const at = (s) => Math.abs(buf.readInt16LE(44 + Math.round(s * 8000) * 4));
   let loud = 0; for (let s = 1.5; s < 2.5; s += 0.01) loud = Math.max(loud, at(s));
   assert.equal(loud, 0);
+});
+
+// ---- Production Notes ------------------------------------------------------------------------------------------
+const withDoc = (doc, patch) => { const d = structuredClone(doc); Object.assign(d, patch); return d; };
+
+test('documentary: a narrated beat waits for the line before it instead of talking over it', () => {
+  const doc = docFixture([{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 0.5], audio: 0, narr: 'n1' }, { hold: 0.5, narr: 'n2' }] }]);
+  const r = timeDoc(doc), [a, b] = r.narration;
+  assert.deepEqual(r.problems, []);
+  assert.ok(b.start >= a.start + a.seconds + 0.29, 'the second line starts after the first, plus a breath');
+});
+
+test('documentary: burned-in subtitles are on screen, so their numbers need facts; emphasis marks never reach the voice', () => {
+  const sc = [{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ hold: 0.5, narr: 'n1' }] }];
+  const doc = withDoc(docFixture(sc), { subs: 'words', narration: { n1: 'His lips move for *0.5 seconds* first.' } });
+  const ok = timeDoc(withDoc(doc, { facts: [{ text: '0.5', from: 'c:summary.silent_mouth_movement_seconds' }] }));
+  assert.deepEqual(ok.problems, []);
+  assert.equal(ok.narration[0].text, 'His lips move for 0.5 seconds first.');
+  assert.equal(ok.cues[0].marked, 'His lips move for *0.5 seconds* first.');
+  assert.match(timeDoc(doc).problems.join(), /shows 0\.5 in the subtitles/);
+});
+
+test('documentary: overlay text is checked for numbers (a chapter number is exempt) and `for` sets a fixed span', () => {
+  const sc = (ov) => [{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 1.5] }, { hold: 1.5, dur: 2 }], props: { overlays: ov } }];
+  const r = timeDoc(docFixture(sc([{ type: 'chapter', n: '01', title: 'What you see', for: 1.2 }, { type: 'timeline', clip: 'c', cut: 0.5, beat: 1 }]), [{ text: '0.50', from: 'record:test' }]));
+  assert.deepEqual(r.problems, []);
+  const [ch, tl] = r.scenes[0].props.overlays;
+  assert.equal(+(ch.t1 - ch.t0).toFixed(3), 1.2); assert.equal(tl.t0, r.scenes[0].beats[1].t0);
+  assert.match(timeDoc(docFixture(sc([{ type: 'arrow', text: 'Took 9 tries', to: 'mouth' }]))).problems.join(), /shows 9, which no fact cites/);
+});
+
+test('documentary: face boxes are placed in the frame they were measured on, and refused when they came from another copy', () => {
+  const doc = docFixture([]), a = JSON.parse(execFileSync('cat', [doc.clips.c.analysis], { encoding: 'utf8' }));
+  a.boxes = Array.from({ length: 96 }, () => [16, 8, 48, 40]); a.summary.width = 64; a.summary.height = 64;
+  writeFileSync(doc.clips.c.analysis, JSON.stringify(a));
+  assert.deepEqual(clipData(doc.clips.c).face[0], [0.25, 0.125, 0.75, 0.625]);
+  const d2 = docFixture([]), b = JSON.parse(execFileSync('cat', [d2.clips.c.analysis], { encoding: 'utf8' }));
+  b.boxes = Array.from({ length: 96 }, () => [193, 542, 488, 887]); writeFileSync(d2.clips.c.analysis, JSON.stringify(b)); // measured on a 716×1284 original
+  assert.equal(clipData(d2.clips.c).face, null);
+});
+
+test('documentary: the watermark is the approved file or a preview slot, never a stand-in in a final render', () => {
+  const doc = withDoc(docFixture([{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 1] }] }]), { watermark: { file: '/nonexistent/logo.svg' } });
+  const prev = timeDoc(doc);
+  assert.deepEqual(prev.problems, []); assert.match(prev.warnings.join(), /approved logo file is missing/);
+  assert.match(timeDoc(doc, { narrationDir: tmpdir() }).problems.join(), /approved logo file is missing/);
+});
+
+const REVIEW = `# Review
+
+## 1. His mouth talks with no sound (Episode 2, Shot 1, takes #90/#91): Verified
+
+- **What you see:** from 1.1 to 3.0 s his mouth moves as if he's speaking.
+- **The founder's note** (29 Oct): *"it looks like he's saying words and he's not"*
+- **What was changed** (record):
+  - the shot is trimmed to start at 3.21 s;
+  - a rule was written down.
+- **Did it work?** Yes for the next shot.
+- **Evidence:** \`card-1.png\`, excerpts 17 and 18.
+
+## 2. A jacket is missing a collar point (Episode 1, Shot 3): Verified
+
+- **What you see:** one collar point.
+- **Evidence:** \`card-collar.png\`.
+
+## 3. The reply felt hostile: the founder's call, partly subjective
+
+- **What you see:** a hard stare.
+`;
+function exportFixture() {
+  const dir = mkdtempSync(join(tmpdir(), 'qb-review-')), src = join(dir, 'the-review');
+  mkdirSync(join(src, 'excerpts'), { recursive: true }); mkdirSync(join(src, 'evidence'), { recursive: true });
+  writeFileSync(join(src, 'creative-review.md'), REVIEW);
+  const fx = docFixture([]);
+  for (const id of ['17_aaaa', '18_bbbb']) {
+    execFileSync('cp', [fx.clips.c.file, join(src, 'excerpts', `${id}.mp4`)]);
+    execFileSync('cp', [fx.clips.c.analysis, join(src, 'evidence', `${id}.json`)]);
+  }
+  writeFileSync(join(src, 'evidence', 'card-1.png'), 'png');
+  return { dir, src };
+}
+
+test('notes: the review parses into findings with fields, the founder\'s words and evidence (short forms too)', () => {
+  const [f1, f2, f3] = parseReview(REVIEW);
+  assert.equal(f1.title, 'His mouth talks with no sound'); assert.equal(f1.refs, 'Episode 2, Shot 1, takes #90/#91'); assert.equal(f1.verdict, 'Verified');
+  assert.deepEqual(f1.quotes, ["it looks like he's saying words and he's not"]);
+  assert.deepEqual(f1.fields.find((x) => /changed/.test(x.label)).items, ['the shot is trimmed to start at 3.21 s;', 'a rule was written down.']);
+  assert.deepEqual(f1.evidence.map((e) => e.name ?? `${e.short} ${e.id}`), ['card-1.png', 'excerpt 17', 'excerpt 18']);
+  assert.equal(f2.evidence[0].name, 'card-collar.png'); assert.match(f3.verdict, /subjective/);
+});
+
+test('notes: topics need real footage; a finding with only stills is reported, not made', () => {
+  const { src } = exportFixture(), inv = inventory(src), topics = rankTopics(parseReview(REVIEW), inv);
+  assert.equal(topics[0].n, 1); assert.equal(topics[0].ready, true);
+  assert.deepEqual(topics[0].evidence.videos.map((v) => v.path), ['excerpts/17_aaaa.mp4', 'excerpts/18_bbbb.mp4']);
+  assert.equal(topics[0].evidence.measurements.length, 2);
+  const collar = topics.find((t) => t.n === 2);
+  assert.equal(collar.ready, false); assert.match(collar.gaps.join(), /no footage excerpt/); assert.match(collar.gaps.join(), /card-collar\.png/);
+});
+
+test('notes: a ZIP that would write outside its folder is refused before anything is unpacked', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'qb-zip-')), zip = join(dir, 'evil.zip');
+  execFileSync('python3', ['-I', '-c', 'import zipfile,sys; z=zipfile.ZipFile(sys.argv[1],"w"); z.writestr("../escape.txt","x"); z.close()', zip]);
+  assert.throws(() => extractReview(zip, join(dir, 'out')), /outside the folder/);
+  assert.equal(existsSync(join(dir, 'escape.txt')), false);
+});
+
+test('notes: draft lines are speakable first clauses, never cut at a decimal point', () => {
+  assert.equal(sentence('from 1.1 to 3.0 s his mouth moves as if he is speaking. More.'), 'From 1.1 to 3.0 s his mouth moves as if he is speaking.');
+  assert.equal(sentence('(record, 13:58): the shot is trimmed to start at 3.21 s; a rule'), 'The shot is trimmed to start at 3.21 s.');
+});
+
+test('notes: intake → draft → check → package runs end to end, and the package waits for approval', () => {
+  const { dir, src } = exportFixture();
+  execFileSync('zip', ['-qr', join(dir, 'review.zip'), 'the-review'], { cwd: dir });
+  const work = join(dir, 'work'), r = intake(join(dir, 'review.zip'), work);
+  assert.equal(r.topics[0].ready, true); assert.ok(existsSync(join(work, 'topics.md')));
+  const d = draftEpisode(work, 1, { episode: 3 });
+  const timed = timeDoc(loadDoc(d.file));
+  assert.deepEqual(timed.problems, [], 'a draft passes the storyboard check');
+  assert.match(timed.warnings.join(), /watermark/);
+  mkdirSync(join(d.dir, 'documentary'), { recursive: true });
+  writeFileSync(join(d.dir, 'documentary', 'documentary-timing.json'), JSON.stringify(timed));
+  const p = packageEpisode(d.file);
+  for (const f of ['captions.srt', 'social.md', 'production-notes.md', 'approval.json']) assert.ok(existsSync(join(p.out, f)), f);
+  assert.equal(p.approval.status, 'awaiting approval'); assert.equal(p.approval.credits_spent, 0);
+  assert.ok(p.approval.items.every((i) => i.status !== 'approved'));
+  assert.equal(p.approval.items.find((i) => i.id === 'logo').status, 'missing');
+});
+
+test('stage: every overlay and the Notes chrome render without errors, with or without face measurements', { timeout: 120000 }, async () => {
+  const ov = [{ type: 'headline', text: 'The silent\nmouth', until: 1 }, { type: 'track', target: 'mouth', hot: true }, { type: 'track', target: 'face' }, { type: 'id', name: 'Shy', role: 'Lead' },
+    { type: 'freeze', beat: 1 }, { type: 'timeline', clip: 'c', cut: 1, marks: [{ at: 0.5, text: 'Hum' }] }, { type: 'arrow', to: 'mouth', text: 'No voice' }, { type: 'chapter', n: '01', title: 'What you see', for: 1 }];
+  const doc = withDoc(docFixture([
+    { id: 'a', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 1], narr: 'n2', audio: 0 }, { hold: 1, dur: 1.5 }], props: { overlays: ov } },
+    { id: 'b', template: 'clip', stage: 'goal', clip: 'c', beats: [{ hold: 0.5, dur: 2, b: { clip: 'c', hold: 1 } }], props: { pair: 'side', overlays: [{ type: 'compare', a: 'As generated', b: 'As cut' }] } },
+    { id: 'e', template: 'endcard', stage: 'goal', dur: 2, props: { subs: false, lines: [{ text: 'The end.' }], series: 'Series' } }], [{ text: '1.00', from: 'record:test cut' }]), { theme: 'notes', subs: 'words', timecode: true, transition: 'wipe', watermark: { label: 'Logo slot' } });
+  const timed = timeDoc(doc); assert.deepEqual(timed.problems, []);
+  const cacheDir = join(doc.base, '.qb-cache'), data = await docPayload(doc, timed, '9x16', { cacheDir, preview: true });
+  const warned = [], warn = console.warn; console.warn = (...a) => warned.push(a.join(' '));
+  try { const files = await stills(data, join(doc.base, 'stills'), [0.6, 1.5, timed.scenes[1].start + 0.4, timed.scenes[1].start + 1.6, timed.duration - 0.5], { mounts: { '/__media/': cacheDir } }); assert.equal(files.length, 5); }
+  finally { console.warn = warn; }
+  assert.deepEqual(warned, []);
 });

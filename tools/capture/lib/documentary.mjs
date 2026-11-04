@@ -2,14 +2,14 @@
 // own sound. A scene is a run of beats: a stretch of a clip playing with its audio, or a held frame that the
 // narration speaks over. Before anything renders, two rules are checked: narration never lands on a clip's
 // dialogue, and every number on screen matches the measurement or record entry it cites.
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, copyFileSync } from 'node:fs';
 import { dirname, resolve, join, basename, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { sha256File, fmtStamp, fmtZone, TZ } from './util.mjs';
 import { framesFor } from './assets.mjs';
 import { audioSeconds, trimmedNarration, speechSeconds } from './storyboard.mjs';
 
-export const PAD = 0.45, OVER = 0.8, LEAD = 0.25, TAIL = 0.45, FPS = 30, FRAME_HEIGHT = 1440;
+export const PAD = 0.45, OVER = 0.8, LEAD = 0.25, TAIL = 0.45, GAP = 0.3, FPS = 30, FRAME_HEIGHT = 1440;
 export const FORMATS = { '16x9': [1920, 1080], '9x16': [1080, 1920] };
 const SPEECH_LUFS = -18; // footage dialogue is levelled to this before the final mix, so takes sit together
 
@@ -18,6 +18,7 @@ export function loadDoc(file) {
   if (doc.schema !== 'qb-capture/documentary@1') throw new Error(`${file}: not a qb-capture/documentary@1 storyboard`);
   doc.base = dirname(resolve(file));
   for (const c of Object.values(doc.clips)) for (const k of ['file', 'analysis', 'track']) if (c[k]) c[k] = resolve(doc.base, c[k]);
+  if (doc.watermark?.file) doc.watermark.file = resolve(doc.base, doc.watermark.file);
   return doc;
 }
 
@@ -34,10 +35,19 @@ export function clipData(c) {
     for (let i = Math.max(0, A - g); i < Math.min(n, B + g); i++) near[i] = true;
   }
   const tr = c.track && existsSync(c.track) ? JSON.parse(readFileSync(c.track, 'utf8')) : null;
+  // the face box per frame (measured in pixels), normalised to the frame so the stage can keep graphics off the face
+  // boxes are pixels of the frame they were measured on: the measurement's own size, else the track's, else the
+  // file's. A box that falls outside that frame means it was measured on another copy, so no face is reported.
+  const dims = s.width ? [s.width, s.height] : tr?.width ? [tr.width, tr.height] : a.boxes ? frameSize(c.file) : null;
+  const fits = dims && (a.boxes ?? []).every((b) => !b || (b[2] <= dims[0] * 1.02 && b[3] <= dims[1] * 1.02));
+  const face = a.boxes && fits ? a.boxes.map((b) => (b ? [b[0] / dims[0], b[1] / dims[1], b[2] / dims[0], b[3] / dims[1]].map((v) => +v.toFixed(4)) : null)) : null;
   const d = { fps, n, seconds: s.seconds, summary: s, segments: s.speech_segments, db: a.audio_db.map((v) => +v.toFixed(1)), floor: s.noise_floor_db, thr: s.speech_threshold_db,
-    voiced, silent: a.moving.map((m, i) => (m && !near[i] ? 1 : 0)), mouth: tr?.mouth ?? null, eyes: tr?.eyes ?? null };
+    voiced, silent: a.moving.map((m, i) => (m && !near[i] ? 1 : 0)), mouth: tr?.mouth ?? null, eyes: tr?.eyes ?? null, face };
   clipCache.set(c.analysis, d);
   return d;
+}
+function frameSize(file) {
+  try { const [w, h] = execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', file], { encoding: 'utf8' }).trim().split(',').map(Number); return w && h ? [w, h] : null; } catch { return null; }
 }
 // seconds of silent mouth movement from src0 up to src1, counted per source frame (what the on-screen counter shows)
 export const silentSeconds = (d, src0, src1) => {
@@ -58,13 +68,15 @@ export function factValue(doc, from) {
   throw new Error(`fact source "${from}": unknown measurement`);
 }
 const numbers = (text) => (String(text).match(/\d+(?:\.\d+)?/g) ?? []);
+// narration lines may mark subtitle emphasis with *asterisks*; the voice and the timing read the plain words
+export const plain = (text) => String(text).replace(/\*/g, '');
 
 function voiceLine(doc, id, narrationDir) {
   const text = doc.narration?.[id];
   if (text == null) throw new Error(`narration line "${id}" is not in the storyboard's script`);
   const raw = narrationDir && existsSync(join(narrationDir, `${id}.wav`)) ? join(narrationDir, `${id}.wav`) : null;
   const file = raw ? trimmedNarration(raw) : null;
-  return { id, text, file, recording: raw, seconds: +(file ? audioSeconds(file) : speechSeconds(text)).toFixed(3), source: file ? 'recorded' : 'estimate' };
+  return { id, text: plain(text), marked: text, file, recording: raw, seconds: +(file ? audioSeconds(file) : speechSeconds(plain(text))).toFixed(3), source: file ? 'recorded' : 'estimate' };
 }
 
 const gainCache = new Map();
@@ -102,7 +114,8 @@ export function timeDoc(doc, { narrationDir = null } = {}) {
         if (kind === 'play' && gain > 0.2 && prev && narrEnd + TAIL > lt + 1e-6)
           push({ j: null, auto: true, clip: prev.clip, kind: 'hold', src0: prev.src1, src1: prev.src1, t0: +lt.toFixed(3), t1: +(narrEnd + TAIL).toFixed(3), zoom: prev.zoom, gain: 0, narr: null, stage: prev.stage });
         let v = null;
-        if (b.narr) { v = voiceLine(doc, b.narr, narrationDir); narrEnd = lt + LEAD + v.seconds; narration.push({ ...v, scene: sc.id, start: +(t + lt + LEAD).toFixed(3) }); }
+        // a line never starts over the one before it: it waits for the last line to end, plus a breath
+        if (b.narr) { v = voiceLine(doc, b.narr, narrationDir); const at = Math.max(lt + LEAD, narrEnd ? narrEnd + GAP : 0); narrEnd = at + v.seconds; narration.push({ ...v, scene: sc.id, start: +(t + at).toFixed(3) }); }
         const dur = kind === 'play' ? src1 - src0 : b.dur ?? Math.max(b.min ?? 0, narrEnd > lt ? narrEnd - lt + TAIL : 1);
         const beat = push({ j, clip: c, kind, src0, src1, t0: +lt.toFixed(3), t1: +(lt + dur).toFixed(3), zoom, gain, narr: b.narr ?? null, stage: b.stage ?? prev?.stage ?? sc.stage });
         at[j] = beat.k;
@@ -123,10 +136,11 @@ export function timeDoc(doc, { narrationDir = null } = {}) {
       const span = (o, what) => {
         const b0 = out.beats[at[o.beat ?? 0]]; if (!b0) { problems.push(`${sc.id}: ${what} points at beat ${o.beat}, which doesn't exist`); return null; }
         const end = o.until == null ? out.duration - PAD : o.until === 'end' ? out.duration : out.beats[at[o.until]]?.t1;
-        return { ...o, beat: b0.k, t0: +(b0.t0 + (o.delay ?? 0)).toFixed(3), t1: +(end ?? out.duration).toFixed(3) };
+        const t0 = b0.t0 + (o.delay ?? 0);
+        return { ...o, beat: b0.k, t0: +t0.toFixed(3), t1: +(o.for != null ? Math.min(t0 + o.for, out.duration) : end ?? out.duration).toFixed(3) };
       };
       out.props = { ...sc.props };
-      for (const key of ['labels', 'lines', 'marks']) out.props[key] = (sc.props?.[key] ?? []).map((o) => span(o, key)).filter(Boolean);
+      for (const key of ['labels', 'lines', 'marks', 'overlays']) out.props[key] = (sc.props?.[key] ?? []).map((o) => span(o, key)).filter(Boolean);
       for (const key of ['ring', 'strip']) if (sc.props?.[key]) out.props[key] = span(sc.props[key], key);
       if (sc.props?.strip?.all != null) out.props.strip.all = at[sc.props.strip.all];
       // a counting label must end on the number its fact cites
@@ -165,12 +179,20 @@ export function timeDoc(doc, { narrationDir = null } = {}) {
   }
   for (const sc of scenes) {
     const shown = [...(sc.props?.labels ?? []).map((l) => l.shown ?? l.text), ...(sc.props?.lines ?? []).map((l) => l.text), ...(sc.props?.marks ?? []).map((m) => m.text ?? ''),
-      ...(sc.props?.strip?.marks ?? []).map((m) => m.text), sc.props?.quote ?? '', ...(sc.template === 'lesson' ? sc.props.lines : [])];
+      ...(sc.props?.strip?.marks ?? []).map((m) => m.text), sc.props?.quote ?? '', ...(sc.template === 'lesson' ? sc.props.lines : []), ...(sc.props?.overlays ?? []).flatMap(overlayText)];
     for (const s of shown) for (const num of numbers(s)) if (!facts.has(num)) problems.push(`${sc.id}: "${s}" shows ${num}, which no fact cites`);
   }
-  const cues = narration.map((n) => ({ start: n.start, end: +(n.start + n.seconds).toFixed(3), text: n.text })).sort((a, b) => a.start - b.start);
-  return { title: doc.title, fps: doc.fps ?? FPS, duration, frames: Math.round(duration * (doc.fps ?? FPS)), scenes, narration, clips, mute, cues, problems };
+  // burned-in subtitles are on screen too, so their numbers need facts like any label
+  if (doc.subs || doc.burnCaptions) for (const n of narration) for (const num of numbers(n.text)) if (!facts.has(num)) problems.push(`narration "${n.id}" shows ${num} in the subtitles, which no fact cites`);
+  // the watermark is an approved logo file or nothing: a final render never typesets a stand-in
+  const warnings = [];
+  if (doc.watermark && !(doc.watermark.file && existsSync(doc.watermark.file))) (narrationDir ? problems : warnings).push(`watermark: the approved logo file is missing (${doc.watermark.file ?? 'no file given'}); the preview shows an empty slot`);
+  const cues = narration.map((n) => ({ start: n.start, end: +(n.start + n.seconds).toFixed(3), text: n.text, marked: n.marked })).sort((a, b) => a.start - b.start);
+  return { title: doc.title, fps: doc.fps ?? FPS, duration, frames: Math.round(duration * (doc.fps ?? FPS)), scenes, narration, clips, mute, cues, problems, warnings };
 }
+
+// the words an overlay puts on screen (a chapter's number is its place in the episode, not a claim)
+const overlayText = (o) => [o.text, o.sub, o.name, o.role, o.a, o.b, o.aNote, o.bNote, o.label, o.cutText ?? (o.cut != null ? `Cut at ${o.cut.toFixed(2)} s` : null), o.trimText, o.title, ...(o.marks ?? []).map((m) => m.text)].filter((x) => x != null);
 
 // What the stage needs for one format: timed scenes, frame sequences for every clip used, and each clip's series.
 export async function docPayload(doc, timed, fmt, { cacheDir, preview = false }) {
@@ -181,11 +203,19 @@ export async function docPayload(doc, timed, fmt, { cacheDir, preview = false })
     const c = doc.clips[id], d = clipData(c);
     const fr = await framesFor({ id, path: basename(c.file), sha256: sha256File(c.file), root: 'archive' }, dirname(c.file), null, { fps, height: FRAME_HEIGHT, cacheDir });
     assets[id] = { kind: 'clip', label: c.label, frames: { base: `/__media/${relative(cacheDir, fr.dir).split('\\').join('/')}/`, count: fr.count, fps },
-      srcFps: d.fps, seconds: d.seconds, db: d.db, floor: d.floor, thr: d.thr, voiced: d.voiced, silent: d.silent, mouth: d.mouth, eyes: d.eyes };
+      srcFps: d.fps, seconds: d.seconds, db: d.db, floor: d.floor, thr: d.thr, voiced: d.voiced, silent: d.silent, mouth: d.mouth, eyes: d.eyes, face: d.face };
+  }
+  // the watermark file is served from the frame cache, so the stage reads it like any other private media
+  let watermark = null;
+  if (doc.watermark) {
+    const f = doc.watermark.file;
+    if (f && existsSync(f)) { mkdirSync(join(cacheDir, 'watermark'), { recursive: true }); copyFileSync(f, join(cacheDir, 'watermark', basename(f))); watermark = { url: `/__media/watermark/${basename(f)}` }; }
+    else watermark = { label: doc.watermark.label ?? 'Logo file needed' };
   }
   const stages = doc.stages;
   return {
     format: fmt, width, height, fps, duration: timed.duration, frames: timed.frames, tz: TZ, doc: true, corner: doc.corner ?? 'Production recap',
+    theme: doc.theme ?? null, subs: doc.subs ?? null, timecode: doc.timecode === true, transition: doc.transition ?? null, watermark,
     captions: preview || doc.burnCaptions === true, capTag: preview ? (doc.previewTag ?? 'Narration · not recorded yet') : null,
     stages, cues: timed.cues, assets, brand: { mark: '/assets/brand/mark.svg', wordmark: '/assets/brand/wordmark.svg' },
     scenes: timed.scenes.map((s) => ({ ...s, stageIndex: stages.findIndex((x) => x.id === s.stage) + 1, stageLabel: stages.find((x) => x.id === s.stage)?.label ?? '',

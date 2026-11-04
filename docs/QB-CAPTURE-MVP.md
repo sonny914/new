@@ -199,6 +199,36 @@ The documentary script is written in plain language from the review, never from 
 
 **First use:** THE BLOCK, about 75 s, 16:9 and 9:16. Its storyboard, footage, review and report are private and kept outside this repo.
 
+## 8a. Production Notes (HARLEM '88)
+
+A Production Notes episode is a 30–45 s, 9:16 documentary-mode cut that shows one real problem in the series' footage, why it happened, the real fix, and whether it held. The workflow is in the `harlem88-production-notes` skill.
+
+Commands:
+
+```
+node tools/capture/cli.mjs notes intake <review.zip|dir> --out <workdir>     # topics.md, ranked by evidence
+node tools/capture/cli.mjs notes draft <workdir> --topic <n> --episode <n>   # ep<NN>/<slug>.json + script.md
+node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16 --check      # evidence and timing checks
+node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16 --stills 1,4,8
+node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16              # silent preview
+node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16 --narration <dir>   # after the voice is approved and recorded
+node tools/capture/cli.mjs notes package <storyboard.json>                   # captions, post copy, notes, approval.json
+```
+
+The storyboard adds these document options to `qb-capture/documentary@1`:
+- `theme: "notes"`;
+- `subs: "words"`;
+- `timecode: true`;
+- `transition: "wipe"`;
+- `watermark: { file, label }`.
+
+Each clip scene takes `props.overlays` (the ten components in `tools/capture/stage/overlays.js`) and `props.pair: "side"`. The `endcard` template closes the episode.
+
+The rules are the documentary rules, plus:
+- subtitles are on screen, so their numbers need facts;
+- graphics stay off faces;
+- the HARLEM '88 logo is the approved file or nothing.
+
 ## 9. Known limits
 
 - Caption timing inside a scene is proportional to characters, not force-aligned to the recorded voice. Scene boundaries are exact.

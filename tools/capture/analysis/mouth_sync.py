@@ -109,6 +109,8 @@ if face_frames > n * 0.6 and speech.any():
 
 summary = {
     'clip': os.path.basename(clip), 'fps': fps, 'frames': n, 'seconds': round(n / fps, 3),
+    # the frame size the face boxes are measured in, so graphics can be placed on a copy at another size
+    'width': int(w) if n else None, 'height': int(h) if n else None,
     'face_coverage': round(float(face_frames / n), 3) if n else 0,
     'has_audio': bool(wav), 'speech_threshold_db': round(float(thr), 1), 'noise_floor_db': round(float(floor), 1),
     'speech_segments': [[round(s / fps, 2), round(e / fps, 2)] for s, e in merged],

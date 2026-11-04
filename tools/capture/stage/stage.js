@@ -1,10 +1,11 @@
 // QB Capture stage: builds every scene of one format from the storyboard and draws any frame on demand.
 // window.stage.seek(frame) is a pure function of the frame number, so renders are repeatable frame for frame.
+import * as OV from './overlays.js';
 const QB = window.__QB__;
 const W = QB.width, H = QB.height, FPS = QB.fps, OVER = 0.8;
 const portrait = H > W;
 const frame = document.getElementById('frame');
-frame.className = `${portrait ? 'f9x16' : 'f16x9'}${QB.doc ? ' doc' : ''}`;
+frame.className = `${portrait ? 'f9x16' : 'f16x9'}${QB.doc ? ' doc' : ''}${QB.theme ? ` theme-${QB.theme}` : ''}`;
 Object.assign(frame.style, { width: `${W}px`, height: `${H}px` });
 
 // ---- helpers --------------------------------------------------------------------------------------
@@ -24,6 +25,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 const set = (el, styles) => Object.assign(el.style, styles);
 const fade = (el, k, dy = 0) => set(el, { opacity: k, transform: dy ? `translateY(${(1 - k) * dy}px)` : '' });
 let SVG = {};
+OV.init({ h, set, esc, E, P, clamp, lerp });
 
 // Split text into masked words. Words inside `accent` (a substring) are orange.
 function words(el, text, accent) {
@@ -100,14 +102,16 @@ function drawPanel(pn, asset, src, rect, after) {
     after?.((x, y) => [((x * img.naturalWidth - v.sx) / v.sw) * cw, ((y * img.naturalHeight - v.sy) / v.sh) * ch], (len) => (len * img.naturalWidth / v.sw) * cw);
   }));
 }
+const SIDE_A = [40, 480, 530, 1360]; // the left frame of a side-by-side pair in 9:16 (the right one is in stage.css)
 T.clip = (sc) => {
   const p = sc.props, beats = sc.beats, pair = beats.some((b) => b.b);
-  const el = h('div', `clip${pair ? ' pair' : ''}`), A = clipPanel('a'), B = pair ? clipPanel('b') : null;
+  const side = pair && portrait && p.pair === 'side';
+  const el = h('div', `clip${pair ? ' pair' : ''}${side ? ' side' : ''}`), A = clipPanel('a'), B = pair ? clipPanel('b') : null;
   const scrim = h('div', 'cscrim');
-  const side = h('div', 'cside'), linesEl = h('div', 'clines'), dataEl = h('div', 'cdatas');
+  const col = h('div', 'cside'), linesEl = h('div', 'clines'), dataEl = h('div', 'cdatas');
   const strip = p.strip ? h('div', 'cstrip', '<div class="smarks"></div><canvas></canvas><div class="saxis mono"><span>Voice</span><span class="t"></span></div>') : null;
-  side.append(linesEl, dataEl); if (strip) side.append(strip);
-  el.append(A.d, ...(B ? [B.d] : []), scrim, side);
+  col.append(linesEl, dataEl); if (strip) col.append(strip);
+  el.append(A.d, ...(B ? [B.d] : []), scrim, col);
   const ring = h('div', 'ring'); A.d.append(ring);
   const lines = (p.lines ?? []).map((o) => { const d = h('h2', 'cline h-head'); linesEl.append(d); return { o, d, ws: words(d, o.text, o.accent) }; });
   const labels = (p.labels ?? []).map((o) => {
@@ -121,6 +125,7 @@ T.clip = (sc) => {
     A.d.append(...rings, tx); return { o, rings, tx };
   });
   const sMarks = strip ? (p.strip.marks ?? []).map((m) => { const d = h('div', 'smark mono', `<i></i><span>${esc(m.text)}</span>`); strip.firstChild.append(d); return { m, d }; }) : [];
+  const ovs = OV.build(p.overlays, A.d, el);
   return { el, stageAt: (t) => beatAt(beats, t).stage ?? sc.stage, mount() { for (const pn of [A, B].filter(Boolean)) { pn.cv.width = pn.cv.clientWidth; pn.cv.height = pn.cv.clientHeight; } if (strip) { const c = strip.querySelector('canvas'); c.width = c.clientWidth; c.height = c.clientHeight; } },
     pairK: 0,
     update(t) {
@@ -129,12 +134,20 @@ T.clip = (sc) => {
       if (pair) {
         const firstB = beats.find((x) => x.b), pk = E.inOutCubic(P(t, firstB.t0, firstB.t0 + 0.7));
         this.pairK = pk;
-        if (portrait) { A.d.style.bottom = `${50 * pk}%`; A.lab.style.bottom = `${lerp(620, 24, pk)}px`; } else side.style.left = `${lerp(746, 1262, pk)}px`;
+        // side by side (9:16): the take shrinks from full frame into the left of two frames set like a contact print
+        if (side) { const r = lerpRect([0, 0, W, H], SIDE_A, pk); set(A.d, { left: `${r[0]}px`, top: `${r[1]}px`, width: `${r[2] - r[0]}px`, height: `${r[3] - r[1]}px` }); }
+        else if (portrait) { A.d.style.bottom = `${50 * pk}%`; A.lab.style.bottom = `${lerp(620, 24, pk)}px`; } else col.style.left = `${lerp(746, 1262, pk)}px`;
         if (A.cv.height !== A.d.clientHeight || A.cv.width !== A.d.clientWidth) { A.cv.width = A.d.clientWidth; A.cv.height = A.d.clientHeight; }
       }
-      const prev = beats[b.k - 1], rect = prev && prev.clip === b.clip ? lerpRect(prev.zoom, b.zoom, E.inOutCubic(P(t, b.t0, b.t0 + 0.9))) : b.zoom;
+      const prev = beats[b.k - 1];
+      let rect = prev && prev.clip === b.clip ? lerpRect(prev.zoom, b.zoom, E.inOutCubic(P(t, b.t0, b.t0 + 0.9))) : b.zoom;
+      // a freeze pushes in on the face (or the middle of the view when no face was measured)
+      const pk = OV.punchAt(p.overlays, t), fc = asset.face?.[j];
+      if (pk > 1) { const cx = fc ? (fc[0] + fc[2]) / 2 : (rect[0] + rect[2]) / 2, cy = fc ? (fc[1] + fc[3]) / 2 : (rect[1] + rect[3]) / 2; rect = [cx - (cx - rect[0]) / pk, cy - (cy - rect[1]) / pk, cx + (rect[2] - cx) / pk, cy + (rect[3] - cy) / pk]; }
       A.tag.textContent = asset.label;
-      A.freeze.textContent = b.kind === 'hold' && t >= b.t0 ? `Frozen · ${src.toFixed(1)} s` : '';
+      const held = b.kind === 'hold' && t >= b.t0;
+      A.freeze.textContent = QB.timecode ? `${held ? 'Frozen ' : ''}${OV.timecode(src, asset.srcFps)}` : held ? `Frozen · ${src.toFixed(1)} s` : '';
+      A.freeze.classList.toggle('held', held);
       const rk = vis(p.ring, t), hot = b.kind === 'play' && t >= b.t0 && asset.silent[j] === 1;
       const mk = marks.map((m) => vis(m.o, t));
       drawPanel(A, asset, src, rect, (pt, len) => {
@@ -152,6 +165,12 @@ T.clip = (sc) => {
           const tw = tx.offsetWidth, cx = clamp((minX + maxX) / 2 - tw / 2, 10, A.cv.width - tw - 10);
           set(tx, { left: `${cx}px`, top: `${maxY + 10}px`, opacity: k });
         });
+        // overlays get the face, mouth and silence of this exact source frame, in panel pixels
+        if (ovs.length) {
+          const cw = A.cv.width, ch = A.cv.height, f = asset.face?.[j], mo = asset.mouth?.[j];
+          const fb = f ? [...pt(f[0], f[1]), ...pt(f[2], f[3])] : null;
+          ovs.forEach((o) => o.update(t, { face: fb ? [fb[0] / cw, fb[1] / ch, fb[2] / cw, fb[3] / ch] : null, faceBox: fb, mouth: mo ? [...pt(mo[0], mo[1]), len(mo[2])] : null, cw, ch, hot: asset.silent[j] === 1, src, asset, beat: b }));
+        }
       });
       // second panel
       if (B) {
@@ -159,7 +178,7 @@ T.clip = (sc) => {
         const showB = bb ? b : [...beats].reverse().find((x) => x.b && x.t0 <= t);
         if (showB) {
           const ba = QB.assets[showB.b.clip], pb = beats[showB.k - 1]?.b, rb = pb && pb.clip === showB.b.clip ? lerpRect(pb.zoom, showB.b.zoom, E.inOutCubic(P(t, showB.t0, showB.t0 + 0.9))) : showB.b.zoom;
-          B.tag.textContent = ba.label; B.freeze.textContent = `Frozen · ${showB.b.src.toFixed(1)} s`; drawPanel(B, ba, showB.b.src, rb);
+          B.tag.textContent = ba.label; B.freeze.textContent = QB.timecode ? `Frozen ${OV.timecode(showB.b.src, ba.srcFps)}` : `Frozen · ${showB.b.src.toFixed(1)} s`; B.freeze.classList.add('held'); drawPanel(B, ba, showB.b.src, rb);
         }
         set(B.d, { opacity: bb ? E.outCubic(P(t, firstB.t0, firstB.t0 + 0.6)) : showB ? 1 : 0, transform: portrait ? '' : `translateX(${(1 - E.outCubic(P(t, firstB.t0, firstB.t0 + 0.7))) * 40}px)` });
       }
@@ -518,6 +537,20 @@ T.lesson = (sc) => {
   } };
 };
 
+// Production Notes end card: the sign-off in the headline voice, the series line under a rule, the studio lockup
+T.endcard = (sc) => {
+  const p = sc.props, el = h('div', 'endcard');
+  const head = h('div', 'ec-head');
+  const rows = (p.lines ?? []).map((l) => { const d = h('div', 'ec-line'); head.append(d); return words(d, l.text, l.accent); });
+  const rl = h('i', 'ec-rule'), series = h('div', 'ec-series', esc(p.series ?? '')), lock = h('div', 'ec-lock', `<span class="mk">${SVG.mark}</span><span class="wm">${SVG.wordmark}</span>`);
+  el.append(head, rl, series, lock);
+  return { el, update(t) {
+    rows.forEach((ws, i) => rise(ws, t, 0.35 + i * 0.35, 0.06, 0.75));
+    rl.style.transform = `scaleX(${E.outExpo(P(t, 1.1, 2.0))})`;
+    fade(series, E.outCubic(P(t, 1.3, 1.9)), 10); fade(lock, E.outCubic(P(t, 1.6, 2.3)), 10);
+  } };
+};
+
 T.outro = (sc) => {
   const p = sc.props, el = h('div', 'outro');
   const mk = h('div', 'mk', SVG.mark), wm = h('div', 'wm', SVG.wordmark), rl = h('div', 'rl');
@@ -657,6 +690,13 @@ async function build() {
   const cap = h('div', 'cap', QB.capTag ? `<span><em class="ctg mono">${esc(QB.capTag)}</em><b></b></span>` : '<span></span>');
   const fadeEl = h('div', 'fade');
   chrome.append(corner, clock, src, spine, cap, fadeEl);
+  // Production Notes chrome: word-timed subtitles, the preview marker, the wipe's edge and the bottom watermark
+  const subs = QB.subs ? OV.subtitles(chrome, QB.cues) : null;
+  const ptag = QB.subs && QB.capTag ? h('div', 'ptag mono', esc(QB.capTag)) : null;
+  const edge = QB.transition === 'wipe' ? h('div', 'wipe-edge') : null;
+  const wmark = QB.watermark ? h('div', `wmark${QB.watermark.url ? '' : ' slot'}`, QB.watermark.url ? `<img src="${esc(QB.watermark.url)}" alt="">` : `<span>${esc(QB.watermark.label ?? 'Logo file needed')}</span>`) : null;
+  chrome.append(...[ptag, edge, wmark].filter(Boolean));
+  if (wmark?.firstChild?.decode) await wmark.firstChild.decode().catch(() => { throw new Error(`watermark ${QB.watermark.url} did not load`); });
   await document.fonts.ready;
   scenes.forEach((s) => { s.node.style.visibility = 'visible'; s.tpl.mount?.(); s.node.style.visibility = 'hidden'; });
 
@@ -664,7 +704,7 @@ async function build() {
   async function seek(f) {
     const t = f / FPS;
     pending = [];
-    let best = null, bestW = -1, prev = null, wIn = 1;
+    let best = null, bestW = -1, prev = null, wIn = 1, wiping = null;
     for (const s of scenes) {
       const lt = t - s.sc.start, D = s.sc.duration;
       if (lt < 0 || lt > D) { s.node.style.visibility = 'hidden'; continue; }
@@ -673,8 +713,16 @@ async function build() {
       if (w > bestW) { prev = best; best = s; bestW = w; wIn = kin; } else prev = s;
       const dx = portrait ? 0 : W * 0.2, dy = portrait ? H * 0.08 : 0;
       s.node.style.visibility = 'visible';
-      s.node.style.opacity = E.outCubic(kin) * (1 - E.inCubic(kout));
-      s.node.style.transform = `translate3d(${(1 - kin) * dx - kout * dx}px, ${(1 - kin) * dy - kout * dy}px, 0) scale(${1 - 0.035 * (1 - kin) + 0.05 * kout})`;
+      if (edge) {
+        // wipe: the next scene is revealed over the last one from the bottom (9:16) or the right (16:9); nothing fades
+        const k = s.i === 0 ? 1 : E.inOutQuint(P(lt, 0.05, OVER - 0.05));
+        s.node.style.opacity = 1; s.node.style.transform = '';
+        s.node.style.clipPath = k < 1 ? (portrait ? `inset(${(1 - k) * 100}% 0 0 0)` : `inset(0 0 0 ${(1 - k) * 100}%)`) : '';
+        if (k > 0 && k < 1) wiping = portrait ? { top: `${(1 - k) * H}px` } : { left: `${(1 - k) * W}px` };
+      } else {
+        s.node.style.opacity = E.outCubic(kin) * (1 - E.inCubic(kout));
+        s.node.style.transform = `translate3d(${(1 - kin) * dx - kout * dx}px, ${(1 - kin) * dy - kout * dy}px, 0) scale(${1 - 0.035 * (1 - kin) + 0.05 * kout})`;
+      }
       s.tpl.update(lt, D);
     }
     // chrome follows the scene that holds the frame; brand cards hide it
@@ -697,7 +745,9 @@ async function build() {
     const span = QB.capTag ? cap.querySelector('b') : cap.firstChild;
     frame.classList.toggle('pairmode', (best?.tpl.pairK ?? 0) > 0.5);
     frame.classList.toggle('clipmode', best?.sc.template === 'clip');
-    if (cue && QB.captions !== false) {
+    if (edge) set(edge, { opacity: wiping ? 1 : 0, ...(wiping ?? {}) });
+    if (subs) { subs.update(t); cap.style.opacity = 0; if (best?.sc.props?.subs === false) subs.hide(); }
+    else if (cue && QB.captions !== false) {
       span.textContent = cue.text;
       const a = Math.min(P(t, cue.start, cue.start + 0.14), 1 - P(t, cue.end - 0.1, cue.end));
       set(cap, { opacity: a, transform: `translateY(${(1 - a) * 8}px)` });

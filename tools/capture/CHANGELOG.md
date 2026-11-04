@@ -2,6 +2,37 @@
 
 QB Capture documents its own development here. Sessions that change `tools/capture/` are also recapped like any other work; runs of the capture itself never are (see `lib/guard.mjs`).
 
+## 0.4.0 — 4 Nov 2026
+
+HARLEM '88: Production Notes, a build-in-public series of short vertical episodes. Each one shows a real problem in the series' AI-generated footage, explains it, and shows the real fix. It is built on documentary mode, not as a new app.
+
+- **Overlay library (`stage/overlays.js`):** ten components that read the measurements of the exact source frame on screen:
+  - `headline`, a kinetic headline;
+  - `id`, a character label that picks a side with room inside the 9:16 safe area, once;
+  - `track`, brackets or a ring on the mouth or face, orange on silent frames;
+  - `freeze`, a flash and a punch-in on the face;
+  - `compare`, before/after labels, with a side-by-side 9:16 pair layout;
+  - `timeline`, the take as a ruler: voice, silent movement, playhead, the cut and the trimmed part, hum marks;
+  - `arrow`, a note beside the face that draws onto the near mouth corner;
+  - `chapter`, number and title under a drawn rule;
+  - word-timed subtitles with `*emphasis*`;
+  - the bottom watermark, the approved logo file only.
+
+  Type goes in the band the face isn't in, measured per frame.
+- **Notes theme:** sentence-case chrome and running source timecode. A reveal wipe with a cream edge replaces the fade-and-slide between scenes. There is an `endcard` template.
+- **Checks:**
+  - burned-in subtitles count as on screen, so their numbers need facts;
+  - overlay text is checked like labels;
+  - a narrated beat waits for the line before it (0.3 s breath) instead of overlapping it;
+  - a missing watermark file is a preview warning and a final-render failure.
+- **Face boxes:** read from the measurement and placed in the frame size they were measured on. `mouth_sync.py` now records `width`/`height`; boxes from a different-sized copy are refused rather than mis-placed.
+- **`notes` command (`lib/notes.mjs`):**
+  - `intake` unpacks a creative review ZIP safely (no entries outside the folder, no symlinks, nothing executed), inventories and hashes it, parses `creative-review.md`, and ranks topics by evidence. Footage is required; a finding with only stills is reported, not made.
+  - `draft` writes an evidence-linked storyboard and `script.md` in Episode 01's shape. Lines are quoted from the review and numbers are cited.
+  - `package` writes captions, post copy, production notes and `approval.json`, every item pending.
+- **Skill:** `.agents/skills/harlem88-production-notes`, covering the workflow, the overlay reference, the QA checklist and the Episode 01 reference.
+- **Tests:** 11 new ones (91 total), including a browser render of every overlay and the Notes chrome, with and without face measurements.
+
 ## 0.3.0 — 29 Oct 2026
 
 Documentary mode, after the founder's creative-intelligence correction: the THE BLOCK recap documented the computer work, not the film. The engine is extended, not rebuilt.
