@@ -30,6 +30,22 @@ It writes `<name>.json` and an evidence strip `<name>-strip.png`.
 
 Per-frame mouth centre and width (landmarks 13/14 and 61/291) and the eye centres (33/133 and 362/263), in 0–1 frame units. Documentary mode uses them to place the mouth ring and the eye marks.
 
+## `narration_check.py`
+
+It checks recorded narration takes before they go into a cut. It needs numpy; pocketsphinx (`pip install pocketsphinx`; the wheel bundles an English model) adds transcripts.
+
+```
+<venv>/bin/python -I tools/capture/analysis/narration_check.py <narration dir> <storyboard.json>
+```
+
+For each `<line id>.wav` it reports PASS, REVIEW or FAIL, and exits 1 on any FAIL or missing take. The checks:
+
+- **Silence:** a take that never rises above −45 dBFS fails.
+- **Syllable pace:** energy-envelope nuclei, compared with the line's spelled-out syllables. Under 0.7× fails (words missing); over 1.45× is a REVIEW (repeats). Good Episode 01 takes read 0.79–1.14×.
+- **Stray sound:** more than 0.6 s of sound before the first recognised word is a REVIEW.
+- **Pauses:** pauses over 0.6 s are noted; the render trims them to 0.45 s.
+- **Transcript:** pocketsphinx is rough on this voice. A low content-word score only counts together with an abnormal pace.
+
 ## Production QC: `qc_measure.py` and `qc_check.py`
 
 These turn the failures QB Capture documented on THE BLOCK into checks that every new take passes through before anyone approves it.

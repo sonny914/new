@@ -8,7 +8,7 @@
 //   node tools/capture/cli.mjs approve  --key <name> --by <who> (--voice <higgsfield voice id> | --silent)   record the founder's approval
 //   node tools/capture/cli.mjs fetch-narration --key <name> download the recorded lines listed in narration/jobs.json
 //   node tools/capture/cli.mjs final    --key <name>        re-time to the recorded narration and render the final cut
-//   node tools/capture/cli.mjs doc      <documentary.json> [--out <dir>] [--formats 16x9,9x16] [--narration <dir> [--final]] [--stills 1,5] [--check]
+//   node tools/capture/cli.mjs doc      <documentary.json> [--out <dir>] [--formats 16x9,9x16] [--narration <dir> [--partial | --final]] [--stills 1,5] [--check]
 //                                       render a hand-approved documentary of real footage (preview until --narration is given)
 //   node tools/capture/cli.mjs notes    intake <review.zip|dir> | draft <workdir> --topic <n> | package <storyboard.json>
 //                                       HARLEM '88 Production Notes: ranked topics, draft episodes, approval packages
@@ -256,19 +256,23 @@ async function cmdDoc() {
   if (final && !narrationDir) throw new Error('--final needs --narration <dir>: a final render is narrated');
   const timed = timeDoc(doc, { narrationDir, final });
   const unrecorded = timed.narration.filter((n) => n.source !== 'recorded').map((n) => n.id);
-  if (narrationDir && unrecorded.length) timed.problems.push(`no recording in ${narrationDir} for: ${unrecorded.join(', ')}`);
+  // --partial reviews a narrated draft while a line is being re-recorded: the missing line keeps its estimated timing
+  // and shows as subtitles only, and the draft says so on screen. A final render never accepts it.
+  const partial = !!opt('partial') && !final;
+  if (narrationDir && unrecorded.length && !partial) timed.problems.push(`no recording in ${narrationDir} for: ${unrecorded.join(', ')}${final ? '' : ' (add --partial to review a draft without them)'}`);
+  if (partial && unrecorded.length) doc.draftTag = `${doc.draftTag ?? 'Narrated draft'}; not recorded yet: ${unrecorded.join(', ')}`;
   writeJSON(join(out, 'documentary-timing.json'), { generated_by: `QB Capture ${VERSION}`, preview, ...timed });
   writeText(join(out, 'documentary-captions.srt'), srt(timed.cues));
   if (timed.problems.length) throw new Error(`storyboard check failed:\n- ${timed.problems.join('\n- ')}`);
   for (const w of timed.warnings ?? []) say(`warning: ${w}`);
-  say(`checked: ${timed.scenes.length} scenes, ${timed.duration.toFixed(1)} s, ${timed.narration.length} narration lines (${preview ? 'estimated, not recorded' : 'recorded'}), ${timed.clips.length} stretches of footage sound`);
+  say(`checked: ${timed.scenes.length} scenes, ${timed.duration.toFixed(1)} s, ${timed.narration.length} narration lines (${preview ? 'estimated, not recorded' : `${timed.narration.filter((n) => n.source === 'recorded').length} recorded`}), ${timed.clips.length} stretches of footage sound`);
   if (opt('check')) return;
   const cacheDir = join(doc.base, '.qb-cache'), mounts = { '/__media/': cacheDir };
   for (const fmt of String(opt('formats') ?? '16x9').split(',')) {
     const data = await docPayload(doc, timed, fmt, { cacheDir, preview, final });
     if (opt('stills')) { const got = await stills(data, join(out, 'stills'), String(opt('stills')).split(',').map(Number), { mounts }); say(`${fmt}: ${got.length} stills in ${join(out, 'stills')}`); continue; }
     const narration = timed.narration.filter((n) => n.file).map((n) => ({ file: n.file, start: n.start, seconds: n.seconds }));
-    const video = join(out, `documentary-${fmt}${preview ? '-preview' : final ? '' : '-narrated'}.mp4`);
+    const video = join(out, `documentary-${fmt}${preview ? '-preview' : final ? '' : partial && unrecorded.length ? '-narrated-partial' : '-narrated'}.mp4`);
     const r = await renderVideo(data, video, { narration, clips: timed.clips, mute: timed.mute, mounts, log: (m) => say(m),
       metadata: { title: `${doc.title}${preview ? ' (preview, narration not recorded)' : final ? '' : ' (narrated draft)'}`, comment: `QB Capture ${VERSION} documentary` } });
     say(`${fmt}: ${video} (${timed.duration.toFixed(1)} s, rendered in ${r.seconds} s)`);
