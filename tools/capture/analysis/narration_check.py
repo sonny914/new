@@ -8,6 +8,7 @@ Per take (<line id>.wav, for every line in the storyboard's narration):
 - pace: syllables counted from the energy envelope, against the line's expected syllables; a take far below
   (words missing) or far above (repeats) is flagged. Calibrated on Episode 01: good takes read 0.79–1.14×;
 - dead air: sound before the first word, and pauses over 0.6 s (the render trims pauses to 0.45 s, not stray noise);
+- clipping: a take that ends while the voice is still sounding (the service cut the last word short);
 - words: with pocketsphinx, a free transcript, and how many of the line's content words it heard. It is rough on
   this voice, so a low score alone is a REVIEW; with the other signals it is a FAIL.
 Exit status 1 if any take fails.
@@ -85,6 +86,9 @@ def check(path, text):
     # stray sound: the transcript's first word starts well after the first sound
     if words and words[0][1] - first > 0.6: notes.append(f'{words[0][1] - first:.1f} s of sound before the first recognised word: trim it if it is not speech'); verdict = 'REVIEW' if verdict == 'PASS' else verdict
     if gaps: notes.append(f'pauses of {", ".join(f"{g:.1f}" for g in gaps)} s (trimmed to 0.45 s in the render)')
+    # a take that stops while the voice is still sounding was cut off by the service: the last word may be clipped
+    tail = np.abs(a[-int(SR * 0.01):]).max() if len(a) > SR // 100 else 0
+    if tail > 0.02: notes.append(f'ends mid-sound (last 10 ms peaks at {20 * np.log10(tail):.0f} dBFS): the last word may be cut off'); verdict = 'REVIEW' if verdict == 'PASS' else verdict
     if heard is not None:
         content = [w for w in want_words if w not in STOP]
         got = set(heard.split()); hit = sum(1 for w in content if w in got)

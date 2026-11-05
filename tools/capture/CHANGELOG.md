@@ -34,7 +34,7 @@ HARLEM '88: Production Notes, a build-in-public series of short vertical episode
 - **Render stages:** a silent preview (`-preview`), a narrated draft (`--narration`, `-narrated`, tagged), and `--final`, which alone needs the approved logo and is named without a suffix. `notes package` reports approvals and the logged spend from the storyboard (`approvals`, `spend`).
 - **Lesson from the first recording:** digits break the flighty voice. "1.4" gave one silent take and one truncated take, and a spelled-out retake of the same line came back garbled at the same 2.9 s length.
   - Spoken text now spells numbers out.
-  - `analysis/narration_check.py` checks every take before use: level, syllable pace against the line, dead air, and a pocketsphinx transcript. It FAILs all three bad Episode 01 takes, flags the stray sound before n3, and passes the good ones.
+  - `analysis/narration_check.py` checks every take before use: level, syllable pace against the line, dead air, and a pocketsphinx transcript. It FAILs all three bad Episode 01 takes, flags the stray sound before n3 and the cut-off ending of the third n2 take, and passes the good ones.
   - `doc --partial` renders a narrated draft while a line is re-recorded; `--final` never accepts one.
 - **Tests:** 11 new ones (91 total), including a browser render of every overlay and the Notes chrome, with and without face measurements.
 

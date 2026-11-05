@@ -43,6 +43,7 @@ For each `<line id>.wav` it reports PASS, REVIEW or FAIL, and exits 1 on any FAI
 - **Silence:** a take that never rises above −45 dBFS fails.
 - **Syllable pace:** energy-envelope nuclei, compared with the line's spelled-out syllables. Under 0.7× fails (words missing); over 1.45× is a REVIEW (repeats). Good Episode 01 takes read 0.79–1.14×.
 - **Stray sound:** more than 0.6 s of sound before the first recognised word is a REVIEW.
+- **Clipped ending:** a take whose last 10 ms still peaks above −34 dBFS was cut off by the service, so its last word may be clipped. It is a REVIEW.
 - **Pauses:** pauses over 0.6 s are noted; the render trims them to 0.45 s.
 - **Transcript:** pocketsphinx is rough on this voice. A low content-word score only counts together with an abnormal pace.
 
