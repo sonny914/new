@@ -31,6 +31,8 @@ HARLEM '88: Production Notes, a build-in-public series of short vertical episode
   - `draft` writes an evidence-linked storyboard and `script.md` in Episode 01's shape. Lines are quoted from the review and numbers are cited.
   - `package` writes captions, post copy, production notes and `approval.json`, every item pending.
 - **Skill:** `.agents/skills/harlem88-production-notes`, covering the workflow, the overlay reference, the QA checklist and the Episode 01 reference.
+- **Render stages:** a silent preview (`-preview`), a narrated draft (`--narration`, `-narrated`, tagged), and `--final`, which alone needs the approved logo and is named without a suffix. `notes package` reports approvals and the logged spend from the storyboard (`approvals`, `spend`).
+- **Lesson from the first recording:** digits break the flighty voice. "1.4" gave one silent take and one truncated take. Spoken text now spells numbers out, and every file is level-checked before use.
 - **Tests:** 11 new ones (91 total), including a browser render of every overlay and the Notes chrome, with and without face measurements.
 
 ## 0.3.0 — 29 Oct 2026

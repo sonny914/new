@@ -117,12 +117,14 @@ node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16          # silen
    - `voice_type: element`;
    - voice `0888f943-90ae-47cf-8152-962889806dc5`, confirmed with `list_voices`.
 
-   Send the plain words: no asterisks; terms spelled as said. Report the total and wait.
-2. **On yes,** generate with `generate_audio_batch` and log the job ids and exact charge (`transactions`).
+   Send the plain words: no asterisks, and **numbers and terms spelled as said** ("one point four seconds", "zero point two five", "Harlem eighty-eight"). Digits break this voice: in Episode 01, "1.4" produced a silent file and a truncated one. Quote the spelled text, because it can cost more than the digits. Report the total and wait.
+2. **On yes,** generate with `generate_audio_batch` and log the job ids and exact charge (`transactions`). Record each line's status in `narration/jobs.json`, and the approvals and spend in the storyboard (`approvals`, `spend`), so the package reports them.
+   - **Check every file before using it.** Run `volumedetect`, and a level reading every 0.1 s. A take that is silent, truncated (much shorter than about 2.2 words a second) or full of long pauses gets set aside in `narration/rejected/`, and is not used. A retake is a new spend: quote it and ask.
 3. **Download.** The result host `d8j0ntlcm91z4.cloudfront.net` may be blocked by the environment's network policy. If so:
    - re-host each result with `mcp__Higgsfield__media_import_url`;
    - download from `https://d2ol7oe51mr4n9.cloudfront.net/<user>/<media_id>.mp3`. It is the original WAV.
-4. **Render.** Save the files as `<line id>.wav` in a folder and render with `--narration <folder>`. The engine re-times holds to the real lines; re-check stills after.
+4. **Render.** Save the files as `<line id>.wav` in a folder and render with `--narration <folder>`. This is a **narrated draft** (`documentary-9x16-narrated.mp4`, tagged with `draftTag`). The engine re-times holds to the real lines; re-check stills after.
+5. **Final.** Only `--narration <folder> --final` makes `documentary-9x16.mp4`, and it refuses without the approved logo file. Render it only after the founder approves the narrated draft.
 
 ### 7. Captions, post copy, approval package
 

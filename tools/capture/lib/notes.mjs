@@ -258,19 +258,20 @@ export function packageEpisode(sbFile, { renderDir, out } = {}) {
   const recorded = timed.narration.every((n) => n.source === 'recorded');
   const clipRows = Object.entries(sb.clips).map(([id, c]) => { const p = resolve(base, c.file); return `| ${id} | ${c.label} | \`${basename(c.file)}\` | ${existsSync(p) ? sha256File(p).slice(0, 16) : 'missing'} |`; });
   const notes = [`# Production notes: ${sb.title}`, '',
-    `- **Status:** ${sb.status === 'approved' ? 'approved' : 'awaiting the founder\'s approval'}. Nothing has been published.`,
+    `- **Status:** ${['final', 'publish'].every((k) => sb.approvals?.[k]) ? 'approved' : 'awaiting the founder\'s approval'}. Nothing has been published.`,
     `- **Length:** ${timed.duration.toFixed(1)} s, ${timed.scenes.length} scenes, 9:16${videos.some((v) => v.includes('16x9')) ? ' and 16:9' : ''}.`,
-    `- **Narration:** ${recorded ? 'recorded' : 'not recorded: timings are estimates and the preview is silent'}. Credits spent by this package: 0.`,
+    `- **Narration:** ${recorded ? 'recorded' : 'not recorded: timings are estimates and the preview is silent'}. Credits spent on this episode: ${(sb.spend ?? []).reduce((a, x) => a + (x.credits ?? 0), 0).toFixed(1)}.`,
     `- **Warnings:** ${(timed.warnings ?? []).join('; ') || 'none'}`, '',
     '## Footage', '', '| Clip | Label | File | sha256 (first 16) |', '|---|---|---|---|', ...clipRows, '',
     '## Every number on screen, and its source', '', '| Shown | Source |', '|---|---|', ...(sb.facts ?? []).map((f) => `| ${f.text} | ${f.from} |`), '',
     '## Script', '', ...timed.narration.map((n) => `- **${n.id}** (${n.start.toFixed(1)} s, ${n.seconds.toFixed(1)} s, ${n.source}): ${n.text}`), '',
     '## Graphics per scene', '', ...timed.scenes.map((s) => `- **${s.id}**: ${[...new Set((s.props?.overlays ?? []).map((o) => o.type))].join(', ') || s.template}`)];
   writeText(join(out, 'production-notes.md'), notes.join('\n'));
-  const approval = { episode: sb.title, status: 'awaiting approval', generated: new Date().toISOString(), credits_spent: 0,
+  const spent = +(sb.spend ?? []).reduce((a, x) => a + (x.credits ?? 0), 0).toFixed(2); // charges as logged from the provider's transactions
+  const approval = { episode: sb.title, status: 'awaiting approval', generated: new Date().toISOString(), credits_spent: spent,
     items: [
-      { id: 'script', what: 'Approve the narration script (script.md / the storyboard narration)', status: sb.status === 'approved' ? 'approved' : 'pending' },
-      { id: 'voice', what: 'Approve the quoted cost, then record the narration in the flighty voice', status: recorded ? 'recorded' : 'pending' },
+      { id: 'script', what: 'Approve the narration script (script.md / the storyboard narration)', status: sb.approvals?.script ? 'approved' : 'pending', ...(sb.approvals?.script ? { by: sb.approvals.script } : {}) },
+      { id: 'voice', what: 'Approve the quoted cost, then record the narration in the flighty voice', status: recorded ? 'recorded' : sb.approvals?.voice ? 'approved' : 'pending', ...(sb.approvals?.voice ? { by: sb.approvals.voice } : {}) },
       { id: 'logo', what: 'Supply the approved HARLEM ’88 logo file for the watermark', status: (timed.warnings ?? []).some((w) => /watermark/.test(w)) ? 'missing' : 'ok' },
       { id: 'final', what: 'Approve the final render', status: 'pending' },
       { id: 'publish', what: 'Approve posting (manual; nothing posts automatically)', status: 'pending' }] };

@@ -90,7 +90,7 @@ function speechGain(c) {
 }
 
 // Lay out every scene's beats in time, place the narration and the footage sound, and collect problems.
-export function timeDoc(doc, { narrationDir = null } = {}) {
+export function timeDoc(doc, { narrationDir = null, final = false } = {}) {
   const problems = [], narration = [], clips = [], mute = [], scenes = [];
   let t = 0;
   doc.scenes.forEach((sc, k) => {
@@ -186,7 +186,7 @@ export function timeDoc(doc, { narrationDir = null } = {}) {
   if (doc.subs || doc.burnCaptions) for (const n of narration) for (const num of numbers(n.text)) if (!facts.has(num)) problems.push(`narration "${n.id}" shows ${num} in the subtitles, which no fact cites`);
   // the watermark is an approved logo file or nothing: a final render never typesets a stand-in
   const warnings = [];
-  if (doc.watermark && !(doc.watermark.file && existsSync(doc.watermark.file))) (narrationDir ? problems : warnings).push(`watermark: the approved logo file is missing (${doc.watermark.file ?? 'no file given'}); the preview shows an empty slot`);
+  if (doc.watermark && !(doc.watermark.file && existsSync(doc.watermark.file))) (final ? problems : warnings).push(`watermark: the approved logo file is missing (${doc.watermark.file ?? 'no file given'}); ${final ? 'a final render needs it' : 'this draft shows an empty slot'}`);
   const cues = narration.map((n) => ({ start: n.start, end: +(n.start + n.seconds).toFixed(3), text: n.text, marked: n.marked })).sort((a, b) => a.start - b.start);
   return { title: doc.title, fps: doc.fps ?? FPS, duration, frames: Math.round(duration * (doc.fps ?? FPS)), scenes, narration, clips, mute, cues, problems, warnings };
 }
@@ -195,7 +195,7 @@ export function timeDoc(doc, { narrationDir = null } = {}) {
 const overlayText = (o) => [o.text, o.sub, o.name, o.role, o.a, o.b, o.aNote, o.bNote, o.label, o.cutText ?? (o.cut != null ? `Cut at ${o.cut.toFixed(2)} s` : null), o.trimText, o.title, ...(o.marks ?? []).map((m) => m.text)].filter((x) => x != null);
 
 // What the stage needs for one format: timed scenes, frame sequences for every clip used, and each clip's series.
-export async function docPayload(doc, timed, fmt, { cacheDir, preview = false }) {
+export async function docPayload(doc, timed, fmt, { cacheDir, preview = false, final = false }) {
   const [width, height] = FORMATS[fmt], fps = timed.fps;
   const used = new Set(timed.scenes.flatMap((s) => (s.beats ?? []).flatMap((b) => [b.clip, b.b?.clip].filter(Boolean))));
   const assets = {};
@@ -216,7 +216,7 @@ export async function docPayload(doc, timed, fmt, { cacheDir, preview = false })
   return {
     format: fmt, width, height, fps, duration: timed.duration, frames: timed.frames, tz: TZ, doc: true, corner: doc.corner ?? 'Production recap',
     theme: doc.theme ?? null, subs: doc.subs ?? null, timecode: doc.timecode === true, transition: doc.transition ?? null, watermark,
-    captions: preview || doc.burnCaptions === true, capTag: preview ? (doc.previewTag ?? 'Narration · not recorded yet') : null,
+    captions: preview || doc.burnCaptions === true, capTag: preview ? (doc.previewTag ?? 'Narration · not recorded yet') : !final && doc.draftTag ? doc.draftTag : null,
     stages, cues: timed.cues, assets, brand: { mark: '/assets/brand/mark.svg', wordmark: '/assets/brand/wordmark.svg' },
     scenes: timed.scenes.map((s) => ({ ...s, stageIndex: stages.findIndex((x) => x.id === s.stage) + 1, stageLabel: stages.find((x) => x.id === s.stage)?.label ?? '',
       sources: s.sources ?? '', clockLabel: s.clock ? `${fmtStamp(s.clock)} ${fmtZone(s.clock)}` : '' })),

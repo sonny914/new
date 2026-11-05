@@ -263,11 +263,12 @@ test('documentary: face boxes are placed in the frame they were measured on, and
   assert.equal(clipData(d2.clips.c).face, null);
 });
 
-test('documentary: the watermark is the approved file or a preview slot, never a stand-in in a final render', () => {
+test('documentary: the watermark is the approved file or an empty slot in drafts, never a stand-in in a final render', () => {
   const doc = withDoc(docFixture([{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 1] }] }]), { watermark: { file: '/nonexistent/logo.svg' } });
   const prev = timeDoc(doc);
   assert.deepEqual(prev.problems, []); assert.match(prev.warnings.join(), /approved logo file is missing/);
-  assert.match(timeDoc(doc, { narrationDir: tmpdir() }).problems.join(), /approved logo file is missing/);
+  assert.match(timeDoc(doc, { narrationDir: tmpdir() }).warnings.join(), /draft shows an empty slot/); // a narrated draft may still be reviewed
+  assert.match(timeDoc(doc, { narrationDir: tmpdir(), final: true }).problems.join(), /a final render needs it/);
 });
 
 const REVIEW = `# Review

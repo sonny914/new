@@ -211,7 +211,8 @@ node tools/capture/cli.mjs notes draft <workdir> --topic <n> --episode <n>   # e
 node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16 --check      # evidence and timing checks
 node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16 --stills 1,4,8
 node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16              # silent preview
-node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16 --narration <dir>   # after the voice is approved and recorded
+node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16 --narration <dir>   # narrated draft, after the voice is approved, recorded and checked
+node tools/capture/cli.mjs doc <storyboard.json> --formats 9x16 --narration <dir> --final   # final: needs the approved logo file
 node tools/capture/cli.mjs notes package <storyboard.json>                   # captions, post copy, notes, approval.json
 ```
 
