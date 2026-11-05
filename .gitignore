@@ -5,3 +5,7 @@ docs/sessions/*/review/
 tools/capture/analysis/*.task
 tools/capture/analysis/.venv/
 tools/capture/analysis/__pycache__/
+tools/studio/out/
+
+# Local Netlify folder
+.netlify

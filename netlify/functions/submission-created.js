@@ -1,43 +1,45 @@
-// netlify/functions/score-lead.js
+// netlify/functions/submission-created.js
 //
-// Scores a freshly inserted lead HOT / WARM / COLD with Claude and writes the score back
-// to Supabase. Zero npm dependencies on purpose: it talks to the Supabase REST API and the
-// Anthropic Messages API with the fetch() built into Node 18+, so the function bundles and
-// runs from a drag-and-drop zip deploy with nothing to install.
+// Netlify runs this after every verified form submission. For the two lead forms (work-intake,
+// note-lead) it scores the lead HOT / WARM / COLD with Claude and posts the result to the
+// `lead-scores` form, so it sits next to the lead in Netlify → Forms (turn on that form's email
+// notification to get each score in your inbox). Other forms (the Studio's) are ignored. There is no
+// database: the lead itself is already stored by Netlify Forms before this runs.
+// Zero npm dependencies on purpose: it uses the fetch() built into Node 18+.
 //
 // Env (Netlify → Site configuration → Environment variables):
-//   SUPABASE_URL                 https://<project>.supabase.co
-//   SUPABASE_SERVICE_ROLE_KEY    service role key (SUPABASE_SERVICE_KEY also accepted)
 //   ANTHROPIC_API_KEY            Anthropic API key
 //   ANTHROPIC_MODEL              optional, default claude-opus-5
 //   ANTHROPIC_BASE_URL           optional, default https://api.anthropic.com
+// Netlify sets URL (the site's primary address) itself.
 
-const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5';
 const ANTHROPIC_BASE_URL = (process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/$/, '');
+const SITE_URL = (process.env.URL || 'https://quietbands.com').replace(/\/$/, '');
 
-const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+const LEAD_FORMS = ['work-intake', 'note-lead'];
 
-function supabaseHeaders(extra = {}) {
-  return { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json', ...extra };
+/** One submission's fields as the lead the scoring prompt expects. Pure; exported for tests. */
+export function leadFrom(formName, d = {}) {
+  if (formName === 'work-intake') {
+    const pain_point = [
+      `WHAT IS HAPPENING TODAY: ${d.today}`, d.who && `WHO DOES THIS WORK: ${d.who}`, d.how_often && `HOW OFTEN: ${d.how_often}`,
+      d.systems && `SYSTEMS INVOLVED: ${d.systems}`, d.goes_wrong && `WHEN IT GOES WRONG: ${d.goes_wrong}`, d.tried && `ALREADY TRIED: ${d.tried}`,
+      d.artifacts && `ARTIFACTS: ${d.artifacts}`, d.if_gone && `IF IT DISAPPEARED: ${d.if_gone}`, d.imagined_build && `IMAGINED BUILD: ${d.imagined_build}`,
+    ].filter(Boolean).join('\n');
+    return { contact_name: d.contact_name, company_name: d.company_name, email: d.email, pain_point, current_tech: d.systems || null, timeline: d.how_often || null, source: d.source || 'work-intake' };
+  }
+  return { contact_name: d.contact_name, company_name: d.company_name, email: d.email, pain_point: d.pain_point, current_tech: d.current_tech || null, source: d.source || formName };
 }
 
-/** Newest unscored lead for this email (service role bypasses RLS). */
-async function findUnscoredLead(email) {
-  const q = new URLSearchParams({ select: 'id', email: `eq.${email}`, triage_score: 'is.null', order: 'created_at.desc', limit: '1' });
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/leads?${q}`, { headers: supabaseHeaders() });
-  if (!res.ok) throw new Error(`Supabase lookup failed: ${res.status} ${await res.text()}`);
-  const rows = await res.json();
-  return rows[0] ? rows[0].id : null;
-}
-
-async function updateLead(id, patch) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/leads?id=eq.${encodeURIComponent(id)}`, {
-    method: 'PATCH', headers: supabaseHeaders({ Prefer: 'return=minimal' }), body: JSON.stringify(patch),
+/** Record a score as a `lead-scores` submission (the form is declared, hidden, in work/index.html). */
+async function saveScore(fields) {
+  const res = await fetch(`${SITE_URL}/`, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ 'form-name': 'lead-scores', ...fields }).toString(),
   });
-  if (!res.ok) throw new Error(`Supabase update failed: ${res.status} ${await res.text()}`);
+  if (!res.ok) throw new Error(`lead-scores post failed: ${res.status}`);
 }
 
 function buildPrompt(lead) {
@@ -98,28 +100,50 @@ async function scoreWithClaude(lead) {
 }
 
 export default async (req) => {
-  if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
+  let payload;
+  try { ({ payload } = await req.json()); } catch { return new Response('invalid event', { status: 400 }); }
+  const form = payload && payload.form_name;
+  if (!LEAD_FORMS.includes(form)) return new Response('not a lead form');
 
-  let lead;
-  try { lead = await req.json(); } catch { return json({ error: 'invalid json' }, 400); }
-  if (!lead || !lead.email) return json({ error: 'email required' }, 400);
+  const lead = leadFrom(form, payload.data || {});
+  if (!lead.email) return new Response('no email');
 
-  if (!SUPABASE_URL || !SERVICE_KEY || !ANTHROPIC_API_KEY) {
-    console.error('score-lead: missing env (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / ANTHROPIC_API_KEY)');
-    return json({ ok: false, reason: 'config' });
+  // Every lead gets a lead-scores row, so a scoring failure shows up next to the lead instead of only in the logs.
+  let triage;
+  if (!ANTHROPIC_API_KEY) {
+    console.error('submission-created: missing ANTHROPIC_API_KEY');
+    triage = unscored('ANTHROPIC_API_KEY is not set in Netlify.');
+  } else {
+    try {
+      triage = (await scoreWithClaude(lead)) || { score: 'WARM', reasoning: 'Unable to auto-score', next_step: 'Review manually' };
+    } catch (error) {
+      console.error('Scoring error:', error);
+      triage = unscored(failureReason(error));
+    }
   }
 
   try {
-    const leadId = await findUnscoredLead(lead.email);
-    if (!leadId) return json({ error: 'lead not found' }, 404);
-
-    const triage = (await scoreWithClaude(lead)) || { score: 'WARM', reasoning: 'Unable to auto-score', next_step: 'Review manually' };
-    const triage_reasoning = `${triage.reasoning} | Next: ${triage.next_step}`;
-
-    await updateLead(leadId, { triage_score: triage.score, triage_reasoning, flagged_for_review: triage.score === 'COLD' });
-    return json({ success: true, leadId, score: triage.score, reasoning: triage_reasoning });
+    await saveScore({
+      score: triage.score, reasoning: triage.reasoning, next_step: triage.next_step,
+      email: lead.email, contact_name: lead.contact_name || '', company_name: lead.company_name || '',
+      source: lead.source || '', lead_form: form, lead_id: payload.id || '',
+    });
   } catch (error) {
-    console.error('Scoring error:', error);
-    return json({ error: error.message }, 500);
+    console.error('Saving score failed:', error);
+    return new Response('error', { status: 500 });
   }
+  return new Response(triage.score);
 };
+
+const unscored = (reason) => ({ score: 'UNSCORED', reasoning: `Scoring failed: ${reason}`, next_step: 'Review manually' });
+
+/** A short, readable reason for the dashboard; the full error stays in the function log. Pure; exported for tests. */
+export function failureReason(error) {
+  const m = String(error && error.message || error).match(/Anthropic request failed: (\d{3})/);
+  if (!m) return 'unexpected error (see the submission-created function log).';
+  const status = Number(m[1]);
+  if (status === 401 || status === 403) return `the Anthropic API key was rejected (${status}). Replace ANTHROPIC_API_KEY in Netlify and redeploy.`;
+  if (status === 429) return 'Anthropic rate limit or credit limit reached (429).';
+  if (status >= 500) return `Anthropic was unavailable (${status}).`;
+  return `Anthropic returned ${status} (see the submission-created function log).`;
+}

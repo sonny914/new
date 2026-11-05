@@ -1,7 +1,6 @@
-/* /work intake: writes to the existing Supabase `leads` table (anon insert, RLS) and
-   pings the existing score-lead function. Composes the answers into pain_point so the
-   scoring prompt keeps working unchanged; the structured answers go to `intake`. */
-import { qbInsert, track, getAttribution, pt } from './qb.js';
+/* /work intake: posts to the Netlify form `work-intake`. Every answer is its own field; Netlify's
+   submission-created function (netlify/functions/submission-created.js) scores the lead with Claude. */
+import { formPost, track, getAttribution, pt } from './qb.js';
 import { STATES } from './triage.js';
 import { mountOrb } from './orb/thinking-orb.js';
 
@@ -50,30 +49,19 @@ form.addEventListener('submit', async (e) => {
   const orb = mountOrb(btn, { state: 'searching', size: 20, theme: 'dark', label: null });
   btn.append(document.createTextNode('Sending…'));
 
-  const intake = {
+  const attr = getAttribution();
+  const ok = await formPost('work-intake', {
     today: data.today, who: data.who, how_often: data.how_often, systems: data.systems, goes_wrong: data.goes_wrong,
     tried: data.tried, artifacts: data.artifacts, if_gone: data.if_gone, imagined_build: data.imagined_build,
-  };
-  const attr = getAttribution();
-  const pain_point = [
-    `WHAT IS HAPPENING TODAY: ${data.today}`, data.who && `WHO DOES THIS WORK: ${data.who}`, data.how_often && `HOW OFTEN: ${data.how_often}`,
-    data.systems && `SYSTEMS INVOLVED: ${data.systems}`, data.goes_wrong && `WHEN IT GOES WRONG: ${data.goes_wrong}`, data.tried && `ALREADY TRIED: ${data.tried}`,
-    data.artifacts && `ARTIFACTS: ${data.artifacts}`, data.if_gone && `IF IT DISAPPEARED: ${data.if_gone}`, data.imagined_build && `IMAGINED BUILD: ${data.imagined_build}`,
-  ].filter(Boolean).join('\n');
-
-  const row = {
     contact_name: data.contact_name, company_name: data.company_name, email: data.email,
-    pain_point, current_tech: data.systems || null, timeline: data.how_often || null,
-    source: fromPT ? 'pressure-test' : 'work-intake', intake, attribution: attr,
+    source: fromPT ? 'pressure-test' : 'work-intake', attribution: attr,
     pressure_test: fromPT && saved ? { state: saved.result && saved.result.state, answers: saved.answers, completed_at: saved.completedAt } : null,
-  };
-  const ok = await qbInsert('leads', row);
+  });
   if (!ok) {
     orb.destroy(); btn.classList.remove('sending'); btn.disabled = false; btn.textContent = 'Send it to Quiet Bands';
     showError('Couldn’t send the form.');
     return;
   }
-  fetch('/.netlify/functions/score-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...row, intake: undefined, attribution: undefined, pressure_test: undefined }) }).catch(() => {});
   orb.destroy();
   track('qb_work_intake_complete', { from: fromPT ? 'pressure-test' : 'direct', pt_state: fromPT && saved && saved.result ? saved.result.state : null });
   container.innerHTML = `<div class="f-success rise in"><div class="stamp">Received</div><h3>Got it.</h3><p>We read every answer. If the work is a fit, Jay replies personally, usually within two business days.</p></div>`;
