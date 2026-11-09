@@ -17,7 +17,7 @@ export function roundRect(ctx, w, h, r) {
  *  detail 0..1 interior UI detail (only legible when large: fades by on-screen size)
  */
 export function tile(ctx, x, y, size, o = {}) {
-  const { round = 0.28, fill = 0, rot = 0, line = 1.6, color = '#F6F4EE', alpha = 1, trim = 1, detail = 0, accent } = o;
+  const { round = 0.28, fill = 0, rot = 0, line = 1.6, color = '#F6F4EE', alpha = 1, trim = 1, detail = 0, accent, dash = 0 } = o;
   if (alpha <= 0.002 || size < 0.2) return;
   ctx.save();
   ctx.translate(x, y); if (rot) ctx.rotate(rot);
@@ -26,7 +26,9 @@ export function tile(ctx, x, y, size, o = {}) {
   roundRect(ctx, size, size, round);
   if (fill > 0) { ctx.globalAlpha = alpha * fill; ctx.fill(); ctx.globalAlpha = alpha; }
   if (fill < 1 && size > line * 1.5) {
-    if (trim < 1) { const L = size * 4.2; ctx.setLineDash([L * trim, L]); ctx.lineDashOffset = L * 0.125; }
+    // dash 1 = an idea (not yet real); as it falls to 0 the gaps close and the outline becomes solid (built)
+    if (dash > 0) { const seg = Math.max(2, size * 0.06); ctx.setLineDash([seg, seg * 0.9 * dash]); }
+    else if (trim < 1) { const L = size * 4.2; ctx.setLineDash([L * trim, L]); ctx.lineDashOffset = L * 0.125; }
     if (trim > 0) ctx.stroke();
     ctx.setLineDash([]);
   }

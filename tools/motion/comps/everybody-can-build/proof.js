@@ -1,6 +1,6 @@
 // PHASE 3 proof (5 s): one object multiplies into hundreds, then reorganizes into a functioning system.
 // Idea per beat:
-//   0.0-0.9  one built thing (drawn on, close up: it has an interface, an identity)
+//   0.0-0.9  one thing: a dashed outline (an idea) whose gaps close into a solid object (built), then its interface appears
 //   0.9-2.8  1 -> 10 -> 100 -> 512: each new object divides out of its nearest neighbour (creation is cheap);
 //            the camera pulls back at the same log rate, and the objects lose their detail (they stop being special)
 //   2.8-3.1  hold: a field of near-identical things; the count lands in orange (the event)
@@ -14,8 +14,9 @@ import { phyllo, parents, birthTimes, assign, jitter } from '../../engine/field.
 import { network, flowAt } from '../../engine/network.js';
 import { mix, PALETTES } from '../../engine/color.js';
 
-const W = 1080, H = 1920, N = 512, PITCH = 19, TILE = 14;
+const W = 1080, H = 1920, N = 512, PITCH = 17, TILE = 14;
 const P = PALETTES.brief;
+const GREY = mix(P.bg, P.ink, 0.42); // inactive: the reference's hierarchy device (grey = present but not live)
 
 // --- creation: sunflower slots, each born from its nearest elder, in three multiplying gestures
 // shifted so the first object sits exactly at the origin (the close-up is centred on it)
@@ -59,37 +60,37 @@ function draw(ctx, t) {
     const m = ease.inOut5(seg(t, d0, d0 + MOVE));
     let p = fieldPos(k, t), size = TILE, round = 0.28, fill = 0, color = P.ink, alpha = 1;
     // birth: grow out of the parent
-    const g = seg(t, born[k], born[k] + 0.3);
+    const g = k === 0 ? seg(t, 0.05, 0.45) : seg(t, born[k], born[k] + 0.3);
     size *= lerp(0.35, 1, ease.out3(g)); alpha *= ease.out3(clamp(g * 2));
     if (s) {
       p = arc(p, s, m, 0.14 * jitter(k, 11));
-      if (s.kind === 'dot') { const mm = ease.inOut3(seg(m, 0.15, 0.85)); size = lerp(size, 3.4, mm); round = lerp(round, 1, mm); fill = mm; }
+      let base = P.ink;
+      if (s.kind === 'dot') { const mm = ease.inOut3(seg(m, 0.15, 0.85)); size = lerp(size, 3.4, mm); round = lerp(round, 1, mm); fill = mm; base = mix(P.ink, GREY, mm); color = base; }
       const f = m >= 1 ? flowAt(s.kind === 'cell' ? s.flow + s.ring * 0.05 : s.flow, t, FLOW) : 0;
-      if (f > 0) { color = mix(P.ink, P.live, f); if (s.kind === 'cell') fill = Math.max(fill, f * 0.9); else size *= 1 + 0.45 * f; }
+      if (f > 0) { color = mix(base, P.live, f); if (s.kind === 'cell') fill = Math.max(fill, f * 0.9); else size *= 1 + 0.45 * f; }
     } else {
       // not needed by the system: thins out and drops back
       const out = seg(t, REORG, REORG + 0.5); alpha *= 1 - ease.out3(out); p = { ...p, z: 400 * ease.in3(out) };
     }
     const sp = cam.project(p), px = size * sp.s;
     // the first object keeps its interface detail only while it is alone and close
-    tile(ctx, sp.x, sp.y, px, { round, fill, color, alpha, line: px > 40 ? 2 : 1.6, trim: k === 0 ? ease.inOut3(seg(t, 0.12, 0.8)) : 1, detail: k === 0 ? ease.out3(seg(t, 0.5, 0.85)) : g * clamp((px - 30) / 60), accent: P.live });
+    tile(ctx, sp.x, sp.y, px, { round, fill, color, alpha, line: px > 40 ? 2 : 1.6, dash: k === 0 ? 1 - ease.inOut3(seg(t, 0.5, 0.85)) : 0, detail: k === 0 ? ease.out3(seg(t, 0.72, 1.0)) : g * clamp((px - 30) / 60), accent: P.live });
   }
 
-  // data callout: the count, with a log-length rule under it
+  // data callout (the reference's editorial pairing): heavy numerals over a small italic serif caption
   // whole-frame time: a number must not change inside one motion-blur exposure (it would double-print)
   const tf = Math.round(t * 30) / 30;
   const count = born.reduce((n, b) => n + (tf >= b ? 1 : 0), 0);
-  const show = seg(t, 0.85, 1.05) * (1 - seg(t, 2.95, 3.25));
+  const show = seg(t, 0.95, 1.15) * (1 - seg(t, 2.95, 3.25));
   if (show > 0) {
-    const hit = seg(t, 2.78, 2.86), live = hit * (1 - seg(t, 3.0, 3.2));
+    const live = seg(t, 2.78, 2.86) * (1 - seg(t, 3.0, 3.2));
     ctx.save();
     ctx.globalAlpha = show; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.font = '300 96px "Inter Display"'; ctx.fontVariantNumeric = 'tabular-nums'; ctx.letterSpacing = '-2px';
+    ctx.font = '800 104px "Inter Display"'; ctx.fontVariantNumeric = 'tabular-nums'; ctx.letterSpacing = '-3px';
     ctx.fillStyle = mix(P.ink, P.live, live);
-    ctx.fillText(String(count), W / 2, 1640);
-    const L = 300 * Math.log(count) / Math.log(N);
-    ctx.globalAlpha = show * 0.5; ctx.fillStyle = P.ink; ctx.fillRect(W / 2 - 150, 1676, 300, 1);
-    ctx.globalAlpha = show; ctx.fillStyle = mix(P.ink, P.live, live); ctx.fillRect(W / 2 - 150, 1675, L, 3);
+    ctx.fillText(count.toLocaleString('en-US'), W / 2, 1630);
+    ctx.font = 'italic 36px "Bitstream Charter"'; ctx.letterSpacing = '0px'; ctx.fillStyle = GREY;
+    ctx.fillText(count === 1 ? 'thing built' : 'things built', W / 2, 1682);
     ctx.restore();
   }
 }
