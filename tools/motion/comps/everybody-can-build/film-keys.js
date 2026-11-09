@@ -11,10 +11,13 @@ import { SIZE, place, machine } from '../../engine/environments.js';
 import { box3 } from '../../engine/illustrations.js';
 import { mix, PALETTES } from '../../engine/color.js';
 
-const W = 1080, H = 1920, P = PALETTES.film;
+const W = 1080, H = 1920;
+export const P = { ...PALETTES.film };
 const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',');
-const INK = rgb(P.ink), LIVE = rgb(P.live);
+let INK = rgb(P.ink), LIVE = rgb(P.live);
 LIGHT.ink = INK;
+/** Re-skin the world (e.g. PALETTES.brand for covers). */
+export function setPalette(pal) { Object.assign(P, pal); INK = rgb(P.ink); LIVE = rgb(P.live); LIGHT.ink = INK; }
 let L;
 
 /* ---------------- the world ---------------- */
@@ -91,10 +94,10 @@ function creatorAtDesk(e, cam, { reach = 1, light = 1, prompt = 'build a booking
   deskSeated(e, cam, { P, x0: DESK_X, prompt });
   billboard(e, cam, { x: HIP.x, y: 0, z: 0 }, (g, s) => human(g, s, { P, pose: 'sit', reach, lean: 0.1, light }));
 }
-function bulbWithTether(e, cam, glowK = 1, { label = true } = {}) {
+function bulbWithTether(e, cam, glowK = 1, { label = true, live = 0 } = {}) {
   const b = cam.project(BULB), head = cam.project({ x: HIP.x + 0.05, y: 1.4, z: 0 });
   e.save(); e.strokeStyle = P.tech; e.lineWidth = 1.3; e.setLineDash([2, 6]); e.beginPath(); e.moveTo(b.x, b.y); e.lineTo(head.x, head.y); e.stroke(); e.restore();
-  billboard(e, cam, BULB, (g, s) => bulb(g, s, { P, glow: glowK }));
+  billboard(e, cam, BULB, (g, s) => bulb(g, s, { P, glow: glowK, live }));
   if (label) {
     const t = cam.project({ x: BULB.x + 0.2, y: BULB.y + 0.22, z: 0 });
     e.save(); e.strokeStyle = P.tech; e.lineWidth = 1.2; e.beginPath(); e.moveTo(t.x, t.y); e.lineTo(t.x + 60, t.y - 40); e.lineTo(t.x + 120, t.y - 40); e.stroke(); e.restore();
@@ -103,26 +106,26 @@ function bulbWithTether(e, cam, glowK = 1, { label = true } = {}) {
 }
 
 /* ---------------- A: THE CREATOR ---------------- */
-function A(ctx, e) {
-  const cam = cam3({ W, H, pos: { x: 0.36, y: 1.02, z: -3.85 }, pitch: 0.02, f: 1650 });
+export function A(ctx, e, { pos = { x: 0.36, y: 1.02, z: -3.85 }, pitch = 0.02, f = 1650, text = true, liveBulb = 0, ruler = true } = {}) {
+  const cam = cam3({ W, H, pos, pitch, f });
   const b = cam.project({ x: BULB.x, y: BULB.y + 0.2, z: 0 }), pool = cam.project({ x: 0.1, y: 0, z: 0 }), poolR = cam.project({ x: 1.9, y: 0, z: 0 }), poolF = cam.project({ x: 0.1, y: 0, z: -0.9 });
   const scr = cam.project(SCREEN);
   glow(ctx, b.x, b.y + 180, 900, 1000, { alpha: 0.06 });                       // the idea lights the whole dark around it
   glow(ctx, b.x, b.y, 230, 230, { alpha: 0.24 });
+  if (liveBulb) { glow(ctx, b.x, b.y, 150, 150, { alpha: 0.42 * liveBulb, color: LIVE }); glow(ctx, b.x, b.y + 300, 700, 800, { alpha: 0.05 * liveBulb, color: LIVE }); }
   cone(ctx, { x: b.x, y: b.y }, 40, pool, (poolR.x - pool.x) * 1.9, { alpha: 0.075, L, blur: 40 });
   glow(ctx, pool.x, pool.y, poolR.x - pool.x, (poolF.y - pool.y), { alpha: 0.16 });
   glow(ctx, scr.x - 40, scr.y, 260, 200, { alpha: 0.1 });                       // the screen lights the figure's front
   floorDots(e, cam, { cx: 0.1, cz: 0.2, r: 2.4, base: 0.1, pool: 0.6, z1: 18 });
   groundLine(e, cam, 0.34);
   // scale: a floor ruler under the workstation, in the technical tone
-  const rz = -0.62; e.save(); e.strokeStyle = P.tech; e.lineWidth = 1.2; path3(e, cam, [{ x: -0.9, y: 0, z: rz }, { x: 1.3, y: 0, z: rz }]); e.stroke();
+  const rz = -0.62; if (ruler) { e.save(); e.strokeStyle = P.tech; e.lineWidth = 1.2; path3(e, cam, [{ x: -0.9, y: 0, z: rz }, { x: 1.3, y: 0, z: rz }]); e.stroke();
   for (let i = 0; i <= 22; i++) { const x = -0.9 + i * 0.1, long = i % 5 === 0; path3(e, cam, [{ x, y: 0, z: rz }, { x, y: 0, z: rz - (long ? 0.08 : 0.035) }]); e.stroke(); if (long) { const p = cam.project({ x, y: 0, z: rz - 0.17 }); mono(e, (i / 10).toFixed(1), p.x, p.y + 10, { size: 15, align: 'center', track: 1 }); } }
-  e.restore();
+  e.restore(); }
   creatorAtDesk(e, cam);
-  bulbWithTether(e, cam, 1);
+  bulbWithTether(e, cam, 1, { label: text, live: liveBulb });
   dust(e, cam, 110, 3, { x0: -1.4, x1: 1.4, y0: 0.4, y1: 2.6, z0: -0.5, z1: 0.6 }, { size: 1.9, alpha: 0.5 });
-  statement(e, '01 — ACCESS', ['EVERYBODY', 'CAN BUILD.'], 330);
-  frameMarks(e, 'A');
+  if (text) { statement(e, '01 — ACCESS', ['EVERYBODY', 'CAN BUILD.'], 330); frameMarks(e, 'A'); }
   return { bokeh: [[120, 1780, 80, 0.06], [970, 1660, 50, 0.05], [900, 300, 40, 0.03]] };
 }
 
@@ -215,6 +218,7 @@ function C(ctx, e) {
   return { bokeh: [[90, 1700, 90, 0.05], [1000, 1250, 70, 0.04]] };
 }
 
+export { makeLayers };
 const SHOTS = [A, B, C];
 let TYPE = [];  // typography is drawn after the glow, so it stays crisp
 function draw(ctx, t) {

@@ -12,5 +12,6 @@ export const PALETTES = {
   // Motion Lab spec v2: five tones. ink = primary illustration, ink2 = secondary, tech = technical lines.
   film: { bg: '#08090B', ink: '#F6F4EE', ink2: '#B8B9B7', tech: '#62666B', live: '#FF6A21' },
   brief: { bg: '#0E0F10', ink: '#F6F4EE', live: '#FF6A21' },
-  brand: { bg: '#000000', ink: '#F2EEE5', live: '#FF5A00' },
+  // brand = assets/brand + qb-identity. ink2/tech are the cream at 72% / 40% over black (secondary, technical).
+  brand: { bg: '#000000', ink: '#F2EEE5', ink2: '#AEABA5', tech: '#615F5C', live: '#FF5A00' },
 };

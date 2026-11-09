@@ -76,11 +76,12 @@ export function deskSeated(ctx, cam, { P, x0 = 0, screen = 1, lines = 4, prompt 
 }
 
 /** The idea: a small bulb (billboard space, origin at the bulb's base). glow 0..1 lights the filament. */
-export function bulb(ctx, s, { P, glow = 1 }) {
-  const px = (v) => v / s, r = 0.11;
+export function bulb(ctx, s, { P, glow = 1, live = 0 }) {
+  const px = (v) => v / s, r = 0.11, hot = live ? mix(P.ink, P.live, live) : P.ink;
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   const g = ctx.createRadialGradient(0, -0.2, 0, 0, -0.2, r * 1.05);
-  g.addColorStop(0, mix(P.bg, P.ink, 0.95 * glow)); g.addColorStop(0.6, mix(P.bg, P.ink, 0.55 * glow)); g.addColorStop(1, mix(P.bg, P.ink, 0.25 * glow));
+  const lift = live ? 0.4 : 0; // a lit orange bulb stays bright to its edge (it is the light, not a tinted glass)
+  g.addColorStop(0, mix(P.bg, live ? mix(hot, P.ink, 0.35) : hot, 0.95 * glow)); g.addColorStop(0.6, mix(P.bg, hot, (0.55 + lift * 0.6) * glow)); g.addColorStop(1, mix(P.bg, hot, (0.25 + lift) * glow));
   ctx.fillStyle = g;
   ctx.beginPath(); ctx.arc(0, -0.2, r, Math.PI * 0.78, Math.PI * 2.22); ctx.lineTo(0.045, -0.06); ctx.lineTo(-0.045, -0.06); ctx.closePath(); ctx.fill();
   ctx.strokeStyle = P.ink; ctx.lineWidth = px(2); ctx.stroke();
