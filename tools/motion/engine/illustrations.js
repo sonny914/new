@@ -4,42 +4,38 @@
 import { path3, panel } from './space.js';
 import { mix } from './color.js';
 
-/* ---------- the figure: 1.75 m, profile facing +x, anchored at the feet (billboard space, y up = negative) ---------- */
+/* ---------- the builder: 1.72 m, profile facing +x, anchored at the feet (billboard space, y up = negative) ----------
+   Quiet Bands' own figure, built from the mark's geometry: the torso is the mark's tall rounded stem (a capsule),
+   the head is a separate disc above it (a clear gap, no neck), limbs are pills. It leans into the work as it reaches. */
 export function figure(ctx, s, { ink, bg, pose = 0, light = 1 } = {}) {
-  // pose 0 = hands at sides, 1 = reaching to the keyboard
-  const back = mix(bg, ink, 0.62 * light + 0.2), front = mix(bg, ink, Math.min(1, light));
-  const grad = ctx.createLinearGradient(-0.16, 0, 0.18, 0); grad.addColorStop(0, back); grad.addColorStop(1, front);
+  const reach = pose, lean = 0.02 + 0.07 * reach;            // leans in as the hands reach the keyboard
+  const back = mix(bg, ink, 0.5 * light + 0.22), front = mix(bg, ink, Math.min(1, light)), far = mix(bg, ink, 0.42 * light + 0.12);
+  const grad = ctx.createLinearGradient(-0.17, 0, 0.17, 0); grad.addColorStop(0, back); grad.addColorStop(1, front);
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  // far leg (darker: depth)
-  ctx.strokeStyle = mix(bg, ink, 0.55 * light + 0.15); ctx.lineWidth = 0.112;
-  ctx.beginPath(); ctx.moveTo(-0.045, -0.9); ctx.lineTo(-0.075, -0.07); ctx.lineTo(0.06, -0.055); ctx.stroke();
-  // far arm
-  const reach = pose;
-  ctx.lineWidth = 0.082;
-  ctx.beginPath(); ctx.moveTo(0.0, -1.37); ctx.quadraticCurveTo(0.03 + 0.06 * reach, -1.12, 0.05 + 0.25 * reach, -1.02 - 0.06 * reach); ctx.stroke();
-  // torso
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.moveTo(-0.05, -1.46);
-  ctx.bezierCurveTo(-0.15, -1.42, -0.165, -1.2, -0.135, -0.98);
-  ctx.quadraticCurveTo(-0.125, -0.86, -0.06, -0.85);
-  ctx.lineTo(0.07, -0.85);
-  ctx.quadraticCurveTo(0.125, -0.86, 0.13, -0.98);
-  ctx.bezierCurveTo(0.15, -1.16, 0.16, -1.36, 0.08, -1.45);
-  ctx.quadraticCurveTo(0.015, -1.49, -0.05, -1.46);
-  ctx.fill();
-  // near leg
-  ctx.strokeStyle = grad; ctx.lineWidth = 0.118;
-  ctx.beginPath(); ctx.moveTo(0.04, -0.9); ctx.lineTo(0.085, -0.07); ctx.lineTo(0.225, -0.055); ctx.stroke();
-  // near arm (front of torso)
+  const pill = (x0, y0, x1, y1, w, style) => { ctx.strokeStyle = style; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); };
+  // legs (far first, darker), feet as short forward pills
+  pill(-0.035, -0.9, -0.06, -0.07, 0.112, far); pill(-0.06, -0.06, 0.07, -0.055, 0.085, far);
+  pill(0.045, -0.9, 0.075, -0.07, 0.118, grad); pill(0.075, -0.06, 0.215, -0.055, 0.09, grad);
+  // everything above the hips leans about the hip point
+  ctx.save(); ctx.translate(0, -0.9); ctx.rotate(lean); ctx.translate(0, 0.9);
+  const hand = { x: 0.06 + 0.33 * reach - lean * 0.9, y: -0.93 - 0.11 * reach };
+  ctx.save(); ctx.translate(0, -0.9); ctx.rotate(-lean); ctx.translate(0, 0.9); // hands stay on the desk while the body leans
+  pill(-0.005, -1.37, 0.03 + 0.09 * reach, -1.13, 0.08, far); pill(0.03 + 0.09 * reach, -1.13, hand.x - 0.02, hand.y + 0.01, 0.074, far);
+  ctx.restore();
+  // torso: the stem
+  ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(-0.15, -1.5, 0.3, 0.66, 0.15); ctx.fill();
+  // near arm, with an engraved cut where it crosses the torso
+  ctx.save(); ctx.translate(0, -0.9); ctx.rotate(-lean); ctx.translate(0, 0.9);
+  const el = { x: 0.07 + 0.07 * reach, y: -1.12 + 0.01 * reach };
+  ctx.strokeStyle = bg; ctx.lineWidth = 0.088 + 5 / s;
+  ctx.beginPath(); ctx.moveTo(0.045, -1.37); ctx.lineTo(el.x, el.y); ctx.lineTo(hand.x, hand.y); ctx.stroke();
   ctx.strokeStyle = front; ctx.lineWidth = 0.088;
-  ctx.beginPath(); ctx.moveTo(0.05, -1.36); ctx.quadraticCurveTo(0.1 + 0.03 * reach, -1.1 + 0.02 * reach, 0.1 + 0.27 * reach, -1.0 - 0.07 * reach); ctx.stroke();
-  // separation cut between arm and torso: a bg-coloured hairline reads as an overlap, like an engraving
-  ctx.strokeStyle = bg; ctx.lineWidth = 2.2 / s;
-  ctx.beginPath(); ctx.moveTo(0.012, -1.33); ctx.quadraticCurveTo(0.055 + 0.03 * reach, -1.1, 0.06 + 0.27 * reach, -1.04 - 0.07 * reach); ctx.stroke();
-  // head (slightly forward, attentive)
-  const hg = ctx.createRadialGradient(0.07, -1.66, 0.02, 0.03, -1.62, 0.15); hg.addColorStop(0, front); hg.addColorStop(1, mix(back, front, 0.6));
-  ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(0.035, -1.615, 0.122, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(0.045, -1.37); ctx.lineTo(el.x, el.y); ctx.lineTo(hand.x, hand.y); ctx.stroke();
+  ctx.restore();
+  // head: a separate disc, a clear gap above the stem
+  const hg = ctx.createRadialGradient(0.07, -1.64, 0.015, 0.035, -1.615, 0.13); hg.addColorStop(0, front); hg.addColorStop(1, mix(back, front, 0.55));
+  ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(0.03, -1.615, 0.098, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
 }
 
 /* ---------- boxes: faces lit from above-front; only faces that look at the camera are drawn ---------- */
@@ -82,7 +78,7 @@ export function workstation(ctx, cam, { ink, bg, x = 0, screen = 1 } = {}) {
 export function aiPanel(c, w, h, s, { ink, bg, live, prompt = '', caret = 1, progress = 0, font = '"JetBrains Mono"' }) {
   const px = (v) => v / s; // screen px -> metres in this panel
   c.lineJoin = 'round';
-  c.fillStyle = 'rgba(246,244,238,0.05)'; c.beginPath(); c.roundRect(0, 0, w, h, 0.03); c.fill();
+  c.fillStyle = ink; c.globalAlpha = 0.05; c.beginPath(); c.roundRect(0, 0, w, h, 0.03); c.fill(); c.globalAlpha = 1;
   c.strokeStyle = mix(bg, ink, 0.8); c.lineWidth = px(1.6); c.stroke();
   // corner registration ticks (technical frame)
   c.strokeStyle = ink; c.lineWidth = px(2.2); const t = 0.05;
