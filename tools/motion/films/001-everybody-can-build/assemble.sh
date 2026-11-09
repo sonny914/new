@@ -17,12 +17,12 @@ ffmpeg -y -loglevel error -i narration.wav -i sfx.wav -filter_complex "[0][1]ami
 ffmpeg -y -loglevel error -i "$OUT/.picture.mp4" -i "$OUT/.mix.wav" -map 0:v -map 1:a "${ENC[@]}" -c:a aac -b:a 192k -shortest "$OUT/everybody-can-build-film001-clean.mp4"
 # 4. captioned film: each caption image faded in/out over 0.12 s at its measured time
 ARGS=(-i "$OUT/.picture.mp4" -i "$OUT/.mix.wav"); FC=""; PREV="0:v"; i=0
-while read -r s e; do
+while read -r s e y; do
   d=$(python3 -c "print(round($e-$s,3))"); n=$((i+2))
   ARGS+=(-loop 1 -t "$d" -i "captions/$(printf %02d $i).png")
   FC+="[$n:v]format=rgba,fade=t=in:st=0:d=0.12:alpha=1,fade=t=out:st=$(python3 -c "print(round($d-0.12,3))"):d=0.12:alpha=1,setpts=PTS+$s/TB[c$i];"
-  FC+="[$PREV][c$i]overlay=0:1340:enable='between(t,$s,$e)':eof_action=pass[v$i];"; PREV="v$i"; i=$((i+1))
-done < <(python3 -c "import json;[print(c['start'],c['end']) for c in json.load(open('captions.json'))]")
+  FC+="[$PREV][c$i]overlay=0:$y:enable='between(t,$s,$e)':eof_action=pass[v$i];"; PREV="v$i"; i=$((i+1))
+done < <(python3 -c "import json;[print(c['start'],c['end'],c['y']) for c in json.load(open('captions.json'))]")
 ffmpeg -y -loglevel error "${ARGS[@]}" -filter_complex "${FC%;}" -map "[$PREV]" -map 1:a "${ENC[@]}" -c:a aac -b:a 192k -t "$DUR" "$OUT/everybody-can-build-film001.mp4"
 rm -f "$OUT/.picture.mp4" "$OUT/.mix.wav"
 cp everybody-can-build.srt "$OUT/"; cp script.md "$OUT/everybody-can-build-script.md"

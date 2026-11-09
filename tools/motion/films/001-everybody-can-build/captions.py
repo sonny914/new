@@ -29,5 +29,6 @@ C = [
 ts = lambda x: f"{int(x//3600):02d}:{int(x%3600//60):02d}:{int(x%60):02d},{int(round((x%1)*1000)):03d}".replace(",1000", ",999")
 with open("everybody-can-build.srt", "w") as f:
     for i, (a, b, txt, _, _) in enumerate(C, 1): f.write(f"{i}\n{ts(a)} --> {ts(b)}\n{txt.replace(chr(39), '’')}\n\n")
-json.dump([dict(start=round(a, 3), end=round(b, 3), text=t.replace("'", "’"), em=e) for a, b, t, e, burn in C if burn], open("captions.json", "w"), indent=1)
+# while the opening's lockup is still on screen (until 7.45 s) captions sit higher, clear of the logo
+json.dump([dict(start=round(a, 3), end=round(b, 3), text=t.replace("'", "’"), em=e, y=1290 if a < 7.45 else 1340) for a, b, t, e, burn in C if burn], open("captions.json", "w"), indent=1)
 print(sum(1 for c in C if c[4]), "burned /", len(C), "in SRT")
