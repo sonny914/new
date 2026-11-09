@@ -1,0 +1,490 @@
+<title>Company Brain Motion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one fixed 1170x1461 poster stage, absolutely composed, scaled to fit the viewport width. Single dark look by design. */
+:root{
+  --ink:#151416; --stage:#1c1b1d; --panel:#212023; --box:#252427; --card:#2b2a2e; --line:#38363b;
+  --fg:#ededee; --mute:#9a99a0; --dim:#6f6e75;
+  --orange:#ef7a3d; --orange-d:#c4561f; --green:#7fd690; --blue:#7c9cff; --purple:#a98bff; --teal:#5fc7b5;
+  --display:"Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme:dark;
+}
+html,body{background:var(--ink);color:var(--fg)}
+body{font-family:var(--display);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px;overflow-x:hidden}
+#fit{position:relative;margin:0 auto;max-width:1170px}
+#stage{position:absolute;left:0;top:0;width:1170px;height:1461px;transform-origin:0 0;overflow:hidden;border-radius:6px;
+  background:radial-gradient(900px 520px at 100% 0%,#6b3a22 0%,rgba(107,58,34,.35) 35%,transparent 70%),
+             radial-gradient(700px 500px at 100% 100%,#5a2f1b 0%,transparent 65%),
+             radial-gradient(600px 400px at 0% 100%,#2a211c 0%,transparent 70%),var(--stage)}
+#glow{position:absolute;inset:-200px;background:radial-gradient(500px 300px at 80% 10%,rgba(239,122,61,.18),transparent 70%);animation:drift 14s ease-in-out infinite alternate;pointer-events:none}
+@keyframes drift{to{transform:translate(-120px,60px)}}
+.abs{position:absolute}
+.mono{font-family:var(--mono)}
+.lbl{font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase}
+.box{position:absolute;background:var(--box);border:1px solid var(--line);border-radius:18px}
+.card{position:absolute;background:var(--card);border:1px solid #3a383e;border-radius:14px}
+
+/* header */
+#brand{left:60px;top:30px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:.2em}
+#h1{left:0;width:1170px;top:58px;text-align:center;font-weight:800;font-size:51px;line-height:1.02;letter-spacing:-.01em}
+#h1 span{display:block;color:#a8a6ad}
+#panel{left:32px;top:186px;width:1104px;height:1120px;background:rgba(33,32,35,.94);border:1px solid #333136;border-radius:28px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+
+/* kpis */
+.kpi{top:206px;width:136px;height:98px}
+.kpi .k{position:absolute;left:13px;top:10px;font-family:var(--mono);font-size:13px;color:var(--mute);letter-spacing:.02em}
+.kpi .v{position:absolute;left:13px;top:28px;font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi svg{position:absolute;left:10px;top:56px}
+.bump{animation:bump .45s ease-out}
+@keyframes bump{30%{transform:translateY(-3px);filter:brightness(1.4)}}
+
+/* timeline */
+#run{left:57px;top:323px;width:98px;height:32px;border-radius:16px;background:#20352a;border:1px solid #2f5a3f;color:var(--green);font-family:var(--mono);font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+#run i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(127,214,144,.6);animation:ping 1.6s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 7px rgba(127,214,144,0)}100%{box-shadow:0 0 0 0 rgba(127,214,144,0)}}
+#clock{left:181px;top:318px;font-family:var(--mono);font-size:26px;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+#track{left:347px;top:338px;width:762px;height:4px;border-radius:2px;background:#3a383d}
+#trackFill{left:347px;top:338px;height:4px;border-radius:2px;background:var(--orange)}
+#knob{top:327px;width:26px;height:26px;margin-left:-13px;border-radius:50%;border:3px solid var(--orange);background:#2a1d17;box-shadow:0 0 0 5px rgba(239,122,61,.18),0 0 18px rgba(239,122,61,.5)}
+#knob::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--orange)}
+.day{top:353px;font-family:var(--mono);font-size:13px;color:var(--dim);transform:translateX(-50%);transition:color .3s}
+.day.on{color:var(--fg)}
+
+/* diagram */
+#diag{left:52px;top:388px;width:1064px;height:420px}
+.src{left:70px;width:248px;height:76px}
+.src .ic{position:absolute;left:12px;top:17px;width:42px;height:42px;border-radius:11px;background:#f4f3f5;display:grid;place-items:center}
+.src b{position:absolute;left:64px;top:16px;font-size:18px;font-weight:600}
+.src small{position:absolute;left:64px;top:42px;font-size:14px;color:var(--mute)}
+.src .n{position:absolute;right:14px;top:26px;font-family:var(--mono);font-size:13px;color:#cfcdd3;border:1px solid #4a484e;border-radius:10px;padding:2px 7px;font-variant-numeric:tabular-nums;transition:border-color .3s,color .3s}
+.src.hot{border-color:rgba(239,122,61,.7)}
+.src.hot .n{border-color:var(--orange);color:var(--orange)}
+#pill{left:331px;top:461px;width:222px;height:32px;border:1px solid #57555b;border-radius:16px;font-family:var(--mono);font-size:15px;display:grid;place-items:center;background:#1f1e21}
+#brainDisk{left:347px;top:515px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#2b2a2e 0%,#232225 70%);border:1px solid #3a383d}
+#brainBig{left:357px;top:532px;width:170px;height:150px;transition:transform .25s ease-out,filter .25s}
+#brainBig.pulse{transform:scale(1.07);filter:drop-shadow(0 0 22px rgba(239,122,61,.7))}
+#cap1{left:332px;top:720px;font-size:15px;color:#cfcdd3}
+#cap2{left:333px;top:745px;font-size:15px;color:var(--orange)}
+.ask{width:243px;height:76px;transition:border-color .35s,box-shadow .35s,background .35s}
+.ask.hot{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange),0 0 26px rgba(239,122,61,.28);background:#2f2a29}
+.ask .av{position:absolute;left:12px;top:19px;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff}
+.ask .bot{position:absolute;left:10px;top:20px}
+.ask .t{position:absolute;left:62px;top:11px;font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.06em}
+.ask .q{position:absolute;left:62px;top:31px;font-size:14.5px;color:#e6e5e8;white-space:nowrap}
+.ask .s{position:absolute;left:62px;top:51px;font-size:12.5px;white-space:nowrap}
+
+/* fixed once + queue */
+#fixed{left:52px;top:822px;width:325px;height:126px}
+#fixN{left:72px;top:860px;font-size:44px;font-weight:700;font-variant-numeric:tabular-nums}
+#fixC{left:72px;top:912px;font-size:14px;color:var(--mute)}
+#ring{left:274px;top:846px}
+#queue{left:391px;top:822px;width:725px;height:126px}
+#chips{left:411px;top:869px;display:flex;gap:7px;height:38px;align-items:center}
+.chip{height:36px;padding:0 11px;border-radius:8px;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.04em;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;
+  background:#22402d;border:1px solid #33603f;color:var(--green);transition:all .45s ease}
+.chip.pend{background:#2d211b;border:2px solid var(--orange);color:#f3c2a5;animation:pend 1.4s ease-in-out infinite}
+@keyframes pend{50%{box-shadow:0 0 14px rgba(239,122,61,.45)}}
+.chip.out{max-width:0!important;padding:0;margin-left:-7px;opacity:0;border-width:0}
+.chip.in{animation:chipIn .5s ease-out}
+@keyframes chipIn{from{transform:translateY(10px);opacity:0}}
+#steps{left:411px;top:918px;font-family:var(--mono);font-size:13px;color:var(--dim)}
+#steps span{transition:color .3s}
+#steps span.on{color:var(--orange)}
+#qArrow{left:891px;top:880px;font-size:24px;color:#bdbbc2}
+#slackTile{left:925px;top:875px;width:42px;height:42px;border-radius:10px;background:#f4f3f5;display:grid;place-items:center;transition:transform .3s}
+#slackTile.pop{transform:scale(1.18) rotate(-6deg)}
+#chan{left:977px;top:874px;font-size:17px;font-weight:700}
+#appr{left:977px;top:898px;font-size:14px;color:var(--green);transition:color .3s,text-shadow .3s}
+#appr.flash{color:#b8ffc6;text-shadow:0 0 12px rgba(127,214,144,.9)}
+
+/* week chart */
+#week{left:52px;top:962px;width:1064px;height:164px}
+.wl{left:72px;font-size:16px;font-weight:600}
+.wn{left:825px;font-family:var(--mono);font-size:24px;font-variant-numeric:tabular-nums}
+.wr{right:76px;font-family:var(--mono);font-size:13px;color:var(--dim);text-align:right}
+#same{left:923px;top:1071px;width:172px;height:30px;border-radius:15px;background:#20402b;color:var(--green);font-size:14.5px;font-weight:600;display:grid;place-items:center}
+
+/* log */
+#log{left:52px;top:1140px;width:1064px;height:148px;overflow:hidden}
+#rows{left:58px;top:1176px;width:1046px;height:94px;overflow:hidden}
+.row{position:absolute;left:0;width:1046px;height:23px;display:flex;align-items:center;font-family:var(--mono);font-size:14px;border-radius:4px;transition:top .5s ease,opacity .5s ease,background 1.2s}
+.row .tm{width:133px;padding-left:14px;color:var(--dim)}
+.row .tg{width:70px;height:17px;border-radius:4px;font-size:11.5px;display:grid;place-items:center;margin-right:16px}
+.row .tx{color:#d9d8dc;white-space:nowrap}
+.row.new{background:rgba(239,122,61,.16)}
+
+/* cta */
+#cta{left:32px;top:1328px;width:1104px;height:106px;border-radius:22px;background:linear-gradient(180deg,#ea7a43,#d9672f);display:flex;align-items:center;justify-content:center;gap:20px;color:#fff;font-weight:800;font-size:50px;letter-spacing:-.005em;box-shadow:0 18px 50px rgba(217,103,47,.35)}
+#cta .bw{background:#fff;color:#1b1a1c;border-radius:14px;padding:4px 22px 6px;position:relative;overflow:hidden;display:inline-block}
+#cta .bw::after{content:"";position:absolute;top:0;bottom:0;width:60px;left:-80px;background:linear-gradient(90deg,transparent,rgba(239,122,61,.35),transparent);animation:shine 3.2s ease-in-out infinite}
+@keyframes shine{0%,55%{left:-80px}100%{left:110%}}
+#cta .ar{display:inline-block;animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(7px)}}
+.px{position:absolute;width:13px;height:13px;background:#d9672f}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="fit"><div id="stage">
+<div id="glow"></div>
+
+<!-- header -->
+<div id="brand" class="abs">
+  <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 2c4 4 9 8 9 14a9 9 0 0 1-18 0c0-6 5-10 9-14z" fill="#ef7a3d"/><path d="M13 7c2 3 5 6 5 9.5a5 5 0 0 1-5 4.5" fill="none" stroke="#ffd0b0" stroke-width="2" stroke-linecap="round"/></svg>
+  FLIGHTY.BUILDS
+</div>
+<div id="h1" class="abs">Your Company Brain<span>inside Slack</span></div>
+
+<div id="panel" class="abs"></div>
+
+<!-- app header -->
+<div class="card" style="left:56px;top:208px;width:82px;height:82px;border-radius:18px;background:#2a292d;display:grid;place-items:center">
+  <svg width="66" height="58" viewBox="-115 -95 230 200"><use href="#brainSym"/></svg>
+</div>
+<div class="abs" style="left:154px;top:208px;font-size:46px;font-weight:800;letter-spacing:-.01em">Company Brain</div>
+<div class="abs lbl" style="left:156px;top:262px">Slack app · #ask-the-brain</div>
+<div class="abs mono" style="left:156px;top:283px;font-size:13px;color:var(--dim)">crm · sales calls · docs · analytics</div>
+
+<div class="card kpi" style="left:549px"><div class="k">questions today</div><div class="v" id="kq">64</div><svg width="116" height="34" id="sq"></svg></div>
+<div class="card kpi" style="left:696px"><div class="k">from sources</div><div class="v" id="ks" style="color:var(--green)">61</div><svg width="116" height="34" id="ss"></svg></div>
+<div class="card kpi" style="left:843px"><div class="k">fixes saved</div><div class="v" id="kf" style="color:var(--orange)">27</div><svg width="116" height="34" id="sf"></svg></div>
+<div class="card kpi" style="left:990px"><div class="k">people using</div><div class="v" id="kp" style="color:var(--blue)">42</div><svg width="116" height="34" id="sp"></svg></div>
+
+<!-- timeline -->
+<div id="run" class="abs"><i></i>running</div>
+<div id="clock" class="abs">Mon 09:12</div>
+<div id="track" class="abs"></div>
+<div id="trackFill" class="abs" style="width:45px"></div>
+<div id="knob" class="abs" style="left:392px"></div>
+<div id="days"></div>
+
+<!-- diagram -->
+<div id="diag" class="box"></div>
+<div class="abs" style="left:72px;top:404px;font-size:16.5px;color:#d6d5d9"><b style="color:#fff">1 brain</b> · every person and every AI · the same answer</div>
+<div class="abs lbl" style="left:72px;top:437px">Reads from</div>
+<div class="abs lbl" style="left:412px;top:437px">Brain</div>
+<div class="abs lbl" style="left:605px;top:437px">Who asks · 8</div>
+
+<svg id="wires" class="abs" style="left:0;top:0" width="1170" height="1461"></svg>
+
+<div class="card src" style="top:467px" data-i="0"><div class="ic"><svg width="28" height="28" viewBox="0 0 28 28"><circle cx="17" cy="16" r="5" fill="none" stroke="#ef7a3d" stroke-width="3"/><circle cx="7" cy="6" r="3" fill="#ef7a3d"/><path d="M9 8l5 5M17 11V5M13 19l-6 5" stroke="#ef7a3d" stroke-width="3" stroke-linecap="round"/><circle cx="17" cy="4" r="2.4" fill="#ef7a3d"/><circle cx="6" cy="24.5" r="2.4" fill="#ef7a3d"/></svg></div><b>HubSpot</b><small>deals + pricing</small><span class="n">412</span></div>
+<div class="card src" style="top:552px" data-i="1"><div class="ic"><div style="width:30px;height:30px;border-radius:7px;background:#6c47e8;display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2l2 3 3.5-.6-.6 3.5L18 10l-3 2 .6 3.5-3.5-.6L10 18l-2-3-3.5.6.6-3.5L2 10l3-2-.6-3.5 3.5.6z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></div></div><b>Sales calls</b><small>recordings + notes</small><span class="n">2.8k</span></div>
+<div class="card src" style="top:637px" data-i="2"><div class="ic"><svg width="24" height="30" viewBox="0 0 24 30"><path d="M2 3a2 2 0 0 1 2-2h11l7 7v19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z" fill="#4a86f0"/><path d="M15 1v7h7" fill="#a9c6fb"/><path d="M6 14h12M6 18h12M6 22h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div><b>Google Docs</b><small>playbooks + briefs</small><span class="n">318</span></div>
+<div class="card src" style="top:721px" data-i="3"><div class="ic"><svg width="28" height="28" viewBox="0 0 28 28"><rect x="17" y="3" width="7" height="22" rx="3.5" fill="#f2a52b"/><rect x="9" y="11" width="7" height="14" rx="3.5" fill="#e5762b"/><circle cx="6" cy="21.5" r="3.5" fill="#e5762b"/></svg></div><b>Analytics</b><small>traffic + leads</small><span class="n">GA4</span></div>
+
+<div id="pill" class="abs">fix once, fixed for all</div>
+<div id="brainDisk" class="abs"></div>
+<svg id="brainBig" class="abs" viewBox="-115 -95 230 200"><use href="#brainSym"/></svg>
+<div id="cap1" class="abs">every answer shows its source</div>
+<div id="cap2" class="abs">big changes wait for a person</div>
+
+<div id="asks"></div>
+
+<!-- fixed once -->
+<div id="fixed" class="box"></div>
+<div class="abs lbl" style="left:72px;top:837px">Fixed once</div>
+<div id="fixN" class="abs">27</div>
+<div id="fixC" class="abs">wrong answers corrected</div>
+<svg id="ring" class="abs" width="82" height="82" viewBox="0 0 82 82">
+  <circle cx="41" cy="41" r="35" fill="#241d1a" stroke="#ef7a3d" stroke-width="6"/>
+  <circle id="ringSpin" cx="41" cy="41" r="35" fill="none" stroke="#ffc39d" stroke-width="6" stroke-dasharray="22 198" stroke-linecap="round" transform="rotate(-90 41 41)"/>
+  <text x="41" y="45" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="21" font-weight="600" fill="#fff">0</text>
+  <text x="41" y="58" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="8" fill="#9a99a0">repeated</text>
+</svg>
+
+<!-- queue -->
+<div id="queue" class="box"></div>
+<div class="abs lbl" style="left:411px;top:837px">1-3-1 queue</div>
+<div class="abs" style="right:75px;top:836px;font-size:14.5px;color:var(--orange)">nothing big changes without a yes</div>
+<div id="chips" class="abs"></div>
+<div id="steps" class="abs"><span>3 options</span> → <span>1 pick</span> → <span>risk level</span> → <span>a person's yes</span></div>
+<div id="qArrow" class="abs">→</div>
+<div id="slackTile" class="abs"><svg width="26" height="26" viewBox="0 0 26 26"><g stroke-width="4" stroke-linecap="round"><path d="M9 3v20" stroke="#36c5f0"/><path d="M17 3v20" stroke="#2eb67d"/><path d="M3 9h20" stroke="#ecb22e"/><path d="M3 17h20" stroke="#e01e5a"/></g></svg></div>
+<div id="chan" class="abs">#ask-the-brain</div>
+<div id="appr" class="abs">approved in Slack</div>
+
+<!-- week -->
+<div id="week" class="box"></div>
+<div class="abs lbl" style="left:72px;top:978px">This week</div>
+<div class="abs wl" style="top:1016px;color:var(--orange)">questions</div>
+<div class="abs wl" style="top:1048px;color:var(--blue)">AI reads</div>
+<div class="abs wl" style="top:1080px;color:var(--green)">fixes</div>
+<svg id="chart" class="abs" style="left:230px;top:978px" width="585" height="140"></svg>
+<div class="abs wn" style="top:1001px" id="w1">312</div>
+<div class="abs wn" style="top:1036px" id="w2">1,486</div>
+<div class="abs wn" style="top:1071px" id="w3">27</div>
+<div class="abs wr" style="top:1012px">asked in Slack</div>
+<div class="abs wr" style="top:1040px">read before AI work</div>
+<div id="same" class="abs">same answer for all</div>
+
+<!-- log -->
+<div id="log" class="box"></div>
+<div class="abs lbl" style="left:72px;top:1153px">Brain log</div>
+<div class="abs mono" style="right:76px;top:1153px;font-size:13px;color:var(--dim)">every answer shows its source</div>
+<div id="rows" class="abs"></div>
+
+<!-- cta -->
+<div id="cta" class="abs">Comment <span class="bw">BRAIN</span> to get access <span class="ar">↓</span></div>
+<div id="pix"></div>
+
+<svg width="0" height="0" style="position:absolute"><defs id="defs"></defs></svg>
+</div></div>
+
+<script>
+(()=>{
+const NS="http://www.w3.org/2000/svg";
+const $=id=>document.getElementById(id);
+const stage=$("stage"), fit=$("fit");
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const el=(tag,attrs={},parent)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e};
+
+/* ---------- scale to fit ---------- */
+function resize(){const w=Math.min(1170,fit.parentElement.clientWidth-0);const s=w/1170;stage.style.transform=`scale(${s})`;fit.style.width=w+"px";fit.style.height=(1461*s)+"px"}
+addEventListener("resize",resize);resize();
+
+/* ---------- procedural brain (original drawing) ---------- */
+function rng(seed){return()=>(seed=(seed*16807)%2147483647,(seed-1)/2147483646)}
+(function buildBrain(){
+  const defs=$("defs"); const r=rng(7);
+  const g1=el("radialGradient",{id:"bg",cx:"40%",cy:"35%",r:"75%"},defs);
+  el("stop",{offset:"0",  "stop-color":"#ffad70"},g1);el("stop",{offset:".55","stop-color":"#ec7535"},g1);el("stop",{offset:"1","stop-color":"#c9541d"},g1);
+  const pts=[];const N=200;
+  for(let i=0;i<N;i++){const th=i/N*Math.PI*2;let x=Math.cos(th)*100,y=Math.sin(th)*72;
+    if(y>0)y*=.72;
+    y+=22*Math.exp(-Math.pow((th-Math.PI*.66)/.22,2)); // temporal lobe
+    y-=10*Math.exp(-Math.pow((th-Math.PI*.36)/.12,2)); // notch above cerebellum
+    const b=1+.032*Math.sin(th*14)+.018*Math.sin(th*6+1.3);
+    pts.push([x*b,y*b-8]);}
+  const outline="M"+pts.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join("L")+"Z";
+  const cp=el("clipPath",{id:"bclip"},defs);el("path",{d:outline},cp);
+  const sym=el("g",{id:"brainSym"},defs);
+  // brain stem + cerebellum behind
+  el("path",{d:"M18 40 C24 62 22 80 12 98 L34 98 C40 78 42 60 38 42Z",fill:"#c45a26"},sym);
+  const cb=el("g",{},sym);
+  el("ellipse",{cx:58,cy:44,rx:36,ry:22,fill:"#d8662c"},cb);
+  for(let k=-2;k<=2;k++)el("path",{d:`M${28} ${44+k*7} Q58 ${40+k*8} ${90} ${44+k*7}`,stroke:"#a8461b","stroke-width":2.5,fill:"none",opacity:.8},cb);
+  el("path",{d:outline,fill:"url(#bg)",stroke:"#b24c1c","stroke-width":3},sym);
+  const sul=el("g",{"clip-path":"url(#bclip)"},sym);
+  const lines=[];
+  for(let k=0;k<22;k++){let x=-90+r()*170,y=-70+r()*110,a=r()*Math.PI*2;const P=[[x,y]];
+    for(let s=0;s<7;s++){a+=(r()-.5)*2.2;x+=Math.cos(a)*16;y+=Math.sin(a)*13;P.push([x,y])}
+    let d=`M${P[0][0]} ${P[0][1]}`;for(let s=1;s<P.length-1;s++){const mx=(P[s][0]+P[s+1][0])/2,my=(P[s][1]+P[s+1][1])/2;d+=` Q${P[s][0].toFixed(1)} ${P[s][1].toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`}
+    lines.push(d)}
+  lines.push("M-55 30 C-25 12 5 8 45 -6");   // lateral fissure
+  lines.push("M-5 -72 C-2 -40 6 -20 2 8");    // central sulcus
+  lines.forEach(d=>el("path",{d,stroke:"#ffc08f","stroke-width":2.2,fill:"none","stroke-linecap":"round",opacity:.45,transform:"translate(-1.6 -1.8)"},sul));
+  lines.forEach(d=>el("path",{d,stroke:"#a2431a","stroke-width":4.2,fill:"none","stroke-linecap":"round",opacity:.9},sul));
+})();
+
+/* ---------- days ---------- */
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], dayX=[379,495,611,728,844,960,1076];
+const daysEl=$("days");
+const dayEls=DAYS.map((d,i)=>{const s=document.createElement("div");s.className="abs day";s.style.left=dayX[i]+"px";s.textContent=d;daysEl.appendChild(s);return s});
+
+/* ---------- pixel bots (original sprites) ---------- */
+const BOTS={
+ a:["....XX....","..XXXXXX..",".XXXXXXXX.","XX.XXXX.XX","XXXXXXXXXX","XX......XX",".XXXXXXXX.","X.X....X.X"],
+ b:["X........X",".X.XXXX.X.","XXXXXXXXXX","XX..XX..XX","XXXXXXXXXX","XXX.XX.XXX","XXXXXXXXXX","XX.X..X.XX"],
+ c:["...XXXX...",".XXXXXXXX.","XXXXXXXXXX","XX..XX..XX","XXXXXXXXXX",".XXXXXXXX.","..X.XX.X..",".XX....XX."],
+ d:["X..XXXX..X","XXXXXXXXXX","XX.XXXX.XX","XXXXXXXXXX","XXXX..XXXX",".XXXXXXXX.",".X.X..X.X.","XX......XX"]};
+function botSVG(kind,color){const m=BOTS[kind];const s=4.4;const svg=el("svg",{width:46,height:38,viewBox:"0 0 46 38",class:"bot"});
+  const g=el("g",{},svg);m.forEach((row,y)=>[...row].forEach((c,x)=>{if(c==="X")el("rect",{x:x*s+1,y:y*s+1,width:s+.2,height:s+.2,fill:color},g)}));
+  // eye glints that blink
+  const eyes=el("g",{class:"eyes"},svg);
+  m.forEach((row,y)=>{if(y>=2&&y<=4)[...row].forEach((c,x)=>{if(c==="."&&x>0&&x<9)el("rect",{x:x*s+1,y:y*s+1,width:s,height:s,fill:"#fff",opacity:0},eyes)})});
+  svg._g=g;svg._eyes=eyes;return svg}
+
+/* ---------- askers ---------- */
+const ASK=[
+ {col:0,row:0,av:"CP",avc:"#1f8a63",t:"SALES",tc:"#7fd6a6",q:"how do we price this?",s:"from HubSpot + calls",src:[0,1],log:["answer","SALES","deal pricing, from HubSpot + calls"]},
+ {col:1,row:0,bot:"a",tc:"#ef7a3d",t:"OUTREACH AI",q:"reads it before drafting",s:"same claims as sales",src:[0,1],log:["read","OUTREACH","read pricing before drafting"]},
+ {col:0,row:1,av:"NH",avc:"#7a4ff0",t:"NEW HIRE",tc:"#b9a2ff",q:"what's a qualified lead?",s:"answered on day 1",src:[0,2],log:["answer","NEW HIRE","qualified lead, from playbooks"]},
+ {col:1,row:1,bot:"b",tc:"#6f95ff",t:"PRE-CALL AI",q:"brief before each call",s:"every past call in it",src:[1,0],log:["read","PRE-CALL","brief built from 14 past calls"]},
+ {col:0,row:2,av:"MK",avc:"#b4552a",t:"MARKETING",tc:"#ef7a3d",q:"what do buyers ask?",s:"pulled from sales calls",src:[1,3],log:["answer","MARKETING","buyer questions, from sales calls"]},
+ {col:1,row:2,bot:"c",tc:"#6fcf7f",t:"CONTENT AI",q:"writes in your voice",s:"from your playbooks",src:[2,1],log:["read","CONTENT","draft in house voice, from docs"]},
+ {col:0,row:3,av:"CEO",avc:"#3256e0",t:"CEO",tc:"#8fb0ff",q:"where are deals stuck?",s:"with the source attached",src:[0,3],log:["answer","CEO","stuck deals, source attached"]},
+ {col:1,row:3,bot:"d",tc:"#a98bff",t:"REPORTING AI",q:"weekly numbers",s:"checked twice a weekday",src:[3,0],log:["check","REPORTING","weekly numbers checked twice"]},
+];
+const ROWY=[467,552,637,721], COLX=[605,861];
+const asksEl=$("asks");
+ASK.forEach(a=>{const c=document.createElement("div");c.className="card ask";c.style.left=COLX[a.col]+"px";c.style.top=ROWY[a.row]+"px";
+  if(a.bot){const b=botSVG(a.bot,a.tc);c.appendChild(b);a.botEl=b}
+  else{const av=document.createElement("div");av.className="av";av.style.background=a.avc;av.textContent=a.av;if(a.av==="CEO")av.style.fontSize="12.5px";c.appendChild(av)}
+  c.insertAdjacentHTML("beforeend",`<div class="t" style="color:${a.tc}">${a.t}</div><div class="q">${a.q}</div><div class="s" style="color:${a.tc}">${a.s}</div>`);
+  asksEl.appendChild(c);a.el=c});
+ASK[4].el.classList.add("hot");
+const srcEls=[...document.querySelectorAll(".src")];
+
+/* ---------- wires ---------- */
+const wires=$("wires");
+const BX=442,BY=610;
+const inPaths=ROWY.map((y,i)=>{const sy=y+38;const d=`M328 ${sy} C352 ${sy} 340 ${BY+(i-1.5)*16} ${BX-92} ${BY+(i-1.5)*16}`;
+  el("path",{d,stroke:"#5a5459","stroke-width":1.4,"stroke-dasharray":"2 5",fill:"none"},wires);
+  el("circle",{cx:328,cy:sy,r:3.5,fill:"#ef7a3d"},wires);
+  const p=el("path",{d,fill:"none",stroke:"none"},wires);return p});
+const outPaths=ROWY.map((y,i)=>{const ty=y+38;const d=`M${BX+92} ${BY+(i-1.5)*14} C575 ${BY+(i-1.5)*20} 570 ${ty} 604 ${ty}`;
+  el("path",{d,stroke:"#5a5459","stroke-width":1.4,"stroke-dasharray":"2 5",fill:"none"},wires);
+  const cx=d.match(/C575/)?0:0;
+  const p=el("path",{d,fill:"none",stroke:"none"},wires);
+  const pt=p.getPointAtLength(p.getTotalLength()*.55);el("circle",{cx:pt.x,cy:pt.y,r:3.5,fill:"#ef7a3d"},wires);
+  return p});
+// ring arc around brain
+const arcG=el("g",{transform:`translate(${BX} ${BY})`},wires);
+const arc=el("circle",{r:100,fill:"none",stroke:"#ef7a3d","stroke-width":3,"stroke-dasharray":"130 499","stroke-linecap":"round"},arcG);
+el("circle",{r:100,fill:"none",stroke:"rgba(239,122,61,.12)","stroke-width":1},arcG);
+const particles=[];
+function spawn(path,dur,delay,color,onEnd){particles.push({path,len:path.getTotalLength(),dur,t:-delay,color,onEnd,
+  dot:el("circle",{r:4.5,fill:color,opacity:0,style:`filter:drop-shadow(0 0 6px ${color})`},wires)})}
+
+/* ---------- sparklines ---------- */
+const spark={q:{el:$("sq"),c:"#8b8a91",d:[3,4,4,5,6,6,7,8,8,9,10,11,12,13,14,15,17,18,20,22]},
+ s:{el:$("ss"),c:"#7fd690",d:[2,2,2,5,5,5,8,8,8,8,12,12,12,15,15,15,15,18,18,18],step:1},
+ f:{el:$("sf"),c:"#ef7a3d",d:[1,1,2,2,3,3,4,5,6,7,8,9,10,12,13,15,16,17,18,19]},
+ p:{el:$("sp"),c:"#7c9cff",d:[2,2,3,3,3,4,4,5,5,6,7,8,9,10,12,13,15,16,17,18]}};
+function drawSpark(k){const s=spark[k];const d=s.d.slice(-20);const mn=Math.min(...d),mx=Math.max(...d)||1;const W=112,H=30;
+  const X=i=>2+i*(W-4)/(d.length-1),Y=v=>H-2-(v-mn)/(mx-mn||1)*(H-6);
+  let p="";d.forEach((v,i)=>{if(i===0)p=`M${X(0)} ${Y(v)}`;else if(s.step)p+=` H${X(i)} V${Y(v)}`;else p+=` L${X(i)} ${Y(v)}`});
+  s.el.innerHTML=`<path d="${p}" fill="none" stroke="${s.c}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`}
+Object.keys(spark).forEach(drawSpark);
+function pushSpark(k,inc){const s=spark[k];s.d.push(s.d[s.d.length-1]+inc);if(s.d.length>40)s.d.shift();drawSpark(k)}
+
+/* ---------- week chart ---------- */
+const chart=$("chart");const CW=570,CH=132;
+// gridline baseline
+el("path",{d:`M8 ${CH-6} H${CW}`,stroke:"#3a383d","stroke-width":1},chart);
+const curves=[
+ {c:"#ef7a3d",top:12,  f:x=>Math.pow(x,2.6)*.93+Math.max(0,x-.85)*.0, mark:.19},
+ {c:"#7c9cff",top:60,  f:x=>Math.pow(x,2.1), mark:.52},
+ {c:"#7fd690",top:98,  f:x=>Math.pow(x,1.9), mark:.84}];
+const base=CH-6;
+curves.forEach(cv=>{cv.path=el("path",{fill:"none",stroke:cv.c,"stroke-width":3,"stroke-linecap":"round","stroke-linejoin":"round"},chart);
+  cv.area=el("path",{fill:cv.c,opacity:.07},chart);
+  cv.mk=el("circle",{r:5,fill:cv.c,stroke:"#252427","stroke-width":2},chart);
+  cv.end=el("circle",{r:5.5,fill:"#252427",stroke:cv.c,"stroke-width":2.5},chart);
+  cv.sample=x=>{const v=cv.f(x);return[8+x*(CW-14),base-v*(base-cv.top)]}});
+function drawChart(p){curves.forEach(cv=>{const n=Math.max(2,Math.round(80*p));let d="";
+  for(let i=0;i<=n;i++){const [x,y]=cv.sample(i/80);d+=(i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)}
+  cv.path.setAttribute("d",d);const [ex,ey]=cv.sample(n/80);
+  cv.area.setAttribute("d",d+`L${ex} ${base}L8 ${base}Z`);
+  cv.end.setAttribute("cx",ex);cv.end.setAttribute("cy",ey);
+  const [mx,my]=cv.sample(cv.mark);cv.mk.setAttribute("cx",mx);cv.mk.setAttribute("cy",my);cv.mk.setAttribute("opacity",p>=cv.mark?1:0)})}
+
+/* ---------- log ---------- */
+const TAG={answer:["#1f3d2c","#7fd690"],fix:["#4a2a1a","#f08a4b"],"1-3-1":["#3a2a55","#c6a8ff"],check:["#1f2f4f","#8fb0ff"],read:["#18393a","#5fc7b5"],yes:["#20402b","#9ff0ae"]};
+const rowsEl=$("rows");const rows=[];
+function addLog(time,tag,head,text,quiet){const r=document.createElement("div");r.className="row"+(quiet?"":" new");
+  const [bg,fg]=TAG[tag];r.innerHTML=`<span class="tm">${time}</span><span class="tg" style="background:${bg};color:${fg}">${tag}</span><span class="tx"><span style="color:${fg}">${head}</span> ${text}</span>`;
+  r.style.top=(rows.length>=4?4:rows.length)*23.5+"px";rowsEl.appendChild(r);rows.push(r);
+  requestAnimationFrame(()=>{while(rows.length>4){const old=rows.shift();old.style.top="-24px";old.style.opacity=0;setTimeout(()=>old.remove(),600)}
+    rows.forEach((x,i)=>x.style.top=(i*23.5)+"px")});
+  if(!quiet)setTimeout(()=>r.classList.remove("new"),900)}
+addLog("Mon 09:12","answer","SALES","deal pricing, from HubSpot + calls",1);
+addLog("Mon 09:20","fix","BRAIN","annual plan first, saved for all",1);
+addLog("Mon 09:41","1-3-1","OFFER","change held, 3 options, risk: medium",1);
+addLog("Mon 10:00","check","DAILY","every AI ran, nothing unsafe",1);
+rows[2].style.background="rgba(239,122,61,.1)";
+
+/* ---------- queue ---------- */
+const chipsEl=$("chips");const steps=[...document.querySelectorAll("#steps span")];
+const POOL=["PRICE","ICP","PLAY","RULE","OFFER","PITCH","PAGE","EMAIL","DEMO","TERMS","PERSONA","FAQ"];let poolI=5;
+function chip(name,pend){const c=document.createElement("div");c.className="chip"+(pend?" pend":"");c.style.maxWidth="140px";c.textContent=(pend?"":"✓ ")+name;c.dataset.n=name;chipsEl.appendChild(c);return c}
+["PRICE","ICP","PLAY","RULE"].forEach(n=>chip(n));let pending=chip("OFFER",1);
+const RISK=["low","medium","medium","high"];
+function queueCycle(){
+  if(reduce)return;
+  const name=pending.dataset.n;
+  addLog(clockStr(),"1-3-1",name,`change held, 3 options, risk: ${RISK[Math.floor(Math.random()*4)]}`);
+  steps.forEach(s=>s.classList.remove("on"));
+  steps.forEach((s,i)=>setTimeout(()=>{steps.forEach(x=>x.classList.remove("on"));s.classList.add("on")},700+i*900));
+  setTimeout(()=>{ // a person's yes
+    $("slackTile").classList.add("pop");$("appr").classList.add("flash");
+    setTimeout(()=>{$("slackTile").classList.remove("pop");$("appr").classList.remove("flash")},700);
+    pending.classList.remove("pend");pending.textContent="✓ "+name;
+    addLog(clockStr(),"yes",name,"approved in #ask-the-brain");
+  },700+3*900+300);
+  setTimeout(()=>{ // shift queue
+    steps.forEach(x=>x.classList.remove("on"));
+    const first=chipsEl.querySelector(".chip:not(.out)");first.classList.add("out");setTimeout(()=>first.remove(),500);
+    const n=POOL[poolI++%POOL.length];pending=chip(n,1);pending.classList.add("in");
+  },5200);
+  setTimeout(queueCycle,8200);
+}
+
+/* ---------- clock / week ---------- */
+const SWEEP=16000, HOLD=3500, CYCLE=SWEEP+HOLD;
+const W0=9.2/24, W1=6.92; // Mon 09:12 -> Sun ~22:00
+let w=W0, lastDay=6;
+function fmt(wk){const d=Math.min(6,Math.floor(wk));const mins=Math.floor((wk-d)*1440);return `${DAYS[d]} ${String(Math.floor(mins/60)).padStart(2,"0")}:${String(mins%60).padStart(2,"0")}`}
+const clockStr=()=>fmt(w);
+const FIXES=["annual plan first, saved for all","ICP is 20+ seats, saved for all","trial is 14 days, saved for all","discount cap 15%, saved for all","case study link updated for all","onboarding is 2 calls, saved for all"];let fixI=0;
+
+/* ---------- counters ---------- */
+let kq=64,ks=61,kp=42,lastFix=27;
+function bump(id,v){const e=$(id);e.textContent=v;e.classList.remove("bump");void e.offsetWidth;e.classList.add("bump")}
+
+/* ---------- ask events ---------- */
+let askI=4;
+function askEvent(){
+  ASK.forEach(a=>a.el.classList.remove("hot"));srcEls.forEach(s=>s.classList.remove("hot"));
+  askI=(askI+1)%ASK.length;const a=ASK[askI];
+  a.src.forEach((si,k)=>{srcEls[si].classList.add("hot");
+    spawn(inPaths[si],650,k*160,"#ffb07c",k===a.src.length-1?()=>{
+      const b=$("brainBig");b.classList.add("pulse");setTimeout(()=>b.classList.remove("pulse"),260);
+      spawn(outPaths[a.row],650,0,a.tc,()=>{a.el.classList.add("hot");
+        bump("kq",++kq);pushSpark("q",1+Math.round(Math.random()));
+        if(a.log[0]!=="read"){bump("ks",++ks);pushSpark("s",3)}
+        if(Math.random()<.22){bump("kp",++kp);pushSpark("p",1)}
+        addLog(clockStr(),a.log[0],a.log[1],a.log[2]);
+        if(a.botEl)blink(a.botEl)})}:null)});
+}
+function blink(b){[...b._eyes.children].forEach(r=>r.setAttribute("opacity",1));b._g.setAttribute("transform","translate(0 -2)");
+  setTimeout(()=>{[...b._eyes.children].forEach(r=>r.setAttribute("opacity",0));b._g.setAttribute("transform","")},450)}
+
+/* ---------- main loop ---------- */
+const easeIO=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+let start=performance.now()-SWEEP; // open on the finished week
+let lastT=performance.now(), askAcc=0, cycleN=-1;
+function apply(p){
+  w=W0+(W1-W0)*p;
+  $("clock").textContent=fmt(w);
+  const kx=347+w/7*753; $("knob").style.left=kx+"px"; $("trackFill").style.width=(kx-347)+"px";
+  const d=Math.min(6,Math.floor(w)); dayEls.forEach((e,i)=>e.classList.toggle("on",i===d));
+  const cp=Math.max(.02,p); drawChart(cp);
+  const q=Math.round(312*curves[0].f(cp)/curves[0].f(1)), r=Math.round(1486*curves[1].f(cp)), f=Math.round(27*curves[2].f(cp));
+  $("w1").textContent=q.toLocaleString("en-US");$("w2").textContent=r.toLocaleString("en-US");$("w3").textContent=f;
+  return {d,f};
+}
+function tick(now){
+  const dt=Math.min(100,now-lastT);lastT=now;
+  const ct=(now-start)%CYCLE, n=Math.floor((now-start)/CYCLE);
+  if(n!==cycleN){cycleN=n;if(n>0){kq=3;ks=2;kp=42;bump("kq",kq);bump("ks",ks);bump("kp",kp);lastDay=0}}
+  const p=ct<SWEEP?easeIO(ct/SWEEP):1;
+  const {d,f}=apply(p);
+  if(d!==lastDay){lastDay=d;addLog(clockStr(),"check","DAILY","every AI ran, nothing unsafe");kq=Math.round(2+Math.random()*4);bump("kq",kq)}
+  if(f!==lastFix){if(f>lastFix&&ct<SWEEP&&f%3===0)addLog(clockStr(),"fix","BRAIN",FIXES[fixI++%FIXES.length]);
+    lastFix=f;bump("fixN",f);bump("kf",f);if(ct<SWEEP)pushSpark("f",1)}
+  askAcc+=dt;if(askAcc>1700){askAcc=0;askEvent()}
+  for(let i=particles.length-1;i>=0;i--){const P=particles[i];P.t+=dt;if(P.t<0)continue;const k=Math.min(1,P.t/P.dur);
+    const pt=P.path.getPointAtLength(P.len*easeIO(k));P.dot.setAttribute("cx",pt.x);P.dot.setAttribute("cy",pt.y);P.dot.setAttribute("opacity",k<.08?k/.08:1);
+    if(k>=1){P.dot.remove();particles.splice(i,1);P.onEnd&&P.onEnd()}}
+  arc.setAttribute("transform",`rotate(${(now/22)%360})`);
+  $("ringSpin").setAttribute("transform",`rotate(${(now/12)%360-90} 41 41)`);
+  requestAnimationFrame(tick);
+}
+
+/* ---------- pixel staircase (bottom right) ---------- */
+const pix=$("pix");const PX=[];
+for(let y=0;y<9;y++)for(let x=0;x<6;x++){if(x<6-Math.floor(y*0.7))continue;if(Math.random()<.3)continue;
+  const s=document.createElement("div");s.className="px";s.style.left=(1093+x*13)+"px";s.style.top=(1344+y*13)+"px";s.style.opacity=.4+Math.random()*.6;pix.appendChild(s);PX.push(s)}
+// a second cluster mid-right edge like the original's corner stair
+for(let y=0;y<4;y++)for(let x=0;x<3;x++){if(x<2-y)continue;const s=document.createElement("div");s.className="px";s.style.left=(1131+x*13)+"px";s.style.top=(1290+y*13)+"px";s.style.opacity=.5;pix.appendChild(s);PX.push(s)}
+if(!reduce)setInterval(()=>{const s=PX[Math.floor(Math.random()*PX.length)];s.style.transition="opacity .6s";s.style.opacity=Math.random()<.5?.25:1},180);
+
+if(reduce){apply(1);$("clock").textContent="Mon 09:12";$("knob").style.left="392px";$("trackFill").style.width="45px";dayEls[0].classList.add("on");dayEls[6].classList.remove("on")}
+else{apply(1);requestAnimationFrame(tick);setTimeout(queueCycle,1500)}
+})();
+</script>
