@@ -1,0 +1,34 @@
+# Slack app manifest for the Company Brain.
+# api.slack.com/apps → Create New App → From an app manifest → paste this, then replace YOUR-SITE with the
+# Netlify site's domain in both URLs. Setup steps: docs/BRAIN.md.
+display_information:
+  name: Company Brain
+  description: One brain for every person and every AI. Same answer, with its source.
+  background_color: "#000000"
+features:
+  bot_user:
+    display_name: brain
+    always_online: true
+  app_home:
+    messages_tab_enabled: true
+    messages_tab_read_only_enabled: false
+oauth_config:
+  scopes:
+    bot:
+      - app_mentions:read      # answer @brain in channels
+      - chat:write             # post answers, held changes and the digest
+      - im:history             # answer direct messages
+      - im:read
+      - im:write
+settings:
+  event_subscriptions:
+    request_url: https://YOUR-SITE/.netlify/functions/brain-slack
+    bot_events:
+      - app_mention
+      - message.im
+  interactivity:
+    is_enabled: true
+    request_url: https://YOUR-SITE/.netlify/functions/brain-slack
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
