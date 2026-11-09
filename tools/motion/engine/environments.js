@@ -5,7 +5,7 @@ import { mix } from './color.js';
 import { creation, box3 } from './illustrations.js';
 import { panel, floorCircle } from './space.js';
 
-export const SIZE = { site: [1.0, 0.7], store: [0.9, 0.88], app: [0.42, 0.8], product: [0.6, 0.66], building: [0.8, 1.15], course: [0.9, 0.64], calendar: [0.9, 0.9] };
+export const SIZE = { site: [1.0, 0.7], store: [0.9, 0.88], app: [0.42, 0.8], product: [0.6, 0.66], building: [0.8, 1.15], course: [0.9, 0.64], calendar: [0.9, 0.9], plan: [0.7, 0.92] };
 
 /** Draw any creation type. tone 0..1 = brightness (fog / de-emphasis). done = outcome achieved (calendar check). */
 export function thing(c, type, w, h, s, { P, tone = 1, done = 0 }) {
@@ -23,6 +23,15 @@ export function thing(c, type, w, h, s, { P, tone = 1, done = 0 }) {
     c.fillStyle = ink; c.beginPath(); const cx = w / 2, cy = 0.05 + h * 0.275, r = 0.075; c.moveTo(cx - r * 0.6, cy - r); c.lineTo(cx + r, cy); c.lineTo(cx - r * 0.6, cy + r); c.closePath(); c.fill();
     c.fillStyle = cut; c.fillRect(0.05, h * 0.7, w - 0.1, px(3)); c.fillRect(0.05, h * 0.7 - px(2), (w - 0.1) * 0.38, px(7));
     c.fillRect(0.05, h * 0.8, w * 0.5, px(4)); c.fillRect(0.05, h * 0.88, w * 0.34, px(4));
+  } else if (type === 'plan') {
+    // a business plan: a document with a title, body lines and a confident chart that only goes up
+    c.fillStyle = ink; c.beginPath(); c.moveTo(0, 0); c.lineTo(w - 0.14, 0); c.lineTo(w, 0.14); c.lineTo(w, h); c.lineTo(0, h); c.closePath(); c.fill();
+    c.fillStyle = cut; c.beginPath(); c.moveTo(w - 0.14, 0); c.lineTo(w - 0.14, 0.14); c.lineTo(w, 0.14); c.closePath(); c.fill();
+    c.fillRect(0.07, 0.08, w * 0.5, px(6)); c.fillRect(0.07, 0.15, w * 0.32, px(3));
+    for (let i = 0; i < 4; i++) c.fillRect(0.07, 0.26 + i * 0.06, (w - 0.14) * (i % 2 ? 0.7 : 0.86), px(2.5));
+    c.strokeStyle = cut; c.lineWidth = px(3); c.lineJoin = 'round'; c.beginPath();
+    const bx = 0.07, by = h - 0.08, cw = w - 0.14, ch = 0.26; c.moveTo(bx, by - ch * 0.1); c.lineTo(bx + cw * 0.35, by - ch * 0.35); c.lineTo(bx + cw * 0.6, by - ch * 0.45); c.lineTo(bx + cw, by - ch); c.stroke();
+    c.fillRect(bx, by, cw, px(2));
   } else if (type === 'calendar') {
     const live = done;
     c.fillStyle = mix(P.bg, ink, 0.25 + 0.75 * live); c.beginPath(); c.roundRect(0, 0.06, w, h - 0.06, 0.035); c.fill();

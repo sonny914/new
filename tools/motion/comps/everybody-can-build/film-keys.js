@@ -89,10 +89,10 @@ export function trajectory(e, cam, a, b, lift, alpha) {
   e.save(); e.globalAlpha = alpha; e.strokeStyle = P.ink2; e.lineWidth = 1.3; e.lineCap = 'round'; e.setLineDash([0.1, 6]); path3(e, cam, pts); e.stroke(); e.restore();
 }
 export const tone = (cam, it, k = 1) => { const p = cam.project({ x: it.x, y: 0, z: it.z }); return p ? (1 - 0.72 * smoothstep(clamp((p.z - 9) / 26))) * k : 0; };
-export function creatorAtDesk(e, cam, { reach = 1, light = 1, prompt = 'build a booking site', screen = 1, lines = 4 } = {}) {
+export function creatorAtDesk(e, cam, { reach = 1, light = 1, prompt = 'build a booking site', screen = 1, lines = 4, figure = true } = {}) {
   billboard(e, cam, { x: HIP.x, y: 0, z: 0.04 }, (g, s) => chair(g, s, { P }));
   deskSeated(e, cam, { P, x0: DESK_X, prompt, screen, lines });
-  billboard(e, cam, { x: HIP.x, y: 0, z: 0 }, (g, s) => human(g, s, { P, pose: 'sit', reach, lean: 0.1, light }));
+  if (figure) billboard(e, cam, { x: HIP.x, y: 0, z: 0 }, (g, s) => human(g, s, { P, pose: 'sit', reach, lean: 0.1, light }));
 }
 export function bulbWithTether(e, cam, glowK = 1, { label = true, live = 0, labelAlpha = 1, tetherAlpha = 1 } = {}) {
   const b = cam.project(BULB), head = cam.project({ x: HIP.x + 0.05, y: 1.4, z: 0 });
@@ -107,7 +107,7 @@ export function bulbWithTether(e, cam, glowK = 1, { label = true, live = 0, labe
 
 /* ---------------- A: THE CREATOR ---------------- */
 export function A(ctx, e, { pos = { x: 0.36, y: 1.02, z: -3.85 }, pitch = 0.02, f = 1650, text = true, liveBulb = 0, ruler = true,
-  screen = 1, lines = 4, screenGlow = 1, figLight = 1, warm = 0, drift = 0, floor = {}, noFloor = false } = {}) {
+  screen = 1, lines = 4, screenGlow = 1, figLight = 1, warm = 0, drift = 0, floor = {}, noFloor = false, figure = true, prompt = 'build a booking site', reach = 1, bulbGlow = 1 } = {}) {
   const cam = cam3({ W, H, pos, pitch, f });
   const b = cam.project({ x: BULB.x, y: BULB.y + 0.2, z: 0 }), pool = cam.project({ x: 0.1, y: 0, z: 0 }), poolR = cam.project({ x: 1.9, y: 0, z: 0 }), poolF = cam.project({ x: 0.1, y: 0, z: -0.9 });
   const scr = cam.project(SCREEN);
@@ -126,8 +126,8 @@ export function A(ctx, e, { pos = { x: 0.36, y: 1.02, z: -3.85 }, pitch = 0.02, 
   const rz = -0.62; if (ruler) { e.save(); e.strokeStyle = P.tech; e.lineWidth = 1.2; path3(e, cam, [{ x: -0.9, y: 0, z: rz }, { x: 1.3, y: 0, z: rz }]); e.stroke();
   for (let i = 0; i <= 22; i++) { const x = -0.9 + i * 0.1, long = i % 5 === 0; path3(e, cam, [{ x, y: 0, z: rz }, { x, y: 0, z: rz - (long ? 0.08 : 0.035) }]); e.stroke(); if (long) { const p = cam.project({ x, y: 0, z: rz - 0.17 }); mono(e, (i / 10).toFixed(1), p.x, p.y + 10, { size: 15, align: 'center', track: 1 }); } }
   e.restore(); }
-  creatorAtDesk(e, cam, { screen, lines, light: figLight });
-  bulbWithTether(e, cam, 1, { label: text, live: Math.min(1, liveBulb) });
+  creatorAtDesk(e, cam, { screen, lines, light: figLight, figure, prompt, reach });
+  bulbWithTether(e, cam, bulbGlow, { label: text, live: Math.min(1, liveBulb), tetherAlpha: figure ? 1 : 0 });
   dust(e, cam, 110, 3, { x0: -1.4, x1: 1.4, y0: 0.4 + drift, y1: 2.6 + drift, z0: -0.5, z1: 0.6 }, { size: 1.9, alpha: 0.5 });
   if (text) { statement(e, '01 — ACCESS', ['EVERYBODY', 'CAN BUILD.'], 330); frameMarks(e, 'A'); }
   return { bokeh: [[120, 1780, 80, 0.06], [970, 1660, 50, 0.05], [900, 300, 40, 0.03]] };
