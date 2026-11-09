@@ -4,3 +4,4 @@ tools/studio/out/
 
 # Local Netlify folder
 .netlify
+tools/motion/renders/*-stills/

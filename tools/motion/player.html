@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Quiet Bands motion player</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;display:grid;place-items:center}
+  canvas{display:block;height:96vh;width:auto;aspect-ratio:9/16}
+  #hud{position:fixed;left:12px;bottom:10px;font:12px ui-monospace,monospace;color:#888}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas><div id="hud"></div>
+<script type="module">
+// Usage: /tools/motion/player.html?comp=everybody-can-build/proof[&blur=4][&frame=90]
+// Headless (navigator.webdriver) it only exposes window.motion for tools/motion/render.mjs; in a browser it plays.
+import { stage } from './engine/stage.js';
+const q = new URLSearchParams(location.search);
+const mod = await import(`./comps/${q.get('comp') ?? 'everybody-can-build/video'}.js`);
+await mod.default.load?.();
+await document.fonts.ready;
+const m = stage(mod.default, { samples: q.has('blur') ? +q.get('blur') : navigator.webdriver ? undefined : 1 });
+if (!navigator.webdriver) {
+  const hud = document.getElementById('hud');
+  if (q.has('frame')) m.draw(+q.get('frame'));
+  else { const t0 = performance.now(); const tick = () => { const n = Math.floor((performance.now() - t0) / 1000 * m.fps) % m.frames; m.draw(n); hud.textContent = `${n} / ${m.frames}`; requestAnimationFrame(tick); }; tick(); }
+}
+</script>
+</body>
+</html>
