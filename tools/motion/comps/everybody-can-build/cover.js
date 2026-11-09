@@ -9,9 +9,11 @@ import { PALETTES } from '../../engine/color.js';
 
 const W = 1080, H = 1920;
 let L, MARK, WORD;
+export const COVER_CAM = { pos: { x: 0.33, y: 1.0, z: -4.55 }, pitch: -0.03 };
+export const loadBrand = async () => { MARK ??= await pathOf('/assets/brand/mark.svg'); WORD ??= await pathOf('/assets/brand/wordmark.svg'); };
 const pathOf = async (url) => new Path2D((await (await fetch(url)).text()).match(/ d="([^"]+)"/)[1]);
 
-function lockup(ctx, cx, y, markH) {
+export function lockup(ctx, cx, y, markH) {
   // header lockup rule: mark then wordmark, both centred on one axis; gap scales with the mark (10px at 20px tall)
   const mw = markH * 823 / 658, wh = markH * 0.77, ww = wh * 845 / 155, gap = markH * 0.5, x0 = cx - (mw + gap + ww) / 2;
   ctx.save(); ctx.fillStyle = P.ink;
@@ -26,9 +28,15 @@ function draw(ctx) {
   const e = L.ectx; e.setTransform(1, 0, 0, 1, 0, 0); e.clearRect(0, 0, W, H);
   const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#000000'); g.addColorStop(0.55, '#08080A'); g.addColorStop(1, '#000000');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  A(ctx, e, { pos: { x: 0.33, y: 1.0, z: -4.55 }, pitch: -0.03, text: false, liveBulb: 1, ruler: false });
+  A(ctx, e, { ...COVER_CAM, text: false, liveBulb: 1, ruler: false });
   halo(ctx, L);
-  // type: statement + the hook question
+  coverType(ctx);
+  vignette(ctx, W, H, { amount: 0.66 });
+  grain(ctx, L, 3);
+}
+
+/** The cover's typography and lockup: stationary, drawn after the glow (identical in the animation). */
+export function coverType(ctx) {
   ctx.save();
   ctx.font = '500 20px "JetBrains Mono"'; ctx.letterSpacing = '5px'; ctx.fillStyle = P.ink2; ctx.fillText('FILM 01 — AI & THE CREATIVE ECONOMY', 80, 262);
   ctx.fillStyle = P.tech; ctx.fillRect(80, 280, 44, 1.5);
@@ -38,8 +46,6 @@ function draw(ctx) {
   ctx.fillText('So what makes you different?', 78, 636);
   ctx.restore();
   lockup(ctx, W / 2, 1610, 46);
-  vignette(ctx, W, H, { amount: 0.66 });
-  grain(ctx, L, 3);
 }
 
-export default { width: W, height: H, fps: 1, duration: 1, palette: PALETTES.brand, load: async () => { MARK = await pathOf('/assets/brand/mark.svg'); WORD = await pathOf('/assets/brand/wordmark.svg'); }, draw };
+export default { width: W, height: H, fps: 1, duration: 1, palette: PALETTES.brand, load: loadBrand, draw };

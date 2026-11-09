@@ -26,7 +26,7 @@ export function human(ctx, s, { P, pose = 'stand', reach = 0, lean = 0.06, look 
   const el = sit ? { x: 0.1 + 0.06 * reach, y: -0.78 + 0.02 * reach } : { x: 0.07 + 0.07 * reach, y: -1.12 };
   const sh = { x: 0.03, y: top + 0.13 };
   // far arm (behind the torso)
-  pill(ctx, sh.x - 0.03, sh.y, el.x - 0.03, el.y - 0.01, 0.078, far); pill(ctx, el.x - 0.03, el.y - 0.01, hand.x - 0.04, hand.y + 0.005, 0.072, far);
+  pill(ctx, sh.x - 0.03, sh.y, el.x - 0.03, el.y - 0.01, 0.054, far); pill(ctx, el.x - 0.03, el.y - 0.01, hand.x - 0.04, hand.y + 0.005, 0.05, far);
   // torso + head lean about the hip
   ctx.save(); ctx.translate(0, hipY); ctx.rotate(lean); ctx.translate(0, -hipY);
   ctx.fillStyle = grad; ctx.beginPath(); ctx.roundRect(-0.15, top, 0.3, 0.64, 0.15); ctx.fill();
@@ -35,9 +35,9 @@ export function human(ctx, s, { P, pose = 'stand', reach = 0, lean = 0.06, look 
   ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, 0.098, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
   // near arm, engraved where it crosses the torso
-  ctx.strokeStyle = P.bg; ctx.lineWidth = 0.088 + 5 / s;
+  ctx.strokeStyle = P.bg; ctx.lineWidth = 0.06 + 5 / s;
   ctx.beginPath(); ctx.moveTo(sh.x + 0.015, sh.y); ctx.lineTo(el.x, el.y); ctx.lineTo(hand.x, hand.y); ctx.stroke();
-  ctx.strokeStyle = front; ctx.lineWidth = 0.088;
+  ctx.strokeStyle = front; ctx.lineWidth = 0.06;
   ctx.beginPath(); ctx.moveTo(sh.x + 0.015, sh.y); ctx.lineTo(el.x, el.y); ctx.lineTo(hand.x, hand.y); ctx.stroke();
 }
 
@@ -70,7 +70,7 @@ export function deskSeated(ctx, cam, { P, x0 = 0, screen = 1, lines = 4, prompt 
     c.fillStyle = g; c.beginPath(); c.roundRect(0.026, 0.026, w - 0.052, h - 0.052, 0.012); c.fill();
     c.fillStyle = P.bg; c.globalAlpha = 0.6 * screen;
     if (prompt) { c.save(); c.beginPath(); c.rect(0.04, 0.04, w - 0.08, h - 0.08); c.clip(); c.font = `500 ${px(12)}px ${font}`; c.textBaseline = 'middle'; c.fillText('› ' + prompt, 0.07, 0.1); c.restore(); }
-    for (let i = 0; i < lines; i++) c.fillRect(0.07, 0.17 + i * 0.062, 0.4 - i * 0.07, 0.02);
+    for (let i = 0; i < Math.ceil(lines); i++) c.fillRect(0.07, 0.17 + i * 0.062, (0.4 - i * 0.07) * Math.min(1, lines - i), 0.02);
     c.globalAlpha = 1;
   });
 }
