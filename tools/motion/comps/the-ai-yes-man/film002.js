@@ -374,7 +374,7 @@ function draw(ctx, t) {
       if (zk < 1) { ctx.save(); ctx.globalAlpha = rk * (1 - zk); ctx.font = '800 220px "Inter Display"'; ctx.fillStyle = P.ink2; ctx.fillText('…', 64, 520); ctx.restore(); }
     } }
   // titles
-  { const k = smoothstep(seg(t, 0.25, 0.6)) * (1 - smoothstep(seg(t, 7.8, 8.4))); if (k > 0.01) { mono(ctx, 'FILM 002', 80, 140, { size: 18, color: P.ink2, track: 5, alpha: k }); mono(ctx, 'THE AI YES MAN', 200, 140, { size: 18, color: P.ink, track: 5, alpha: k }); ctx.save(); ctx.globalAlpha = k; ctx.fillStyle = P.tech; ctx.fillRect(176 - 44, 133, 34, 1.5); ctx.restore(); } }
+  { const k = smoothstep(seg(t, 0.25, 0.6)) * (1 - smoothstep(seg(t, 7.8, 8.4))); if (k > 0.01) { mono(ctx, 'FILM 002', 80, 140, { size: 18, color: P.ink2, track: 5, alpha: k }); ctx.save(); ctx.globalAlpha = k; ctx.fillStyle = P.tech; ctx.fillRect(228, 133, 40, 1.5); ctx.restore(); mono(ctx, 'THE AI YES MAN', 284, 140, { size: 18, color: P.ink, track: 5, alpha: k }); } }
   { const r = seg(t, B.agree, B.agree + 0.7), a = 1 - smoothstep(seg(t, B.ask - 0.5, B.ask)); if (r > 0) { kicker(ctx, P, '03 — THE DIFFERENCE', 250, a * smoothstep(r), mono); headline(ctx, P, W, [[['AGREEMENT ', P.ink], ['≠', P.live]], [['VALIDATION.', P.ink]]], 400, a, r); } }
   // the four questions, one card at a time
   { const Q = [[B.q1, B.q2, '01', ['WHY WOULD', 'THIS FAIL?']], [B.q2, B.q3, '02', ['WHO ACTUALLY', 'PAYS FOR THIS?']], [B.q3, B.fav, '03', ['WHAT HAVEN’T', 'I PROVEN?']], [B.q4, B.s5 - 0.2, '04', ['ARGUE AGAINST', 'MY PLAN.']]];
