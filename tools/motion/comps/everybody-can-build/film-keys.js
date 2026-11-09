@@ -107,18 +107,20 @@ export function bulbWithTether(e, cam, glowK = 1, { label = true, live = 0, labe
 
 /* ---------------- A: THE CREATOR ---------------- */
 export function A(ctx, e, { pos = { x: 0.36, y: 1.02, z: -3.85 }, pitch = 0.02, f = 1650, text = true, liveBulb = 0, ruler = true,
-  screen = 1, lines = 4, screenGlow = 1, figLight = 1, warm = 0, drift = 0 } = {}) {
+  screen = 1, lines = 4, screenGlow = 1, figLight = 1, warm = 0, drift = 0, floor = {}, noFloor = false } = {}) {
   const cam = cam3({ W, H, pos, pitch, f });
   const b = cam.project({ x: BULB.x, y: BULB.y + 0.2, z: 0 }), pool = cam.project({ x: 0.1, y: 0, z: 0 }), poolR = cam.project({ x: 1.9, y: 0, z: 0 }), poolF = cam.project({ x: 0.1, y: 0, z: -0.9 });
   const scr = cam.project(SCREEN);
-  glow(ctx, b.x, b.y + 180, 900, 1000, { alpha: 0.06 });                       // the idea lights the whole dark around it
-  glow(ctx, b.x, b.y, 230, 230, { alpha: 0.24 });
-  if (liveBulb) { glow(ctx, b.x, b.y, 150, 150, { alpha: 0.42 * liveBulb, color: LIVE }); glow(ctx, b.x, b.y + 300, 700, 800, { alpha: 0.05 * liveBulb, color: LIVE }); }
-  cone(ctx, { x: b.x, y: b.y }, 40, pool, (poolR.x - pool.x) * 1.9, { alpha: 0.075, L, blur: 40 });
+  // the bulb's light is sized in screen px for the close shots; beyond them it shrinks with distance
+  const zs = Math.min(1, b.s / 300);
+  glow(ctx, b.x, b.y + 180 * zs, 900 * zs, 1000 * zs, { alpha: 0.06 });                       // the idea lights the whole dark around it
+  glow(ctx, b.x, b.y, 230 * zs, 230 * zs, { alpha: 0.24 });
+  if (liveBulb) { glow(ctx, b.x, b.y, 150 * zs, 150 * zs, { alpha: 0.42 * liveBulb, color: LIVE }); glow(ctx, b.x, b.y + 300 * zs, 700 * zs, 800 * zs, { alpha: 0.05 * liveBulb, color: LIVE }); }
+  cone(ctx, { x: b.x, y: b.y }, 40 * zs, pool, (poolR.x - pool.x) * 1.9, { alpha: 0.075, L, blur: 40 });
   glow(ctx, pool.x, pool.y, poolR.x - pool.x, (poolF.y - pool.y), { alpha: 0.16 });
-  glow(ctx, scr.x - 40, scr.y, 260, 200, { alpha: 0.1 * screenGlow });           // the screen lights the figure's front
-  if (warm > 0) glow(ctx, scr.x - 120, scr.y + 60, 420, 260, { alpha: 0.07 * warm, color: LIVE }); // the idea's light reaches the desk
-  floorDots(e, cam, { cx: 0.1, cz: 0.2, r: 2.4, base: 0.1, pool: 0.6, z1: 18 });
+  glow(ctx, scr.x - 40 * zs, scr.y, 260 * zs, 200 * zs, { alpha: 0.1 * screenGlow });           // the screen lights the figure's front
+  if (warm > 0) glow(ctx, scr.x - 120 * zs, scr.y + 60 * zs, 420 * zs, 260 * zs, { alpha: 0.07 * warm, color: LIVE }); // the idea's light reaches the desk
+  if (!noFloor) floorDots(e, cam, { cx: 0.1, cz: 0.2, r: 2.4, base: 0.1, pool: 0.6, z1: 18, ...floor });
   groundLine(e, cam, 0.34);
   // scale: a floor ruler under the workstation, in the technical tone
   const rz = -0.62; if (ruler) { e.save(); e.strokeStyle = P.tech; e.lineWidth = 1.2; path3(e, cam, [{ x: -0.9, y: 0, z: rz }, { x: 1.3, y: 0, z: rz }]); e.stroke();

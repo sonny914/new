@@ -43,7 +43,16 @@ function draw(ctx, t) {
   const e = L.ectx; e.setTransform(1, 0, 0, 1, 0, 0); e.clearRect(0, 0, W, H);
   const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#000000'); g.addColorStop(0.55, '#08080A'); g.addColorStop(1, '#000000');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  const cam = camAt(t), n = Math.round(t * 30);
+  openingWorld(ctx, e, t, camAt(t));
+  halo(ctx, L);
+  coverType(ctx);                                   // stationary, crisp, identical to the cover
+  vignette(ctx, W, H, { amount: 0.66 });
+  grain(ctx, L, t === 0 ? 3 : Math.round(t * 30));  // frame 0 is the cover still, grain included
+}
+
+/** The opening's world (creator, bulb, pulse, the three creations) from any camera. The film keeps calling this after 5 s. */
+export function openingWorld(ctx, e, t, cam, { floor, noFloor = false } = {}) {
+  const n = Math.round(t * 30);
 
   // the bulb breathes (1.25 s period, starting at full), then brightens as the idea forms, then holds a little higher
   const breath = 1 - 0.1 * (1 - Math.cos((2 * Math.PI * t) / 1.25)) / 2;
@@ -54,7 +63,7 @@ function draw(ctx, t) {
   const flick = t < arrive ? 1 - fa * (0.05 * (hash(n, 71) > 0.55 ? hash(n, 72) : 0) + 0.025 * (1 + Math.sin(t * 19)) / 2) : 1;
   const warm = 0.6 * ease.out3(seg(t, 1.72, 2.05)) * (1 - 0.45 * seg(t, 2.1, 3.0));
 
-  A(ctx, e, { pos: cam.pos, pitch: COVER_CAM.pitch, f: 1650, text: false, liveBulb: bulb, ruler: false,
+  A(ctx, e, { pos: cam.pos, pitch: cam.pitch ?? COVER_CAM.pitch, f: cam.f, text: false, liveBulb: bulb, ruler: false, floor, noFloor,
     screen: flick, screenGlow: (t < arrive ? flick : 1) * (1 + 0.6 * active - 0.25 * seg(t, 2.6, 3.4)), warm, drift: 0.045 * t });
   // a second, deeper layer of specks drifting slower (depth in the dark)
   dust(e, cam, 70, 51, { x0: -2.5, x1: 3.5, y0: 0.2 + 0.02 * t, y1: 3.4 + 0.02 * t, z0: 2.5, z1: 7 }, { size: 1.4, alpha: 0.22 * smoothstep(seg(t, 0, 0.6)) });
@@ -120,10 +129,7 @@ function draw(ctx, t) {
     }
   }
 
-  halo(ctx, L);
-  coverType(ctx);                                   // stationary, crisp, identical to the cover
-  vignette(ctx, W, H, { amount: 0.66 });
-  grain(ctx, L, t === 0 ? 3 : n);                   // frame 0 is the cover still, grain included
 }
 
+export { camAt as openingCam, WIN, MORE, SCR_MID };
 export default { width: W, height: H, fps: 30, duration: 5, palette: PALETTES.brand, motionBlur: { samples: 4, shutter: 0.5 }, load: loadBrand, draw };

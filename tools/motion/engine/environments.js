@@ -39,15 +39,15 @@ export function thing(c, type, w, h, s, { P, tone = 1, done = 0 }) {
           c.strokeStyle = cut; c.lineWidth = px(4); c.beginPath(); c.moveTo(x + gw * 0.28, y + gh * 0.52); c.lineTo(x + gw * 0.44, y + gh * 0.68); c.lineTo(x + gw * 0.74, y + gh * 0.32); c.stroke(); c.globalAlpha = 1; }
       }
     }
-  } else creation(c, type, w, h, s, { ink, bg: P.bg, live: P.live });
+  } else creation(c, type, w, h, s, { ink, bg: P.bg, live: P.live, alpha: c.globalAlpha }); // inherit the caller's fade
 }
 
 /** Stand a thing in space. Floating digital things get a floor mark and a tether; grounded ones a contact shadow line. */
 export function place(e, cam, it, { P, tone = 1, mark = true, tether = true, done = 0 }) {
   const p = cam.project({ x: it.x, y: 0, z: it.z }); if (!p) return;
   const floating = it.y > 0.12;
-  if (mark) { e.save(); e.strokeStyle = P.tech; e.globalAlpha = Math.min(1, tone * 1.1); e.lineWidth = 1.2; if (!floating) e.setLineDash([3, 4]); floorCircle(e, cam, it.x, it.z, it.w * 0.55, 0, 48); e.stroke(); e.restore(); }
-  if (tether && floating) { const a = cam.project({ x: it.x, y: it.y, z: it.z }); if (a) { e.save(); e.globalAlpha = Math.min(1, tone * 1.1); e.strokeStyle = P.tech; e.lineWidth = 1; e.setLineDash([3, 5]); e.beginPath(); e.moveTo(p.x, p.y); e.lineTo(a.x, a.y); e.stroke(); e.restore(); } }
+  if (mark) { e.save(); e.strokeStyle = P.tech; e.globalAlpha *= Math.min(1, tone * 1.1); e.lineWidth = 1.2; if (!floating) e.setLineDash([3, 4]); floorCircle(e, cam, it.x, it.z, it.w * 0.55, 0, 48); e.stroke(); e.restore(); }
+  if (tether && floating) { const a = cam.project({ x: it.x, y: it.y, z: it.z }); if (a) { e.save(); e.globalAlpha *= Math.min(1, tone * 1.1); e.strokeStyle = P.tech; e.lineWidth = 1; e.setLineDash([3, 5]); e.beginPath(); e.moveTo(p.x, p.y); e.lineTo(a.x, a.y); e.stroke(); e.restore(); } }
   panel(e, cam, { x: it.x, y: it.y, z: it.z }, it.w, it.h, it.yaw ?? 0, (g, w, h, s) => thing(g, it.type, w, h, s, { P, tone, done }));
 }
 

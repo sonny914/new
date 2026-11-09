@@ -55,14 +55,14 @@ export function chair(ctx, s, { P }) {
 }
 
 /** EditorialWorkstation (seated): a slim desk, keyboard and a monitor turned toward the figure. x0 = desk's near edge. */
-export function deskSeated(ctx, cam, { P, x0 = 0, screen = 1, lines = 4, prompt = '', font = '"JetBrains Mono"' }) {
+export function deskSeated(ctx, cam, { P, x0 = 0, z0 = 0, screen = 1, lines = 4, prompt = '', font = '"JetBrains Mono"' }) {
   const lit = P.ink, mid = mix(P.bg, P.ink2, 0.42), dark = mix(P.bg, P.ink2, 0.2), edge = P.ink2;
-  box3(ctx, cam, [x0 + 0.02, x0 + 0.06], [0, 0.72], [-0.28, -0.24], { front: mid, side: dark, edge, line: 1 });  // legs
-  box3(ctx, cam, [x0 + 1.02, x0 + 1.06], [0, 0.72], [-0.28, -0.24], { front: mid, side: dark, edge, line: 1 });
-  box3(ctx, cam, [x0, x0 + 1.1], [0.72, 0.755], [-0.32, 0.32], { top: lit, front: mid, side: dark, edge: lit, line: 1.2 });
-  box3(ctx, cam, [x0 + 0.06, x0 + 0.38], [0.755, 0.768], [-0.15, 0.03], { top: mid, front: dark, edge, line: 1 });   // keyboard
-  box3(ctx, cam, [x0 + 0.7, x0 + 0.75], [0.755, 0.86], [0.02, 0.07], { front: mid, side: dark, edge, line: 1 });    // neck
-  panel(ctx, cam, { x: x0 + 0.7, y: 0.85, z: 0.07 }, 0.68, 0.43, 0.86, (c, w, h, s) => {
+  box3(ctx, cam, [x0 + 0.02, x0 + 0.06], [0, 0.72], [z0 + -0.28, z0 + -0.24], { front: mid, side: dark, edge, line: 1 });  // legs
+  box3(ctx, cam, [x0 + 1.02, x0 + 1.06], [0, 0.72], [z0 + -0.28, z0 + -0.24], { front: mid, side: dark, edge, line: 1 });
+  box3(ctx, cam, [x0, x0 + 1.1], [0.72, 0.755], [z0 + -0.32, z0 + 0.32], { top: lit, front: mid, side: dark, edge: lit, line: 1.2 });
+  box3(ctx, cam, [x0 + 0.06, x0 + 0.38], [0.755, 0.768], [z0 + -0.15, z0 + 0.03], { top: mid, front: dark, edge, line: 1 });   // keyboard
+  box3(ctx, cam, [x0 + 0.7, x0 + 0.75], [0.755, 0.86], [z0 + 0.02, z0 + 0.07], { front: mid, side: dark, edge, line: 1 });    // neck
+  panel(ctx, cam, { x: x0 + 0.7, y: 0.85, z: z0 + 0.07 }, 0.68, 0.43, 0.86, (c, w, h, s) => {
     const px = (v) => v / s;
     c.fillStyle = dark; c.beginPath(); c.roundRect(0, 0, w, h, 0.022); c.fill();
     c.strokeStyle = edge; c.lineWidth = px(1.5); c.stroke();

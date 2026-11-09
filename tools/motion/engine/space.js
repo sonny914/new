@@ -9,7 +9,7 @@ export function cam3({ W, H, pos, yaw = 0, pitch = 0, f = 1700 }) {
     return { x: x1, y: y * cp + z1 * sp, z: -y * sp + z1 * cp };
   };
   return {
-    W, H, f, pos,
+    W, H, f, pos, pitch, yaw,
     view,
     /** world -> screen {x, y, s (px per metre at that depth), z (depth)}; null behind the camera */
     project(p) { const v = view(p); if (v.z < 0.05) return null; const s = f / v.z; return { x: W / 2 + v.x * s, y: H / 2 - v.y * s, s, z: v.z }; },
