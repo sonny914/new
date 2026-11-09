@@ -2,7 +2,7 @@
   "type": "module",
   "name": "quiet-bands",
   "version": "1.0.0",
-  "description": "Quiet Bands \u2014 software built around the work. Static site + zero-dependency Netlify function.",
+  "description": "Quiet Bands \u2014 software built around the work. Static site + Netlify functions (lead scoring, Company Brain for Slack).",
   "private": true,
   "scripts": {
     "test": "node --test \"tools/**/*.test.mjs\"",
@@ -15,5 +15,8 @@
   },
   "engines": {
     "node": "20.x"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.2.0"
   }
 }
