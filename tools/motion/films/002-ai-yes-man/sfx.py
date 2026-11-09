@@ -17,11 +17,11 @@ def add(sig, at, pan=0.0, g=0.0):
     out[i0:i0 + n, 0] += sig[:n] * db(g) * l * 1.414; out[i0:i0 + n, 1] += sig[:n] * db(g) * r * 1.414
 def tone(f, d, a=0.004, rel=0.25, partials=((1, 1), (2, 0.25), (3, 0.08))):
     tt = np.arange(int(d * SR)) / SR; return sum(w * np.sin(2 * np.pi * f * k * tt) for k, w in partials) * np.minimum(1, tt / a) * np.exp(-tt / rel)
-def tick(f=2600, d=0.05, dec=0.008): tt = np.arange(int(d * SR)) / SR; return (np.sin(2 * np.pi * f * tt) * 0.6 + rng.normal(0, 0.3, len(tt))) * np.exp(-tt / dec)
+def tick(f=2600, d=0.05, dec=0.008): tt = np.arange(int(d * SR)) / SR; return (np.sin(2 * np.pi * f * tt) * 0.6 + rng.normal(0, 0.12, len(tt))) * np.exp(-tt / dec)
 def whoosh(d, f0=300, f1=1800, up=True):
     n = int(d * SR); x = rng.normal(0, 1, n); u = np.arange(n) / n; fc = f0 + (f1 - f0) * (u if up else 1 - u); y = np.zeros(n); a1 = a2 = 0.0
     for i in range(n): k = np.exp(-2 * np.pi * fc[i] / SR); a1 = (1 - k) * x[i] + k * a1; a2 = (1 - k * 0.97) * a1 + k * 0.97 * a2; y[i] = a1 - a2 * 0.6
-    return y * np.sin(np.pi * u) ** 1.5 * 2.2
+    return y * np.sin(np.pi * u) ** 1.5 * 2.2 * 0.56   # -5 dB: sweeps stay felt, never heard as noise
 def thud(f=70, d=0.35): tt = np.arange(int(d * SR)) / SR; return (np.sin(2 * np.pi * f * tt * (1 - 0.3 * tt)) + 0.3 * rng.normal(0, 1, len(tt)) * np.exp(-tt / 0.01)) * np.exp(-tt / 0.09)
 
 pops = [1.75, pz(2, 1, 1) + 0.05, pz(2, 1, 1) + 0.55, pz(2, 1, 1) + 1.0, pz(2, 1, 1) + 1.4, L[2]["end"] - 0.25, L[2]["end"] + 0.15]
@@ -32,7 +32,7 @@ q = [L[8]["at"], L[9]["at"], L[10]["at"], pz(11, 0, 1)]; fav, s5, better, fin, b
 bed = np.sin(2 * np.pi * 55 * t) * 0.5 + np.sin(2 * np.pi * 82.41 * t + 0.4 * np.sin(2 * np.pi * 0.07 * t)) * 0.35 + np.sin(2 * np.pi * 110.3 * t) * 0.18
 bright = (np.sin(2 * np.pi * 220 * t) * 0.12 + np.sin(2 * np.pi * 277.2 * t) * 0.08) * np.clip((t - 8) / 6, 0, 1) * np.clip((mean - t) / 0.4, 0, 1)   # the swagger
 warm = (np.sin(2 * np.pi * 138.6 * t) * 0.16 + np.sin(2 * np.pi * 164.8 * t) * 0.12) * np.clip((t - s5) / 3, 0, 1)
-air = lowpass(rng.normal(0, 1, N), 900) * 0.5
+air = np.zeros(N)   # (was low-passed noise: heard as hiss under the whole film; removed after review)
 lvl = env([(0, -60), (0.8, -36), (8, -34), (14, -30), (mean, -29), (mean + 0.35, -54), (s3 - 0.3, -54), (s3 + 1.0, -38), (ask, -37), (q[0], -35), (s5, -33), (better + 1, -30), (fin + 1, -32), (DUR - 1.5, -38), (DUR, -80)])
 for ch, ph in ((0, 0.0), (1, 0.3)): out[:, ch] += (bed + bright + warm + air * (0.6 + 0.4 * np.sin(2 * np.pi * 0.05 * t + ph))) * lvl
 res = sum(np.sin(2 * np.pi * f * t) * w for f, w in ((220, 0.3), (277.2, 0.2), (329.6, 0.2), (440, 0.08))); re = env([(0, -90), (fin + 0.6, -90), (fin + 1.3, -34), (DUR - 2, -36), (DUR, -80)])

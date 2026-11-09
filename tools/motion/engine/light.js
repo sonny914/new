@@ -88,7 +88,8 @@ export function vignette(ctx, W, H, { amount = 0.72, inner = 0.42 } = {}) {
 }
 
 /** Zero-mean-ish grain: lighten with the noise, darken with its inverse at the same strength. */
-export function grain(ctx, L, frame = 0, amount = 0.045) {
+// amount 0.016 (was 0.045): at the old strength the per-frame grain read as video noise on phones (review of Film 001).
+export function grain(ctx, L, frame = 0, amount = 0.016) {
   const r = rng(frame * 977 + 13), ox = Math.floor(r() * 512), oy = Math.floor(r() * 512);
   ctx.save();
   const pat = ctx.createPattern(L.grain, 'repeat'); pat.setTransform(new DOMMatrix([1, 0, 0, 1, -ox, -oy]));

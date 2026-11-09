@@ -5,7 +5,7 @@
 # usage: ./assemble.sh <body.mp4>
 set -euo pipefail
 BODY=${1:?body mp4 (t >= 5 s) required}
-OPEN=../../renders/everybody-can-build-cover-open.mp4      # the approved opening, used as-is for 0-5 s
+OPEN=${OPEN:-../../renders/everybody-can-build-cover-open.mp4}   # the approved opening (override with OPEN=... after a re-render)
 OUT=out; mkdir -p "$OUT"
 DUR=$(python3 -c "import json;print(json.load(open('timeline.json'))['total'])")
 ENC=(-c:v libx264 -preset slow -crf 19 -maxrate 9M -bufsize 18M -pix_fmt yuv420p -r 30 -movflags +faststart)
