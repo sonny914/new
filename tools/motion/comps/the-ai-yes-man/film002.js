@@ -94,6 +94,8 @@ function tag(ctx, cam, at, key, value, a, { dx = 90, dy = -70, align = 'left' } 
   const tx = ex + (align === 'left' ? 44 : -44);
   ctx.save(); ctx.font = '500 19px "JetBrains Mono"'; ctx.letterSpacing = '3px'; ctx.textAlign = align; ctx.globalAlpha = a;
   const kw = ctx.measureText(key + ' ').width, vw = ctx.measureText(value).width;
+  // a dark plate under the text: the tag stays legible over bright cards
+  { const x0 = align === 'left' ? tx - 8 : tx - kw - vw - 8; ctx.fillStyle = P.bg; ctx.globalAlpha = a * 0.82; ctx.beginPath(); ctx.roundRect(x0, ey - 14, kw + vw + 14, 28, 4); ctx.fill(); ctx.globalAlpha = a; }
   if (align === 'left') { ctx.fillStyle = P.ink2; ctx.fillText(key + ' ', tx, ey + 6); ctx.fillStyle = P.ink; ctx.fillText(value, tx + kw, ey + 6); }
   else { ctx.fillStyle = P.ink; ctx.fillText(value, tx, ey + 6); ctx.fillStyle = P.ink2; ctx.fillText(key + ' ', tx - vw, ey + 6); }
   ctx.restore();
@@ -361,9 +363,9 @@ function draw(ctx, t) {
   }
   // what the yes man wrote on it
   const lbl = (at, a0, k, v, opts) => tag(ctx, cam, at, k, v, smoothstep(seg(t, a0, a0 + 0.35)) * (1 - smoothstep(seg(t, B.rev - 0.6, B.rev - 0.1))), opts);
-  lbl({ x: BUBBLES[0].x, y: BUBBLES[0].y + 0.25, z: BUBBLES[0].z }, B.brilliant, 'IDEA:', 'BRILLIANT', { dx: 70, dy: -60 });
+  lbl({ x: BUBBLES[0].x + 0.1, y: BUBBLES[0].y - 0.12, z: BUBBLES[0].z }, B.brilliant, 'IDEA:', 'BRILLIANT', { dx: -95, dy: 150, align: 'right' });   // hangs below-left: clear of the frame edge and the bubbles
   lbl({ x: 3.1, y: 2.1, z: 2.7 }, B.strategy, 'STRATEGY:', 'APPROVED', { dx: -80, dy: -90, align: 'right' });
-  lbl({ x: 4.7, y: 3.0, z: 4.5 }, B.world, 'POTENTIAL:', 'UNLIMITED', { dx: 40, dy: -110 });
+  lbl({ x: 4.7, y: 3.0, z: 4.5 }, B.world, 'POTENTIAL:', 'UNLIMITED', { dx: -40, dy: -120, align: 'right' });
   // the reveal
   { const rk = smoothstep(seg(t, B.meanwhile + 0.4, B.meanwhile + 0.8)) * (1 - smoothstep(seg(t, B.s3 - 0.2, B.s3 + 0.3))), zk = smoothstep(seg(t, B.rev, B.rev + 0.12));
     if (rk > 0.01) {
