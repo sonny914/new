@@ -261,7 +261,7 @@ function draw(ctx, t) {
   {
     const t1 = B.s3 + 0.7, arrive = t1 + 1.6, turn = B.agree + 0.9, gone = turn + 2.0;
     const k1 = ease.inOut3(seg(t, t1, arrive)), k2 = ease.inOut3(seg(t, turn + 0.15, gone));
-    const x = k2 > 0 ? lerp(3.25, 1.7, k2) : lerp(2.1, 3.25, k1), z = 3.35, a = smoothstep(seg(t, t1, t1 + 0.4)) * (1 - smoothstep(seg(t, gone - 0.6, gone)));
+    const x = k2 > 0 ? lerp(2.55, 1.0, k2) : lerp(1.3, 2.55, k1), z = 2.05, /* in front of the empire, clear of the floating plan */ a = smoothstep(seg(t, t1, t1 + 0.4)) * (1 - smoothstep(seg(t, gone - 0.6, gone)));
     const walking = (t > t1 && t < arrive) || (t > turn + 0.15 && t < gone);
     if (a > 0.01) push(cam.view({ x, y: 0.9, z }).z, () => {
       e.save(); e.globalAlpha = a; e.strokeStyle = P.tech; e.lineWidth = 1.2; floorCircle(e, cam, x, z, 0.36); e.stroke();
