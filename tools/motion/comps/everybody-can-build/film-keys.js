@@ -14,24 +14,24 @@ import { mix, PALETTES } from '../../engine/color.js';
 const W = 1080, H = 1920;
 export const P = { ...PALETTES.film };
 const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',');
-let INK = rgb(P.ink), LIVE = rgb(P.live);
+export let INK = rgb(P.ink), LIVE = rgb(P.live);
 LIGHT.ink = INK;
 /** Re-skin the world (e.g. PALETTES.brand for covers). */
 export function setPalette(pal) { Object.assign(P, pal); INK = rgb(P.ink); LIVE = rgb(P.live); LIGHT.ink = INK; }
 let L;
 
 /* ---------------- the world ---------------- */
-const HIP = { x: -0.38, z: 0 }, DESK_X = -0.05, BULB = { x: -0.31, y: 1.64, z: 0 }, SCREEN = { x: 0.66, y: 1.06, z: 0.07 };
+export const HIP = { x: -0.38, z: 0 }, DESK_X = -0.05, BULB = { x: -0.31, y: 1.64, z: 0 }, SCREEN = { x: 0.66, y: 1.06, z: 0.07 };
 const DIGITAL = ['site', 'app', 'course'], GROUND = ['store', 'building'];
-const FIRST_RING = [
+export const FIRST_RING = [
   { type: 'site', x: 1.2, y: 2.2, z: 0.9, w: 1.45, h: 1.0, yaw: -0.08 },
   { type: 'app', x: 2.95, y: 2.5, z: 2.4, w: 0.5, h: 0.95, yaw: -0.16 },
   { type: 'course', x: -0.95, y: 2.75, z: 2.3, w: 0.95, h: 0.68, yaw: 0.18 },
   { type: 'store', x: 3.8, y: 0, z: 3.7, w: 1.2, h: 1.17, yaw: -0.18 },
   { type: 'building', x: -2.35, y: 0, z: 4.9, w: 0.9, h: 1.3, yaw: 0.16 },
 ];
-const spine = (z) => 2.2 + Math.sin(z * 0.12) * 3.0 + z * 0.1;
-const FIELD = [];
+export const spine = (z) => 2.2 + Math.sin(z * 0.12) * 3.0 + z * 0.1;
+export const FIELD = [];
 for (let i = 0; FIELD.length < 40 && i < 600; i++) {
   const u = (i + 0.5) / 150, z = 8.5 + 38 * u ** 1.15, ground = hash(i, 2) < 0.42;
   const type = ground ? GROUND[Math.floor(hash(i, 6) * 2)] : DIGITAL[Math.floor(hash(i, 6) * 3)];
@@ -42,7 +42,7 @@ for (let i = 0; FIELD.length < 40 && i < 600; i++) {
 }
 
 /* ---------------- shared drawing ---------------- */
-function floorDots(e, cam, { cx, cz, r, base = 0.1, pool = 0.5, z0 = -3, z1 = 44, x0 = -7, x1 = 11, step = 0.32 }) {
+export function floorDots(e, cam, { cx, cz, r, base = 0.1, pool = 0.5, z0 = -3, z1 = 44, x0 = -7, x1 = 11, step = 0.32 }) {
   e.fillStyle = P.tech;
   for (let z = z0; z <= z1; z += step) for (let x = x0; x <= x1; x += step) {
     const p = cam.project({ x, y: 0, z }); if (!p || p.x < -10 || p.x > W + 10 || p.y < -10 || p.y > H + 10) continue;
@@ -54,11 +54,11 @@ function floorDots(e, cam, { cx, cz, r, base = 0.1, pool = 0.5, z0 = -3, z1 = 44
   e.globalAlpha = 1;
 }
 /** the ground line: one dotted horizon of the world, running across the frame */
-function groundLine(e, cam, z, alpha = 0.9) {
+export function groundLine(e, cam, z, alpha = 0.9) {
   e.save(); e.globalAlpha = alpha; e.strokeStyle = P.ink2; e.lineWidth = 2.2; e.lineCap = 'round'; e.setLineDash([0.1, 9]);
   path3(e, cam, [{ x: -9, y: 0, z }, { x: 10, y: 0, z }]); e.stroke(); e.restore();
 }
-function dust(e, cam, n, seed, b, { size = 2, alpha = 0.45 } = {}) {
+export function dust(e, cam, n, seed, b, { size = 2, alpha = 0.45 } = {}) {
   e.fillStyle = P.ink;
   for (let i = 0; i < n; i++) {
     const p = cam.project({ x: lerp(b.x0, b.x1, hash(i, seed)), y: lerp(b.y0, b.y1, hash(i, seed + 1)), z: lerp(b.z0, b.z1, hash(i, seed + 2)) }); if (!p) continue;
@@ -66,7 +66,7 @@ function dust(e, cam, n, seed, b, { size = 2, alpha = 0.45 } = {}) {
   }
   e.globalAlpha = 1;
 }
-function mono(e, text, x, y, { size = 18, color = P.tech, align = 'left', track = 4, weight = 500, alpha = 1 } = {}) {
+export function mono(e, text, x, y, { size = 18, color = P.tech, align = 'left', track = 4, weight = 500, alpha = 1 } = {}) {
   e.save(); e.globalAlpha = alpha; e.font = `${weight} ${size}px "JetBrains Mono"`; e.letterSpacing = `${track}px`; e.fillStyle = color; e.textAlign = align; e.fillText(text, x, y); e.restore();
 }
 /** CinematicTypography: kicker (technical) + statement (dominant), left aligned on the 80px margin */
@@ -83,25 +83,25 @@ function frameMarksNow(e, n) {
   mono(e, `EVERYBODY CAN BUILD · ${n}`, W - 80, 110, { size: 16, color: P.tech, track: 4, align: 'right' });
 }
 /** dotted 3D arc (quadratic, raised control) from a to b: the path a creation travelled */
-function trajectory(e, cam, a, b, lift, alpha) {
+export function trajectory(e, cam, a, b, lift, alpha) {
   const c = { x: (a.x + b.x) / 2, y: Math.max(a.y, b.y) + lift, z: (a.z + b.z) / 2 };
   const pts = Array.from({ length: 40 }, (_, k) => { const u = k / 39, v = 1 - u; return { x: v * v * a.x + 2 * u * v * c.x + u * u * b.x, y: v * v * a.y + 2 * u * v * c.y + u * u * b.y, z: v * v * a.z + 2 * u * v * c.z + u * u * b.z }; });
   e.save(); e.globalAlpha = alpha; e.strokeStyle = P.ink2; e.lineWidth = 1.3; e.lineCap = 'round'; e.setLineDash([0.1, 6]); path3(e, cam, pts); e.stroke(); e.restore();
 }
-const tone = (cam, it, k = 1) => { const p = cam.project({ x: it.x, y: 0, z: it.z }); return p ? (1 - 0.72 * smoothstep(clamp((p.z - 9) / 26))) * k : 0; };
-function creatorAtDesk(e, cam, { reach = 1, light = 1, prompt = 'build a booking site' } = {}) {
+export const tone = (cam, it, k = 1) => { const p = cam.project({ x: it.x, y: 0, z: it.z }); return p ? (1 - 0.72 * smoothstep(clamp((p.z - 9) / 26))) * k : 0; };
+export function creatorAtDesk(e, cam, { reach = 1, light = 1, prompt = 'build a booking site' } = {}) {
   billboard(e, cam, { x: HIP.x, y: 0, z: 0.04 }, (g, s) => chair(g, s, { P }));
   deskSeated(e, cam, { P, x0: DESK_X, prompt });
   billboard(e, cam, { x: HIP.x, y: 0, z: 0 }, (g, s) => human(g, s, { P, pose: 'sit', reach, lean: 0.1, light }));
 }
-function bulbWithTether(e, cam, glowK = 1, { label = true, live = 0 } = {}) {
+export function bulbWithTether(e, cam, glowK = 1, { label = true, live = 0, labelAlpha = 1, tetherAlpha = 1 } = {}) {
   const b = cam.project(BULB), head = cam.project({ x: HIP.x + 0.05, y: 1.4, z: 0 });
-  e.save(); e.strokeStyle = P.tech; e.lineWidth = 1.3; e.setLineDash([2, 6]); e.beginPath(); e.moveTo(b.x, b.y); e.lineTo(head.x, head.y); e.stroke(); e.restore();
+  e.save(); e.globalAlpha = tetherAlpha; e.strokeStyle = P.tech; e.lineWidth = 1.3; e.setLineDash([2, 6]); e.beginPath(); e.moveTo(b.x, b.y); e.lineTo(head.x, head.y); e.stroke(); e.restore();
   billboard(e, cam, BULB, (g, s) => bulb(g, s, { P, glow: glowK, live }));
-  if (label) {
+  if (label && labelAlpha > 0.01) {
     const t = cam.project({ x: BULB.x + 0.2, y: BULB.y + 0.22, z: 0 });
-    e.save(); e.strokeStyle = P.tech; e.lineWidth = 1.2; e.beginPath(); e.moveTo(t.x, t.y); e.lineTo(t.x + 60, t.y - 40); e.lineTo(t.x + 120, t.y - 40); e.stroke(); e.restore();
-    mono(e, 'IDEA', t.x + 132, t.y - 46, { size: 17, color: P.ink2 }); mono(e, '01', t.x + 132, t.y - 22, { size: 15 });
+    e.save(); e.globalAlpha = labelAlpha; e.strokeStyle = P.tech; e.lineWidth = 1.2; e.beginPath(); e.moveTo(t.x, t.y); e.lineTo(t.x + 60, t.y - 40); e.lineTo(t.x + 120, t.y - 40); e.stroke(); e.restore();
+    mono(e, 'IDEA', t.x + 132, t.y - 46, { size: 17, color: P.ink2, alpha: labelAlpha }); mono(e, '01', t.x + 132, t.y - 22, { size: 15, alpha: labelAlpha });
   }
 }
 
@@ -164,7 +164,7 @@ function B(ctx, e) {
 /* ---------------- C: THE SYSTEM ---------------- */
 // Layout worked from sightlines (camera 4.4 m up, pitched 19.5 deg): nothing overlaps on screen, reading order
 // runs near -> far (bottom -> top): customer, business, process, outcome.
-const SYS = {
+export const SYS = {
   customer: { x: 0.7, z: 11.6 },
   business: { type: 'store', x: 3.5, y: 0, z: 12.4, w: 1.3, h: 1.27, yaw: -0.12 },
   site: { type: 'site', x: 3.5, y: 1.62, z: 12.4, w: 0.86, h: 0.6, yaw: -0.12 },
