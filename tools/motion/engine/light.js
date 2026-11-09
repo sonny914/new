@@ -28,6 +28,20 @@ function blurQ(L, src, radius) {
   return L.small2;
 }
 
+/**
+ * Optical bloom: the halos go down first, the sharp emissive art on top (source-over), so silhouettes and
+ * brand colours stay exact and only the surroundings glow. (Adding bloom on top clips shapes toward white.)
+ */
+export function halo(ctx, L, { tight = 12, wide = 56, a1 = 0.5, a2 = 0.42 } = {}) {
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = a2; ctx.drawImage(blurQ(L, L.emit, wide), 0, 0, L.W, L.H);
+  ctx.globalAlpha = a1; ctx.drawImage(blurQ(L, L.emit, tight), 0, 0, L.W, L.H);
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  ctx.drawImage(L.emit, 0, 0);
+  ctx.restore();
+}
+
 /** Composite the emissive layer onto ctx with bloom. strength scales both halos. */
 export function bloom(ctx, L, { tight = 10, wide = 42, a1 = 0.55, a2 = 0.38, strength = 1 } = {}) {
   ctx.save();

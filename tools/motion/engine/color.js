@@ -9,6 +9,8 @@ export function mix(a, b, k) {
 }
 /** Quiet Bands palettes. `brief` = the palette named in the video brief; `brand` = assets/brand + qb-identity (current site). */
 export const PALETTES = {
+  // Motion Lab spec v2: five tones. ink = primary illustration, ink2 = secondary, tech = technical lines.
+  film: { bg: '#08090B', ink: '#F6F4EE', ink2: '#B8B9B7', tech: '#62666B', live: '#FF6A21' },
   brief: { bg: '#0E0F10', ink: '#F6F4EE', live: '#FF6A21' },
   brand: { bg: '#000000', ink: '#F2EEE5', live: '#FF5A00' },
 };
