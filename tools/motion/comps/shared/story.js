@@ -58,3 +58,10 @@ export function endCard(ctx, P, W, MARK, WORD, mk, wk, lk) {
   if (lk > 0) { ctx.save(); ctx.font = '800 60px "Inter Display"'; ctx.letterSpacing = '1px'; ctx.textAlign = 'center'; ctx.fillStyle = P.ink; ctx.beginPath(); ctx.rect(0, 1100, W, 90); ctx.clip(); ctx.globalAlpha = smoothstep(clamp(lk)); ctx.fillText('BUILD WHAT MATTERS.', W / 2, 1160 + (1 - ease.out5(clamp(lk * 1.4))) * 70); ctx.restore(); }
 }
 export const brandPath = async (u) => new Path2D((await (await fetch(u)).text()).match(/ d="([^"]+)"/)[1]);
+
+/** Beat lookup by word position: the pause nearest to fraction `frac` of line n (1-based) in a timeline.json. */
+export function brk(TL, n, frac) {
+  const l = TL.lines[n - 1], want = l.at + frac * (l.end - l.at);
+  if (!l.pauses.length) return [want, want];
+  return l.pauses.reduce((best, p) => (Math.abs((p[0] + p[1]) / 2 - want) < Math.abs((best[0] + best[1]) / 2 - want) ? p : best));
+}

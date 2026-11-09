@@ -3,9 +3,9 @@
 # middle (10 ms fades at each cut). Speech is never cut. Writes narration.wav + timeline.json.
 import json, re, subprocess
 START = 0.35
-GAPS = [None, 0.55, 0.45, 0.95, 1.35, 0.40, 1.10, 0.55, 0.85, 0.85, 0.85, 1.00, 0.40, 1.00]
-MAXP = {4: 1.0}; DEFAULT_MAXP = 0.75   # line 4 keeps its comic beat after "Meanwhile..."
-TAIL = 3.4
+GAPS = [None, 0.45, 0.4, 0.9, 1.2, 0.35, 1.0, 0.5, 0.7, 0.7, 0.7, 0.9, 0.35, 0.85]
+MAXP = {4: 1.0}; DEFAULT_MAXP = 0.6   # line 4 keeps its comic beat after "Meanwhile..."
+TAIL = 3.1
 def probe(f):
     dur = float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]))
     log = subprocess.run(["ffmpeg", "-i", f, "-af", "silencedetect=noise=-42dB:d=0.12", "-f", "null", "-"], capture_output=True, text=True).stderr

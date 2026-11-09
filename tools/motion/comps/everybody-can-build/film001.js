@@ -24,7 +24,9 @@ import { coverType, loadBrand, lockup } from './cover.js';
 import { openingWorld, openingCam, SCR_MID } from './cover-open.js';
 
 const W = 1080, H = 1920, FPS = 30, T0 = 5;
-let L, TL, B, MARK, WORD;
+let L, TL, B, MARK, WORD, WARP;
+/** current narration time -> the choreography's time (piecewise linear through warp.json anchors) */
+const unwarp = (t) => { if (!WARP) return t; let i = 0; while (i < WARP.length - 2 && t > WARP[i + 1][1]) i++; const [o0, n0] = WARP[i], [o1, n1] = WARP[i + 1]; return o0 + (o1 - o0) * Math.min(1, Math.max(0, (t - n0) / (n1 - n0))); };
 const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',');
 
 /* ======================= the world ======================= */
@@ -150,7 +152,8 @@ const LOOP = [
 ];
 
 /* ======================= the frame ======================= */
-function draw(ctx, t) {
+function draw(ctx, tNow) {
+  const t = unwarp(tNow);
   setPalette(PALETTES.brand);
   L ??= makeLayers(W, H);
   const e = L.ectx; e.setTransform(1, 0, 0, 1, 0, 0); e.clearRect(0, 0, W, H); e.globalAlpha = 1;
@@ -452,7 +455,10 @@ function draw(ctx, t) {
 
 async function load() {
   await loadBrand();
-  TL = await (await fetch('/tools/motion/films/001-everybody-can-build/timeline.json')).json();
+  // choreographed against timeline_v1 (the first narration); warp.json maps the current narration's clock onto it
+  TL = await (await fetch('/tools/motion/films/001-everybody-can-build/timeline_v1.json')).json();
+  const TLnow = await (await fetch('/tools/motion/films/001-everybody-can-build/timeline.json')).json();
+  WARP = await (await fetch('/tools/motion/films/001-everybody-can-build/warp.json')).json();
   const l = (n) => TL.lines[n - 1];
   B = {
     s4: l(7).at, s5: l(8).at, flood: l(6).pauses[0][1],
@@ -463,7 +469,7 @@ async function load() {
   KEYS = keys();
   const pathOf = async (u) => new Path2D((await (await fetch(u)).text()).match(/ d="([^"]+)"/)[1]);
   MARK = await pathOf('/assets/brand/mark.svg'); WORD = await pathOf('/assets/brand/wordmark.svg');
-  comp.duration = TL.total;
+  comp.duration = TLnow.total;
 }
 
 const comp = { width: W, height: H, fps: FPS, duration: 55, start: T0, palette: PALETTES.brand, motionBlur: { samples: 4, shutter: 0.5 }, load, draw };

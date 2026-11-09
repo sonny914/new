@@ -2,17 +2,20 @@
 # Every cue sits on a story event from timeline.json / the animation; levels stay well under the narration.
 import json, wave, numpy as np
 SR = 48000; T = json.load(open("timeline.json")); DUR = T["total"]; N = int(DUR * SR)
-L = {l["n"]: l for l in T["lines"]}; rng = np.random.default_rng(7)
+L = {l["n"]: l for l in json.load(open("timeline_v1.json"))["lines"]}   # cue times below are in the choreography's (v1) time
+WARP = np.array(json.load(open("warp.json")))
+tw = lambda x: float(np.interp(x, WARP[:, 0], WARP[:, 1]))           # v1 time -> current narration time
+T1 = float(WARP[-1, 0]); rng = np.random.default_rng(7); rng = np.random.default_rng(7)
 out = np.zeros((N, 2)); t = np.arange(N) / SR
 db = lambda d: 10 ** (d / 20)
 def env_points(pts):  # piecewise-linear envelope in dB over the whole film
-    xs, ys = zip(*pts); return db(np.interp(t, xs, ys))
+    xs, ys = zip(*pts); return db(np.interp(t, [tw(x) for x in xs], ys))
 def lowpass(x, fc):    # one-pole, enough for soft textures
     a = np.exp(-2 * np.pi * fc / SR); y = np.empty_like(x); acc = 0.0
     for i in range(len(x)): acc = (1 - a) * x[i] + a * acc; y[i] = acc
     return y
 def add(sig, at, pan=0.0, gain_db=0.0):
-    i0 = int(at * SR); n = min(len(sig), N - i0)
+    i0 = int(tw(at) * SR); n = min(len(sig), N - i0)
     if n <= 0: return
     g = db(gain_db); l, r = np.cos((pan + 1) * np.pi / 4), np.sin((pan + 1) * np.pi / 4)
     out[i0:i0 + n, 0] += sig[:n] * g * l * 1.414; out[i0:i0 + n, 1] += sig[:n] * g * r * 1.414
@@ -29,13 +32,13 @@ def whoosh(d, f0=300, f1=1800, up=True):
 
 # ---- the bed: a low, slowly moving chord; its level follows the story ----
 bed = (np.sin(2 * np.pi * 55 * t) * 0.5 + np.sin(2 * np.pi * 82.41 * t + 0.4 * np.sin(2 * np.pi * 0.07 * t)) * 0.35 + np.sin(2 * np.pi * 110.3 * t) * 0.18)
-warm = (np.sin(2 * np.pi * 138.6 * t) * 0.16 + np.sin(2 * np.pi * 164.8 * t) * 0.12) * np.clip((t - 30.0) / 4, 0, 1)
+warm = (np.sin(2 * np.pi * 138.6 * t) * 0.16 + np.sin(2 * np.pi * 164.8 * t) * 0.12) * np.clip((t - tw(30.0)) / 4, 0, 1)
 air = np.zeros(N)   # (was low-passed noise: heard as hiss under the whole film; removed after review)
-bedlvl = env_points([(0, -60), (1.5, -36), (12, -35), (16.4, -33), (21, -29), (23.2, -38), (30, -37), (34, -33), (42.4, -31), (48, -30), (50, -33), (DUR - 1.5, -38), (DUR, -70)])
+bedlvl = env_points([(0, -60), (1.5, -36), (12, -35), (16.4, -33), (21, -29), (23.2, -38), (30, -37), (34, -33), (42.4, -31), (48, -30), (50, -33), (T1 - 1.5, -38), (T1, -70)])
 for ch, ph in ((0, 0.0), (1, 0.3)): out[:, ch] += (bed + warm + air * (0.6 + 0.4 * np.sin(2 * np.pi * 0.05 * t + ph))) * bedlvl
 # resolution chord under the logo (A major, soft)
 res = sum(np.sin(2 * np.pi * f * t) * w for f, w in ((220, 0.3), (277.2, 0.2), (329.6, 0.2), (440, 0.08)))
-out[:, 0] += res * env_points([(0, -90), (48.6, -90), (49.3, -34), (52.5, -36), (DUR, -80)]); out[:, 1] += res * env_points([(0, -90), (48.6, -90), (49.3, -34), (52.5, -36), (DUR, -80)])
+out[:, 0] += res * env_points([(0, -90), (48.6, -90), (49.3, -34), (52.5, -36), (T1, -80)]); out[:, 1] += res * env_points([(0, -90), (48.6, -90), (49.3, -34), (52.5, -36), (T1, -80)])
 
 # ---- 1 the idea (opening) ----
 add(tone(523, 0.9, rel=0.6, partials=((1, 1), (2, 0.1))) * np.linspace(0, 1, int(0.9 * SR)) ** 2, 1.1, -0.2, -40)   # the pulse travelling
