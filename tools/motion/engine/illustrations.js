@@ -115,8 +115,9 @@ export function creation(c, type, w, h, s, { ink, bg, alpha = 1, live, accent = 
     solid(() => c.roundRect(0, 0, w, h, 0.035));
     c.fillStyle = cut; for (let i = 0; i < 3; i++) { c.beginPath(); c.arc(0.05 + i * 0.04, 0.045, 0.012, 0, Math.PI * 2); c.fill(); }
     c.fillRect(0, 0.088, w, px(2.2));
-    c.beginPath(); c.roundRect(0.06, 0.15, w * 0.88, h * 0.36, 0.015); c.fill();          // hero
-    c.fillStyle = ink; c.fillRect(0.1, 0.22, w * 0.42, px(5)); c.fillRect(0.1, 0.26, w * 0.28, px(4));
+    // proportional to the card, so the hero never runs into the content row at small sizes
+    c.beginPath(); c.roundRect(w * 0.06, h * 0.2, w * 0.88, h * 0.34, 0.015); c.fill();    // hero
+    c.fillStyle = ink; c.fillRect(w * 0.1, h * 0.3, w * 0.42, px(5)); c.fillRect(w * 0.1, h * 0.38, w * 0.28, px(4));
     c.fillStyle = cut; for (let i = 0; i < 3; i++) c.fillRect(0.06 + i * (w * 0.3), h * 0.62, w * 0.24, h * 0.22); // cards
   } else if (type === 'store') {
     // awning (scalloped), body, door, window
