@@ -113,12 +113,16 @@ export function signupForm(L, { kind = 'pack', id = 'f', campaign = '', where = 
       <div class="field"><label for="${f('name')}">Your name</label><input class="input" type="text" id="${f('name')}" name="first_name" autocomplete="name" maxlength="80" required /></div>
       ${email}
     </div>
-    <div class="field"><label for="${f('org')}">Brand, company or project <span class="opt">optional</span></label><input class="input" type="text" id="${f('org')}" name="org" autocomplete="organization" maxlength="120" /></div>
-    <div class="field"><label for="${f('what')}">What do you want made?</label><textarea class="input" id="${f('what')}" name="what" rows="5" maxlength="2000" required placeholder="What it is, where it will run, and anything it has to say or show."></textarea></div>
-    <div class="field"><label for="${f('when')}">When do you need it? <span class="opt">optional</span></label><select class="input" id="${f('when')}" name="when"><option value="">Pick one</option><option>This month</option><option>In the next three months</option><option>Just exploring</option></select></div>
+    <div class="field"><label for="${f('org')}">Your project, brand or company <span class="opt">optional</span></label><input class="input" type="text" id="${f('org')}" name="org" autocomplete="organization" maxlength="120" /></div>
+    <div class="field"><label for="${f('what')}">What do you want made?</label><textarea class="input" id="${f('what')}" name="what" rows="5" maxlength="2000" required placeholder="e.g. A 20-second teaser for my album: a woman walking out of a 1970s Houston club at dawn."></textarea></div>
+    <div class="fields">
+      <div class="field"><label for="${f('use')}">Where will it be used?</label><select class="input" id="${f('use')}" name="use"><option value="">Pick one</option><option>Instagram, TikTok or YouTube Shorts</option><option>A launch or release announcement</option><option>An ad</option><option>A music video or visualizer</option><option>A pitch or presentation</option><option>Somewhere else</option></select></div>
+      <div class="field"><label for="${f('when')}">When do you need it? <span class="opt">optional</span></label><select class="input" id="${f('when')}" name="when"><option value="">Pick one</option><option>This month</option><option>In the next three months</option><option>Just exploring</option></select></div>
+    </div>
+    <div class="field"><label for="${f('budget')}">Budget <span class="opt">optional</span></label><input class="input" type="text" id="${f('budget')}" name="budget" maxlength="80" placeholder="A rough range helps shape the concept" /></div>
     ${hp}
     <button class="btn btn-live btn-block" type="submit">Send the brief</button>
-    <p class="fine">Flighty reads every brief. No pricing is published: every piece is quoted on what it needs.</p>
+    <p class="fine">Flighty reads every brief. Nothing is generated until you’ve approved a written concept and quote.</p>
     ${err}
   </form>
   <div class="done" data-done="commission" tabindex="-1" hidden>
@@ -140,7 +144,7 @@ function header(page, L) {
   <div class="bar-in">
     <a class="lock" href="${L('')}" aria-label="Quiet Bands Studio, home">${markSvg()}${wordSvg()}<span class="lock-studio" aria-hidden="true">Studio</span></a>
     <nav class="bar-nav" aria-label="Studio">${nav}</nav>
-    ${page.hideBarCta ? '' : `<a class="btn btn-live btn-sm bar-cta" href="${L('pack/')}" data-track="studio_cta" data-track-props='{"cta":"pack","where":"bar"}'>Get the free pack</a>`}
+    ${page.hideBarCta ? '' : `<a class="btn btn-live btn-sm bar-cta" href="${L('commission/')}" data-track="studio_cta" data-track-props='{"cta":"commission","where":"bar"}'>Make it for me</a>`}
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="studio-menu"><span class="menu-btn-label">Menu</span><span class="menu-btn-icon" aria-hidden="true"><i></i><i></i></span></button>
   </div>
 </header>
@@ -150,7 +154,8 @@ function header(page, L) {
     ${sheet}
   </ul></nav>
   <div class="sheet-foot">
-    ${button(L('pack/'), 'Get the free pack', { live: true, track: 'pack', where: 'menu', cls: 'btn-block' })}
+    ${button(L('commission/'), 'Make it for me', { live: true, track: 'commission', where: 'menu', cls: 'btn-block' })}
+    ${button(L('pack/'), 'Learn the process: free pack', { track: 'pack', where: 'menu', cls: 'btn-block' })}
     <p><a href="${SITE.instagram.url}" rel="noopener">${esc(SITE.instagram.handle)}</a> · <a href="${SITE.parent.href}">${esc(SITE.parent.label)}</a></p>
   </div>
 </div>`;
@@ -214,7 +219,7 @@ ${page.noindex ? '<meta name="robots" content="noindex" />\n' : ''}<link rel="ca
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="${L('assets/studio.css')}?v=2" />
+<link rel="stylesheet" href="${L('assets/studio.css')}?v=3" />
 <script>document.documentElement.classList.add('js');</script>
 ${SITE.plausible ? `<script defer data-domain="${SITE.plausible}" src="https://plausible.io/js/script.js"></script>
 <script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>
@@ -226,7 +231,7 @@ ${body}
 </main>
 ${footer(page, L)}
 ${dock(page, L)}
-<script type="module" src="${L('assets/studio.js')}?v=2"></script>
+<script type="module" src="${L('assets/studio.js')}?v=3"></script>
 </body>
 </html>
 `;

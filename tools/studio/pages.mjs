@@ -1,5 +1,5 @@
 // Quiet Bands Studio: every page, as data plus a body. `out` is the page's path inside /studio/.
-import { SITE, CAMPAIGNS } from './site.mjs';
+import { SITE, CAMPAIGNS, FILMS } from './site.mjs';
 import { PACK, PARTS, GUIDES, numberedPrompts } from './content/pack.mjs';
 import { esc, kicker, button, signupForm, workshopWhen, packPdf, linker, markSvg, wordSvg } from './lib.mjs';
 
@@ -86,36 +86,75 @@ function guideList(L) {
   return `<ol class="rows">${GUIDES.map((g, i) => `<li><a class="row" href="${L(`learn/${g.slug}/`)}"><span class="row-n">${String(i + 1).padStart(2, '0')}</span><span class="row-t">${esc(g.title)}</span><span class="row-s">${esc(g.lede)}</span><span class="row-go" aria-hidden="true">Read</span></a></li>`).join('')}</ol>`;
 }
 
+/** A published film, playable on the page. Nothing downloads until play (preload none); the poster is a still from it. */
+function film(L, key, { id = '', cls = '', where = '' } = {}) {
+  const v = FILMS[key];
+  return `<figure class="film${cls ? ' ' + cls : ''}"${id ? ` id="${id}"` : ''}>
+    <div class="film-frame"><video controls playsinline preload="none" poster="${L(v.poster)}" width="540" height="960" aria-label="${esc(v.alt)}" data-film="${key}" data-where="${esc(where)}"><source src="${L(v.src)}" type="video/mp4" /></video></div>
+    <figcaption><b>${esc(v.title)}</b><span>${esc(v.ep)} · ${esc(v.length)} · Quiet Bands Originals</span></figcaption>
+  </figure>`;
+}
+
 /* ---------- pages ---------- */
 
 const home = {
-  out: '', section: '', title: 'Quiet Bands Studio · AI filmmaking and creator education',
+  out: '', section: '', title: 'Quiet Bands Studio · Cinematic shorts made with AI',
   ogTitle: 'Quiet Bands Studio',
-  get description() { return `Free prompts, a working process and ${SITE.workshop.public ? 'live workshops' : 'free guides'} for making short dramas and Reels with AI. Run by Flighty, part of Quiet Bands.`; },
-  dock: { href: 'pack/', label: 'Get the free pack', text: 'AI Content Pack 001 · free', track: 'pack' },
+  description: 'Short cinematic films and teasers made with AI, commissioned for your project, plus the free process to make your own. From Flighty, the creator behind THE BLOCK. Part of Quiet Bands.',
+  dock: { href: 'commission/', label: 'Make it for me', text: 'Commission a cinematic teaser', track: 'commission' },
   jsonld: { '@context': 'https://schema.org', '@type': 'Organization', name: 'Quiet Bands Studio', url: SITE.origin + SITE.base, parentOrganization: { '@type': 'Organization', name: 'Quiet Bands', url: SITE.origin + '/' }, sameAs: [SITE.instagram.url] },
   body(L) {
-    const w = workshopWhen();
     return `
-<section class="hero">
-  <div class="frame frame-hero">
-    ${frameMarks}
-    <p class="slate" aria-hidden="true"><span>SC 01</span><span>TK 01</span><span>INT. YOUR PHONE · NIGHT</span></p>
+<section class="hero hero-split hero-studio">
+  <div class="wrap hero-grid">
     <div class="hero-copy">
-      ${kicker('AI filmmaking + creator education')}
-      <h1 class="display">Turn ideas into cinematic content.</h1>
-      <p class="lede">${esc(home.description)}</p>
-      <p class="cta-row">${button(L('pack/'), 'Get the free pack', { live: true, track: 'pack', where: 'home-hero' })}${SITE.workshop.public
-        ? button(L('workshop/'), w.known ? 'Save a workshop seat' : 'Join the free workshop', { track: 'workshop', where: 'home-hero' })
-        : button(L('learn/'), 'Read the free guides', { track: 'learn', where: 'home-hero' })}</p>
+      ${kicker('Quiet Bands Studio · with ' + SITE.host)}
+      <h1 class="display">Cinematic shorts, made with AI.</h1>
+      <p class="lede">Short films and teasers made for your project, or the free process to make your own. From ${esc(SITE.host)}, the creator behind THE BLOCK. Part of Quiet Bands.</p>
+      <p class="cta-row">${button(L('commission/'), 'Make it for me', { live: true, track: 'commission', where: 'home-hero' })}${button(L('pack/'), 'Learn the process', { track: 'pack', where: 'home-hero' })}</p>
+      <p class="hero-note">Press play: THE BLOCK, episode 1, written, generated and cut in the Studio.</p>
     </div>
-    <p class="tc" aria-hidden="true"><span data-timecode>00:00:00:00</span></p>
+    ${film(L, 'ep01', { id: 'watch', cls: 'film-hero', where: 'home-hero' })}
+  </div>
+</section>
+
+<section class="sec" id="paths">
+  <div class="wrap">
+    ${kicker('Two ways in', '01')}
+    <h2 class="h2">Have it made, or learn to make it.</h2>
+    <ol class="offers">
+      <li class="offer offer-paid">
+        <p class="offer-tag"><span>01</span><span>Commissioned · quoted per project</span></p>
+        <h3 class="offer-title">Make it for me</h3>
+        <p>A short cinematic teaser for your album, book, game, show, event or brand. You bring the project; the Studio writes it, makes it and cuts it, and you approve the concept on paper before anything is generated.</p>
+        ${button(L('commission/'), 'See how a commission works', { live: true, track: 'commission', where: 'home-paths' })}
+      </li>
+      <li class="offer">
+        <p class="offer-tag"><span>02</span><span>Free · PDF + web</span></p>
+        <h3 class="offer-title">Learn the process</h3>
+        <p>The AI Content Pack: the idea test, a 60-second beat sheet, character lock, 24 shot prompts, the edit, 25 hooks and a posting plan. Three of its parts are open guides, no email needed.</p>
+        <p class="cta-row">${button(L('pack/'), 'Get the free pack', { track: 'pack', where: 'home-paths' })}${button(L('learn/'), 'Read the guides', { track: 'learn', where: 'home-paths' })}</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="sec sec-block" id="the-block">
+  <div class="wrap block-grid">
+    <div>
+      ${kicker('Quiet Bands Originals · in production', '02')}
+      <h2 class="h2">THE BLOCK</h2>
+      <p class="big">Harlem, 1988. A drama told in short vertical episodes, made by ${esc(SITE.host)} with AI video tools. Episodes 1 and 2 are published; the next ones are in production.</p>
+      <p class="block-proof">It’s the Studio’s working proof: the character lock, shot prompts and edit the free pack teaches, and the pipeline a commission runs through.</p>
+      <p class="go">${button(SITE.instagram.url, `Follow ${SITE.instagram.handle}`, { track: 'instagram', where: 'home-block' })}</p>
+    </div>
+    ${film(L, 'ep02', { where: 'home-block' })}
   </div>
 </section>
 
 <section class="sec" id="method">
   <div class="wrap">
-    ${kicker('The method', '01')}
+    ${kicker('The method', '03')}
     <h2 class="h2">Credits are film stock.</h2>
     <div class="split">
       <p class="big">Making a scene with AI got cheap. Knowing which scenes deserve making didn’t. Every generation you throw away is a decision you could have made on paper. So the Studio works the way Quiet Bands works: before you build it, <em class="kill">try to kill it.</em></p>
@@ -124,30 +163,6 @@ const home = {
         <li><b>Lock it before you shoot.</b> One identity block per character, one light per scene, one move per shot.</li>
         <li><b>Cut it like film.</b> Trim to the moment, cut on movement, four layers of sound under everything.</li>
       </ol>
-    </div>
-    <p class="go"><a class="arrow" href="${L('learn/60-second-drama/')}">Read the 60-second drama guide</a></p>
-  </div>
-</section>
-
-<section class="sec" id="ways-in">
-  <div class="wrap">
-    ${kicker('Three ways in', '02')}
-    <h2 class="h2">Start free.</h2>
-    ${offers(L, 'home-offers')}
-  </div>
-</section>
-
-<section class="sec sec-block" id="the-block">
-  <div class="wrap">
-    ${kicker('In production', '03')}
-    <div class="frame frame-wide">
-      ${frameMarks}
-      <p class="block-title" aria-hidden="true">The Block</p>
-      <h2 class="vh">The Block</h2>
-    </div>
-    <div class="split">
-      <p class="big">Flighty’s own project, built in public on Instagram: the scenes, the prompts that made them and the takes that didn’t make it.</p>
-      <p class="go">${button(SITE.instagram.url, `Follow ${SITE.instagram.handle}`, { track: 'instagram', where: 'home-block' })}</p>
     </div>
   </div>
 </section>
@@ -164,7 +179,7 @@ const home = {
 <section class="sec sec-get" id="get">
   <div class="wrap get">
     <div>
-      ${kicker('Start here', '05')}
+      ${kicker('Learn the process', '05')}
       <h2 class="h2">Get the pack.</h2>
       <p class="big">Twelve parts, free, on the web and as a PDF. It opens as soon as you send the form.</p>
     </div>
@@ -418,24 +433,93 @@ const guidePages = GUIDES.map((g, gi) => {
 });
 
 const commission = {
-  out: 'commission/', section: 'commission/', title: 'Commission the Studio',
-  description: 'Send Quiet Bands Studio a brief for a cinematic AI piece: a launch, an ad, a title sequence, a scene for a song.',
+  out: 'commission/', section: 'commission/', title: 'Commission a cinematic teaser',
+  description: 'Commission Quiet Bands Studio to make a short cinematic teaser for your album, book, game, show, event or brand. Made with AI, approved on paper first, quoted per project.',
+  dock: { href: '#brief', label: 'Start a brief', text: 'Quoted per project', track: 'commission' },
   body(L) {
+    const list = (items) => `<ul class="ticks">${items.map(([b, t]) => `<li><b>${esc(b)}</b> ${esc(t)}</li>`).join('')}</ul>`;
     return `
-<section class="hero hero-split">
+<section class="hero hero-split hero-studio">
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      ${kicker('By brief')}
-      <h1 class="display">Commission the Studio.</h1>
-      <p class="lede">For when you need a cinematic piece made rather than taught. Tell us what it is, where it will run and when you need it.</p>
-      <ol class="run run-compact">
-        <li><span class="run-n">01</span><b>The brief</b><span>You send it here.</span></li>
-        <li><span class="run-n">02</span><b>The reply</b><span>Flighty reads it and replies with questions if it’s a fit.</span></li>
-        <li><span class="run-n">03</span><b>The quote</b><span>Priced on what that piece needs. There is no rate card.</span></li>
-        <li><span class="run-n">04</span><b>The paper</b><span>The scene is written and approved before anything is generated.</span></li>
-      </ol>
+      ${kicker('Commission · the starting offer')}
+      <h1 class="display">A cinematic teaser for your project.</h1>
+      <p class="lede">For musicians, authors, game makers, filmmakers and brands with something to announce. You bring the project. The Studio writes the scene, makes it with AI video tools and cuts it into a short vertical film, like the episode of THE BLOCK playing here.</p>
+      <p class="cta-row">${button('#brief', 'Start a brief', { live: true, track: 'commission_brief', where: 'commission-hero' })}</p>
     </div>
-    <div class="hero-form" id="top">${signupForm(L, { kind: 'commission', id: 'brief', where: 'commission' })}</div>
+    ${film(L, 'ep01', { cls: 'film-hero', where: 'commission-hero' })}
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap cols-2">
+    <div>
+      ${kicker('What can be made', '01')}
+      <h2 class="h2">Short, cinematic, made to be posted.</h2>
+      ${list([
+        ['A release teaser.', 'For an album, single, book, game, show or event: one scene that sets the world and the mood.'],
+        ['A character introduction.', 'One character, one moment, played in close-up, the way THE BLOCK opens.'],
+        ['A scene for a song.', 'A visual moment cut to your track.'],
+        ['A short brand film.', 'A story-led piece rather than a product demo.'],
+      ])}
+    </div>
+    <div>
+      ${kicker('What you supply', '02')}
+      <h2 class="h2">No production brief needed.</h2>
+      ${list([
+        ['What the project is', 'and who it’s for, in your own words.'],
+        ['Where it will run.', 'Instagram, TikTok, YouTube, a launch page, a pitch.'],
+        ['Anything it has to show or say.', 'A title, a date, a name, a line.'],
+        ['References you like,', 'if you have them: films, videos, photos, colours.'],
+        ['Music, voice or artwork you own,', 'if you want it used.'],
+      ])}
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    ${kicker('How it works', '03')}
+    <h2 class="h2">Approved on paper before anything is made.</h2>
+    <ol class="run run-5">
+      <li><span class="run-n">01</span><b>The brief</b><span>You fill in the form below. A few lines is enough.</span></li>
+      <li><span class="run-n">02</span><b>The reply</b><span>${esc(SITE.host)} reads it and replies personally, with questions if it’s a fit.</span></li>
+      <li><span class="run-n">03</span><b>Concept and quote</b><span>The scene, the look and the scope, written down with a quote. You approve it before any generation starts.</span></li>
+      <li><span class="run-n">04</span><b>Production</b><span>Characters locked, shots generated, then cut with sound. You see a review cut.</span></li>
+      <li><span class="run-n">05</span><b>Delivery</b><span>The finished film, exported for where it will run.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap cols-2">
+    <div>
+      ${kicker('Scope and pricing', '04')}
+      <h2 class="h2">Quoted on what the piece needs.</h2>
+      <p class="big">There’s no rate card. The quote arrives with the concept, and it depends on:</p>
+    </div>
+    <div>
+      ${list([
+        ['Length.', 'Seconds of finished film.'],
+        ['Cast and places.', 'How many characters and locations have to be designed and kept consistent.'],
+        ['Dialogue and sound.', 'Spoken lines, voices and music.'],
+        ['Versions.', 'Extra cuts, lengths or aspect ratios.'],
+        ['Timing.', 'How soon you need it.'],
+      ])}
+      <p class="fine-print">Turnaround, revisions and usage rights are agreed per project and written into the quote.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-get" id="brief">
+  <div class="wrap get">
+    <div>
+      ${kicker('Start here', '05')}
+      <h2 class="h2">Send a brief.</h2>
+      <p class="big">Your name, email and what you’d like made. The rest helps, but it’s optional.</p>
+      <p class="go"><a class="arrow" href="${L('')}#the-block">Watch more of THE BLOCK</a></p>
+    </div>
+    <div class="get-form">${signupForm(L, { kind: 'commission', id: 'brief', where: 'commission' })}</div>
   </div>
 </section>`;
   },
@@ -456,8 +540,9 @@ const links = {
       ${item(L('pack/'), 'Free AI Content Pack', '12 parts: prompts, process, posting plan', { live: true, track: 'pack' })}
       ${SITE.workshop.public ? item(L('workshop/'), 'Free Mini-Drama Workshop', w.line, { track: 'workshop' }) : ''}
       ${item(L('learn/'), 'Free guides', 'Beat sheet, character lock, camera moves', { track: 'learn' })}
-      ${item(L('commission/'), 'Commission a piece', 'Send a brief', { track: 'commission' })}
-      ${item(SITE.instagram.url, 'THE BLOCK', `Built in public on Instagram, ${SITE.instagram.handle}`, { track: 'instagram', ext: true })}
+      ${item(L('commission/'), 'Commission a cinematic teaser', 'Made for your project', { live: true, track: 'commission' })}
+      ${item(L('') + '#watch', 'Watch THE BLOCK', 'Episodes 1 and 2, here on the site', { track: 'watch' })}
+      ${item(SITE.instagram.url, 'Follow on Instagram', SITE.instagram.handle, { track: 'instagram', ext: true })}
       ${item(SITE.parent.href, 'Building software instead?', 'Quiet Bands, Houston', { track: 'parent' })}
     </ul>
   </div>

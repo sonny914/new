@@ -2,7 +2,7 @@
 // only run down the paths that return before calling Claude.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { formBody } from '../assets/qb.js';
 import scorer, { leadFrom, failureReason } from '../netlify/functions/submission-created.js';
 
@@ -101,4 +101,45 @@ test('every public page loads Plausible, with the queue stub so early track() ca
   const csp = read('netlify.toml').match(/Content-Security-Policy = "([^"]+)"/)[1];
   assert.match(csp, /script-src [^;]*https:\/\/plausible\.io/);
   assert.match(csp, /connect-src [^;]*https:\/\/plausible\.io/);
+});
+
+test('the home inquiry declares every field home.js sends, and the scorer reads it', () => {
+  const html = read('index.html');
+  assert.match(html, /<form [^>]*name="project-inquiry" method="POST" data-netlify="true" netlify-honeypot="website"/);
+  const fields = declared(html, 'project-inquiry');
+  const call = read('assets/home.js').match(/formPost\('project-inquiry', \{([\s\S]*?)\}\);/)[1];
+  const sent = [...call.matchAll(/(\w+):/g)].map((m) => m[1]);
+  assert.ok(sent.length >= 9);
+  for (const k of sent) assert.ok(fields.has(k), `project-inquiry sends "${k}" but doesn't declare it`);
+  const lead = leadFrom('project-inquiry', { contact_name: 'A', email: 'a@b.co', project_type: 'A working prototype', details: 'Book fittings online', timeline: 'Later this year', budget: '10k', source: 'home-inquiry' });
+  assert.equal(lead.pain_point, 'PROJECT TYPE: A working prototype\nWHAT IT SHOULD DO: Book fittings online');
+  assert.equal(lead.timeline, 'Later this year');
+  assert.equal(lead.budget_range, '10k');
+  assert.equal(lead.source, 'home-inquiry');
+});
+
+test('a home inquiry is scored like the other lead forms', async () => {
+  const posts = [];
+  const real = globalThis.fetch;
+  globalThis.fetch = async (url, init) => { posts.push(new URLSearchParams(init.body)); return new Response('', { status: 200 }); };
+  try {
+    const res = await scorer(new Request('http://x/', { method: 'POST', body: JSON.stringify({ payload: { id: 'h1', form_name: 'project-inquiry', data: { email: 'a@b.co', details: 'x', contact_name: 'A' } } }) }));
+    assert.equal(await res.text(), 'UNSCORED');
+  } finally { globalThis.fetch = real; }
+  assert.equal(posts.length, 1);
+  assert.equal(posts[0].get('lead_form'), 'project-inquiry');
+});
+
+test('the home page leads with what Quiet Bands builds, and keeps the method further down', () => {
+  const html = read('index.html');
+  const at = (s) => { const i = html.indexOf(s); assert.ok(i > 0, `home has "${s}"`); return i; };
+  assert.ok(at('Discuss a project') < at('id="work"'));
+  assert.ok(at('id="work"') < at('id="hire"'));
+  assert.ok(at('id="hire"') < at('id="process"'));
+  assert.ok(at('id="process"') < at('try to kill it'));
+  assert.ok(at('id="process"') < at('id="inquire"'));
+  assert.ok(at('id="inquire"') < at('href="/studio/" style'));
+  for (const s of ['THE BLOCK', 'KILL TRILL', 'Spirited']) assert.ok(html.includes(s));
+  assert.doesNotMatch(html, /in production/i);   // Frenchies' current status is not claimed
+  for (const img of html.matchAll(/src="(\/assets\/work\/[^"]+|\/studio\/media\/[^"]+)"/g)) assert.ok(existsSync(new URL(`..${img[1]}`, import.meta.url)), img[1]);
 });
