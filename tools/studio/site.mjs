@@ -18,6 +18,8 @@ export const SITE = {
   // Where the forms send. 'netlify': Netlify Forms (submissions in the Netlify dashboard; needs form detection on,
   // Site configuration → Forms). 'supabase': the studio_signups table (apply db/studio_signups.sql first).
   forms: 'netlify',
+  // Plausible analytics: the domain registered at plausible.io, or null for no tag. qb.js track() sends events to it.
+  plausible: 'quietbands.com',
 };
 
 // The bar and the menu sheet, in this order.

@@ -90,3 +90,15 @@ test('failure reasons name the fix without dumping the raw error', () => {
   assert.match(failureReason(new TypeError('fetch failed')), /unexpected error/);
   assert.doesNotMatch(failureReason(new Error('Anthropic request failed: 401 {"secret":"x"}')), /secret/);
 });
+
+test('every public page loads Plausible, with the queue stub so early track() calls are kept', () => {
+  const pages = ['404.html', 'index.html', 'commercial/index.html', 'notes/index.html', 'notes/the-coffee-credit/index.html', 'notes/the-promise-gap/index.html', 'rd/index.html', 'rd/pressure-test/index.html', 'resident-experience/index.html', 'small-business/index.html', 'work/index.html', 'work/frenchies/index.html', 'studio/index.html', 'studio/pack/index.html', 'studio/commission/index.html'];
+  for (const p of pages) {
+    const html = read(p);
+    assert.match(html, /<script defer data-domain="quietbands\.com" src="https:\/\/plausible\.io\/js\/script\.js"><\/script>/, p);
+    assert.match(html, /window\.plausible=window\.plausible\|\|function\(\)/, p);
+  }
+  const csp = read('netlify.toml').match(/Content-Security-Policy = "([^"]+)"/)[1];
+  assert.match(csp, /script-src [^;]*https:\/\/plausible\.io/);
+  assert.match(csp, /connect-src [^;]*https:\/\/plausible\.io/);
+});

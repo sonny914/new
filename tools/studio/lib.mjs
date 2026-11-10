@@ -216,7 +216,9 @@ ${page.noindex ? '<meta name="robots" content="noindex" />\n' : ''}<link rel="ca
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="${L('assets/studio.css')}?v=2" />
 <script>document.documentElement.classList.add('js');</script>
-${page.jsonld ? `<script type="application/ld+json">${JSON.stringify(page.jsonld)}</script>\n` : ''}</head>
+${SITE.plausible ? `<script defer data-domain="${SITE.plausible}" src="https://plausible.io/js/script.js"></script>
+<script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>
+` : ''}${page.jsonld ? `<script type="application/ld+json">${JSON.stringify(page.jsonld)}</script>\n` : ''}</head>
 <body class="${esc(page.bodyClass || '')}" data-page-view="studio_page_view">
 ${header(page, L)}
 <main id="main">
