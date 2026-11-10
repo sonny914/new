@@ -35,6 +35,6 @@ with open("QB_FILM_002_AI_YES_MAN_CAPTIONS.srt", "w") as f:
     for i, (a, e, txt, _, _) in enumerate(srt, 1): f.write(f"{i}\n{ts(a)} --> {ts(e)}\n{q(txt)}\n\n")
 burn = sorted([c for c in C if c[4]])
 for (a, e, *_), (a2, *_) in zip(burn, burn[1:]): assert e <= a2 + 1e-6 or True
-json.dump([dict(start=round(a, 3), end=round(min(e, nx[0]) if nx else e, 3), text=q(t), em=em, y=1340) for (a, e, t, em, _), nx in zip(burn, burn[1:] + [None])], open("captions.json", "w"), indent=1)
+json.dump([dict(start=round(a, 3), end=round(min(e, nx[0]) if nx else e, 3), text=q(t), em=em, y=1470 if a < 10.5 else 1340) for (a, e, t, em, _), nx in zip(burn, burn[1:] + [None])], open("captions.json", "w"), indent=1)
 print(len(burn), "burned /", len(srt), "in SRT")
 for c in burn: print(f"{c[0]:6.2f}-{c[1]:6.2f} {c[2]}")
