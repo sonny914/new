@@ -1,0 +1,100 @@
+[
+ {
+  "start": 0.6,
+  "end": 2.568,
+  "text": "Everybody\u2019s chasing money.",
+  "em": "money",
+  "y": 1340
+ },
+ {
+  "start": 2.768,
+  "end": 4.168,
+  "text": "The next hustle.",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 4.168,
+  "end": 5.661,
+  "text": "The next app.",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 5.661,
+  "end": 9.401,
+  "text": "The next thing that\u2019s supposed to make you rich.",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 9.701,
+  "end": 10.918,
+  "text": "And I get it.",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 10.918,
+  "end": 14.285,
+  "text": "Bills don\u2019t care about your passion.",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 14.535,
+  "end": 16.54,
+  "text": "But here\u2019s where we mess up.",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 23.448,
+  "end": 25.339,
+  "text": "\u2026and still be broke.",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 28.251,
+  "end": 30.221,
+  "text": "And attention ain\u2019t a business model.",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 30.921,
+  "end": 35.002,
+  "text": "We get so focused on how to get the money\u2026",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 35.002,
+  "end": 38.766,
+  "text": "we stop asking why anybody would give it to us.",
+  "em": "give",
+  "y": 1340
+ },
+ {
+  "start": 38.816,
+  "end": 40.181,
+  "text": "Think about that.",
+  "em": "",
+  "y": 1340
+ },
+ {
+  "start": 40.781,
+  "end": 44.796,
+  "text": "Money moves when somebody sees enough value to trade something for it.",
+  "em": "value",
+  "y": 1340
+ },
+ {
+  "start": 64.14,
+  "end": 68.388,
+  "text": "Stop chasing the money long enough to understand what makes it move.",
+  "em": "what makes it move",
+  "y": 1340
+ }
+]

@@ -1,0 +1,60 @@
+1
+00:00:00,500 --> 00:00:04,321
+Claude Code just got a pretty serious upgrade.
+
+2
+00:00:04,421 --> 00:00:09,339
+Everybody’s talking about Fable 5.2. Up to thirty percent faster than 5.1.
+
+3
+00:00:09,389 --> 00:00:12,273
+Cool. But that’s not the headline.
+
+4
+00:00:12,423 --> 00:00:17,281
+Claude can now help set up its own cloud environment.
+
+5
+00:00:17,331 --> 00:00:19,959
+Missing a dependency? It can find it.
+
+6
+00:00:19,959 --> 00:00:23,182
+Network access? It asks for your approval.
+
+7
+00:00:23,182 --> 00:00:27,083
+API key? You enter it securely, outside the chat.
+
+8
+00:00:27,333 --> 00:00:31,801
+/usage shows what’s eating your usage, and how to fix it.
+
+9
+00:00:31,801 --> 00:00:34,912
+/storage clears out old worktrees and sessions.
+
+10
+00:00:35,162 --> 00:00:38,724
+Ultrathink is back. Extra reasoning, for one turn.
+
+11
+00:00:38,924 --> 00:00:42,375
+I’m still using Opus for most of my coding.
+
+12
+00:00:42,375 --> 00:00:45,937
+But Fable for bigger, open-ended problems? Worth testing.
+
+13
+00:00:46,187 --> 00:00:51,444
+Your session keeps running in the cloud. Pick it up from another device.
+
+14
+00:00:51,594 --> 00:00:57,868
+The real shift? AI handling more of the work between the idea and the finished product.
+
+15
+00:00:58,318 --> 00:01:01,247
+Quiet Bands. Build what matters.
+

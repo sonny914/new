@@ -4,3 +4,9 @@ tools/studio/out/
 
 # Local Netlify folder
 .netlify
+tools/motion/renders/*-stills/
+# Film builds: reproducible intermediates (see tools/motion/films/*/README.md)
+tools/motion/films/*/narration.wav
+tools/motion/films/*/sfx.wav
+tools/motion/films/*/captions/
+tools/motion/films/*/captions.json

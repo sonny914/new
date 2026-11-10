@@ -1,0 +1,76 @@
+1
+00:00:00,350 --> 00:00:04,006
+AI will have you thinking you’re cooking.
+
+2
+00:00:04,156 --> 00:00:06,646
+You tell it your business idea…
+
+3
+00:00:06,646 --> 00:00:08,449
+and suddenly everything’s brilliant.
+
+4
+00:00:08,599 --> 00:00:10,807
+Your strategy makes sense.
+
+5
+00:00:10,807 --> 00:00:12,602
+Your plan is solid.
+
+6
+00:00:12,602 --> 00:00:14,620
+You’re about to change the world.
+
+7
+00:00:15,220 --> 00:00:16,796
+Meanwhile…
+
+8
+00:00:16,796 --> 00:00:18,712
+you ain’t sold a damn thing.
+
+9
+00:00:19,412 --> 00:00:24,039
+Look, AI can help you build an idea.
+
+10
+00:00:24,089 --> 00:00:27,066
+But agreement ain’t validation.
+
+11
+00:00:27,766 --> 00:00:31,613
+So stop asking it, “Is this a good idea?”
+
+12
+00:00:31,813 --> 00:00:33,848
+Ask it, “Why would this fail?”
+
+13
+00:00:34,248 --> 00:00:36,193
+“Who actually pays for this?”
+
+14
+00:00:36,593 --> 00:00:40,650
+“What am I assuming that I haven’t proven?”
+
+15
+00:00:41,050 --> 00:00:42,500
+And my favorite…
+
+16
+00:00:42,500 --> 00:00:46,401
+“Make the strongest argument against my plan.”
+
+17
+00:00:47,001 --> 00:00:51,001
+The point isn’t getting a machine to tell you you’re right.
+
+18
+00:00:51,101 --> 00:00:54,365
+It’s using the machine to get better at thinking.
+
+19
+00:00:54,915 --> 00:00:57,745
+Quiet Bands. Build what matters.
+
