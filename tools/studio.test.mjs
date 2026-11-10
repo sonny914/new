@@ -192,3 +192,19 @@ test('the commission page explains the offer without publishing prices or terms'
   for (const s of ['What can be made', 'What you supply', 'How it works', 'Scope and pricing', 'name="use"', 'name="budget"']) assert.ok(html.includes(s), s);
   assert.doesNotMatch(html, /\$\s?\d|\d+\s?(business )?days? turnaround|unlimited revisions/i);
 });
+
+/* ---------- the experiments playground ---------- */
+
+test('the experiments page lets people play: nine live orbs, and the bulb only loads when asked', () => {
+  const html = read('experiments/index.html');
+  const orbs = [...html.matchAll(/<thinking-orb state="(\w+)" size="64" zoom="2" interactive><\/thinking-orb>/g)].map((m) => m[1]);
+  assert.equal(new Set(orbs).size, 9);
+  assert.doesNotMatch(html, /<iframe/);                       // the 3D scene waits for the button
+  assert.match(html, /id="bulb-start"/);
+  assert.ok(existsSync(new URL('experiments/bulb/index.html', ROOT)));
+  assert.ok(existsSync(new URL('assets/experiments.js', ROOT)));
+  assert.match(read('index.html'), /href="\/experiments\/"/);
+  const rules = parseRedirects(read('_redirects'));
+  for (const p of ['/lab/bulb', '/lab/bulb/']) assert.equal(matchRule(rules, p).to, '/experiments/bulb/');
+  assert.ok(!rules.some((r) => r.from === '/experiments'), 'nothing redirects the playground away');
+});
