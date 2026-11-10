@@ -1,4 +1,4 @@
-// TECH DROP 001 as a motion carousel: 10 looping 4:5 slides (1080x1350), 6 s each, no narration.
+// TECH DROP 001 as a motion carousel: 6 looping 4:5 slides (1080x1350), 6 s each, no narration.
 // One update per slide, one original diagram each, same facts and wording discipline as the reel (script.md).
 // The comp plays the slides back to back (60 s); export/carousel.sh cuts it into one MP4 per slide.
 import { clamp, lerp, seg, ease, smoothstep, hash } from '../../engine/math.js';
@@ -8,7 +8,7 @@ import { PALETTES, mix } from '../../engine/color.js';
 import { setPalette, P, mono } from '../everybody-can-build/film-keys.js';
 import { brandPath } from '../shared/story.js';
 
-const W = 1080, H = 1350, FPS = 30, T = 6, N = 10;
+const W = 1080, H = 1350, FPS = 30, T = 6;
 let L, MARK, WORD;
 const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',');
 
@@ -50,7 +50,7 @@ function cloud(e, x, y, w, h, k, mods) {   // the cloud environment: a frame wit
 /* ---------------- slides ---------------- */
 const S = [
   { // 01 cover
-    head: [['CLAUDE CODE'], ['JUST LEVELED UP.']], sub: '8 updates worth knowing. Swipe →', note: 'QUIET BANDS · TECH DROP 001',
+    head: [['CLAUDE CODE'], ['JUST LEVELED UP.']], sub: 'What changed, in five swipes. →', note: 'QUIET BANDS · TECH DROP 001',
     draw(e, ctx, u) { const k = smoothstep(seg(u, 0.3, 1.2)); e.save(); e.globalAlpha = k; desk(e, 330, 1150, 1.25, 0.6 + 0.4 * Math.sin(u * 2) ** 2, 4); e.restore();
       e.save(); e.globalAlpha = k; e.translate(290, 760); e.scale(220, 220); bulb(e, 220, { P, glow: 0.6 + 0.4 * smoothstep(seg(u, 1.5, 2.4)) }); e.restore(); } },
   { // 02 Fable 5.2
@@ -154,14 +154,53 @@ const S = [
         for (let i = 0; i < 8; i++) { const x = 160 + ((u * 160 + i * 95) % 760); if (x > lerp(160, 920, k)) continue; e.fillStyle = P.ink; e.fillRect(x - 6, 994, 12, 12); }
         e.fillStyle = P.ink; e.beginPath(); e.arc(160, 1000, 14, 0, Math.PI * 2); e.fill(); if (k >= 1) { e.fillStyle = P.live; e.fillRect(904, 984, 32, 32); } e.restore();
         M(ctx, 'IDEA', 160, 1060, { alpha: fade, align: 'center' }); M(ctx, 'FINISHED', 920, 1060, { alpha: fade * smoothstep(seg(k, 0.9, 1)), align: 'center', color: P.ink }); } } },
+  { key: 'fable', // Fable 5.2 speed + which model for what
+    head: [['FABLE 5.2.'], ['UP TO 30% FASTER.']], sub: 'Output generation, compared with Fable 5.1.', note: 'PER THE ANNOUNCEMENT · ILLUSTRATIVE, NOT A BENCHMARK',
+    draw(e, ctx, u) { const race = seg(u, 0.8, 3.2), y = 650;
+      for (const [lab, k, yy, hot] of [['FABLE 5.1', clamp(race), y, 0], ['FABLE 5.2', clamp(race * 1.3), y + 120, 1]]) {
+        M(ctx, lab, 80, yy, { size: 20, color: hot ? P.ink : P.ink2 });
+        ctx.fillStyle = mix(P.bg, P.ink2, 0.22); ctx.fillRect(80, yy + 22, W - 160, 38); ctx.fillStyle = hot ? P.ink : P.ink2; ctx.fillRect(80, yy + 22, (W - 160) * ease.inOut3(k), 38);
+        if (k >= 1) M(ctx, 'DONE', W - 80, yy, { size: 17, color: hot ? P.live : P.ink2, align: 'right' }); }
+      const d = smoothstep(seg(race, 1 / 1.3, 1 / 1.3 + 0.1)); ctx.save(); ctx.globalAlpha = d; ctx.font = '800 50px "Inter Display"'; ctx.fillStyle = P.live; ctx.fillText('UP TO 30% FASTER OUTPUTS', 80, y + 250); ctx.restore();
+      // which model for what (per the announcement)
+      const m = smoothstep(seg(u, 3.4, 3.9)), w = 450, yy = 980;
+      [[80, 'OPUS 5.5', 'MOST CODING · START HERE'], [550, 'FABLE 5.2', 'BIGGER, OPEN-ENDED · WORTH TESTING']].forEach(([x, n, use], j) => {
+        card(ctx, x, yy, w, 170, m * (j ? smoothstep(seg(u, 3.8, 4.3)) : 1)); ctx.save(); ctx.globalAlpha = m * (j ? smoothstep(seg(u, 3.8, 4.3)) : 1); ctx.font = '800 40px "Inter Display"'; ctx.fillStyle = P.ink; ctx.fillText(n, x + 30, yy + 70); ctx.restore();
+        M(ctx, use, x + 30, yy + 120, { size: 15, track: 2, alpha: m * (j ? smoothstep(seg(u, 3.8, 4.3)) : 1), color: j ? P.live : P.ink2 }); }); } },
+  { key: 'cloud', // cloud setup: dependency, network approval, API key
+    head: [['CLAUDE HELPS SET'], ['UP ITS OWN CLOUD.']], sub: 'You still approve what it can reach.', note: 'CLOUD SESSIONS · APPROVAL WORKFLOW · ILLUSTRATIVE',
+    draw(e, ctx, u) {
+      const rows = [
+        ['MISSING DEPENDENCY', 'FOUND · INSTALLED', 0.8, (x, y, k) => { ctx.save(); ctx.globalAlpha = 1; ctx.strokeStyle = k > 0.5 ? P.ink : P.live; ctx.setLineDash(k > 0.5 ? [] : [6, 5]); ctx.lineWidth = 2.5; ctx.strokeRect(x - 26, y - 26, 52, 52); if (k > 0.5) { ctx.fillStyle = P.ink; ctx.fillRect(x - 18, y - 18, 36, 36); } ctx.restore(); }],
+        ['NETWORK ACCESS', 'YOU APPROVED', 2.1, (x, y, k) => { ctx.save(); ctx.fillStyle = k > 0.5 ? P.live : P.ink; ctx.beginPath(); ctx.roundRect(x - 40, y - 22, 80, 44, 10); ctx.fill(); ctx.fillStyle = P.bg; ctx.font = '700 15px "JetBrains Mono"'; ctx.textAlign = 'center'; ctx.fillText(k > 0.5 ? '✓' : 'OK?', x, y + 6); ctx.restore(); }],
+        ['API KEY', 'SECURE FIELD · NOT THE CHAT', 3.4, (x, y, k) => k > 0.5 ? lockIcon(ctx, x, y + 8, 30, P.ink) : keyIcon(ctx, x, y, 22, P.ink)],
+      ];
+      rows.forEach(([a, b, t0, icon], i) => { const y = 700 + i * 170, k = smoothstep(seg(u, t0 + 0.6, t0 + 0.9)), in0 = smoothstep(seg(u, t0 - 0.4, t0));
+        card(ctx, 80, y - 60, 920, 130, in0, { stroke: mix(mix(P.bg, P.ink2, 0.5), P.ink, k) }); ctx.save(); ctx.globalAlpha = in0; icon(160, y + 5, k); ctx.restore();
+        ctx.save(); ctx.globalAlpha = in0; ctx.font = '800 36px "Inter Display"'; ctx.fillStyle = P.ink; ctx.fillText(a, 240, y + 2); ctx.restore();
+        M(ctx, k > 0.5 ? b : 'CHECKING…', 240, y + 42, { size: 16, alpha: in0, color: k > 0.5 ? (i === 1 ? P.live : P.ink) : P.ink2 }); }); } },
+  { key: 'tools', // /usage, /storage, ultrathink
+    head: [['MORE TOOLS'], ['IN THE KIT.']], sub: 'Two slash commands. One deeper turn.', note: '/USAGE · /STORAGE · ULTRATHINK',
+    draw(e, ctx, u) {
+      const blocks = [['/usage', 'WHAT’S EATING YOUR USAGE · AND THE FIX', 0.6], ['/storage', 'CLEARS UNUSED WORKTREES + SESSIONS', 2.0], ['ultrathink', 'EXTRA REASONING, FOR ONE TURN', 3.4]];
+      blocks.forEach(([n, d, t0], i) => { const y = 640 + i * 205, a = smoothstep(seg(u, t0 - 0.3, t0 + 0.1)), k = seg(u, t0 + 0.2, t0 + 1.3); card(ctx, 80, y, 920, 180, a);
+        M(ctx, n, 116, y + 62, { size: 34, color: P.ink, track: 1, weight: 600, alpha: a }); M(ctx, d, 116, y + 100, { size: 14, alpha: a });
+        ctx.save(); ctx.globalAlpha = a; const gx = 116, gy = y + 125, gw = 848;
+        if (i === 0) { let x = gx; [0.44, 0.17, 0.14, 0.13, 0.12].forEach((v, j) => { const ww = gw * v * (j ? 1 : lerp(1, 0.32, ease.inOut3(seg(k, 0.4, 1)))); ctx.fillStyle = j ? mix(P.bg, P.ink2, 0.7 - j * 0.1) : (k > 0.2 ? P.ink : P.ink2); ctx.fillRect(x, gy, ww - 5, 26); if (!j && k > 0.15 && k < 0.95) { ctx.strokeStyle = P.live; ctx.lineWidth = 2.5; ctx.strokeRect(x - 4, gy - 4, ww + 3, 34); } x += ww; }); }
+        if (i === 1) [1, 0, 0, 1, 0, 0, 0, 1].forEach((used, j) => { const out = used ? 0 : ease.in3(clamp(k * 1.6 - j * 0.1)); ctx.globalAlpha = a * (1 - out); ctx.fillStyle = used ? P.ink : mix(P.bg, P.ink2, 0.6); ctx.beginPath(); ctx.roundRect(gx + j * 106 + out * 40, gy - 4, 90, 34, 6); ctx.fill(); });
+        if (i === 2) { const g2 = ease.inOut3(k); ctx.strokeStyle = P.ink2; ctx.lineWidth = 1.6; for (let j = 0; j < 9; j++) { const yy = gy + 13 + (j - 4) * 5 * Math.sin(Math.PI * clamp(g2)); ctx.beginPath(); ctx.moveTo(gx, gy + 13); ctx.bezierCurveTo(gx + gw * 0.3, yy - (j - 4) * 4, gx + gw * 0.7, yy + (j - 4) * 4, gx + gw * g2, gy + 13); ctx.stroke(); }
+          ctx.fillStyle = P.ink; ctx.beginPath(); ctx.arc(gx, gy + 13, 7, 0, Math.PI * 2); ctx.fill(); if (g2 >= 1) { ctx.beginPath(); ctx.arc(gx + gw, gy + 13, 7, 0, Math.PI * 2); ctx.fill(); } }
+        ctx.restore(); }); } },
 ];
+const ORDER = [0, 'fable', 'cloud', 8, 'tools', 9].map((k) => (typeof k === 'number' ? S[k] : S.find((x) => x.key === k)));
+const N = ORDER.length;
 
 /* ---------------- the frame ---------------- */
 function draw(ctx, t) {
   setPalette(PALETTES.brand);
   L ??= makeLayers(W, H);
   const e = L.ectx; e.setTransform(1, 0, 0, 1, 0, 0); e.clearRect(0, 0, W, H); e.globalAlpha = 1;
-  const i = Math.min(N - 1, Math.floor(t / T)), u = t - i * T, sl = S[i];
+  const i = Math.min(N - 1, Math.floor(t / T)), u = t - i * T, sl = ORDER[i];
   const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#000'); g.addColorStop(0.6, '#09090B'); g.addColorStop(1, '#000'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   glow(ctx, W / 2, 940, 620, 420, { alpha: 0.06 });
   // floor hairline + dot field (the lab floor, seen low)
@@ -181,5 +220,5 @@ function draw(ctx, t) {
   grain(ctx, L, Math.round(t * FPS));
 }
 async function load() { MARK = await brandPath('/assets/brand/mark.svg'); WORD = await brandPath('/assets/brand/wordmark.svg'); }
-const comp = { width: W, height: H, fps: FPS, duration: T * N, palette: PALETTES.brand, motionBlur: { samples: 4, shutter: 0.5 }, load, draw };
+const comp = { width: W, height: H, fps: FPS, duration: T * 6, palette: PALETTES.brand, motionBlur: { samples: 4, shutter: 0.5 }, load, draw };
 export default comp;
