@@ -40,23 +40,51 @@
 .bulb-stage.on .bulb-start,.bulb-stage.on img{display:none}
 .bulb-stage.on .bulb-hint{top:auto;bottom:14px}
 
-/* the orbs */
-.orb-field{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin-top:28px;background:var(--hair-soft);border:1px solid var(--hair-soft);border-radius:20px;overflow:hidden}
-.orb-cell{display:grid;justify-items:center;gap:14px;padding:clamp(24px,4vw,44px) 12px 22px;background:var(--bg)}
-.orb-cell thinking-orb{touch-action:none;cursor:grab}
-.orb-cell thinking-orb:active{cursor:grabbing}
-.orb-name{font-size:13px;font-weight:650;letter-spacing:.12em;text-transform:uppercase;color:var(--cream)}
-.orb-name span{display:block;margin-top:4px;font-size:13px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--quiet)}
-.orb-cell{text-align:center}
-.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:20px}
-.controls .group{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.controls .k{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--quiet);margin-right:4px}
-.chip-btn{min-height:40px;padding:6px 14px;border:1px solid var(--hair);border-radius:999px;background:none;color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
-.chip-btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.controls input[type=range]{width:140px;accent-color:var(--live)}
-.controls output{font-size:14px;color:var(--cream);min-width:3ch}
+/* the orb toy: one big orb on a stage, a dock of all nine, and the knobs */
+.toy{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);margin-top:28px;border:1px solid var(--hair-soft);border-radius:24px;overflow:hidden;background:var(--bg-2)}
+.toy-stage{position:relative;min-height:clamp(420px,58vw,620px);display:grid;place-items:center;background:radial-gradient(60% 60% at 50% 50%,rgba(var(--glow,255,90,31),.10),transparent 70%),#050505;border-right:1px solid var(--hair-soft);overflow:hidden;transition:background .6s var(--ease)}
+.toy-orb{display:grid;place-items:center;transition:opacity .25s var(--ease),transform .35s var(--ease)}
+.toy-orb.swap{opacity:0;transform:scale(.94)}
+.toy-orb canvas{touch-action:pan-y}
+.toy-meta{position:absolute;left:24px;top:22px;right:24px;pointer-events:none}
+.toy-n{font-size:12px;font-weight:600;letter-spacing:.16em;color:var(--quiet);font-variant-numeric:tabular-nums}
+.toy-name{margin-top:6px;font-weight:800;font-stretch:118%;font-size:clamp(26px,3.2vw,40px);line-height:1;letter-spacing:-.01em}
+.toy-desc{margin-top:6px;color:var(--cream);font-size:15px}
+.toy-tip{position:absolute;left:24px;bottom:22px;font-size:13px;color:var(--quiet);pointer-events:none}
+.tip-touch{display:none}
+@media (hover:none){.tip-fine{display:none}.tip-touch{display:inline}}
+.toy-step{position:absolute;right:20px;bottom:16px;display:flex;gap:8px}
+.round{width:48px;height:48px;border-radius:50%;border:1px solid var(--hair);background:rgba(11,10,9,.6);color:var(--ink);font:inherit;font-size:18px;cursor:pointer;transition:border-color .2s,background .2s}
+.round:hover{border-color:var(--ink)}
+
+.toy-panel{display:flex;flex-direction:column;gap:22px;padding:clamp(20px,3vw,32px)}
+.dock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.dock button{position:relative;display:grid;place-items:center;aspect-ratio:1;border:1px solid var(--hair-soft);border-radius:14px;background:var(--bg);cursor:pointer;padding:0;transition:border-color .2s,background .2s,transform .2s var(--ease)}
+.dock button:hover{border-color:var(--hair);transform:translateY(-1px)}
+.dock button[aria-checked="true"]{border-color:var(--live);background:#1b120d}
+.dock button canvas{pointer-events:none}
+.dock button .vh{position:absolute}
+.ctl .k{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--quiet);margin-bottom:10px}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.sw{position:relative;width:40px;height:40px;border-radius:50%;border:2px solid transparent;background:var(--c);box-shadow:inset 0 0 0 3px var(--bg-2);cursor:pointer;padding:0}
+.sw[aria-checked="true"]{border-color:var(--ink)}
+.sw-pick{background:conic-gradient(#ff5a1f,#ffd166,#8fbf98,#7fb8ff,#c58cff,#ff5a1f);overflow:hidden;display:block}
+.sw-pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.sw-pick:focus-within{outline:2px solid var(--live);outline-offset:3px}
+.sliders{display:grid;gap:14px}
+.sl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px;font-weight:600}
+.sl output{font-weight:500;color:var(--cream);font-variant-numeric:tabular-nums}
+.sl input{grid-column:1/-1;width:100%;accent-color:var(--live);min-height:28px}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.pill{min-height:44px;padding:8px 16px;border:1px solid var(--hair);border-radius:999px;background:none;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.pill:hover{border-color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.pill-live{background:var(--live);border-color:var(--live);color:#0B0A09}
+.snippet{margin:0;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--hair-soft);font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cream);white-space:pre-wrap;word-break:break-all}
 .orb-hint{margin-top:16px;font-size:14px;color:var(--quiet)}
-@media (max-width:760px){.orb-field{grid-template-columns:repeat(2,minmax(0,1fr))}.orb-field .orb-cell:last-child{grid-column:1/-1}}
+@media (max-width:900px){.toy{grid-template-columns:minmax(0,1fr)}.toy-stage{border-right:0;border-bottom:1px solid var(--hair-soft);min-height:min(108vw,520px)}}
+@media (max-width:420px){.dock{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.dock button{border-radius:10px}}
+@media (prefers-reduced-motion:reduce){.toy-orb,.toy-stage{transition:none}}
 
 .notes{list-style:none;margin-top:24px;border-top:1px solid var(--hair)}
 .notes li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) auto;gap:6px 28px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--hair-soft)}
@@ -127,31 +155,57 @@
     <div>
       <p class="label"><i>02</i>Thinking orbs</p>
       <h2 class="h2" id="orbs-h">Pick one up.</h2>
-      <p>Loading indicators that show what kind of waiting is happening. Hold one and it stops, drag sideways and it spins through its own motion, let go and it coasts back to its own pace.</p>
+      <p>Loading indicators that show what kind of waiting is happening. Grab the big one: hold it and it stops, drag sideways and it spins through its own motion, let go and it coasts back.</p>
     </div>
-    <p class="exp-links"><a class="arrow" href="/experiments/thinking-orb/" data-track="experiment_open" data-track-props='{"exp":"orb","how":"lab"}'>Tune every knob</a></p>
+    <p class="exp-links"><a class="arrow" href="/experiments/thinking-orb/" data-track="experiment_open" data-track-props='{"exp":"orb","how":"lab"}'>The build notes</a></p>
   </div>
-  <div class="orb-field" id="orb-field">
-    <div class="orb-cell"><thinking-orb state="working" size="64" zoom="2" interactive></thinking-orb><span class="orb-name">Working<span>particles on tilted orbits</span></span></div>
-    <div class="orb-cell"><thinking-orb state="searching" size="64" zoom="2" interactive></thinking-orb><span class="orb-name">Searching<span>a scan sweeps a globe</span></span></div>
-    <div class="orb-cell"><thinking-orb state="solving" size="64" zoom="2" interactive></thinking-orb><span class="orb-name">Solving<span>bands scramble, click back</span></span></div>
-    <div class="orb-cell"><thinking-orb state="listening" size="64" zoom="2" interactive></thinking-orb><span class="orb-name">Listening<span>a waveform rolls the rings</span></span></div>
-    <div class="orb-cell"><thinking-orb state="connecting" size="64" zoom="2" interactive></thinking-orb><span class="orb-name">Connecting<span>a constellation wires itself</span></span></div>
-    <div class="orb-cell"><thinking-orb state="weaving" size="64" zoom="2" interactive></thinking-orb><span class="orb-name">Weaving<span>three strands plait a sphere</span></span></div>
-    <div class="orb-cell"><thinking-orb state="composing" size="64" zoom="2" interactive></thinking-orb><span class="orb-name">Composing<span>an undulating sash</span></span></div>
-    <div class="orb-cell"><thinking-orb state="breathing" size="64" zoom="2" interactive></thinking-orb><span class="orb-name">Breathing<span>a ring slowly morphing</span></span></div>
-    <div class="orb-cell"><thinking-orb state="shaping" size="64" zoom="2" interactive></thinking-orb><span class="orb-name">Shaping<span>circle, triangle, square</span></span></div>
+
+  <div class="toy" id="toy">
+    <div class="toy-stage" id="toy-stage">
+      <div class="toy-meta" aria-live="polite">
+        <p class="toy-n"><span id="toy-index">05</span> / 09</p>
+        <p class="toy-name" id="toy-name">Connecting</p>
+        <p class="toy-desc" id="toy-desc">a constellation wires itself</p>
+      </div>
+      <div class="toy-orb" id="toy-orb"></div>
+      <p class="toy-tip" id="toy-tip"><span class="tip-fine">Hold, drag, fling</span><span class="tip-touch">Hold, drag sideways, let go</span></p>
+      <div class="toy-step">
+        <button class="round" type="button" id="toy-prev" aria-label="Previous orb">←</button>
+        <button class="round" type="button" id="toy-next" aria-label="Next orb">→</button>
+      </div>
+    </div>
+
+    <div class="toy-panel">
+      <div class="dock" id="dock" role="radiogroup" aria-label="Choose an orb"></div>
+
+      <div class="ctl">
+        <p class="k" id="ink-k">Ink</p>
+        <div class="swatches" role="radiogroup" aria-labelledby="ink-k">
+          <button type="button" class="sw" data-ink="" role="radio" aria-checked="true" aria-label="Grey" style="--c:#A39A88"></button>
+          <button type="button" class="sw" data-ink="#F2EEE5" role="radio" aria-checked="false" aria-label="Cream" style="--c:#F2EEE5"></button>
+          <button type="button" class="sw" data-ink="#FF5A1F" role="radio" aria-checked="false" aria-label="Orange" style="--c:#FF5A1F"></button>
+          <button type="button" class="sw" data-ink="#7FB8FF" role="radio" aria-checked="false" aria-label="Blue" style="--c:#7FB8FF"></button>
+          <button type="button" class="sw" data-ink="#8FBF98" role="radio" aria-checked="false" aria-label="Green" style="--c:#8FBF98"></button>
+          <label class="sw sw-pick" title="Any colour"><span class="vh">Any colour</span><input type="color" id="ink-pick" value="#ff5a1f" /></label>
+        </div>
+      </div>
+
+      <div class="ctl sliders">
+        <label class="sl"><span>Speed</span><output id="o-speed">1×</output><input type="range" id="s-speed" min="0" max="3" step="0.05" value="1" /></label>
+        <label class="sl"><span>Density</span><output id="o-dots">1×</output><input type="range" id="s-dots" min="0.25" max="3" step="0.05" value="1" /></label>
+        <label class="sl"><span>Dot size</span><output id="o-dot">1×</output><input type="range" id="s-dot" min="0.4" max="2.5" step="0.05" value="1" /></label>
+      </div>
+
+      <div class="ctl acts">
+        <button class="pill" type="button" id="toy-shuffle">Shuffle</button>
+        <button class="pill" type="button" id="toy-pause" aria-pressed="false">Pause</button>
+        <button class="pill" type="button" id="toy-reset">Reset</button>
+        <button class="pill pill-live" type="button" id="toy-copy">Copy code</button>
+      </div>
+      <pre class="snippet" id="toy-code" aria-label="Markup for this orb"></pre>
+    </div>
   </div>
-  <div class="controls" role="group" aria-label="All orbs">
-    <span class="group"><span class="k">Ink</span>
-      <button class="chip-btn" type="button" data-ink="" aria-pressed="true">Grey</button>
-      <button class="chip-btn" type="button" data-ink="#F2EEE5" aria-pressed="false">Cream</button>
-      <button class="chip-btn" type="button" data-ink="#FF5A1F" aria-pressed="false">Orange</button>
-    </span>
-    <label class="group"><span class="k">Speed</span><input type="range" id="orb-speed" min="0.25" max="3" step="0.25" value="1" /><output id="orb-speed-out" for="orb-speed">1×</output></label>
-    <button class="chip-btn" type="button" id="orb-pause" aria-pressed="false">Pause all</button>
-  </div>
-  <p class="orb-hint">With a keyboard: Tab to an orb, arrow keys nudge it, Home resets it.</p>
+  <p class="orb-hint">Keyboard: ← and → change orb, Tab to the big orb and use the arrow keys to nudge it, Home resets it.</p>
 </section>
 
 <section class="wrap exp" aria-labelledby="notes-h">
@@ -188,6 +242,6 @@
 </footer>
 
 <script type="module" src="/assets/home.js?v=2"></script>
-<script type="module" src="/assets/experiments.js?v=1"></script>
+<script type="module" src="/assets/experiments.js?v=2"></script>
 </body>
 </html>

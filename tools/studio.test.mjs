@@ -195,10 +195,12 @@ test('the commission page explains the offer without publishing prices or terms'
 
 /* ---------- the experiments playground ---------- */
 
-test('the experiments page lets people play: nine live orbs, and the bulb only loads when asked', () => {
+test('the experiments page lets people play: the orb toy, and the bulb only loads when asked', () => {
   const html = read('experiments/index.html');
-  const orbs = [...html.matchAll(/<thinking-orb state="(\w+)" size="64" zoom="2" interactive><\/thinking-orb>/g)].map((m) => m[1]);
-  assert.equal(new Set(orbs).size, 9);
+  for (const id of ['toy-orb', 'dock', 's-speed', 's-dots', 's-dot', 'ink-pick', 'toy-shuffle', 'toy-reset', 'toy-copy', 'toy-prev', 'toy-next']) assert.match(html, new RegExp(`id="${id}"`), id);
+  const js = read('assets/experiments.js');
+  assert.match(js, /import \{ mountOrb, STATES \} from '\/assets\/orb\/thinking-orb\.js'/);
+  assert.match(js, /interactive: true/);
   assert.doesNotMatch(html, /<iframe/);                       // the 3D scene waits for the button
   assert.match(html, /id="bulb-start"/);
   assert.ok(existsSync(new URL('experiments/bulb/index.html', ROOT)));
