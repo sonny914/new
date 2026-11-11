@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Quiet Bands YouTube banner</title>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
+<style>
+/* YouTube channel art: 2560x1440 canvas. TVs show all of it, desktop a 2560x423 band through the middle,
+   phones only the 1546x423 safe area in the centre, so everything that must read sits inside .safe. */
+:root { --black:#000; --cream:#F2EEE5; --quiet:#968D7C; --live:#FF5A00; }
+html, body { margin:0; background:var(--black); }
+.art { position:relative; width:2560px; height:1440px; overflow:hidden; background:var(--black); font-family:"Hubot Sans", sans-serif; }
+.grid { position:absolute; inset:0;
+  background-image:linear-gradient(rgba(242,238,229,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(242,238,229,.055) 1px, transparent 1px);
+  background-size:80px 80px; background-position:0 20px;
+  -webkit-mask-image:radial-gradient(ellipse 60% 55% at 50% 50%, #000 30%, transparent 80%); mask-image:radial-gradient(ellipse 60% 55% at 50% 50%, #000 30%, transparent 80%); }
+.safe { position:absolute; left:507px; top:508px; width:1546px; height:423px; }
+.lockup { position:absolute; left:20px; top:34px; display:flex; align-items:center; gap:22px; color:var(--cream); }
+.lockup svg { fill:currentColor; display:block; }
+h1 { position:absolute; left:16px; top:92px; margin:0; font-weight:900; font-stretch:75%; font-size:124px; line-height:.94; letter-spacing:-2px; color:var(--cream); text-transform:uppercase; }
+h1 em { font-style:normal; color:var(--live); display:block; }
+.sub { position:absolute; left:20px; bottom:22px; margin:0; font-weight:500; font-stretch:125%; font-size:26px; letter-spacing:6px; color:var(--quiet); text-transform:uppercase; }
+.bulb { position:absolute; right:10px; top:-6px; height:435px; mix-blend-mode:screen; } /* the svg's own black ground drops out over the grid */
+.rule { position:absolute; left:20px; right:420px; bottom:70px; height:2px; background:rgba(242,238,229,.18); }
+.rule::after { content:""; position:absolute; left:0; top:0; width:28%; height:2px; background:var(--live); }
+</style>
+</head>
+<body>
+<div class="art">
+  <div class="grid"></div>
+  <div class="safe">
+    <div class="lockup">
+      <svg viewBox="0 0 823 658" width="70" height="56" aria-hidden="true"><path d="M307 120H239A236 230 0 0 0 239 580H307V476H239A126 126 0 0 1 239 224H307ZM516 120H584A236 230 0 0 1 584 580H516V476H584A126 126 0 0 0 584 224H516ZM394 0H429A43 43 0 0 1 472 43V615A43 43 0 0 1 429 658H394A43 43 0 0 1 351 615V43A43 43 0 0 1 394 0Z"/></svg>
+      <img id="word" alt="Quiet Bands" height="44" />
+    </div>
+    <h1>Before you build it,<em>try to kill it.</em></h1>
+    <div class="rule"></div>
+    <p class="sub">Software built around the work</p>
+    <img class="bulb" src="../../assets/bulb/bulb-static.svg" alt="" />
+  </div>
+</div>
+<script>
+// the supplied wordmark vector, recoloured cream (never typeset)
+fetch('../../assets/brand/wordmark.svg').then(r => r.text()).then(s => {
+  document.getElementById('word').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s.replace(/fill="#000000"/g, 'fill="#F2EEE5"'));
+});
+</script>
+</body>
+</html>

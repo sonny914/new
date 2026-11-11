@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>The life you can't stop thinking about — reel compositor</title>
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet" />
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script type="module">
+/* "You are absolutely capable of creating the life you can't stop thinking about." as an 8-second reel, copy unchanged.
+   The real Thinking orb engine (assets/orb, the composing globe) spins above the line as it builds; it turns orange
+   on "the life", and on "can't stop" it spins up and never settles back. The last beat folds it into the orange dot it
+   opened on, so the reel loops. ?tall is the 9:16 Reels cut, the default the 4:5 feed cut.
+   window.reel.draw(n) paints frame n deterministically; tools/reel/life-render.mjs drives it headless. */
+import { makePainter, normalizeProps } from '/assets/orb/thinking-orb.js';
+import { paintFrame } from '/assets/orb/engine.js';
+
+const TALL = new URLSearchParams(location.search).has('tall');
+const W = 1080, H = TALL ? 1920 : 1350, FPS = 30, DURATION = 8;
+const CREAM = '#F2EEE5', QUIET = '#968D7C', LIVE = '#FF5A00', HAIR = 'rgba(242,238,229,.18)';
+const c = Object.assign(document.getElementById('c'), { height: H }), ctx = c.getContext('2d');
+c.style.height = `${(540 * H) / W}px`;
+
+// ---------- easing
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const outExpo = (k) => (k >= 1 ? 1 : 1 - 2 ** (-10 * k));
+const inOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
+const outBack = (k) => { const s = 1.7; return 1 + (s + 1) * (k - 1) ** 3 + s * (k - 1) ** 2; };
+
+// ---------- timeline (seconds)
+const T = { pop: 0, bloom: 0.35, l1: 1.2, l2: 1.7, l3: 2.5, l4: 3.05, l5: 4.0, l6: 4.6, fold: DURATION - 0.4 };
+const LIFE = T.l4 + 0.5;   // "THE LIFE" lands: the orb goes orange
+const SPIN = T.l5 + 0.45;  // "STOP" lands: the orb spins up instead
+
+// ---------- layout, per cut: chrome on top, the orb, then the block, kept above the caption Reels lays over the bottom
+const L = TALL
+  ? { chromeY: 96, orb: { x: W / 2, y: 540, d: 600 }, left: 84, bottom: 1530, width: 912 }
+  : { chromeY: 64, orb: { x: W / 2, y: 360, d: 400 }, left: 84, bottom: 1280, width: 860 };
+
+// ---------- the orb: the real engine, painted at an explicit engine time
+const painters = new Map();
+function painter(color) {
+  if (!painters.has(color)) painters.set(color, makePainter(normalizeProps({ state: 'composing', size: 64, zoom: 10, color, dots: 1.5, dotSize: 1.6 })));
+  return painters.get(color);
+}
+function orb(x, y, d, et, color, alpha = 1) {
+  if (d < 1 || alpha <= 0) return;
+  const p = painter(color);
+  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x - d / 2, y - d / 2); ctx.scale(d / p.px, d / p.px);
+  paintFrame(ctx, p.frame(et * p.effSpeed + 3), true, hexTint(color)); ctx.restore();
+}
+const hexTint = (h) => ({ r: parseInt(h.slice(1, 3), 16), g: parseInt(h.slice(3, 5), 16), b: parseInt(h.slice(5, 7), 16) });
+// spin speed over the reel, integrated to engine time: steady, a kick on each line, then "can't stop" spins it up for good
+const speed = (t) => 0.9 + 1.0 * Math.exp(-Math.max(0, t - T.bloom) * 3) + (t > SPIN ? 3.2 * Math.exp(-(t - SPIN) * 2.2) + 0.9 * seg(t, SPIN, SPIN + 1.2) : 0);
+const CLOCK = (() => { const out = [0]; let e = 0; for (let f = 1; f <= DURATION * FPS; f++) { e += speed(f / FPS) / FPS; out.push(e); } return out; })();
+
+// ---------- type: heavy condensed sans, one word in italic serif
+const SANS = (px) => `900 condensed ${px}px "Hubot Sans"`, SERIF = (px) => `italic 400 ${px}px "Instrument Serif"`;
+const LINES = [
+  { at: T.l1, words: ['YOU', 'ARE'] },
+  { at: T.l2, words: ['ABSOLUTELY'], serif: true },
+  { at: T.l3, words: ['CAPABLE', 'OF'] },
+  { at: T.l4, words: ['CREATING', 'THE', 'LIFE'], live: [1, 2] },
+  { at: T.l5, words: ['YOU', "CAN’T", 'STOP'] },
+  { at: T.l6, words: ['THINKING', 'ABOUT.'] },
+];
+let SANS_PX, SERIF_PX, PITCH, CAP;
+function sizeType() {
+  // the widest line sets the size; every line shares one cap height and one pitch
+  ctx.letterSpacing = '0px'; ctx.font = SANS(100);
+  const widest = Math.max(...LINES.filter((l) => !l.serif).map((l) => ctx.measureText(l.words.join(' ')).width * 1 - 100 * 0.02 * l.words.join(' ').length));
+  SANS_PX = (100 * L.width) / widest;
+  ctx.font = SANS(SANS_PX); CAP = ctx.measureText('H').actualBoundingBoxAscent;
+  ctx.fontStretch = 'normal'; ctx.font = SERIF(100); SERIF_PX = (100 * CAP * 1.1) / ctx.measureText('H').actualBoundingBoxAscent;
+  PITCH = CAP * 1.2;
+}
+const baseline = (i) => L.bottom - (LINES.length - 1 - i) * PITCH;
+
+function sansLine(line, y, t, alpha) {
+  const k = seg(t, line.at, line.at + 0.6);
+  if (k <= 0) return;
+  ctx.save();
+  ctx.font = SANS(SANS_PX); ctx.letterSpacing = `${-SANS_PX * 0.02}px`; ctx.textBaseline = 'alphabetic';
+  const sp = ctx.measureText(' ').width * 0.9;
+  ctx.beginPath(); ctx.rect(0, y - CAP * 1.25, W, CAP * 1.25 + CAP * 0.12); ctx.clip();
+  let x = L.left;
+  line.words.forEach((w, i) => {
+    const kk = outExpo(clamp(k * (1 + 0.4 * (line.words.length - 1)) - i * 0.4));
+    const live = line.live?.includes(i);
+    ctx.globalAlpha = alpha * clamp(kk * 3); ctx.fillStyle = live ? LIVE : CREAM;
+    ctx.fillText(w, x, y + (1 - kk) * CAP * 1.3);
+    x += ctx.measureText(w).width + sp;
+  });
+  ctx.restore();
+}
+function serifLine(line, y, t, alpha) {
+  // the one soft word: letters cascade in, leaning, and settle
+  const k = seg(t, line.at, line.at + 0.9);
+  if (k <= 0) return;
+  const s = line.words[0];
+  ctx.save(); ctx.font = SERIF(SERIF_PX); ctx.fontStretch = 'normal'; ctx.letterSpacing = '0px'; ctx.fillStyle = CREAM;
+  [...s].forEach((ch, i) => {
+    const kk = outExpo(clamp(k * 1.8 - (i / s.length) * 0.8));
+    if (kk <= 0) return;
+    const x = L.left + 6 + ctx.measureText(s.slice(0, i)).width;
+    ctx.save(); ctx.globalAlpha = alpha * kk; ctx.translate(x, y + (1 - kk) * 40); ctx.rotate((1 - kk) * 0.25);
+    ctx.fillText(ch, 0, 0); ctx.restore();
+  });
+  ctx.restore();
+}
+
+// ---------- chrome
+function grain(n) {
+  ctx.save(); ctx.globalAlpha = 0.06; ctx.fillStyle = CREAM;
+  let s = n * 9301 + 49297;
+  for (let i = 0; i < 1600; i++) { s = (s * 9301 + 49297) % 233280; const x = (s / 233280) * W; s = (s * 9301 + 49297) % 233280; const y = (s / 233280) * H; ctx.fillRect(x, y, 2, 2); }
+  ctx.restore();
+}
+function vignette() {
+  const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.8);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.6)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+function chrome(t, alpha) {
+  if (alpha <= 0) return;
+  // the supplied vectors, never typeset: mark then wordmark; under them a hairline the reel fills in orange
+  const y = L.chromeY;
+  ctx.save(); ctx.globalAlpha = alpha;
+  ctx.drawImage(BRAND.mark, 84, y - 20, 50, 40); ctx.drawImage(BRAND.word, 84 + 50 + 18, y - 15, 164, 30);
+  ctx.fillStyle = HAIR; ctx.fillRect(84, y + 46, W - 168, 2);
+  ctx.fillStyle = LIVE; ctx.fillRect(84, y + 46, (W - 168) * (t / DURATION), 2);
+  ctx.restore();
+}
+
+// The video opens on the settled poster (every line set and the orb spun up, before it folds back into the dot), so a feed that shows the first frame shows the whole line.
+// The timeline below stays in story order; draw(n) starts it START seconds in and wraps, which keeps the loop seamless.
+const START = 7.0;
+const draw = (n) => paint((n + Math.round(START * FPS)) % (DURATION * FPS));
+function paint(n) {
+  const t = n / FPS, fade = 1 - seg(t, T.fold - 0.1, T.fold + 0.15);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  // a slow push in over the whole reel
+  const push = 1 + 0.025 * inOut(t / DURATION);
+  ctx.translate(W / 2, H / 2); ctx.scale(push, push); ctx.translate(-W / 2, -H / 2);
+
+  // the orb: an orange dot pops, the globe blooms out of it, punches on every line, turns orange on "the life"
+  const { x, y, d } = L.orb, pop = seg(t, T.pop, T.bloom), bloom = outExpo(seg(t, T.bloom, T.bloom + 1.0));
+  const fold = inOut(seg(t, T.fold, DURATION - 0.05));
+  const punch = 1 + LINES.reduce((a, l) => a + (t > l.at + 0.15 ? 0.05 * Math.exp(-(t - l.at - 0.15) * 7) : 0), 0) + (t > SPIN ? 0.06 * Math.exp(-(t - SPIN) * 4) : 0);
+  const size = d * bloom * punch * (1 - fold), et = CLOCK[Math.min(n, CLOCK.length - 1)];
+  const toLive = seg(t, LIFE, LIFE + 0.35), seed = bloom < 0.4;
+  if (bloom < 0.02 || fold > 0) {
+    const r = bloom < 0.02 ? 16 * outBack(pop) : 16 * fold * (1 - seg(t, DURATION - 0.12, DURATION));
+    ctx.save(); ctx.fillStyle = LIVE; ctx.beginPath(); ctx.arc(x, y, Math.max(0, r), 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
+  if (seed) orb(x, y, size, et, LIVE, bloom);
+  else { orb(x, y, size, et, CREAM, 1 - toLive); orb(x, y, size, et, LIVE, toLive); }
+  // rings: one out of the bloom, one out of "the life"
+  for (const [at, len, r0, r1] of [[T.bloom, 0.6, 30, d * 0.9], [LIFE, 0.8, d * 0.45, d * 1.1]]) {
+    const k = seg(t, at, at + len); if (k <= 0 || k >= 1) continue;
+    ctx.save(); ctx.strokeStyle = LIVE; ctx.lineWidth = 3; ctx.globalAlpha = 1 - k;
+    ctx.beginPath(); ctx.arc(x, y, lerp(r0, r1, outExpo(k)), 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  }
+
+  LINES.forEach((line, i) => (line.serif ? serifLine : sansLine)(line, baseline(i), t, fade));
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  vignette();
+  chrome(t, seg(t, 0.8, 1.2) * fade);
+  grain(n);
+}
+
+async function cream(url) {
+  const svg = (await (await fetch(url)).text()).replace(/fill="#000000"/g, `fill="${CREAM}"`);
+  const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); await img.decode(); return img;
+}
+const BRAND = { mark: await cream('/assets/brand/mark.svg'), word: await cream('/assets/brand/wordmark.svg') };
+await document.fonts.load('900 100px "Hubot Sans"'); await document.fonts.load('italic 400 100px "Instrument Serif"'); await document.fonts.ready;
+sizeType();
+window.reel = { draw, W, H, FPS, DURATION, START, frames: DURATION * FPS, cues: { ...T, LIFE, SPIN } };
+window.reel.ready = true;
+if (!navigator.webdriver) { let n = 0; const tick = () => { draw(n); n = (n + 1) % (DURATION * FPS); requestAnimationFrame(tick); }; tick(); }
+</script>
+</body>
+</html>
