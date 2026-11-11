@@ -176,7 +176,7 @@ test('the Netlify body is url-encoded, named, and carries attribution as JSON', 
 
 /* ---------- films and the commission offer ---------- */
 
-test('the Studio plays published THE BLOCK episodes from its own files', () => {
+test('the Studio plays published HARLEM ’88 episodes from its own files', () => {
   const home = pages.find((p) => p.out === '').html;
   for (const f of ['media/the-block-ep01.mp4', 'media/the-block-ep01.jpg', 'media/the-block-ep02.mp4', 'media/the-block-ep02.jpg']) {
     assert.ok(existsSync(new URL('studio/' + f, ROOT)), f);
