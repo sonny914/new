@@ -139,7 +139,7 @@ test('the home page leads with what Quiet Bands builds, and keeps the method fur
   assert.ok(at('id="process"') < at('try to kill it'));
   assert.ok(at('id="process"') < at('id="inquire"'));
   assert.ok(at('id="inquire"') < at('href="/studio/" style'));
-  for (const s of ['THE BLOCK', 'KILL TRILL', 'Spirited']) assert.ok(html.includes(s));
+  for (const s of ['HARLEM ’88', 'KILL TRILL', 'Spirited']) assert.ok(html.includes(s));
   assert.doesNotMatch(html, /in production/i);   // Frenchies' current status is not claimed
   for (const img of html.matchAll(/src="(\/assets\/work\/[^"]+|\/studio\/media\/[^"]+)"/g)) assert.ok(existsSync(new URL(`..${img[1]}`, import.meta.url)), img[1]);
 });

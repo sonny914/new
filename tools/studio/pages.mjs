@@ -100,7 +100,7 @@ function film(L, key, { id = '', cls = '', where = '' } = {}) {
 const home = {
   out: '', section: '', title: 'Quiet Bands Studio · Cinematic shorts made with AI',
   ogTitle: 'Quiet Bands Studio',
-  description: 'Short cinematic films and teasers made with AI, commissioned for your project, plus the free process to make your own. From Flighty, the creator behind THE BLOCK. Part of Quiet Bands.',
+  description: 'Short cinematic films and teasers made with AI, commissioned for your project, plus the free process to make your own. From Flighty, the creator behind HARLEM ’88. Part of Quiet Bands.',
   dock: { href: 'commission/', label: 'Make it for me', text: 'Commission a cinematic teaser', track: 'commission' },
   jsonld: { '@context': 'https://schema.org', '@type': 'Organization', name: 'Quiet Bands Studio', url: SITE.origin + SITE.base, parentOrganization: { '@type': 'Organization', name: 'Quiet Bands', url: SITE.origin + '/' }, sameAs: [SITE.instagram.url] },
   body(L) {
@@ -110,9 +110,9 @@ const home = {
     <div class="hero-copy">
       ${kicker('Quiet Bands Studio · with ' + SITE.host)}
       <h1 class="display">Cinematic shorts, made with AI.</h1>
-      <p class="lede">Short films and teasers made for your project, or the free process to make your own. From ${esc(SITE.host)}, the creator behind THE BLOCK. Part of Quiet Bands.</p>
+      <p class="lede">Short films and teasers made for your project, or the free process to make your own. From ${esc(SITE.host)}, the creator behind HARLEM ’88. Part of Quiet Bands.</p>
       <p class="cta-row">${button(L('commission/'), 'Make it for me', { live: true, track: 'commission', where: 'home-hero' })}${button(L('pack/'), 'Learn the process', { track: 'pack', where: 'home-hero' })}</p>
-      <p class="hero-note">Press play: THE BLOCK, episode 1, written, generated and cut in the Studio.</p>
+      <p class="hero-note">Press play: HARLEM ’88, episode 1, written, generated and cut in the Studio.</p>
     </div>
     ${film(L, 'ep01', { id: 'watch', cls: 'film-hero', where: 'home-hero' })}
   </div>
@@ -139,11 +139,11 @@ const home = {
   </div>
 </section>
 
-<section class="sec sec-block" id="the-block">
+<section class="sec sec-block" id="harlem-88">
   <div class="wrap block-grid">
     <div>
       ${kicker('Quiet Bands Originals · in production', '02')}
-      <h2 class="h2">THE BLOCK</h2>
+      <h2 class="h2">HARLEM ’88</h2>
       <p class="big">Harlem, 1988. A drama told in short vertical episodes, made by ${esc(SITE.host)} with AI video tools. Episodes 1 and 2 are published; the next ones are in production.</p>
       <p class="block-proof">It’s the Studio’s working proof: the character lock, shot prompts and edit the free pack teaches, and the pipeline a commission runs through.</p>
       <p class="go">${button(SITE.instagram.url, `Follow ${SITE.instagram.handle}`, { track: 'instagram', where: 'home-block' })}</p>
@@ -444,7 +444,7 @@ const commission = {
     <div class="hero-copy">
       ${kicker('Commission · the starting offer')}
       <h1 class="display">A cinematic teaser for your project.</h1>
-      <p class="lede">For musicians, authors, game makers, filmmakers and brands with something to announce. You bring the project. The Studio writes the scene, makes it with AI video tools and cuts it into a short vertical film, like the episode of THE BLOCK playing here.</p>
+      <p class="lede">For musicians, authors, game makers, filmmakers and brands with something to announce. You bring the project. The Studio writes the scene, makes it with AI video tools and cuts it into a short vertical film, like the episode of HARLEM ’88 playing here.</p>
       <p class="cta-row">${button('#brief', 'Start a brief', { live: true, track: 'commission_brief', where: 'commission-hero' })}</p>
     </div>
     ${film(L, 'ep01', { cls: 'film-hero', where: 'commission-hero' })}
@@ -458,7 +458,7 @@ const commission = {
       <h2 class="h2">Short, cinematic, made to be posted.</h2>
       ${list([
         ['A release teaser.', 'For an album, single, book, game, show or event: one scene that sets the world and the mood.'],
-        ['A character introduction.', 'One character, one moment, played in close-up, the way THE BLOCK opens.'],
+        ['A character introduction.', 'One character, one moment, played in close-up, the way HARLEM ’88 opens.'],
         ['A scene for a song.', 'A visual moment cut to your track.'],
         ['A short brand film.', 'A story-led piece rather than a product demo.'],
       ])}
@@ -517,7 +517,7 @@ const commission = {
       ${kicker('Start here', '05')}
       <h2 class="h2">Send a brief.</h2>
       <p class="big">Your name, email and what you’d like made. The rest helps, but it’s optional.</p>
-      <p class="go"><a class="arrow" href="${L('')}#the-block">Watch more of THE BLOCK</a></p>
+      <p class="go"><a class="arrow" href="${L('')}#harlem-88">Watch more of HARLEM ’88</a></p>
     </div>
     <div class="get-form">${signupForm(L, { kind: 'commission', id: 'brief', where: 'commission' })}</div>
   </div>
@@ -541,7 +541,7 @@ const links = {
       ${SITE.workshop.public ? item(L('workshop/'), 'Free Mini-Drama Workshop', w.line, { track: 'workshop' }) : ''}
       ${item(L('learn/'), 'Free guides', 'Beat sheet, character lock, camera moves', { track: 'learn' })}
       ${item(L('commission/'), 'Commission a cinematic teaser', 'Made for your project', { live: true, track: 'commission' })}
-      ${item(L('') + '#watch', 'Watch THE BLOCK', 'Episodes 1 and 2, here on the site', { track: 'watch' })}
+      ${item(L('') + '#watch', 'Watch HARLEM ’88', 'Episodes 1 and 2, here on the site', { track: 'watch' })}
       ${item(SITE.instagram.url, 'Follow on Instagram', SITE.instagram.handle, { track: 'instagram', ext: true })}
       ${item(SITE.parent.href, 'Building software instead?', 'Quiet Bands, Houston', { track: 'parent' })}
     </ul>

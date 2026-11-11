@@ -107,7 +107,7 @@ html:not(.js) .bar-nav{display:flex;flex-wrap:wrap;gap:0 18px;width:100%;margin-
 @keyframes fade{from{opacity:0}}
 @keyframes rise{from{opacity:0;transform:translateY(14px)}}
 
-/* ---------- the frame: a viewfinder with grain, used for the hero and THE BLOCK ---------- */
+/* ---------- the frame: a viewfinder with grain, used for the hero and HARLEM ’88 ---------- */
 .frame{position:relative;isolation:isolate;overflow:hidden;background:var(--lift)}
 .frame::before{content:"";position:absolute;inset:-50%;z-index:-1;background:url('../../assets/lab/grain.png') repeat;background-size:96px;opacity:.09;pointer-events:none}
 .frame::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(120% 90% at 50% 45%,transparent 55%,rgba(0,0,0,.6) 100%);pointer-events:none}

@@ -23,11 +23,11 @@ export const SITE = {
 };
 
 // Films the Studio plays on its own pages. Only published work goes here: both episodes are recorded as published
-// on YouTube in THE BLOCK's live-action canon (LIVE_ACTION_CANON.md, D-172). Files live in studio/media/
+// on YouTube in HARLEM ’88’s live-action canon (LIVE_ACTION_CANON.md, D-172). Files live in studio/media/
 // (540x960 H.264 with faststart, cut down from the 9:16 masters); posters are stills from the same files.
 export const FILMS = {
-  ep01: { src: 'media/the-block-ep01.mp4', poster: 'media/the-block-ep01.jpg', title: 'THE BLOCK', ep: 'Episode 1', length: '28 s', alt: 'THE BLOCK, episode 1. Zuri and Shy across a chess table in a Harlem lounge, 1988.' },
-  ep02: { src: 'media/the-block-ep02.mp4', poster: 'media/the-block-ep02.jpg', title: 'THE BLOCK', ep: 'Episode 2', length: '15 s', alt: 'THE BLOCK, episode 2. Zuri and Shy in close-up, talking about the building.' },
+  ep01: { src: 'media/the-block-ep01.mp4', poster: 'media/the-block-ep01.jpg', title: 'HARLEM ’88', ep: 'Episode 1', length: '28 s', alt: 'HARLEM ’88, episode 1. Zuri and Shy across a chess table in a Harlem lounge, 1988.' },
+  ep02: { src: 'media/the-block-ep02.mp4', poster: 'media/the-block-ep02.jpg', title: 'HARLEM ’88', ep: 'Episode 2', length: '15 s', alt: 'HARLEM ’88, episode 2. Zuri and Shy in close-up, talking about the building.' },
 };
 
 // The bar and the menu sheet, in this order.
