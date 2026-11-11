@@ -150,7 +150,7 @@ test('forms post to Netlify Forms while Supabase is off', () => {
 test('every field a submission sends is declared in its built form, or Netlify drops it', () => {
   const rows = {
     pack: buildSignup('pack', { email: 'a@b.co', first_name: 'A', makes: 'Just starting' }, { campaign: 'same-face', where: 'go-same-face', attribution: { source: 'ig', utm_source: 'ig' }, path: '/studio/go/same-face/' }).row,
-    commission: buildSignup('commission', { email: 'a@b.co', first_name: 'A', org: 'O', what: 'W', when: 'This month' }, { where: 'commission', path: '/studio/commission/' }).row,
+    commission: buildSignup('commission', { email: 'a@b.co', first_name: 'A', org: 'O', what: 'W', use: 'An ad', when: 'This month', budget: '2k' }, { where: 'commission', path: '/studio/commission/' }).row,
   };
   const seen = new Set();
   for (const { out, html } of pages) {
@@ -172,4 +172,41 @@ test('the Netlify body is url-encoded, named, and carries attribution as JSON', 
   assert.equal(p.get('org'), null);                       // empty values are left out
   assert.equal(JSON.parse(p.get('attribution')).utm_source, 'ig');
   assert.equal(p.get('where'), 'commission');
+});
+
+/* ---------- films and the commission offer ---------- */
+
+test('the Studio plays published THE BLOCK episodes from its own files', () => {
+  const home = pages.find((p) => p.out === '').html;
+  for (const f of ['media/the-block-ep01.mp4', 'media/the-block-ep01.jpg', 'media/the-block-ep02.mp4', 'media/the-block-ep02.jpg']) {
+    assert.ok(existsSync(new URL('studio/' + f, ROOT)), f);
+    assert.ok(statSync(new URL('studio/' + f, ROOT)).size < 3_000_000, f + ' stays light');
+  }
+  assert.match(home, /<figure class="film film-hero" id="watch">[\s\S]*?<video controls playsinline preload="none"/);
+  assert.match(home, /the-block-ep02\.mp4/);
+  assert.ok(home.indexOf('Make it for me') < home.indexOf('Learn the process'));
+});
+
+test('the commission page explains the offer without publishing prices or terms', () => {
+  const html = pages.find((p) => p.out === 'commission/').html;
+  for (const s of ['What can be made', 'What you supply', 'How it works', 'Scope and pricing', 'name="use"', 'name="budget"']) assert.ok(html.includes(s), s);
+  assert.doesNotMatch(html, /\$\s?\d|\d+\s?(business )?days? turnaround|unlimited revisions/i);
+});
+
+/* ---------- the experiments playground ---------- */
+
+test('the experiments page lets people play: the orb toy, and the bulb only loads when asked', () => {
+  const html = read('experiments/index.html');
+  for (const id of ['toy-orb', 'dock', 's-speed', 's-dots', 's-dot', 'ink-pick', 'toy-shuffle', 'toy-reset', 'toy-copy', 'toy-prev', 'toy-next']) assert.match(html, new RegExp(`id="${id}"`), id);
+  const js = read('assets/experiments.js');
+  assert.match(js, /import \{ mountOrb, STATES \} from '\/assets\/orb\/thinking-orb\.js'/);
+  assert.match(js, /interactive: true/);
+  assert.doesNotMatch(html, /<iframe/);                       // the 3D scene waits for the button
+  assert.match(html, /id="bulb-start"/);
+  assert.ok(existsSync(new URL('experiments/bulb/index.html', ROOT)));
+  assert.ok(existsSync(new URL('assets/experiments.js', ROOT)));
+  assert.match(read('index.html'), /href="\/experiments\/"/);
+  const rules = parseRedirects(read('_redirects'));
+  for (const p of ['/lab/bulb', '/lab/bulb/']) assert.equal(matchRule(rules, p).to, '/experiments/bulb/');
+  assert.ok(!rules.some((r) => r.from === '/experiments'), 'nothing redirects the playground away');
 });

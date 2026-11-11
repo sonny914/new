@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Experiments · Quiet Bands</title>
+<meta name="description" content="Things Quiet Bands built to see if they would work. Break the bulb, pick up the thinking orbs, and play with them." />
+<meta name="theme-color" content="#0B0A09" />
+<link rel="canonical" href="https://quietbands.com/experiments/" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Quiet Bands" />
+<meta property="og:title" content="Experiments · Quiet Bands" />
+<meta property="og:description" content="Break the bulb. Pick up the orbs. Things we built to see if they'd work." />
+<meta property="og:url" content="https://quietbands.com/experiments/" />
+<meta property="og:image" content="https://quietbands.com/og-bulb.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="A wireframe lightbulb on black, its glass cracked." />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/home.css?v=2" />
+<style>
+.lab-hero{padding:clamp(40px,7vw,88px) 0 0}
+.lab-hero .lede{max-width:52ch}
+.exp{margin-top:clamp(56px,8vw,96px)}
+.exp-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:12px 32px}
+.exp-head p{color:var(--cream);max-width:56ch;margin-top:12px}
+.exp-links{display:flex;flex-wrap:wrap;gap:4px 22px}
+
+/* the bulb: a still until asked, then the real page in a frame */
+.bulb-stage{position:relative;margin-top:28px;height:min(78svh,760px);min-height:460px;border:1px solid var(--hair-soft);border-radius:20px;overflow:hidden;background:#000}
+.bulb-stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:6% 0;opacity:.9}
+.bulb-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.bulb-start{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);z-index:2}
+.bulb-hint{position:absolute;left:0;right:0;top:20px;text-align:center;font-size:13px;color:var(--quiet);z-index:2;pointer-events:none}
+.bulb-stage.on .bulb-start,.bulb-stage.on img{display:none}
+.bulb-stage.on .bulb-hint{top:auto;bottom:14px}
+
+/* the orb toy: one big orb on a stage, a dock of all nine, and the knobs */
+.toy{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);margin-top:28px;border:1px solid var(--hair-soft);border-radius:24px;overflow:hidden;background:var(--bg-2)}
+.toy-stage{position:relative;min-height:clamp(420px,58vw,620px);display:grid;place-items:center;background:radial-gradient(60% 60% at 50% 50%,rgba(var(--glow,255,90,31),.10),transparent 70%),#050505;border-right:1px solid var(--hair-soft);overflow:hidden;transition:background .6s var(--ease)}
+.toy-orb{display:grid;place-items:center;transition:opacity .25s var(--ease),transform .35s var(--ease)}
+.toy-orb.swap{opacity:0;transform:scale(.94)}
+.toy-orb canvas{touch-action:pan-y}
+.toy-meta{position:absolute;left:24px;top:22px;right:24px;pointer-events:none}
+.toy-n{font-size:12px;font-weight:600;letter-spacing:.16em;color:var(--quiet);font-variant-numeric:tabular-nums}
+.toy-name{margin-top:6px;font-weight:800;font-stretch:118%;font-size:clamp(26px,3.2vw,40px);line-height:1;letter-spacing:-.01em}
+.toy-desc{margin-top:6px;color:var(--cream);font-size:15px}
+.toy-tip{position:absolute;left:24px;bottom:22px;font-size:13px;color:var(--quiet);pointer-events:none}
+.tip-touch{display:none}
+@media (hover:none){.tip-fine{display:none}.tip-touch{display:inline}}
+.toy-step{position:absolute;right:20px;bottom:16px;display:flex;gap:8px}
+.round{width:48px;height:48px;border-radius:50%;border:1px solid var(--hair);background:rgba(11,10,9,.6);color:var(--ink);font:inherit;font-size:18px;cursor:pointer;transition:border-color .2s,background .2s}
+.round:hover{border-color:var(--ink)}
+
+.toy-panel{display:flex;flex-direction:column;gap:22px;padding:clamp(20px,3vw,32px)}
+.dock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.dock button{position:relative;display:grid;place-items:center;aspect-ratio:1;border:1px solid var(--hair-soft);border-radius:14px;background:var(--bg);cursor:pointer;padding:0;transition:border-color .2s,background .2s,transform .2s var(--ease)}
+.dock button:hover{border-color:var(--hair);transform:translateY(-1px)}
+.dock button[aria-checked="true"]{border-color:var(--live);background:#1b120d}
+.dock button canvas{pointer-events:none}
+.dock button .vh{position:absolute}
+.ctl .k{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--quiet);margin-bottom:10px}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.sw{position:relative;width:40px;height:40px;border-radius:50%;border:2px solid transparent;background:var(--c);box-shadow:inset 0 0 0 3px var(--bg-2);cursor:pointer;padding:0}
+.sw[aria-checked="true"]{border-color:var(--ink)}
+.sw-pick{background:conic-gradient(#ff5a1f,#ffd166,#8fbf98,#7fb8ff,#c58cff,#ff5a1f);overflow:hidden;display:block}
+.sw-pick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.sw-pick:focus-within{outline:2px solid var(--live);outline-offset:3px}
+.sliders{display:grid;gap:14px}
+.sl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px;font-weight:600}
+.sl output{font-weight:500;color:var(--cream);font-variant-numeric:tabular-nums}
+.sl input{grid-column:1/-1;width:100%;accent-color:var(--live);min-height:28px}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.pill{min-height:44px;padding:8px 16px;border:1px solid var(--hair);border-radius:999px;background:none;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.pill:hover{border-color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.pill-live{background:var(--live);border-color:var(--live);color:#0B0A09}
+.snippet{margin:0;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--hair-soft);font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--cream);white-space:pre-wrap;word-break:break-all}
+.orb-hint{margin-top:16px;font-size:14px;color:var(--quiet)}
+@media (max-width:900px){.toy{grid-template-columns:minmax(0,1fr)}.toy-stage{border-right:0;border-bottom:1px solid var(--hair-soft);min-height:min(108vw,520px)}}
+@media (max-width:420px){.dock{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.dock button{border-radius:10px}}
+@media (prefers-reduced-motion:reduce){.toy-orb,.toy-stage{transition:none}}
+
+.notes{list-style:none;margin-top:24px;border-top:1px solid var(--hair)}
+.notes li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) auto;gap:6px 28px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--hair-soft)}
+.notes b{font-weight:750;font-stretch:110%;font-size:18px}
+.notes span{color:var(--cream);font-size:15.5px}
+@media (max-width:760px){.notes li{grid-template-columns:1fr}}
+</style>
+<script>document.documentElement.classList.add('js');</script>
+<script defer data-domain="quietbands.com" src="https://plausible.io/js/script.js"></script>
+<script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>
+</head>
+<body data-page-view="experiments_view">
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="wrap bar-in">
+    <a class="brand" href="/" aria-label="Quiet Bands, home"><svg class="qb" viewBox="0 0 823 658" aria-hidden="true" focusable="false"><path d="M307 120H239A236 230 0 0 0 239 580H307V476H239A126 126 0 0 1 239 224H307ZM516 120H584A236 230 0 0 1 584 580H516V476H584A126 126 0 0 0 584 224H516ZM394 0H429A43 43 0 0 1 472 43V615A43 43 0 0 1 429 658H394A43 43 0 0 1 351 615V43A43 43 0 0 1 394 0Z"/></svg><svg class="qb-word" viewBox="0 0 845 155" role="img" aria-label="Quiet Bands" focusable="false"><path d="M71 155C70 155 69 154 69 154C68 154 68 150 68 132C68 112 68 110 68 110C67 109 67 110 65 111C62 113 60 114 55 116C49 118 41 119 33 117C24 115 13 108 8 100C4 95 2 90 1 83C-1 73 1 62 6 53C11 46 16 42 23 38C27 36 32 34 37 33C40 33 48 33 51 33C58 35 62 38 66 41C68 42 68 42 69 39C69 34 67 35 80 35C91 34 91 34 92 35C92 35 92 36 92 88C92 158 92 154 92 154C91 155 77 155 71 155ZM446 118C439 118 432 115 427 111C425 110 424 109 424 109C423 108 423 109 423 113C423 115 423 116 422 116C421 117 399 117 399 116C399 116 399 91 399 60C399 6 399 4 399 4L400 3L411 3C417 3 422 3 422 3C423 4 423 3 424 23C424 33 424 41 424 41C424 42 425 42 426 41C431 36 440 33 447 33C459 32 470 37 479 45C492 58 495 79 486 96C482 104 474 111 466 114C458 118 454 118 446 118ZM804 118C799 118 796 117 792 115C784 113 778 107 774 100C772 97 772 96 780 94C781 93 783 92 785 92C786 91 788 91 789 90C792 89 792 89 793 90C795 93 798 97 801 98C806 101 816 100 819 97C820 96 821 94 821 93C821 92 820 89 819 89C817 87 811 85 804 83C794 81 789 79 784 75C777 71 775 63 776 55C778 48 779 46 783 42C787 38 789 37 795 35C800 33 802 33 806 33C822 32 835 39 841 50C842 52 842 52 838 54C836 55 833 56 831 57C826 59 824 59 823 59C823 59 822 59 822 58C820 55 817 52 813 51C807 50 801 52 799 55C799 57 799 59 800 61C801 62 807 65 816 66C821 67 828 69 832 71C835 73 840 77 842 80C846 87 845 97 840 105C835 112 824 117 812 118C809 118 806 118 804 118ZM254 118C248 117 240 115 235 112C231 109 225 103 223 100C220 95 217 88 216 82C214 71 217 58 223 50C229 43 236 38 245 35C251 33 253 33 260 33C267 33 270 33 278 36C284 38 292 45 295 49C300 57 302 62 303 71C303 75 303 81 303 81C302 82 298 82 272 82C240 82 240 82 240 83C239 84 241 87 242 89C245 93 249 96 254 97C258 98 264 98 267 97C271 96 276 93 278 90C280 88 280 87 289 92C294 94 298 96 298 97C299 97 299 97 298 100C295 104 291 107 285 111C280 115 272 117 266 118C262 118 257 118 254 118ZM530 118C527 117 523 117 522 116C521 116 519 115 518 115C510 111 502 105 498 97C493 88 491 78 493 71C495 56 502 46 514 38C517 36 522 35 527 33C531 33 538 33 542 34C549 35 554 37 558 41C560 43 560 42 560 38C560 36 560 35 561 35C561 35 563 35 572 35C583 35 583 35 583 35C584 36 584 41 584 76L584 116L583 116C583 116 581 116 572 116C559 116 560 117 560 112C560 109 560 108 559 109C558 109 557 110 556 111C553 114 547 116 542 117C540 118 534 118 530 118ZM714 118C707 117 701 115 696 111C692 109 688 105 686 102C684 100 681 94 680 92C675 80 676 65 683 54C689 43 698 36 711 34C715 33 723 33 727 34C734 36 738 37 743 41C744 42 744 42 744 41C745 41 745 40 745 22C745 12 745 3 745 3C745 3 767 3 768 3C768 4 768 7 768 58C768 114 768 116 768 116C768 116 763 116 756 116C743 116 745 117 745 113C745 108 745 108 741 111C737 114 732 116 727 117C724 118 717 118 714 118ZM126 118C123 117 117 115 115 114C110 111 107 107 104 102C102 98 102 97 101 92L100 89L100 63C100 48 100 36 100 36C101 35 101 35 110 35C119 34 123 35 124 35C124 35 124 39 124 59C124 86 124 85 126 89C129 96 139 98 147 95C152 92 155 88 156 82C156 79 156 78 156 57C156 37 157 35 157 35C158 34 179 34 180 35C180 35 180 39 180 75L180 115L180 116C179 116 179 116 168 116C159 116 158 116 157 116C157 116 157 115 156 112C156 108 156 108 154 110C150 113 144 116 139 117C136 118 128 118 126 118ZM342 117C331 117 322 112 318 104C315 98 315 96 315 74C315 56 315 56 315 55C314 55 314 55 309 55C305 55 303 55 303 54C302 54 302 35 303 35C303 35 305 34 309 34C313 34 314 34 315 34L315 34L315 23C315 14 315 13 316 13C317 12 338 12 338 13C339 13 339 14 339 23C339 31 339 33 339 34C340 34 340 34 349 35C358 35 358 35 359 35C359 36 359 54 359 54C358 55 356 55 349 55C342 55 340 55 339 55C339 56 339 57 339 71C339 88 339 89 340 92C342 96 345 97 354 96C358 96 358 96 359 97C359 97 359 101 359 107C359 116 359 116 358 117C358 117 355 117 352 117C347 117 345 117 342 117ZM592 116C591 115 591 36 592 35C592 35 612 34 614 35L615 35L615 38C615 40 615 42 615 42C615 43 616 42 618 41C623 36 631 33 640 33C644 33 644 33 649 34C652 35 656 37 657 38C658 38 658 38 659 39C660 39 665 44 666 46C669 50 672 56 672 62C673 64 673 81 673 102C673 115 673 116 672 116C672 117 649 117 649 116C649 116 649 106 649 92C649 66 649 66 647 62C645 59 644 57 640 55L638 55L633 55C630 55 629 55 628 55C621 57 617 62 616 68C615 70 615 71 615 93C615 111 615 115 615 116C614 117 592 117 592 116ZM188 116C188 116 187 116 187 115C187 115 187 36 187 36C187 35 188 35 188 35C188 35 209 35 210 35C210 35 211 35 211 36C211 36 211 54 211 76C211 114 211 116 210 116C210 116 189 116 188 116ZM51 96C58 95 64 90 67 83C69 78 69 71 66 66C60 54 45 50 34 58C28 61 25 67 24 74C23 81 27 88 33 93C36 95 39 96 43 97C44 97 49 97 51 96ZM447 97C458 96 467 87 467 75C467 71 466 68 463 63C456 52 439 51 430 60C425 64 424 69 423 75C423 83 425 87 431 92C435 95 438 96 442 97C443 97 444 97 444 97C444 97 445 97 447 97ZM540 97C552 95 559 87 560 77C560 70 558 65 554 60C546 52 531 52 523 60C514 68 514 81 522 90C527 95 534 98 540 97ZM729 96C733 95 737 92 740 88C742 85 743 84 744 81C745 78 745 78 745 74C745 71 745 70 744 68C740 59 733 54 723 54C717 54 712 56 708 59C705 63 703 65 702 69C701 71 701 72 701 75C701 79 701 79 702 82C703 85 704 87 706 89C709 93 713 95 717 96C720 97 726 97 729 96ZM279 65C280 65 278 60 275 58C273 55 270 54 266 53C260 51 253 52 248 55C243 58 239 65 241 66C243 66 278 66 279 65ZM196 25C192 24 189 22 187 18C186 15 186 10 188 6C194 -2 206 -2 211 6C213 10 213 14 212 17C211 21 208 24 204 25C202 26 198 26 196 25Z"/></svg></a>
+    <nav class="bar-nav" aria-label="Main">
+      <a href="/#work">Work</a>
+      <a href="/#hire">Services</a>
+      <a href="/#process">Process</a>
+      <a href="/experiments/" aria-current="page">Experiments</a>
+      <a class="nav-studio" href="/studio/">Studio</a>
+    </nav>
+    <a class="btn btn-live btn-sm bar-cta" href="/#inquire" data-track="home_cta" data-track-props='{"cta":"discuss","where":"experiments-bar"}'>Discuss a project</a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+  </div>
+  <div class="sheet wrap" id="menu" hidden>
+    <nav aria-label="Menu">
+      <a href="/#work">Work</a>
+      <a href="/#hire">Services</a>
+      <a href="/#process">Process</a>
+      <a href="/experiments/">Experiments</a>
+      <a href="/studio/">Studio</a>
+      <a class="btn btn-live" href="/#inquire">Discuss a project</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="lab-hero">
+  <div class="wrap">
+    <p class="label reveal">Quiet Bands · Experiments</p>
+    <h1 class="h1 reveal">Things we built to see if they’d work. Go ahead, play.</h1>
+    <p class="lede reveal">Nothing here is for sale. They’re small pieces of interface we made for ourselves, and they’re more fun to hold than to read about.</p>
+  </div>
+</section>
+
+<section class="wrap exp" id="bulb" aria-labelledby="bulb-h">
+  <div class="exp-head">
+    <div>
+      <p class="label"><i>01</i>The bulb</p>
+      <h2 class="h2" id="bulb-h">Break the bulb.</h2>
+      <p>The old homepage. Scroll, and a wireframe lightbulb cracks and comes apart: “before you build it, try to kill it,” acted out on a lightbulb.</p>
+    </div>
+    <p class="exp-links"><a class="arrow" href="/experiments/bulb/" data-track="experiment_open" data-track-props='{"exp":"bulb","how":"full"}'>Open it full screen</a></p>
+  </div>
+  <div class="bulb-stage" id="bulb-stage">
+    <img src="/assets/bulb/bulb-static.svg?v=3" alt="The wireframe bulb, whole." width="1200" height="1600" />
+    <p class="bulb-hint" id="bulb-hint">Starts a small 3D scene. Scroll inside the frame to break it.</p>
+    <button class="btn btn-live bulb-start" type="button" id="bulb-start">Break the bulb</button>
+  </div>
+</section>
+
+<section class="wrap exp" id="orbs" aria-labelledby="orbs-h">
+  <div class="exp-head">
+    <div>
+      <p class="label"><i>02</i>Thinking orbs</p>
+      <h2 class="h2" id="orbs-h">Pick one up.</h2>
+      <p>Loading indicators that show what kind of waiting is happening. Grab the big one: hold it and it stops, drag sideways and it spins through its own motion, let go and it coasts back.</p>
+    </div>
+    <p class="exp-links"><a class="arrow" href="/experiments/thinking-orb/" data-track="experiment_open" data-track-props='{"exp":"orb","how":"lab"}'>The build notes</a></p>
+  </div>
+
+  <div class="toy" id="toy">
+    <div class="toy-stage" id="toy-stage">
+      <div class="toy-meta" aria-live="polite">
+        <p class="toy-n"><span id="toy-index">05</span> / 09</p>
+        <p class="toy-name" id="toy-name">Connecting</p>
+        <p class="toy-desc" id="toy-desc">a constellation wires itself</p>
+      </div>
+      <div class="toy-orb" id="toy-orb"></div>
+      <p class="toy-tip" id="toy-tip"><span class="tip-fine">Hold, drag, fling</span><span class="tip-touch">Hold, drag sideways, let go</span></p>
+      <div class="toy-step">
+        <button class="round" type="button" id="toy-prev" aria-label="Previous orb">←</button>
+        <button class="round" type="button" id="toy-next" aria-label="Next orb">→</button>
+      </div>
+    </div>
+
+    <div class="toy-panel">
+      <div class="dock" id="dock" role="radiogroup" aria-label="Choose an orb"></div>
+
+      <div class="ctl">
+        <p class="k" id="ink-k">Ink</p>
+        <div class="swatches" role="radiogroup" aria-labelledby="ink-k">
+          <button type="button" class="sw" data-ink="" role="radio" aria-checked="true" aria-label="Grey" style="--c:#A39A88"></button>
+          <button type="button" class="sw" data-ink="#F2EEE5" role="radio" aria-checked="false" aria-label="Cream" style="--c:#F2EEE5"></button>
+          <button type="button" class="sw" data-ink="#FF5A1F" role="radio" aria-checked="false" aria-label="Orange" style="--c:#FF5A1F"></button>
+          <button type="button" class="sw" data-ink="#7FB8FF" role="radio" aria-checked="false" aria-label="Blue" style="--c:#7FB8FF"></button>
+          <button type="button" class="sw" data-ink="#8FBF98" role="radio" aria-checked="false" aria-label="Green" style="--c:#8FBF98"></button>
+          <label class="sw sw-pick" title="Any colour"><span class="vh">Any colour</span><input type="color" id="ink-pick" value="#ff5a1f" /></label>
+        </div>
+      </div>
+
+      <div class="ctl sliders">
+        <label class="sl"><span>Speed</span><output id="o-speed">1×</output><input type="range" id="s-speed" min="0" max="3" step="0.05" value="1" /></label>
+        <label class="sl"><span>Density</span><output id="o-dots">1×</output><input type="range" id="s-dots" min="0.25" max="3" step="0.05" value="1" /></label>
+        <label class="sl"><span>Dot size</span><output id="o-dot">1×</output><input type="range" id="s-dot" min="0.4" max="2.5" step="0.05" value="1" /></label>
+      </div>
+
+      <div class="ctl acts">
+        <button class="pill" type="button" id="toy-shuffle">Shuffle</button>
+        <button class="pill" type="button" id="toy-pause" aria-pressed="false">Pause</button>
+        <button class="pill" type="button" id="toy-reset">Reset</button>
+        <button class="pill pill-live" type="button" id="toy-copy">Copy code</button>
+      </div>
+      <pre class="snippet" id="toy-code" aria-label="Markup for this orb"></pre>
+    </div>
+  </div>
+  <p class="orb-hint">Keyboard: ← and → change orb, Tab to the big orb and use the arrow keys to nudge it, Home resets it.</p>
+</section>
+
+<section class="wrap exp" aria-labelledby="notes-h">
+  <p class="label"><i>03</i>Lab notes</p>
+  <h2 class="h2" id="notes-h">The ones that didn’t make it, and why.</h2>
+  <ul class="notes">
+    <li><b>Spatial Hero</b><span>A homepage you tilt to reveal hidden steps. Retired: the meaning lived in six words, and the object said nothing without them.</span><a class="arrow" href="/rd/#experiments">Read the notes</a></li>
+    <li><b>The bulb</b><span>Retired from the front page in November 2026, when the homepage started saying what Quiet Bands builds before saying how.</span><a class="arrow" href="/experiments/bulb/">Break it</a></li>
+    <li><b>Thinking orb</b><span>Still working for a living: it’s the wait on the project intake button.</span><a class="arrow" href="/experiments/thinking-orb/">Read the build</a></li>
+  </ul>
+</section>
+
+<section class="wrap">
+  <a class="studio reveal" href="/#inquire" style="text-decoration:none;color:inherit" data-track="home_cta" data-track-props='{"cta":"discuss","where":"experiments-end"}'>
+    <span>
+      <span class="label">Like how this feels?</span>
+      <span class="h2" style="display:block">The same care goes into client work.</span>
+      <span class="p">Websites, customer apps and internal tools, built around how your business runs.</span>
+      <span class="arrow" style="margin-top:10px">Discuss a project</span>
+    </span>
+  </a>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <nav aria-label="Footer">
+      <a href="/#work">Work</a><a href="/#hire">Services</a><a href="/#process">Process</a><a href="/experiments/">Experiments</a><a href="/studio/">Studio</a><a href="/rd/">R&amp;D</a>
+    </nav>
+    <a href="mailto:jason@quietbands.com">jason@quietbands.com</a>
+    <p class="legal">© Quiet Bands LLC · Houston, Texas</p>
+  </div>
+</footer>
+
+<script type="module" src="/assets/home.js?v=2"></script>
+<script type="module" src="/assets/experiments.js?v=2"></script>
+</body>
+</html>

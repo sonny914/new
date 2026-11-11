@@ -1,7 +1,7 @@
 // netlify/functions/submission-created.js
 //
-// Netlify runs this after every verified form submission. For the two lead forms (work-intake,
-// note-lead) it scores the lead HOT / WARM / COLD with Claude and posts the result to the
+// Netlify runs this after every verified form submission. For the lead forms (work-intake,
+// note-lead, project-inquiry) it scores the lead HOT / WARM / COLD with Claude and posts the result to the
 // `lead-scores` form, so it sits next to the lead in Netlify → Forms (turn on that form's email
 // notification to get each score in your inbox). Other forms (the Studio's) are ignored. There is no
 // database: the lead itself is already stored by Netlify Forms before this runs.
@@ -18,7 +18,7 @@ const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-5';
 const ANTHROPIC_BASE_URL = (process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/$/, '');
 const SITE_URL = (process.env.URL || 'https://quietbands.com').replace(/\/$/, '');
 
-const LEAD_FORMS = ['work-intake', 'note-lead'];
+const LEAD_FORMS = ['work-intake', 'note-lead', 'project-inquiry'];
 
 /** One submission's fields as the lead the scoring prompt expects. Pure; exported for tests. */
 export function leadFrom(formName, d = {}) {
@@ -29,6 +29,11 @@ export function leadFrom(formName, d = {}) {
       d.artifacts && `ARTIFACTS: ${d.artifacts}`, d.if_gone && `IF IT DISAPPEARED: ${d.if_gone}`, d.imagined_build && `IMAGINED BUILD: ${d.imagined_build}`,
     ].filter(Boolean).join('\n');
     return { contact_name: d.contact_name, company_name: d.company_name, email: d.email, pain_point, current_tech: d.systems || null, timeline: d.how_often || null, source: d.source || 'work-intake' };
+  }
+  if (formName === 'project-inquiry') {
+    // The short inquiry on the home page.
+    const pain_point = [d.project_type && `PROJECT TYPE: ${d.project_type}`, `WHAT IT SHOULD DO: ${d.details}`].filter(Boolean).join('\n');
+    return { contact_name: d.contact_name, company_name: d.company_name, email: d.email, pain_point, current_tech: null, timeline: d.timeline || null, budget_range: d.budget || null, source: d.source || 'home-inquiry' };
   }
   return { contact_name: d.contact_name, company_name: d.company_name, email: d.email, pain_point: d.pain_point, current_tech: d.current_tech || null, source: d.source || formName };
 }
