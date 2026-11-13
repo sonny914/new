@@ -1,4 +1,4 @@
-/* Quiet Bands home: menu, entrance reveals, and the project inquiry (Netlify Forms, `project-inquiry`). */
+/* Quiet Bands home: menu, entrance reveals, the five-results card, the phone dock, and the project inquiry (Netlify Forms, `project-inquiry`). */
 import { formPost, track, getAttribution } from './qb.js';
 
 /* menu */
@@ -18,6 +18,38 @@ if (reduce || !('IntersectionObserver' in window)) items.forEach((el) => el.clas
 else {
   const io = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
   items.forEach((el) => io.observe(el));
+}
+
+/* the five results: a sweep down the list once, settling on "Test manually"; a pointer lights the row under it */
+const verdict = document.querySelector('.verdict');
+if (verdict) {
+  const rows = [...verdict.querySelectorAll('.v')];
+  const rest = rows.findIndex((r) => r.classList.contains('on'));
+  const light = (i) => rows.forEach((r, n) => r.classList.toggle('on', n === i));
+  if (!reduce) {
+    const order = [...rows.keys(), rest];
+    let timers = [];
+    const sweep = () => { timers = order.map((i, n) => setTimeout(() => light(i), 500 + n * 260)); };
+    const stop = () => { timers.forEach(clearTimeout); timers = []; };
+    if (verdict.classList.contains('in')) sweep();
+    else new MutationObserver((_, mo) => { if (verdict.classList.contains('in')) { mo.disconnect(); sweep(); } }).observe(verdict, { attributes: true, attributeFilter: ['class'] });
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      rows.forEach((r, i) => r.addEventListener('pointerenter', () => { stop(); light(i); }));
+      verdict.addEventListener('pointerleave', () => light(rest));
+    }
+  }
+}
+
+/* dock: shown on small screens (CSS) once the hero's buttons are above the fold, and put away near the form and the footer */
+const dock = document.getElementById('dock');
+const heroCta = document.getElementById('hero-cta');
+if (dock && heroCta && 'IntersectionObserver' in window) {
+  const near = new Set();
+  let past = false;
+  const sync = () => dock.classList.toggle('show', past && near.size === 0);
+  new IntersectionObserver(([en]) => { past = !en.isIntersecting && en.boundingClientRect.top < 0; sync(); }).observe(heroCta);
+  const quiet = new IntersectionObserver((entries) => { entries.forEach((en) => (en.isIntersecting ? near.add(en.target) : near.delete(en.target))); sync(); });
+  document.querySelectorAll('#inquire, .foot').forEach((el) => quiet.observe(el));
 }
 
 /* inquiry */

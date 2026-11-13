@@ -1,11 +1,11 @@
 /* Quiet Bands Pressure Test — guided research review. Vanilla JS, no build.
    State lives in localStorage (qb_pt_v1) so a refresh or a wrong tap loses nothing. */
-import { EMPTY, EVIDENCE, COSTS, FREQUENCY, SPEND, HUMANS, PROGRESS, DECISION, review, toText } from './triage.js';
+import { EMPTY, EVIDENCE, COSTS, FREQUENCY, SPEND, HUMANS, PROGRESS, DECISION, AFTER, AFTER_REPLY, review, toText } from './triage.js?v=2';
 import { track, pt, preserveUtm } from './qb.js';
 
 const STEPS = [
   { id: 'claim', label: 'The claim', fields: [
-    { k: 'claim', q: 'What are you thinking about building?', type: 'text', ph: 'One or two sentences. Plain words.' },
+    { k: 'claim', q: 'What are you thinking about building, or what keeps going wrong?', type: 'text', help: 'An idea or a problem both work. You don’t need to know the solution.', ph: 'One or two sentences. Plain words.' },
     { k: 'audience', q: 'Who is it for?', type: 'text', help: 'Be specific enough that you could actually find these people.', ph: 'e.g. office managers at 10–50 person HVAC companies in Houston' },
   ] },
   { id: 'problem', label: 'The problem', fields: [
@@ -67,11 +67,20 @@ function renderIntro() {
       <h1 class="display" style="margin-top:22px">Let’s see what you actually know.</h1>
       <p class="lede">This isn’t a test of whether your idea sounds good. We’re looking for evidence that the problem exists, matters, and is worth doing something about.</p>
       <div class="cta-row">
-        <button class="btn" id="pt-start" type="button">Start the Pressure Test</button>
-        <span class="quiet" style="font-size:14px">Seven questions. About eight minutes.</span>
+        <button class="btn pt-go" id="pt-start" type="button">Start the Pressure Test</button>
+        <span class="quiet" style="font-size:14px">Seven steps. About eight minutes. Free, no sign-up.</span>
       </div>
       ${resumable ? `<p class="pt-resume">You have unfinished answers. <button type="button" id="pt-resume">Pick up where you left off</button> or start fresh.</p>` : ''}
+      <div class="pt-get">
+        <h2 class="rv-k">What you leave with</h2>
+        <ul class="rv-list">
+          <li>One of five results: research more, talk to humans, test manually, explore a build, or park it.</li>
+          <li>What your evidence shows, what you’re still assuming, and the next experiment to run.</li>
+          <li>A review you can download, and send to Quiet Bands if you want a build looked at.</li>
+        </ul>
+      </div>
       <p class="pt-note">No score. No fake validation percentage.<br>No AI telling you your idea is “amazing.”</p>
+      <p class="pt-note pt-private">What you write stays in this browser unless you choose to send it.</p>
     </div>`;
   $('#pt-start').addEventListener('click', () => {
     if (resumable) { S = { ...S, answers: { ...EMPTY }, step: 0, result: null, completedAt: null }; }
@@ -184,8 +193,9 @@ function renderResult() {
 
   const list = (items, cls = '') => items.length ? `<ul class="rv-list ${cls}">${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : `<p class="rv-empty">Nothing yet.</p>`;
   const ctaHtml = (c, primary) => {
-    const cls = primary ? 'btn' : 'btn btn-ghost';
-    if (c.href) return `<a class="${cls}" href="${preserveUtm(c.href)}" data-act="link" data-state="${r.state}">${esc(c.text)} →</a>`;
+    const cls = primary ? 'btn pt-go' : 'btn btn-ghost';
+    const pdf = c.href && /\.pdf$/.test(c.href);   // the guide opens beside the review, not over it
+    if (c.href) return `<a class="${cls}" href="${pdf ? c.href : preserveUtm(c.href)}" ${pdf ? 'target="_blank" rel="noopener"' : ''} data-act="link" data-state="${r.state}">${esc(c.text)} →</a>`;
     return `<button type="button" class="${cls}" data-act="${c.action}">${esc(c.text)}</button>`;
   };
 
@@ -210,10 +220,17 @@ function renderResult() {
       <section class="rv-sec" aria-labelledby="rv-act"><h2 class="rv-k" id="rv-act">Next action</h2>
         <div>
           <div class="rv-actions mt-0" style="border-top:0;padding-top:0">${ctaHtml(m.cta, true)}${ctaHtml(m.secondary, false)}<span class="rv-toast" id="rv-toast" aria-live="polite"></span></div>
+          ${r.state === 'build' ? `<p class="rv-after">${esc(AFTER.build)} ${esc(AFTER_REPLY)}</p>` : ''}
           <p class="rv-fine">Transparent rules, not a score. <a href="/rd/#method">How the review is decided</a><br>
           <button type="button" class="pt-back" data-act="restart" style="padding:0;min-height:0;letter-spacing:.14em">Edit answers</button> &nbsp;·&nbsp; <button type="button" class="pt-back" data-act="clear" style="padding:0;min-height:0;letter-spacing:.14em">Start over and clear stored answers</button> &nbsp;·&nbsp; <button type="button" class="pt-back" data-act="download" style="padding:0;min-height:0;letter-spacing:.14em">Download this review (.txt)</button></p>
         </div>
       </section>
+      ${r.state === 'build' ? '' : `<section class="rv-sec" aria-labelledby="rv-talk"><h2 class="rv-k" id="rv-talk">Want a second read?</h2>
+        <div>
+          <p class="rv-after mt-0">${esc(AFTER[r.state])} ${esc(AFTER_REPLY)}</p>
+          <div class="rv-actions rv-talk"><a class="btn btn-ghost" href="${preserveUtm('/work/?from=pressure-test')}" data-act="link" data-state="${r.state}">Send this review to Quiet Bands →</a><a class="btn btn-ghost" href="${preserveUtm('/#work')}" data-act="link" data-state="${r.state}">See what we’ve built →</a></div>
+        </div>
+      </section>`}
     </div>`;
 
   root.querySelectorAll('[data-act]').forEach((el) => el.addEventListener('click', (e) => {
