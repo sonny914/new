@@ -464,9 +464,9 @@ html, body { background: var(--bg); overflow: hidden; }
 .f9x16 .clip.wide .cscrim, .f9x16 .clip.wide .cside { display: none; }
 .clip.wide .cpanel .ctag, .clip.wide .cpanel .cfreeze { top: auto; }
 .f16x9 .clip.wide .ctag { left: 64px; bottom: 34px; font-size: 22px; } .f16x9 .clip.wide .cfreeze { right: 64px; bottom: 36px; font-size: 20px; }
-.f9x16 .clip.wide .ctag { left: 0; top: -44px; font-size: 24px; } .f9x16 .clip.wide .cfreeze { right: 0; top: -42px; font-size: 20px; }
+.f9x16 .clip.wide .ctag { left: 84px; top: -44px; font-size: 24px; } .f9x16 .clip.wide .cfreeze { right: 84px; top: -42px; font-size: 20px; }
 .f16x9 .clip.wide .cdata { left: 64px; right: auto; bottom: 150px; }
-.f9x16 .clip.wide .cdata { left: 0; right: 0; bottom: auto; top: calc(100% + 26px); }
+.f9x16 .clip.wide .cdata { left: 84px; right: 84px; bottom: auto; top: calc(100% + 26px); }
 .theme-notes .dlab { font-family: 'Hubot Sans', sans-serif; text-transform: none; letter-spacing: 0; font-weight: 640; border: 0; padding: 0; background: none !important; color: var(--cream); text-shadow: 0 1px 12px rgba(0,0,0,.85); }
 .theme-notes.f16x9 .dlab { font-size: 34px; } .theme-notes.f9x16 .dlab { font-size: 32px; }
 .theme-notes .dlab .accent { color: var(--orange); }
