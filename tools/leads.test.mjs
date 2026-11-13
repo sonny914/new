@@ -130,16 +130,57 @@ test('a home inquiry is scored like the other lead forms', async () => {
   assert.equal(posts[0].get('lead_form'), 'project-inquiry');
 });
 
-test('the home page leads with what Quiet Bands builds, and keeps the method further down', () => {
+test('the home page starts at the Pressure Test: hero, what the test returns, proof, services, process, inquiry', () => {
   const html = read('index.html');
   const at = (s) => { const i = html.indexOf(s); assert.ok(i > 0, `home has "${s}"`); return i; };
-  assert.ok(at('Discuss a project') < at('id="work"'));
+  // the hero asks the question, says what Quiet Bands does, and its primary button is the test
+  assert.match(html, /<h1 class="h1 reveal">Your business has a problem\. <span>Does it actually need an app\?<\/span><\/h1>/);
+  const hero = html.slice(at('<section class="hero">'), at('id="pressure-test"'));
+  assert.match(hero, /<a class="btn btn-live" href="\/rd\/pressure-test\/"[^>]*>Take the free Pressure Test<\/a>\s*<a class="btn" href="#work"[^>]*>Explore our work<\/a>/);
+  assert.match(hero, /Custom software and automation/);
+  for (const result of ['Research more', 'Talk to humans', 'Test manually', 'Explore a build', 'Park it']) assert.ok(hero.includes(result), result);
+  // then the journey, in order
+  assert.ok(at('id="pressure-test"') < at('try to kill it'));
+  assert.ok(at('try to kill it') < at('id="work"'));
   assert.ok(at('id="work"') < at('id="hire"'));
   assert.ok(at('id="hire"') < at('id="process"'));
-  assert.ok(at('id="process"') < at('try to kill it'));
   assert.ok(at('id="process"') < at('id="inquire"'));
   assert.ok(at('id="inquire"') < at('href="/studio/" style'));
+  // the test is reachable from the bar, the phone menu, every relevant section and the phone dock
+  const where = [...html.matchAll(/href="\/rd\/pressure-test\/" data-track="home_cta" data-track-props='\{"cta":"pressure-test","where":"([\w-]+)"\}'/g)].map((m) => m[1]);
+  for (const w of ['bar', 'menu', 'hero', 'hero-results', 'start', 'hire', 'process', 'inquire', 'dock']) assert.ok(where.includes(w), `Pressure Test link in "${w}"`);
+  const menu = html.slice(at('id="menu"'), at('</header>'));
+  assert.ok(menu.indexOf('/rd/pressure-test/') < menu.indexOf('#work'), 'the phone menu opens with the Pressure Test');
+  assert.match(menu, /href="#inquire"[^>]*>Discuss a project</);
+  // the Field Guide stays available, as the secondary resource
+  assert.ok((html.match(/href="\/downloads\/flighty-rd-field-guide\.pdf"/g) || []).length >= 3);
+  assert.ok(existsSync(new URL('../downloads/flighty-rd-field-guide.pdf', import.meta.url)));
   for (const s of ['THE BLOCK', 'KILL TRILL', 'Spirited']) assert.ok(html.includes(s));
   assert.doesNotMatch(html, /in production/i);   // Frenchies' current status is not claimed
   for (const img of html.matchAll(/src="(\/assets\/work\/[^"]+|\/studio\/media\/[^"]+)"/g)) assert.ok(existsSync(new URL(`..${img[1]}`, import.meta.url)), img[1]);
+});
+
+test('every link on the home page and in a Pressure Test result leads to a page, file or anchor that exists', async () => {
+  const { STATES, AFTER } = await import('../assets/triage.js');
+  const target = (href) => {
+    const [path, hash] = href.split('?')[0].split('#');
+    const file = path.endsWith('/') ? `${path}index.html` : path;
+    assert.ok(existsSync(new URL(`..${file}`, import.meta.url)), `${href} points at a missing file`);
+    if (hash) assert.match(read(file.slice(1)), new RegExp(`id=["']${hash}["']`), `${href} points at a missing anchor`);
+  };
+  const home = read('index.html');
+  for (const [, href] of home.matchAll(/<a [^>]*href="([^"]+)"/g)) {
+    if (href.startsWith('mailto:')) continue;
+    if (href.startsWith('#')) assert.match(home, new RegExp(`id="${href.slice(1)}"`), `home links to missing ${href}`);
+    else target(href);
+  }
+  for (const [state, m] of Object.entries(STATES)) {
+    for (const c of [m.cta, m.secondary]) if (c.href) target(c.href);
+    assert.ok(AFTER[state], `"${state}" says what the visitor can do next`);
+  }
+  // every result can be sent on, and only "explore a build" reaches the scorer as a build-ready lead
+  const pt = read('assets/pressure-test.js');
+  assert.match(pt, /preserveUtm\('\/work\/\?from=pressure-test'\)/);
+  assert.match(read('assets/intake.js'), /ptState === 'build' \? 'pressure-test' : `pressure-test-\$\{ptState\}`/);
+  assert.match(read('netlify/functions/submission-created.js'), /"pressure-test-research", "pressure-test-humans", "pressure-test-manual" or "pressure-test-park"/);
 });

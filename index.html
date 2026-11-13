@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Quiet Bands · Websites, apps and internal tools, Houston</title>
-<meta name="description" content="Quiet Bands builds websites, customer-facing apps, internal tools and integrations for businesses in Houston and beyond. Discuss a project with Jay." />
+<title>Quiet Bands · Custom software and automation, Houston</title>
+<meta name="description" content="Quiet Bands helps business owners find what’s slowing them down, work out whether software can solve it, and build it when it makes sense. Start with the free Pressure Test." />
 <meta name="theme-color" content="#0B0A09" />
 <link rel="canonical" href="https://quietbands.com/" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Quiet Bands" />
-<meta property="og:title" content="Quiet Bands · Websites, apps and internal tools" />
-<meta property="og:description" content="Websites, customer-facing apps, internal tools and integrations, built around how the business runs. Houston, Texas." />
+<meta property="og:title" content="Your business has a problem. Does it actually need an app?" />
+<meta property="og:description" content="Quiet Bands finds what’s slowing a business down, works out whether software can solve it, and builds it when it makes sense. Start with the free Pressure Test." />
 <meta property="og:url" content="https://quietbands.com/" />
 <meta property="og:image" content="https://quietbands.com/og-bulb.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="A wireframe lightbulb on black, its glass cracked." />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Quiet Bands · Websites, apps and internal tools" />
-<meta name="twitter:description" content="Websites, customer-facing apps, internal tools and integrations, built around how the business runs. Houston, Texas." />
+<meta name="twitter:title" content="Your business has a problem. Does it actually need an app?" />
+<meta name="twitter:description" content="Quiet Bands finds what’s slowing a business down, works out whether software can solve it, and builds it when it makes sense. Start with the free Pressure Test." />
 <meta name="twitter:image" content="https://quietbands.com/og-bulb.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Hubot+Sans:wdth,wght@75..125,200..900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/assets/home.css?v=2" />
+<link rel="stylesheet" href="/assets/home.css?v=3" />
 <script>document.documentElement.classList.add('js');</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Quiet Bands","url":"https://quietbands.com/","email":"jason@quietbands.com","areaServed":"Houston, Texas","founder":{"@type":"Person","name":"Jason"},"description":"Websites, customer-facing apps, internal tools, integrations and automation."}</script>
 <script defer data-domain="quietbands.com" src="https://plausible.io/js/script.js"></script>
@@ -43,18 +43,21 @@
       <a href="#process">Process</a>
       <a href="/experiments/">Experiments</a>
       <a class="nav-studio" href="/studio/">Studio</a>
+      <a href="#inquire">Contact</a>
     </nav>
-    <a class="btn btn-live btn-sm bar-cta" href="#inquire" data-track="home_cta" data-track-props='{"cta":"discuss","where":"bar"}'>Discuss a project</a>
+    <a class="btn btn-live btn-sm bar-cta" href="/rd/pressure-test/" data-track="home_cta" data-track-props='{"cta":"pressure-test","where":"bar"}'>Free Pressure Test</a>
     <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
   </div>
   <div class="sheet wrap" id="menu" hidden>
     <nav aria-label="Menu">
+      <a class="btn btn-live" href="/rd/pressure-test/" data-track="home_cta" data-track-props='{"cta":"pressure-test","where":"menu"}'>Take the free Pressure Test</a>
       <a href="#work">Work</a>
       <a href="#hire">Services</a>
       <a href="#process">Process</a>
       <a href="/experiments/">Experiments</a>
       <a href="/studio/">Studio</a>
-      <a class="btn btn-live" href="#inquire">Discuss a project</a>
+      <a href="/downloads/flighty-rd-field-guide.pdf" target="_blank" rel="noopener" data-track="field_guide_download" data-track-props='{"location":"home-menu"}'>Field Guide <span class="tag">PDF</span></a>
+      <a class="btn" href="#inquire" data-track="home_cta" data-track-props='{"cta":"discuss","where":"menu"}'>Discuss a project</a>
     </nav>
   </div>
 </header>
@@ -64,30 +67,63 @@
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <p class="label reveal">Quiet Bands · Houston, Texas</p>
-      <h1 class="h1 reveal">Websites, apps and internal tools, built around how your business runs.</h1>
-      <p class="lede reveal">For businesses whose customers need a better way to book, order or sign up, and for teams still running the work on spreadsheets, inboxes and memory. Quiet Bands designs it, builds it and gets it live.</p>
-      <p class="cta-row reveal">
-        <a class="btn btn-live" href="#inquire" data-track="home_cta" data-track-props='{"cta":"discuss","where":"hero"}'>Discuss a project</a>
-        <a class="btn" href="#work" data-track="home_cta" data-track-props='{"cta":"work","where":"hero"}'>See the work</a>
+      <p class="label reveal"><span>Custom software and automation</span><span>Houston, Texas</span></p>
+      <h1 class="h1 reveal">Your business has a problem. <span>Does it actually need an app?</span></h1>
+      <p class="lede reveal">We help business owners find what’s slowing them down, figure out whether software can solve it, and build the right solution when it makes sense.</p>
+      <p class="cta-row reveal" id="hero-cta">
+        <a class="btn btn-live" href="/rd/pressure-test/" data-track="home_cta" data-track-props='{"cta":"pressure-test","where":"hero"}'>Take the free Pressure Test</a>
+        <a class="btn" href="#work" data-track="home_cta" data-track-props='{"cta":"work","where":"hero"}'>Explore our work</a>
       </p>
-      <p class="who reveal"><span><b>Websites</b> that take inquiries, bookings and orders</span><span><b>Customer apps</b></span><span><b>Internal tools</b></span><span><b>Integrations and automation</b></span></p>
+      <p class="hero-fine reveal">Seven steps, about eight minutes, no sign-up. You don’t need to know what to build. You leave with a straight answer on what to do next, even when the answer is “don’t build this.”</p>
+      <p class="who reveal"><i>We build</i><span><b>Websites</b> that take inquiries, bookings and orders</span><span><b>Customer apps</b></span><span><b>Internal tools</b></span><span><b>Integrations and automation</b></span></p>
     </div>
-    <figure class="reveal">
-      <div class="phones" role="img" aria-label="Three screens from the Frenchies Coffee Bar ordering app: the home screen, a drink being customized, and the rewards punch card.">
-        <div class="phone"><img src="/assets/work/frenchies/home.jpg" alt="" width="780" height="1360" /></div>
-        <div class="phone"><img src="/assets/work/frenchies/customize.jpg" alt="" width="780" height="1360" /></div>
-        <div class="phone"><img src="/assets/work/frenchies/rewards.jpg" alt="" width="780" height="1360" /></div>
+    <a class="verdict reveal" href="/rd/pressure-test/" data-track="home_cta" data-track-props='{"cta":"pressure-test","where":"hero-results"}'>
+      <span class="verdict-top"><span>Pressure Test</span><span>5 possible results</span></span>
+      <span class="verdict-list">
+        <span class="v"><b>Research more</b><span>You’ve got a hypothesis.</span></span>
+        <span class="v"><b>Talk to humans</b><span>The next answer probably isn’t online.</span></span>
+        <span class="v on"><b>Test manually</b><span>Don’t automate it yet.</span></span>
+        <span class="v"><b>Explore a build</b><span>A build may be justified.</span></span>
+        <span class="v"><b>Park it</b><span>Not enough yet.</span></span>
+      </span>
+      <span class="verdict-foot"><span>Only one of the five says build.</span><span class="arrow">Find out which is yours</span></span>
+    </a>
+  </div>
+</section>
+
+<section class="sec" id="pressure-test">
+  <div class="wrap">
+    <div class="start">
+      <div class="sec-head">
+        <p class="label"><i>01</i>Start here</p>
+        <h2 class="h2 say">Before you build it, <span>try to kill it.</span></h2>
+        <p class="start-p">Building software got easier. Knowing what deserves to be built didn’t. So before anyone writes code, including us, the idea gets tested, and the test is allowed to say no. It’s better to find that out in eight minutes than after paying for a build.</p>
       </div>
-      <figcaption class="shot-cap">Frenchies Coffee Bar: ordering and rewards app built by Quiet Bands.</figcaption>
-    </figure>
+      <ul class="tells" aria-label="Sound familiar?">
+        <li class="reveal"><b>You built it. Nobody bought it.</b><span>The build was never the hard part. Finding out who wanted it was.</span></li>
+        <li class="reveal"><b>The side hustle has a logo, a landing page and no customers.</b><span>Customers are the evidence. Everything else is decoration.</span></li>
+        <li class="reveal"><b>AI told you the idea was great.</b><span>It tells everyone that. Make it argue the other side.</span></li>
+        <li class="reveal"><b>The business runs on a spreadsheet and one person’s memory.</b><span>That one might really need software. Find out before you pay for it.</span></li>
+      </ul>
+    </div>
+
+    <ol class="steps three">
+      <li class="reveal"><span class="n">What it is</span><h3 class="h3">Seven steps, eight minutes</h3><p>Plain questions about the problem: who has it, how often, what they do about it today, what it costs, and who you’ve actually asked. Free, no sign-up, nothing to prepare.</p></li>
+      <li class="reveal key"><span class="n">What you get</span><h3 class="h3">A straight result, not a score</h3><p>One of five: research more, talk to humans, test manually, explore a build, or park it. Plus what your evidence shows, what you’re still assuming, and the next experiment to run. Yours to download.</p></li>
+      <li class="reveal"><span class="n">What happens next</span><h3 class="h3">Your call</h3><p>If you want a build looked at, send the review to Quiet Bands and you won’t explain it twice. Jay reads every one and replies personally when it’s a fit. If the test says don’t build, you kept the money.</p></li>
+    </ol>
+    <p class="cta-row start-cta reveal">
+      <a class="btn btn-live" href="/rd/pressure-test/" data-track="home_cta" data-track-props='{"cta":"pressure-test","where":"start"}'>Take the free Pressure Test</a>
+      <a class="arrow" href="/downloads/flighty-rd-field-guide.pdf" target="_blank" rel="noopener" data-track="field_guide_download" data-track-props='{"location":"home-start"}'>Read the Field Guide (PDF)</a>
+      <a class="arrow" href="/rd/#method">How the method works</a>
+    </p>
   </div>
 </section>
 
 <section class="sec" id="work">
   <div class="wrap">
     <div class="sec-head">
-      <p class="label"><i>01</i>The work</p>
+      <p class="label"><i>02</i>The work</p>
       <h2 class="h2">Built for a real business, used at the counter.</h2>
     </div>
 
@@ -103,8 +139,9 @@
         </ul>
         <p class="cta-row"><a class="btn" href="/work/frenchies/">Read the case study</a></p>
       </div>
-      <div class="case-shots" aria-hidden="true">
-        <div class="phone"><img src="/assets/work/frenchies/order.jpg" alt="" width="780" height="1360" loading="lazy" /></div>
+      <div class="phones" role="img" aria-label="Three screens from the Frenchies Coffee Bar ordering app: the home screen, a drink being customized, and the rewards punch card.">
+        <div class="phone"><img src="/assets/work/frenchies/home.jpg" alt="" width="780" height="1360" loading="lazy" /></div>
+        <div class="phone"><img src="/assets/work/frenchies/customize.jpg" alt="" width="780" height="1360" loading="lazy" /></div>
         <div class="phone"><img src="/assets/work/frenchies/rewards.jpg" alt="" width="780" height="1360" loading="lazy" /></div>
       </div>
     </article>
@@ -144,7 +181,7 @@
 <section class="sec" id="hire">
   <div class="wrap">
     <div class="sec-head">
-      <p class="label"><i>02</i>Ways to hire Quiet Bands</p>
+      <p class="label"><i>03</i>What we build</p>
       <h2 class="h2">Start with the job it needs to do.</h2>
     </div>
     <ol class="hire">
@@ -167,40 +204,37 @@
         <p class="eg"><b>Could include</b>A working first version of the core flow, real enough to put in front of customers, partners or investors.</p>
       </li>
     </ol>
-    <p class="note">These are starting points, not fixed packages. Every project is scoped and quoted after a first conversation, and what's included depends on the job.</p>
+    <p class="note">These are starting points, not fixed packages. Every project is scoped and quoted after a first conversation, and what’s included depends on the job.</p>
+    <p class="fork reveal"><span>Not sure which one it is, or whether it’s any of them?</span><a class="arrow" href="/rd/pressure-test/" data-track="home_cta" data-track-props='{"cta":"pressure-test","where":"hire"}'>Take the Pressure Test first</a></p>
   </div>
 </section>
 
 <section class="sec" id="process">
   <div class="wrap">
     <div class="sec-head">
-      <p class="label"><i>03</i>How a project runs</p>
-      <h2 class="h2">Short, clear, and tested before it's built.</h2>
+      <p class="label"><i>04</i>How a project runs</p>
+      <h2 class="h2">Short, clear, and tested before it’s built.</h2>
     </div>
     <ol class="steps">
-      <li class="reveal"><span class="n">01</span><h3 class="h3">Talk it through</h3><p>You describe the work or the idea, using the form below. Jay replies personally.</p></li>
-      <li class="reveal key"><span class="n">02</span><h3 class="h3">Test the idea</h3><p>Before anything is built, we check who it's for, what they do today and what the problem costs.</p></li>
+      <li class="reveal key"><span class="n">01</span><h3 class="h3">Pressure-test it</h3><p>Eight minutes, on your own, free. You find out what your evidence supports before anyone quotes you for anything. <a class="arrow" href="/rd/pressure-test/" data-track="home_cta" data-track-props='{"cta":"pressure-test","where":"process"}'>Start the test</a></p></li>
+      <li class="reveal"><span class="n">02</span><h3 class="h3">Talk it through</h3><p>Send the review, or just a few lines. Jay replies personally, and we check who it’s for, what they do today and what the problem costs.</p></li>
       <li class="reveal"><span class="n">03</span><h3 class="h3">Build in stages</h3><p>A scoped first version, reviewed with you as it comes together, so nothing arrives as a surprise.</p></li>
-      <li class="reveal"><span class="n">04</span><h3 class="h3">Launch</h3><p>It goes live with the people who'll use it. Then we decide together what, if anything, comes next.</p></li>
+      <li class="reveal"><span class="n">04</span><h3 class="h3">Launch</h3><p>It goes live with the people who’ll use it. Then we decide together what, if anything, comes next.</p></li>
     </ol>
-    <div class="kill reveal">
-      <p class="say">Before you build it, <span>try to kill it.</span></p>
-      <div>
-        <p>Building software got easier. Knowing what deserves to be built didn't. So every idea gets tested first, and the test is allowed to say no. If an idea is going to fail, it's better to find out in a conversation than after paying for a build.</p>
-        <p class="links"><a class="arrow" href="/rd/pressure-test/">Take the free Pressure Test</a><a class="arrow" href="/rd/#method">How the method works</a></p>
-      </div>
-    </div>
+    <p class="note">Already know what you need? Skip step one and <a href="#inquire">tell us about it</a>.</p>
   </div>
 </section>
 
 <section class="sec" id="inquire">
   <div class="wrap ask">
     <div class="ask-side">
-      <p class="label"><i>04</i>Discuss a project</p>
-      <h2 class="h2">Tell us what you need.</h2>
-      <p>A few lines is enough. Say what it should do and who will use it. If it's a fit, Jay replies personally, usually within two business days.</p>
+      <p class="label"><i>05</i>Discuss a project</p>
+      <h2 class="h2">Tell us what’s going on.</h2>
+      <p>A few lines is enough. You don’t need a spec, and you don’t need to know what should be built. Say what’s going wrong, or what it should do, and who it’s for. If it’s a fit, Jay replies personally, usually within two business days.</p>
       <div class="alt">
-        <span class="quiet">Prefer email?</span>
+        <span class="quiet">Not sure there’s a project yet?</span>
+        <a class="arrow" href="/rd/pressure-test/" data-track="home_cta" data-track-props='{"cta":"pressure-test","where":"inquire"}'>Take the free Pressure Test first</a>
+        <span class="quiet" style="margin-top:12px">Prefer email?</span>
         <a class="arrow" href="mailto:jason@quietbands.com">jason@quietbands.com</a>
         <span class="quiet" style="margin-top:12px">Have a process to map in detail?</span>
         <a class="arrow" href="/work/">Use the full project intake</a>
@@ -224,7 +258,7 @@
             <option>A working prototype</option>
             <option>Something else / not sure yet</option>
           </select></div>
-        <div class="field"><label for="i-what">What should it do, and who will use it?</label><textarea class="input" id="i-what" name="details" rows="5" maxlength="3000" required placeholder="e.g. Customers book a fitting online and pay a deposit; right now it's all Instagram DMs."></textarea></div>
+        <div class="field"><label for="i-what">What’s going wrong, or what should it do?</label><textarea class="input" id="i-what" name="details" rows="5" maxlength="3000" required placeholder="e.g. Customers book a fitting online and pay a deposit; right now it’s all Instagram DMs."></textarea></div>
         <div class="row">
           <div class="field"><label for="i-when">Timing</label>
             <select class="input" id="i-when" name="timeline">
@@ -243,7 +277,7 @@
       <div class="done" id="inquiry-done" tabindex="-1" hidden>
         <span class="stamp">Received</span>
         <h3 class="h3">Got it, thank you.</h3>
-        <p>Jay reads every inquiry. If it's a fit, you'll get a personal reply, usually within two business days.</p>
+        <p>Jay reads every inquiry. If it’s a fit, you’ll get a personal reply, usually within two business days.</p>
       </div>
     </div>
   </div>
@@ -255,7 +289,7 @@
     <span>
       <span class="label">Quiet Bands Studio</span>
       <span class="h2" style="display:block">Need a film, not software?</span>
-      <span class="p">The Studio makes short cinematic pieces with AI filmmaking tools, and shares the process for free. It's hosted by Flighty, the creator behind THE BLOCK.</span>
+      <span class="p">The Studio makes short cinematic pieces with AI filmmaking tools, and shares the process for free. It’s hosted by Flighty, the creator behind THE BLOCK.</span>
       <span class="arrow" style="margin-top:10px">Go to the Studio</span>
     </span>
   </a>
@@ -266,13 +300,18 @@
 <footer class="foot">
   <div class="wrap foot-in">
     <nav aria-label="Footer">
-      <a href="#work">Work</a><a href="/work/frenchies/">Frenchies case study</a><a href="#hire">Services</a><a href="#process">Process</a><a href="/experiments/">Experiments</a><a href="/studio/">Studio</a><a href="/rd/">R&amp;D</a><a href="/notes/">Notes</a>
+      <a href="/rd/pressure-test/">Pressure Test</a><a href="/downloads/flighty-rd-field-guide.pdf" target="_blank" rel="noopener" data-track="field_guide_download" data-track-props='{"location":"home-footer"}'>Field Guide (PDF)</a><a href="#work">Work</a><a href="/work/frenchies/">Frenchies case study</a><a href="#hire">Services</a><a href="#process">Process</a><a href="#inquire">Contact</a><a href="/experiments/">Experiments</a><a href="/studio/">Studio</a><a href="/rd/">R&amp;D</a><a href="/notes/">Notes</a>
     </nav>
     <a href="mailto:jason@quietbands.com">jason@quietbands.com</a>
     <p class="legal">© Quiet Bands LLC · Houston, Texas</p>
   </div>
 </footer>
 
-<script type="module" src="/assets/home.js?v=2"></script>
+<div class="dock" id="dock">
+  <span class="dock-t">Free · about 8 minutes</span>
+  <a class="btn btn-live btn-sm" href="/rd/pressure-test/" data-track="home_cta" data-track-props='{"cta":"pressure-test","where":"dock"}'>Take the Pressure Test</a>
+</div>
+
+<script type="module" src="/assets/home.js?v=3"></script>
 </body>
 </html>

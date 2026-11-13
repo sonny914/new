@@ -149,16 +149,27 @@ export function review(a) {
 
 export const STATES = {
   research: { label: 'Research more', headline: 'You’ve got a hypothesis.', copy: 'That’s enough to investigate. It isn’t enough to justify a build yet.',
-    cta: { text: 'Use the Field Guide', href: '/rd/#field-guide' }, secondary: { text: 'Edit answers', action: 'restart' } },
+    cta: { text: 'Use the Field Guide', href: '/downloads/flighty-rd-field-guide.pdf' }, secondary: { text: 'Edit answers', action: 'restart' } },
   humans: { label: 'Talk to humans', headline: 'The next answer probably isn’t online.', copy: 'You’ve found enough signal to know what questions to ask. The next useful evidence should come from people actually doing the work.',
-    cta: { text: 'Save your questions', action: 'save-questions' }, secondary: { text: 'Get the Field Guide', href: '/rd/#field-guide' } },
+    cta: { text: 'Save your questions', action: 'save-questions' }, secondary: { text: 'Get the Field Guide', href: '/downloads/flighty-rd-field-guide.pdf' } },
   manual: { label: 'Test manually', headline: 'Don’t automate it yet.', copy: 'There appears to be enough here to test the outcome. That doesn’t mean software needs to exist yet.',
-    cta: { text: 'Plan a manual test', action: 'manual-plan' }, secondary: { text: 'Get the Field Guide', href: '/rd/#field-guide' } },
+    cta: { text: 'Plan a manual test', action: 'manual-plan' }, secondary: { text: 'Get the Field Guide', href: '/downloads/flighty-rd-field-guide.pdf' } },
   build: { label: 'Explore a build', headline: 'A build may be justified.', copy: 'You’ve entered enough evidence to justify a deeper technical conversation. This is not proof that the idea will succeed. It’s evidence that discussing a build may now be useful.',
-    cta: { text: 'Talk to Quiet Bands', href: '/work/?from=pressure-test' }, secondary: { text: 'Edit answers', action: 'restart' } },
+    cta: { text: 'Send this review to Quiet Bands', href: '/work/?from=pressure-test' }, secondary: { text: 'Edit answers', action: 'restart' } },
   park: { label: 'Park it', headline: 'Not enough yet.', copy: 'The evidence you’ve entered doesn’t currently justify more investment. That’s a useful result. You can park the idea and revisit it if new evidence appears.',
-    cta: { text: 'Save the Field Guide', href: '/rd/#field-guide' }, secondary: { text: 'Edit answers', action: 'restart' } },
+    cta: { text: 'Save the Field Guide', href: '/downloads/flighty-rd-field-guide.pdf' }, secondary: { text: 'Edit answers', action: 'restart' } },
 };
+
+/** What a visitor can do with the review once they have it. Every state gets a path to a person; only `build`
+    is told a build conversation is the next step. Nothing here promises more than the intake does. */
+export const AFTER = {
+  research: 'This result says there is more to learn before anyone should build, and that work is yours. If the problem sits inside a business that is running today and you would rather talk it through, you can still send this review.',
+  humans: 'This result says the next evidence comes from people, not from us. If the problem sits inside a business that is running today and you would rather talk it through, you can still send this review.',
+  manual: 'This result says to prove the outcome by hand before paying for software. If you have already done that, or the manual version is what is breaking, send this review and say so.',
+  build: 'Your review travels with you, so you don’t explain it twice. Projects are scoped and quoted after a first conversation about the work.',
+  park: 'Parking it is a real answer, and it cost you eight minutes instead of a build. If you think the test missed something, send this review and say what.',
+};
+export const AFTER_REPLY = 'Jay reads every one and replies personally if it’s a fit, usually within two business days.';
 
 /** 3–5 interview questions shaped by the gaps in the answers. */
 export function humanQuestions(a, s = signals(a)) {

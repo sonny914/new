@@ -1,7 +1,7 @@
 /* /work intake: posts to the Netlify form `work-intake`. Every answer is its own field; Netlify's
    submission-created function (netlify/functions/submission-created.js) scores the lead with Claude. */
 import { formPost, track, getAttribution, pt } from './qb.js';
-import { STATES } from './triage.js';
+import { STATES } from './triage.js?v=2';
 import { mountOrb } from './orb/thinking-orb.js';
 
 const form = document.getElementById('intake-form');
@@ -11,6 +11,8 @@ const carry = document.getElementById('pt-carry');
 const q = new URLSearchParams(location.search);
 const fromPT = q.get('from') === 'pressure-test';
 const saved = pt.load();
+const ptState = fromPT && saved && saved.result ? saved.result.state : null;
+const ptSource = !fromPT ? 'work-intake' : !ptState || ptState === 'build' ? 'pressure-test' : `pressure-test-${ptState}`;
 
 // Carry the pressure-test context in, if they came from it.
 if (fromPT && saved && saved.result) {
@@ -54,7 +56,7 @@ form.addEventListener('submit', async (e) => {
     today: data.today, who: data.who, how_often: data.how_often, systems: data.systems, goes_wrong: data.goes_wrong,
     tried: data.tried, artifacts: data.artifacts, if_gone: data.if_gone, imagined_build: data.imagined_build,
     contact_name: data.contact_name, company_name: data.company_name, email: data.email,
-    source: fromPT ? 'pressure-test' : 'work-intake', attribution: attr,
+    source: ptSource, attribution: attr,
     pressure_test: fromPT && saved ? { state: saved.result && saved.result.state, answers: saved.answers, completed_at: saved.completedAt } : null,
   });
   if (!ok) {
