@@ -5,7 +5,7 @@ const QB = window.__QB__;
 const W = QB.width, H = QB.height, FPS = QB.fps, OVER = 0.8;
 const portrait = H > W;
 const frame = document.getElementById('frame');
-frame.className = `${portrait ? 'f9x16' : 'f16x9'}${QB.doc ? ' doc' : ''}${QB.theme ? ` theme-${QB.theme}` : ''}`;
+frame.className = `${portrait ? 'f9x16' : 'f16x9'}${QB.doc ? ' doc' : ''}${QB.theme ? ` theme-${QB.theme}` : ''}${QB.wide ? ' wide' : ''}`;
 Object.assign(frame.style, { width: `${W}px`, height: `${H}px` });
 
 // ---- helpers --------------------------------------------------------------------------------------
@@ -106,7 +106,8 @@ const SIDE_A = [40, 480, 530, 1360]; // the left frame of a side-by-side pair in
 T.clip = (sc) => {
   const p = sc.props, beats = sc.beats, pair = beats.some((b) => b.b);
   const side = pair && portrait && p.pair === 'side';
-  const el = h('div', `clip${pair ? ' pair' : ''}${side ? ' side' : ''}`), A = clipPanel('a'), B = pair ? clipPanel('b') : null;
+  // landscape footage (gameplay, screen recordings): full bleed in 16:9, a band with type above and below in 9:16
+  const el = h('div', `clip${pair ? ' pair' : ''}${side ? ' side' : ''}${QB.wide ? ' wide' : ''}`), A = clipPanel('a'), B = pair ? clipPanel('b') : null;
   const scrim = h('div', 'cscrim');
   const col = h('div', 'cside'), linesEl = h('div', 'clines'), dataEl = h('div', 'cdatas');
   const strip = p.strip ? h('div', 'cstrip', '<div class="smarks"></div><canvas></canvas><div class="saxis mono"><span>Voice</span><span class="t"></span></div>') : null;
@@ -543,11 +544,12 @@ T.endcard = (sc) => {
   const head = h('div', 'ec-head');
   const rows = (p.lines ?? []).map((l) => { const d = h('div', 'ec-line'); head.append(d); return words(d, l.text, l.accent); });
   const rl = h('i', 'ec-rule'), series = h('div', 'ec-series', esc(p.series ?? '')), lock = h('div', 'ec-lock', `<span class="mk">${SVG.mark}</span><span class="wm">${SVG.wordmark}</span>`);
-  el.append(head, rl, series, lock);
+  const credit = p.credit ? h('div', 'ec-credit', esc(p.credit)) : null; // licence credits that must travel with the video
+  el.append(head, rl, series, ...(credit ? [credit] : []), lock);
   return { el, update(t) {
     rows.forEach((ws, i) => rise(ws, t, 0.35 + i * 0.35, 0.06, 0.75));
     rl.style.transform = `scaleX(${E.outExpo(P(t, 1.1, 2.0))})`;
-    fade(series, E.outCubic(P(t, 1.3, 1.9)), 10); fade(lock, E.outCubic(P(t, 1.6, 2.3)), 10);
+    fade(series, E.outCubic(P(t, 1.3, 1.9)), 10); if (credit) fade(credit, E.outCubic(P(t, 1.45, 2.05)), 10); fade(lock, E.outCubic(P(t, 1.6, 2.3)), 10);
   } };
 };
 

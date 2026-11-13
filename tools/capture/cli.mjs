@@ -33,7 +33,7 @@ import { loadDoc, timeDoc, docPayload } from './lib/documentary.mjs';
 import { intake, draftEpisode, packageEpisode } from './lib/notes.mjs';
 
 process.env[ENV_FLAG] = '1'; // anything this process starts knows it is inside a capture
-export const VERSION = '0.4.0'; // bump with CHANGELOG.md
+export const VERSION = '0.4.1'; // bump with CHANGELOG.md
 const LOG_HEADER = '# Production log\n\nHow this recap was made: every run, what it decided, what it validated, and what it cost. Newest last.';
 
 const argv = process.argv.slice(2);

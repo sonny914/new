@@ -26,6 +26,7 @@ export function loadDoc(file) {
 // frames are rebuilt exactly as the measurement made them: mouth moving, outside a 0.2 s guard around voice.
 const clipCache = new Map();
 export function clipData(c) {
+  if (!c.analysis) return speechlessClip(c);
   if (clipCache.has(c.analysis)) return clipCache.get(c.analysis);
   const a = JSON.parse(readFileSync(c.analysis, 'utf8')), s = a.summary, fps = s.fps, n = a.moving.length;
   const voiced = new Array(n).fill(0), near = new Array(n).fill(false), g = Math.trunc(0.2 * fps);
@@ -46,6 +47,34 @@ export function clipData(c) {
   clipCache.set(c.analysis, d);
   return d;
 }
+// Footage with no speech in it (gameplay, screen recordings, B-roll) carries no face or voice measurement. It must be
+// declared `"dialogue": false`: the engine then measures its sound level per frame (what the mix and the strip need)
+// and records no voice and no mouth movement. Undeclared and unmeasured footage is refused, so nothing is assumed.
+function speechlessClip(c) {
+  const key = `levels:${c.file}`;
+  if (clipCache.has(key)) return clipCache.get(key);
+  if (c.dialogue !== false) throw new Error(`${c.file}: no measurement. Run tools/capture/analysis/mouth_sync.py on it, or declare "dialogue": false if the clip has no speech in it`);
+  const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_type,r_frame_rate:format=duration', '-of', 'json', c.file], { encoding: 'utf8' }));
+  const video = probe.streams.find((x) => x.codec_type === 'video'), hasAudio = probe.streams.some((x) => x.codec_type === 'audio');
+  const [num, den] = video.r_frame_rate.split('/').map(Number), fps = den ? num / den : 30, seconds = +(+probe.format.duration).toFixed(3);
+  // a clip with no audio track (a silent game, a screen recording) measures as silence
+  const n = Math.round(seconds * fps), pcm = hasAudio ? execFileSync('ffmpeg', ['-nostdin', '-loglevel', 'error', '-i', c.file, '-vn', '-ac', '1', '-ar', '16000', '-f', 's16le', '-'], { maxBuffer: 1 << 30 }) : Buffer.alloc(0);
+  const samples = new Int16Array(pcm.buffer, pcm.byteOffset, pcm.length >> 1), spf = 16000 / fps, db = [];
+  for (let i = 0; i < n; i++) {
+    const a = Math.floor(i * spf), b = Math.min(samples.length, Math.floor((i + 1) * spf)); let e = 0;
+    for (let k = a; k < b; k++) e += (samples[k] / 32768) ** 2;
+    db.push(+(20 * Math.log10(Math.sqrt(e / Math.max(1, b - a)) + 1e-9)).toFixed(1));
+  }
+  const sorted = [...db].sort((x, y) => x - y), floor = sorted[Math.floor(sorted.length * 0.1)] ?? -90;
+  // a track of digital silence (a game with no sound, recorded with an empty audio track) is no sound to protect or mix
+  const audible = db.some((v) => v > -80);
+  const zeros = new Array(n).fill(0), summary = { fps, frames: n, seconds, has_audio: hasAudio && samples.length > 0 && audible, speech_segments: [], speech_seconds: 0, noise_floor_db: floor,
+    speech_threshold_db: Math.max(-48, floor + 14), mouth_moving_seconds: 0, silent_mouth_movement_seconds: 0, dialogue: false };
+  const d = { fps, n, seconds, summary, segments: [], db, floor, thr: summary.speech_threshold_db, voiced: zeros, silent: zeros, mouth: null, eyes: null, face: null };
+  clipCache.set(key, d);
+  return d;
+}
+
 function frameSize(file) {
   try { const [w, h] = execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', file], { encoding: 'utf8' }).trim().split(',').map(Number); return w && h ? [w, h] : null; } catch { return null; }
 }
@@ -215,7 +244,7 @@ export async function docPayload(doc, timed, fmt, { cacheDir, preview = false, f
   const stages = doc.stages;
   return {
     format: fmt, width, height, fps, duration: timed.duration, frames: timed.frames, tz: TZ, doc: true, corner: doc.corner ?? 'Production recap',
-    theme: doc.theme ?? null, subs: doc.subs ?? null, timecode: doc.timecode === true, transition: doc.transition ?? null, watermark,
+    theme: doc.theme ?? null, wide: doc.wide === true, subs: doc.subs ?? null, timecode: doc.timecode === true, transition: doc.transition ?? null, watermark,
     captions: preview || doc.burnCaptions === true, capTag: preview ? (doc.previewTag ?? 'Narration · not recorded yet') : !final && doc.draftTag ? doc.draftTag : null,
     stages, cues: timed.cues, assets, brand: { mark: '/assets/brand/mark.svg', wordmark: '/assets/brand/wordmark.svg' },
     scenes: timed.scenes.map((s) => ({ ...s, stageIndex: stages.findIndex((x) => x.id === s.stage) + 1, stageLabel: stages.find((x) => x.id === s.stage)?.label ?? '',

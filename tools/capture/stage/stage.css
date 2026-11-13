@@ -452,3 +452,40 @@ html, body { background: var(--bg); overflow: hidden; }
 .f9x16 .clip.pair.side .ov-cmp b { font-size: 56px; }
 .clip.pair.side .ov-divide { display: none; }
 .ov-timeline.has-marks .ov-tl-name { visibility: hidden; }
+
+/* Landscape footage (doc option `wide`): gameplay and screen recordings keep their whole frame.
+   16:9: the take fills the frame, its own HUD stays clear (chrome moves to the top right, type to the lower third).
+   9:16: the take is a band across the middle; headline and chapter above it, subtitles below, nothing on the picture. */
+.f16x9 .clip.wide .cpanel.a { left: 0; top: 0; width: 1920px; height: 1080px; border-radius: 0; }
+.f16x9 .clip.wide .cside { display: none; }
+.f16x9 .clip.wide .cscrim { background: linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,.55) 100%); }
+.f9x16 .clip.wide .cpanel.a { inset: auto; left: 0; top: 660px; width: 1080px; height: 608px; overflow: visible; }
+.f9x16 .clip.wide .cpanel.a canvas { box-shadow: 0 0 0 1px var(--line); }
+.f9x16 .clip.wide .cscrim, .f9x16 .clip.wide .cside { display: none; }
+.clip.wide .cpanel .ctag, .clip.wide .cpanel .cfreeze { top: auto; }
+.f16x9 .clip.wide .ctag { left: 64px; bottom: 34px; font-size: 22px; } .f16x9 .clip.wide .cfreeze { right: 64px; bottom: 36px; font-size: 20px; }
+.f9x16 .clip.wide .ctag { left: 0; top: -44px; font-size: 24px; } .f9x16 .clip.wide .cfreeze { right: 0; top: -42px; font-size: 20px; }
+.f16x9 .clip.wide .cdata { left: 64px; right: auto; bottom: 150px; }
+.f9x16 .clip.wide .cdata { left: 0; right: 0; bottom: auto; top: calc(100% + 26px); }
+.theme-notes .dlab { font-family: 'Hubot Sans', sans-serif; text-transform: none; letter-spacing: 0; font-weight: 640; border: 0; padding: 0; background: none !important; color: var(--cream); text-shadow: 0 1px 12px rgba(0,0,0,.85); }
+.theme-notes.f16x9 .dlab { font-size: 34px; } .theme-notes.f9x16 .dlab { font-size: 32px; }
+.theme-notes .dlab .accent { color: var(--orange); }
+.wide.f16x9.theme-notes .corner { left: auto; right: 64px; top: 40px; } .wide.f16x9.theme-notes .ptag { right: 64px; top: 84px; }
+.wide.f16x9 .ov-subs { left: 64px; right: 64px; bottom: 84px; text-align: center; font-size: 44px; }
+.wide.f9x16 .ov-subs { bottom: 470px; }
+.wide.f16x9 .ov-head[data-band] { top: 140px; bottom: auto; left: 64px; }
+.wide.f9x16 .ov-head[data-band] { top: 300px; bottom: auto; }
+.wide.f16x9 .ov-chapter { left: 64px; right: auto; width: 900px; top: 140px; }
+.wide.f9x16 .ov-chapter { top: 300px; }
+.ec-credit { margin-top: 14px; font-size: 22px; color: var(--faint); }
+.f16x9 .ec-credit { font-size: 20px; }
+/* wide 16:9: a game keeps its HUD top left, so statements sit below it, on a soft local shade (not a box) */
+.wide.f16x9 .ov-head[data-band] { top: 330px; isolation: isolate; }
+.wide.f16x9 .ov-head::before { content: ''; position: absolute; z-index: -1; left: -64px; top: -180px; width: 1200px; height: 640px; pointer-events: none;
+  background: radial-gradient(ellipse 60% 55% at 30% 50%, rgba(0,0,0,.6), rgba(0,0,0,0) 72%); }
+.wide.f16x9 .ov-chapter { top: 330px; isolation: isolate; }
+.wide.f16x9 .ov-chapter::before { content: ''; position: absolute; z-index: -1; left: -64px; top: -150px; width: 1100px; height: 520px; pointer-events: none;
+  background: radial-gradient(ellipse 60% 55% at 30% 50%, rgba(0,0,0,.55), rgba(0,0,0,0) 72%); }
+/* wide 16:9: the game's own HUD owns the top corners; the brand rides the end card, the preview tag sits low */
+.wide.f16x9.theme-notes .corner { display: none; }
+.wide.f16x9.theme-notes .ptag { top: auto; bottom: 64px; right: 64px; }

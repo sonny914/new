@@ -367,3 +367,18 @@ test('stage: every overlay and the Notes chrome render without errors, with or w
   finally { console.warn = warn; }
   assert.deepEqual(warned, []);
 });
+
+test('documentary: footage with no speech is measured for level only when declared, and refused when undeclared', () => {
+  const doc = docFixture([]), c = { ...doc.clips.c, analysis: undefined };
+  assert.throws(() => clipData({ ...c, dialogue: undefined }), /declare "dialogue": false/);
+  const d = clipData({ ...c, dialogue: false });
+  assert.equal(d.n, 96); assert.equal(d.db.length, 96);
+  assert.ok(d.voiced.every((v) => v === 0) && d.silent.every((v) => v === 0), 'no voice and no mouth movement is recorded');
+  assert.ok(Math.max(...d.db) > -30, 'the sine tone is measured as sound');
+  const mute = join(doc.base, 'mute.mp4');
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'color=c=black:s=64x64:d=2:r=30', '-c:v', 'libx264', mute]);
+  const m = clipData({ file: mute, label: 'Silent game', dialogue: false });
+  assert.equal(m.summary.has_audio, false); assert.equal(m.n, 60); assert.ok(m.db.every((v) => v <= -90), 'no audio track measures as silence');
+  const r = timeDoc(withDoc(doc, { clips: { g: { file: c.file, label: 'Gameplay', dialogue: false } } }));
+  assert.deepEqual(r.problems, []);
+});

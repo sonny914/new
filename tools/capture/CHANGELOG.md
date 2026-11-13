@@ -2,6 +2,20 @@
 
 QB Capture documents its own development here. Sessions that change `tools/capture/` are also recapped like any other work; runs of the capture itself never are (see `lib/guard.mjs`).
 
+## 0.4.1 — 13 Nov 2026
+
+Production Notes on game footage: "SPIRITED, as made: Part 1", cut from gameplay recorded with the game's own engine.
+
+- **Footage with no speech:** a clip declared `"dialogue": false` needs no face or voice measurement. The engine measures its sound level per frame and records no voice and no mouth movement.
+  - A clip with no audio track, or a track of digital silence, counts as silent.
+  - An undeclared, unmeasured clip is refused rather than assumed.
+- **`wide` layout for landscape footage** (gameplay, screen recordings):
+  - **16:9:** the take fills the frame. Statements sit below the game's own HUD on a soft local shade, the corner tag gives way to the HUD, and subtitles run along the lower third.
+  - **9:16:** the take is a band across the middle, with type above it and subtitles below, so nothing sits on the picture.
+- **End-card `credit` line:** for licence credits that must travel with the video, such as CC BY.
+- **Notes-theme data labels:** set in the type of the piece, without boxes.
+- **An empty `previewTag`** renders a silent cut with no on-screen tag, for when the subtitles are meant to carry the script.
+
 ## 0.4.0 — 4 Nov 2026
 
 HARLEM '88: Production Notes, a build-in-public series of short vertical episodes. Each one shows a real problem in the series' AI-generated footage, explains it, and shows the real fix. It is built on documentary mode, not as a new app.

@@ -114,7 +114,8 @@ Text on screen is checked for numbers like any label, except a chapter's `n`.
 | `timecode: true` | Running source timecode in each panel's top right. |
 | `theme: "notes"` | Production Notes chrome: QB mark and "Production Notes" top left, the preview tag top right, sentence-case source labels, no stage spine. |
 | `watermark: { "file": "...", "label": "..." }` | The approved HARLEM '88 logo, bottom centre, at 55%. A missing file shows a dashed slot in previews and fails final renders. |
-| `template: "endcard"` | The sign-off scene: `props.lines` (objects with `text`) rise in the headline voice; `props.series` sits under a rule; the Quiet Bands lockup below. |
+| `template: "endcard"` | The sign-off scene: `props.lines` (objects with `text`) rise in the headline voice; `props.series` sits under a rule; `props.credit` holds licence credits; the Quiet Bands lockup sits below. |
+| `wide: true` | Landscape footage such as gameplay or screen recordings. In 16:9 the take fills the frame with statements below its HUD; in 9:16 it's a band with type above and subtitles below. Declare clips with no speech as `"dialogue": false` instead of measuring faces. |
 
 ## 9:16 layout (1080×1920)
 
