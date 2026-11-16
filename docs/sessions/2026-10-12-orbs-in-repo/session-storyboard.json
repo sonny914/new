@@ -1,0 +1,1448 @@
+{
+  "schema": "qb-capture/storyboard@1",
+  "session_id": "session_01E33KRahnfgaMJD2zhcyZuQ",
+  "title": "The orb gets a page",
+  "tz": "America/Chicago",
+  "fps": 30,
+  "level": "full",
+  "stages": [
+    {
+      "id": "goal",
+      "label": "Goal"
+    },
+    {
+      "id": "process",
+      "label": "Process"
+    },
+    {
+      "id": "obstacle",
+      "label": "Obstacle"
+    },
+    {
+      "id": "correction",
+      "label": "Correction"
+    },
+    {
+      "id": "result",
+      "label": "Result"
+    },
+    {
+      "id": "lesson",
+      "label": "Lesson"
+    }
+  ],
+  "omitted": [],
+  "derived": [
+    {
+      "key": "caption_platforms",
+      "value": 4,
+      "items": [
+        "Instagram Reels",
+        "TikTok",
+        "**X**",
+        "LinkedIn"
+      ],
+      "refs": [
+        "E11"
+      ]
+    },
+    {
+      "key": "open_checks",
+      "value": 2,
+      "items": [
+        "couldn't load the live pages",
+        "Nothing has been checked on a real phone yet."
+      ],
+      "refs": [
+        "E09",
+        "E15"
+      ]
+    }
+  ],
+  "vertical": "included",
+  "formats": {
+    "16x9": {
+      "width": 1920,
+      "height": 1080,
+      "scenes": [
+        {
+          "id": "intro",
+          "template": "intro",
+          "brand": true,
+          "refs": [
+            "E00",
+            "E01",
+            "E22",
+            "E03",
+            "E10",
+            "E12",
+            "E16",
+            "E08",
+            "E19"
+          ],
+          "props": {
+            "eyebrow": "Session recap",
+            "title": "The orb gets a page",
+            "meta": [
+              "12 OCT → 20 OCT 2026",
+              "sonny914/new",
+              "5 prompts",
+              "2 pull requests"
+            ]
+          },
+          "narration": "Session recap. The orb gets a page.",
+          "voice": {
+            "seconds": 3.03,
+            "source": "estimate"
+          },
+          "duration": 4.475,
+          "start": 0,
+          "speech": {
+            "start": 0.75,
+            "end": 3.775
+          }
+        },
+        {
+          "id": "goal",
+          "template": "quote",
+          "stage": "goal",
+          "refs": [
+            "E03"
+          ],
+          "clock": "2026-10-12T06:59:58.438410Z",
+          "props": {
+            "quote": "I want to port that to my website under experiments. Also I need you to make . A 15 second reel highlighting showcasing the orbs features. Go all out. Show what you can do",
+            "accent": "Go all out.",
+            "who": "Founder",
+            "when": "12 OCT 01:59 CDT",
+            "via": "from iPhone"
+          },
+          "narration": "I asked Claude to put the thinking orb on my site, under experiments. And make a 15-second reel. Go all out.",
+          "voice": {
+            "seconds": 8.8,
+            "source": "estimate"
+          },
+          "duration": 10.245,
+          "start": 3.675,
+          "speech": {
+            "start": 4.425,
+            "end": 13.22
+          }
+        },
+        {
+          "id": "stats",
+          "template": "stats",
+          "stage": "process",
+          "refs": [
+            "E04",
+            "E05",
+            "E06",
+            "E07",
+            "E08",
+            "E09"
+          ],
+          "clock": "2026-10-12T07:09:16+00:00",
+          "props": {
+            "headline": "Lab 002: Thinking orb moves to /experiments, with a 15-second reel",
+            "sha": "be1b0f3",
+            "items": [
+              {
+                "value": 10,
+                "unit": "min",
+                "label": "to build"
+              },
+              {
+                "value": 53,
+                "unit": "steps",
+                "label": "agent steps"
+              },
+              {
+                "value": 14,
+                "unit": "files",
+                "label": "changed"
+              },
+              {
+                "value": 653,
+                "prefix": "+",
+                "unit": "lines",
+                "label": "−195 removed"
+              }
+            ],
+            "files": [
+              {
+                "path": "experiments/thinking-orb/reel.mp4",
+                "added": 0,
+                "deleted": 0,
+                "binary": true,
+                "size": "5.9 MB",
+                "status": "A"
+              },
+              {
+                "path": "tools/reel/orb-reel.html",
+                "added": 281,
+                "deleted": 0,
+                "binary": false,
+                "size": null,
+                "status": "A"
+              },
+              {
+                "path": "experiments/thinking-orb/index.html",
+                "added": 262,
+                "deleted": 0,
+                "binary": false,
+                "size": null,
+                "status": "A"
+              },
+              {
+                "path": "lab/thinking-orb/index.html",
+                "added": 0,
+                "deleted": 193,
+                "binary": false,
+                "size": null,
+                "status": "D"
+              },
+              {
+                "path": "tools/reel/out-sound.wav",
+                "added": 0,
+                "deleted": 0,
+                "binary": true,
+                "size": "2.6 MB",
+                "status": "A"
+              },
+              {
+                "path": "tools/reel/render.mjs",
+                "added": 49,
+                "deleted": 0,
+                "binary": false,
+                "size": null,
+                "status": "A"
+              },
+              {
+                "path": "tools/reel/sound.mjs",
+                "added": 40,
+                "deleted": 0,
+                "binary": false,
+                "size": null,
+                "status": "A"
+              },
+              {
+                "path": "rd/index.html",
+                "added": 9,
+                "deleted": 1,
+                "binary": false,
+                "size": null,
+                "status": "M"
+              }
+            ],
+            "total": 14
+          },
+          "narration": "About 10 minutes and 53 steps later, it was done. One commit, 14 files.",
+          "voice": {
+            "seconds": 5.77,
+            "source": "estimate"
+          },
+          "duration": 7.22,
+          "start": 13.12,
+          "speech": {
+            "start": 13.87,
+            "end": 19.64
+          }
+        },
+        {
+          "id": "device",
+          "template": "device",
+          "stage": "process",
+          "refs": [
+            "E06",
+            "E09"
+          ],
+          "clock": "2026-10-12T07:09:16+00:00",
+          "props": {
+            "asset": "thinking-orb-reel",
+            "kicker": "The reel",
+            "headline": "reel.mp4",
+            "notes": [
+              "15 s · 1080×1920 · 30 fps",
+              "Every frame is drawn by the real orb code, so nothing in it is a mock-up.",
+              "experiments/thinking-orb/reel.mp4"
+            ],
+            "aspect": 0.5625
+          },
+          "narration": "The reel is drawn frame by frame by the real orb engine. Nothing in it is a mock-up.",
+          "voice": {
+            "seconds": 7.34,
+            "source": "estimate"
+          },
+          "duration": 8.789,
+          "start": 19.54,
+          "speech": {
+            "start": 20.29,
+            "end": 27.629
+          }
+        },
+        {
+          "id": "browser",
+          "template": "browser",
+          "stage": "process",
+          "refs": [
+            "E07",
+            "E09"
+          ],
+          "clock": "2026-10-12T07:09:16+00:00",
+          "props": {
+            "asset": "screen-experiments-thinking-orb",
+            "url": "quietbands.com/experiments/thinking-orb/",
+            "kicker": "The page",
+            "headline": "/experiments/thinking-orb/",
+            "notes": [
+              "The reel up top",
+              "Hold one: the playground, every setting",
+              "All nine states",
+              "What it is made of"
+            ]
+          },
+          "narration": "It got its own page: the reel up top, a playground you can grab, and all nine states.",
+          "voice": {
+            "seconds": 7.06,
+            "source": "estimate"
+          },
+          "duration": 8.509,
+          "start": 27.529,
+          "speech": {
+            "start": 28.279,
+            "end": 35.338
+          }
+        },
+        {
+          "id": "timeline",
+          "template": "timeline",
+          "stage": "obstacle",
+          "refs": [
+            "E01",
+            "E03",
+            "E08",
+            "E10",
+            "E12",
+            "E14",
+            "E16",
+            "E19",
+            "E20"
+          ],
+          "clock": "2026-10-20T19:45:42.582433Z",
+          "props": {
+            "headline": "Then it sat.",
+            "zone": "CDT",
+            "start": "2026-10-12T06:57:25.979966Z",
+            "end": "2026-10-20T19:50:20.441Z",
+            "points": [
+              {
+                "t": "2026-10-12T06:57:25.979966Z",
+                "day": "12 OCT",
+                "time": "01:57",
+                "kind": "prompt",
+                "label": "“Are the orbs in my repo?”",
+                "ref": "E01"
+              },
+              {
+                "t": "2026-10-12T06:59:58.438410Z",
+                "day": "12 OCT",
+                "time": "01:59",
+                "kind": "prompt",
+                "label": "“I want to port that to my website under experiments. Also I need you to make . A 15 second reel highlighting showcasing the orbs features. Go all out. Show what you can do”",
+                "ref": "E03"
+              },
+              {
+                "t": "2026-10-12T07:09:45Z",
+                "day": "12 OCT",
+                "time": "02:09",
+                "kind": "pr-open",
+                "label": "PR #20 opened",
+                "ref": "E08"
+              },
+              {
+                "t": "2026-10-12T07:12:39.906933Z",
+                "day": "12 OCT",
+                "time": "02:12",
+                "kind": "prompt",
+                "label": "“Captions and hashtags”",
+                "ref": "E10"
+              },
+              {
+                "t": "2026-10-20T19:45:42.582433Z",
+                "day": "20 OCT",
+                "time": "14:45",
+                "kind": "prompt",
+                "label": "“Why are these not available under experiments on quietbands.com/experiments?”",
+                "ref": "E12"
+              },
+              {
+                "t": "2026-10-20T19:47:35Z",
+                "day": "20 OCT",
+                "time": "14:47",
+                "kind": "pr-merge",
+                "label": "PR #20 merged",
+                "ref": "E14"
+              },
+              {
+                "t": "2026-10-20T19:49:35.133675Z",
+                "day": "20 OCT",
+                "time": "14:49",
+                "kind": "prompt",
+                "label": "“Yes”",
+                "ref": "E16"
+              },
+              {
+                "t": "2026-10-20T19:50:00Z",
+                "day": "20 OCT",
+                "time": "14:50",
+                "kind": "pr-open",
+                "label": "PR #23 opened",
+                "ref": "E19"
+              },
+              {
+                "t": "2026-10-20T19:50:10Z",
+                "day": "20 OCT",
+                "time": "14:50",
+                "kind": "pr-merge",
+                "label": "PR #23 merged",
+                "ref": "E20"
+              }
+            ],
+            "gap": {
+              "from": "2026-10-12T07:09:45Z",
+              "to": "2026-10-20T19:47:35Z",
+              "label": "8 days unmerged",
+              "sub": "PR #20 open 12 OCT → merged 20 OCT"
+            },
+            "quote": {
+              "text": "Why are these not available under experiments on quietbands.com/experiments?",
+              "when": "20 OCT 14:45 CDT",
+              "at": "2026-10-20T19:45:42.582433Z"
+            }
+          },
+          "narration": "Then it sat. 8 days later I went looking on quietbands.com, and it wasn't there. The work was done. It just never got merged.",
+          "voice": {
+            "seconds": 10.25,
+            "source": "estimate"
+          },
+          "duration": 11.702,
+          "start": 35.238,
+          "speech": {
+            "start": 35.988,
+            "end": 46.24
+          }
+        },
+        {
+          "id": "merge",
+          "template": "merge",
+          "stage": "correction",
+          "refs": [
+            "E14",
+            "E17",
+            "E18",
+            "E20",
+            "E15",
+            "E04"
+          ],
+          "clock": "2026-10-20T19:47:35Z",
+          "props": {
+            "headline": "Merged. Then cleaned up.",
+            "branch": "claude/orbs-in-repo-68l8w7",
+            "base": "main",
+            "commits": [
+              {
+                "sha": "be1b0f3",
+                "label": "Lab 002: Thinking orb moves to /experiments, with a 15-second reel",
+                "when": "12 OCT 02:09",
+                "at": "2026-10-12T07:09:16+00:00"
+              },
+              {
+                "sha": "20c1a03",
+                "label": "Remove the reel's stray sound render",
+                "when": "20 OCT 14:49",
+                "at": "2026-10-20T19:49:53+00:00"
+              }
+            ],
+            "merges": [
+              {
+                "pr": 20,
+                "when": "20 OCT 14:47",
+                "at": "2026-10-20T19:47:35Z"
+              },
+              {
+                "pr": 23,
+                "when": "20 OCT 14:50",
+                "at": "2026-10-20T19:50:10Z"
+              }
+            ],
+            "removed": {
+              "path": "tools/reel/out-sound.wav",
+              "size": "2.6 MB",
+              "sha": "20c1a03",
+              "note": "tools/reel/out-sound.wav was an intermediate from the first render and was committed by mistake."
+            }
+          },
+          "narration": "So we merged it. And Claude owned a mistake on the way in: a 2.6 megabyte sound file that should never have been committed. Pull request 23 took it out.",
+          "voice": {
+            "seconds": 12.32,
+            "source": "estimate"
+          },
+          "duration": 13.775,
+          "start": 46.14,
+          "speech": {
+            "start": 46.89,
+            "end": 59.215
+          }
+        },
+        {
+          "id": "beforeafter",
+          "template": "beforeafter",
+          "stage": "result",
+          "refs": [
+            "E04",
+            "E17"
+          ],
+          "clock": "2026-10-20T19:50:20.441Z",
+          "props": {
+            "headline": "quietbands.com/rd/#experiments",
+            "before": {
+              "asset": "ba-rd-before",
+              "label": "Before",
+              "sub": "2afcbb8"
+            },
+            "after": {
+              "asset": "ba-rd-after",
+              "label": "After",
+              "sub": "20c1a03"
+            }
+          },
+          "narration": "Before, the R&D page stopped at Lab 001. Now Lab 002 sits on top, with a live orb.",
+          "voice": {
+            "seconds": 7.34,
+            "source": "estimate"
+          },
+          "duration": 8.789,
+          "start": 59.115,
+          "speech": {
+            "start": 59.865,
+            "end": 67.204
+          }
+        },
+        {
+          "id": "checklist",
+          "template": "checklist",
+          "stage": "result",
+          "refs": [
+            "E07",
+            "E05",
+            "E06",
+            "E09",
+            "E14",
+            "E20",
+            "E15",
+            "E11"
+          ],
+          "clock": "2026-10-20T19:50:20.441Z",
+          "props": {
+            "headline": "Where it stands",
+            "items": [
+              {
+                "text": "/experiments/thinking-orb/: the reel, the playground, all nine states",
+                "status": "verified",
+                "source": "commit be1b0f3"
+              },
+              {
+                "text": "A 15-second reel, every frame drawn by the real engine",
+                "status": "verified",
+                "source": "reel.mp4 · be1b0f3"
+              },
+              {
+                "text": "Tests: 65/65 passing",
+                "status": "verified",
+                "source": "reply · 12 OCT 02:10"
+              },
+              {
+                "text": "Captions and hashtags for Instagram, TikTok, X and LinkedIn",
+                "status": "verified",
+                "source": "reply · 12 OCT 02:13"
+              },
+              {
+                "text": "PR #20 and PR #23 merged into main",
+                "status": "verified",
+                "source": "GitHub · 20 OCT"
+              },
+              {
+                "text": "Live site: Claude's environment couldn't reach quietbands.com",
+                "status": "unverified",
+                "source": "reply · 20 OCT 14:48"
+              },
+              {
+                "text": "Not yet checked on a real phone",
+                "status": "unverified",
+                "source": "reply · 12 OCT 02:10"
+              }
+            ]
+          },
+          "narration": "65 of 65 tests passing. Captions written for four platforms. Two things are still on me: the live site, and a real phone.",
+          "voice": {
+            "seconds": 9.58,
+            "source": "estimate"
+          },
+          "duration": 11.03,
+          "start": 67.104,
+          "speech": {
+            "start": 67.854,
+            "end": 77.434
+          }
+        },
+        {
+          "id": "lesson",
+          "template": "lesson",
+          "stage": "lesson",
+          "refs": [
+            "E12",
+            "E14",
+            "E18"
+          ],
+          "clock": "2026-10-20T19:50:20.441Z",
+          "props": {
+            "lines": [
+              "Finished isn't shipped until it's merged.",
+              "And build byproducts go to temp, not the repo."
+            ]
+          },
+          "narration": "Lesson: finished isn't shipped until it's merged.",
+          "voice": {
+            "seconds": 2.75,
+            "source": "estimate"
+          },
+          "duration": 5.5,
+          "start": 77.334,
+          "speech": {
+            "start": 78.084,
+            "end": 80.829
+          }
+        },
+        {
+          "id": "outro",
+          "template": "outro",
+          "brand": true,
+          "refs": [
+            "E00"
+          ],
+          "props": {
+            "line": "Built from 23 session events",
+            "sub": "Session 01E33KRa"
+          },
+          "narration": "",
+          "voice": null,
+          "duration": 4.6,
+          "start": 82.034,
+          "speech": null
+        }
+      ],
+      "duration": 86.634,
+      "frames": 2599,
+      "cues": [
+        {
+          "scene": "intro",
+          "start": 0.75,
+          "end": 1.996,
+          "text": "Session recap."
+        },
+        {
+          "scene": "intro",
+          "start": 1.996,
+          "end": 3.775,
+          "text": "The orb gets a page."
+        },
+        {
+          "scene": "goal",
+          "start": 4.425,
+          "end": 7.273,
+          "text": "I asked Claude to put the thinking"
+        },
+        {
+          "scene": "goal",
+          "start": 7.273,
+          "end": 10.121,
+          "text": "orb on my site, under experiments."
+        },
+        {
+          "scene": "goal",
+          "start": 10.121,
+          "end": 12.299,
+          "text": "And make a 15-second reel."
+        },
+        {
+          "scene": "goal",
+          "start": 12.299,
+          "end": 13.22,
+          "text": "Go all out."
+        },
+        {
+          "scene": "stats",
+          "start": 13.87,
+          "end": 16.88,
+          "text": "About 10 minutes and 53 steps later,"
+        },
+        {
+          "scene": "stats",
+          "start": 16.88,
+          "end": 17.884,
+          "text": "it was done."
+        },
+        {
+          "scene": "stats",
+          "start": 17.884,
+          "end": 19.64,
+          "text": "One commit, 14 files."
+        },
+        {
+          "scene": "device",
+          "start": 20.29,
+          "end": 23.154,
+          "text": "The reel is drawn frame by frame"
+        },
+        {
+          "scene": "device",
+          "start": 23.154,
+          "end": 25.213,
+          "text": "by the real orb engine."
+        },
+        {
+          "scene": "device",
+          "start": 25.213,
+          "end": 27.629,
+          "text": "Nothing in it is a mock-up."
+        },
+        {
+          "scene": "browser",
+          "start": 28.279,
+          "end": 30.001,
+          "text": "It got its own page:"
+        },
+        {
+          "scene": "browser",
+          "start": 30.001,
+          "end": 31.378,
+          "text": "the reel up top,"
+        },
+        {
+          "scene": "browser",
+          "start": 31.378,
+          "end": 33.616,
+          "text": "a playground you can grab,"
+        },
+        {
+          "scene": "browser",
+          "start": 33.616,
+          "end": 35.338,
+          "text": "and all nine states."
+        },
+        {
+          "scene": "timeline",
+          "start": 35.988,
+          "end": 37.005,
+          "text": "Then it sat."
+        },
+        {
+          "scene": "timeline",
+          "start": 37.005,
+          "end": 39.547,
+          "text": "8 days later I went looking on"
+        },
+        {
+          "scene": "timeline",
+          "start": 39.547,
+          "end": 42.597,
+          "text": "quietbands.com, and it wasn't there."
+        },
+        {
+          "scene": "timeline",
+          "start": 42.597,
+          "end": 44.122,
+          "text": "The work was done."
+        },
+        {
+          "scene": "timeline",
+          "start": 44.122,
+          "end": 46.24,
+          "text": "It just never got merged."
+        },
+        {
+          "scene": "merge",
+          "start": 46.89,
+          "end": 48.222,
+          "text": "So we merged it."
+        },
+        {
+          "scene": "merge",
+          "start": 48.222,
+          "end": 50.971,
+          "text": "And Claude owned a mistake on the"
+        },
+        {
+          "scene": "merge",
+          "start": 50.971,
+          "end": 53.719,
+          "text": "way in: a 2.6 megabyte sound file"
+        },
+        {
+          "scene": "merge",
+          "start": 53.719,
+          "end": 56.883,
+          "text": "that should never have been committed."
+        },
+        {
+          "scene": "merge",
+          "start": 56.883,
+          "end": 59.215,
+          "text": "Pull request 23 took it out."
+        },
+        {
+          "scene": "beforeafter",
+          "start": 59.865,
+          "end": 63.116,
+          "text": "Before, the R&D page stopped at Lab"
+        },
+        {
+          "scene": "beforeafter",
+          "start": 63.116,
+          "end": 63.488,
+          "text": "001."
+        },
+        {
+          "scene": "beforeafter",
+          "start": 63.488,
+          "end": 65.718,
+          "text": "Now Lab 002 sits on top,"
+        },
+        {
+          "scene": "beforeafter",
+          "start": 65.718,
+          "end": 67.204,
+          "text": "with a live orb."
+        },
+        {
+          "scene": "checklist",
+          "start": 67.854,
+          "end": 69.721,
+          "text": "65 of 65 tests passing."
+        },
+        {
+          "scene": "checklist",
+          "start": 69.721,
+          "end": 72.644,
+          "text": "Captions written for four platforms."
+        },
+        {
+          "scene": "checklist",
+          "start": 72.644,
+          "end": 74.836,
+          "text": "Two things are still on me:"
+        },
+        {
+          "scene": "checklist",
+          "start": 74.836,
+          "end": 77.434,
+          "text": "the live site, and a real phone."
+        },
+        {
+          "scene": "lesson",
+          "start": 78.084,
+          "end": 80.829,
+          "text": "Lesson: finished isn't shipped until it's merged."
+        }
+      ]
+    },
+    "9x16": {
+      "width": 1080,
+      "height": 1920,
+      "scenes": [
+        {
+          "id": "hook",
+          "template": "hook",
+          "brand": false,
+          "stage": "goal",
+          "refs": [
+            "E09",
+            "E14",
+            "E00"
+          ],
+          "props": {
+            "lines": [
+              "Built in 10 minutes.",
+              "Merged 8 days later."
+            ],
+            "accent": 1
+          },
+          "narration": "Built in 10 minutes. Merged 8 days later.",
+          "voice": {
+            "seconds": 3.42,
+            "source": "estimate"
+          },
+          "duration": 4.867,
+          "start": 0,
+          "speech": {
+            "start": 0.75,
+            "end": 4.167
+          }
+        },
+        {
+          "id": "device",
+          "template": "device",
+          "stage": "process",
+          "refs": [
+            "E06",
+            "E09"
+          ],
+          "clock": "2026-10-12T07:09:16+00:00",
+          "props": {
+            "asset": "thinking-orb-reel",
+            "kicker": "The reel",
+            "headline": "reel.mp4",
+            "notes": [
+              "15 s · 1080×1920 · 30 fps",
+              "Every frame is drawn by the real orb code, so nothing in it is a mock-up.",
+              "experiments/thinking-orb/reel.mp4"
+            ],
+            "aspect": 0.5625
+          },
+          "narration": "Claude gave the orb its own page and a 15-second reel, drawn frame by frame by the real engine.",
+          "voice": {
+            "seconds": 7.45,
+            "source": "estimate"
+          },
+          "duration": 8.901,
+          "start": 4.067,
+          "speech": {
+            "start": 4.817,
+            "end": 12.268
+          }
+        },
+        {
+          "id": "timeline",
+          "template": "timeline",
+          "stage": "obstacle",
+          "refs": [
+            "E01",
+            "E03",
+            "E08",
+            "E10",
+            "E12",
+            "E14",
+            "E16",
+            "E19",
+            "E20"
+          ],
+          "clock": "2026-10-20T19:45:42.582433Z",
+          "props": {
+            "headline": "Then it sat.",
+            "zone": "CDT",
+            "start": "2026-10-12T06:57:25.979966Z",
+            "end": "2026-10-20T19:50:20.441Z",
+            "points": [
+              {
+                "t": "2026-10-12T06:57:25.979966Z",
+                "day": "12 OCT",
+                "time": "01:57",
+                "kind": "prompt",
+                "label": "“Are the orbs in my repo?”",
+                "ref": "E01"
+              },
+              {
+                "t": "2026-10-12T06:59:58.438410Z",
+                "day": "12 OCT",
+                "time": "01:59",
+                "kind": "prompt",
+                "label": "“I want to port that to my website under experiments. Also I need you to make . A 15 second reel highlighting showcasing the orbs features. Go all out. Show what you can do”",
+                "ref": "E03"
+              },
+              {
+                "t": "2026-10-12T07:09:45Z",
+                "day": "12 OCT",
+                "time": "02:09",
+                "kind": "pr-open",
+                "label": "PR #20 opened",
+                "ref": "E08"
+              },
+              {
+                "t": "2026-10-12T07:12:39.906933Z",
+                "day": "12 OCT",
+                "time": "02:12",
+                "kind": "prompt",
+                "label": "“Captions and hashtags”",
+                "ref": "E10"
+              },
+              {
+                "t": "2026-10-20T19:45:42.582433Z",
+                "day": "20 OCT",
+                "time": "14:45",
+                "kind": "prompt",
+                "label": "“Why are these not available under experiments on quietbands.com/experiments?”",
+                "ref": "E12"
+              },
+              {
+                "t": "2026-10-20T19:47:35Z",
+                "day": "20 OCT",
+                "time": "14:47",
+                "kind": "pr-merge",
+                "label": "PR #20 merged",
+                "ref": "E14"
+              },
+              {
+                "t": "2026-10-20T19:49:35.133675Z",
+                "day": "20 OCT",
+                "time": "14:49",
+                "kind": "prompt",
+                "label": "“Yes”",
+                "ref": "E16"
+              },
+              {
+                "t": "2026-10-20T19:50:00Z",
+                "day": "20 OCT",
+                "time": "14:50",
+                "kind": "pr-open",
+                "label": "PR #23 opened",
+                "ref": "E19"
+              },
+              {
+                "t": "2026-10-20T19:50:10Z",
+                "day": "20 OCT",
+                "time": "14:50",
+                "kind": "pr-merge",
+                "label": "PR #23 merged",
+                "ref": "E20"
+              }
+            ],
+            "gap": {
+              "from": "2026-10-12T07:09:45Z",
+              "to": "2026-10-20T19:47:35Z",
+              "label": "8 days unmerged",
+              "sub": "PR #20 open 12 OCT → merged 20 OCT"
+            },
+            "quote": {
+              "text": "Why are these not available under experiments on quietbands.com/experiments?",
+              "when": "20 OCT 14:45 CDT",
+              "at": "2026-10-20T19:45:42.582433Z"
+            }
+          },
+          "narration": "Then it sat. 8 days later I asked why it wasn't on the site.",
+          "voice": {
+            "seconds": 5.77,
+            "source": "estimate"
+          },
+          "duration": 9,
+          "start": 12.168,
+          "speech": {
+            "start": 12.918,
+            "end": 18.688
+          }
+        },
+        {
+          "id": "merge",
+          "template": "merge",
+          "stage": "correction",
+          "refs": [
+            "E14",
+            "E17",
+            "E18",
+            "E20",
+            "E15",
+            "E04"
+          ],
+          "clock": "2026-10-20T19:47:35Z",
+          "props": {
+            "headline": "Merged.",
+            "branch": "claude/orbs-in-repo-68l8w7",
+            "base": "main",
+            "commits": [
+              {
+                "sha": "be1b0f3",
+                "label": "Lab 002: Thinking orb moves to /experiments, with a 15-second reel",
+                "when": "12 OCT 02:09",
+                "at": "2026-10-12T07:09:16+00:00"
+              },
+              {
+                "sha": "20c1a03",
+                "label": "Remove the reel's stray sound render",
+                "when": "20 OCT 14:49",
+                "at": "2026-10-20T19:49:53+00:00"
+              }
+            ],
+            "merges": [
+              {
+                "pr": 20,
+                "when": "20 OCT 14:47",
+                "at": "2026-10-20T19:47:35Z"
+              },
+              {
+                "pr": 23,
+                "when": "20 OCT 14:50",
+                "at": "2026-10-20T19:50:10Z"
+              }
+            ],
+            "removed": {
+              "path": "tools/reel/out-sound.wav",
+              "size": "2.6 MB",
+              "sha": "20c1a03",
+              "note": "tools/reel/out-sound.wav was an intermediate from the first render and was committed by mistake."
+            }
+          },
+          "narration": "So we merged it, and Claude cleaned up its own mistake.",
+          "voice": {
+            "seconds": 4.31,
+            "source": "estimate"
+          },
+          "duration": 8.5,
+          "start": 20.368,
+          "speech": {
+            "start": 21.118,
+            "end": 25.432
+          }
+        },
+        {
+          "id": "lesson",
+          "template": "lesson",
+          "stage": "lesson",
+          "refs": [
+            "E12",
+            "E14",
+            "E18"
+          ],
+          "clock": "2026-10-20T19:50:20.441Z",
+          "props": {
+            "lines": [
+              "Finished isn't shipped until it's merged."
+            ]
+          },
+          "narration": "Finished isn't shipped until it's merged.",
+          "voice": {
+            "seconds": 2.35,
+            "source": "estimate"
+          },
+          "duration": 5.5,
+          "start": 28.068,
+          "speech": {
+            "start": 28.818,
+            "end": 31.171
+          }
+        },
+        {
+          "id": "outro",
+          "template": "outro",
+          "brand": true,
+          "refs": [
+            "E00"
+          ],
+          "props": {
+            "line": "Built from 23 session events",
+            "sub": "Session 01E33KRa"
+          },
+          "narration": "",
+          "voice": null,
+          "duration": 4.6,
+          "start": 32.768,
+          "speech": null
+        }
+      ],
+      "duration": 37.368,
+      "frames": 1121,
+      "cues": [
+        {
+          "scene": "hook",
+          "start": 0.75,
+          "end": 2.458,
+          "text": "Built in 10 minutes."
+        },
+        {
+          "scene": "hook",
+          "start": 2.458,
+          "end": 4.167,
+          "text": "Merged 8 days later."
+        },
+        {
+          "scene": "device",
+          "start": 4.817,
+          "end": 7.409,
+          "text": "Claude gave the orb its own page"
+        },
+        {
+          "scene": "device",
+          "start": 7.409,
+          "end": 9.109,
+          "text": "and a 15-second reel,"
+        },
+        {
+          "scene": "device",
+          "start": 9.109,
+          "end": 11.701,
+          "text": "drawn frame by frame by the real"
+        },
+        {
+          "scene": "device",
+          "start": 11.701,
+          "end": 12.268,
+          "text": "engine."
+        },
+        {
+          "scene": "timeline",
+          "start": 12.918,
+          "end": 14.112,
+          "text": "Then it sat."
+        },
+        {
+          "scene": "timeline",
+          "start": 14.112,
+          "end": 16.798,
+          "text": "8 days later I asked why it"
+        },
+        {
+          "scene": "timeline",
+          "start": 16.798,
+          "end": 18.688,
+          "text": "wasn't on the site."
+        },
+        {
+          "scene": "merge",
+          "start": 21.118,
+          "end": 22.396,
+          "text": "So we merged it,"
+        },
+        {
+          "scene": "merge",
+          "start": 22.396,
+          "end": 25.432,
+          "text": "and Claude cleaned up its own mistake."
+        },
+        {
+          "scene": "lesson",
+          "start": 28.818,
+          "end": 31.171,
+          "text": "Finished isn't shipped until it's merged."
+        }
+      ]
+    }
+  },
+  "story": {
+    "level": "full",
+    "stages": [
+      {
+        "stage": "goal",
+        "claims": [
+          {
+            "text": "I want to port that to my website under experiments. Also I need you to make . A 15 second reel highlighting showcasing the orbs features. Go all out. Show what you can do",
+            "refs": [
+              "E03"
+            ],
+            "kind": "quote"
+          }
+        ],
+        "narration": "The ask: I want to port that to my website under experiments. Also I need you to make A 15 second reel highlighting showcasing the orbs features. Go all out. Show what you can do"
+      },
+      {
+        "stage": "process",
+        "claims": [
+          {
+            "text": "Lab 002: Thinking orb moves to /experiments, with a 15-second reel",
+            "refs": [
+              "E04"
+            ],
+            "kind": "commit"
+          },
+          {
+            "text": "Added experiments/thinking-orb/reel-poster.jpg",
+            "refs": [
+              "E05"
+            ],
+            "kind": "artifact"
+          },
+          {
+            "text": "Added experiments/thinking-orb/reel.mp4",
+            "refs": [
+              "E06"
+            ],
+            "kind": "artifact"
+          },
+          {
+            "text": "Added experiments/thinking-orb/index.html",
+            "refs": [
+              "E07"
+            ],
+            "kind": "page"
+          },
+          {
+            "text": "Opened PR #20",
+            "refs": [
+              "E08"
+            ],
+            "kind": "pr-open"
+          }
+        ],
+        "metrics": [
+          "build_minutes",
+          "build_steps"
+        ],
+        "narration": "About 10 minutes and 53 steps later: Lab 002: Thinking orb moves to /experiments, with a 15-second reel."
+      },
+      {
+        "stage": "obstacle",
+        "types": [
+          "unmerged",
+          "mistake"
+        ],
+        "claims": [
+          {
+            "text": "Why are these not available under experiments on quietbands.com/experiments?",
+            "refs": [
+              "E12"
+            ],
+            "kind": "quote"
+          },
+          {
+            "text": "PR #20 sat 8 days before it was merged",
+            "refs": [
+              "E14",
+              "E08"
+            ],
+            "kind": "wait"
+          },
+          {
+            "text": "One mistake of mine went in with it: a 2.6MB sound file left over from building the reel (tools/reel/out-sound.wav).",
+            "refs": [
+              "E15",
+              "E18"
+            ],
+            "kind": "admission"
+          }
+        ],
+        "narration": "Then: \"Why are these not available under experiments on quietbands.com/experiments?\" And one mistake came along with it."
+      },
+      {
+        "stage": "correction",
+        "claims": [
+          {
+            "text": "Merged PR #20 into main",
+            "refs": [
+              "E14"
+            ],
+            "kind": "pr-merge"
+          },
+          {
+            "text": "Remove the reel's stray sound render",
+            "refs": [
+              "E17"
+            ],
+            "kind": "commit"
+          },
+          {
+            "text": "Removed tools/reel/out-sound.wav",
+            "refs": [
+              "E18"
+            ],
+            "kind": "file-removed"
+          },
+          {
+            "text": "Merged PR #23 into main",
+            "refs": [
+              "E20"
+            ],
+            "kind": "pr-merge"
+          }
+        ],
+        "narration": "Merged pull request 20. Merged pull request 23."
+      },
+      {
+        "stage": "result",
+        "claims": [
+          {
+            "text": "Page: /experiments/thinking-orb/",
+            "refs": [
+              "E07"
+            ],
+            "status": "verified"
+          },
+          {
+            "text": "Artifact: experiments/thinking-orb/reel-poster.jpg",
+            "refs": [
+              "E05"
+            ],
+            "status": "verified"
+          },
+          {
+            "text": "Artifact: experiments/thinking-orb/reel.mp4",
+            "refs": [
+              "E06"
+            ],
+            "status": "verified"
+          },
+          {
+            "text": "Tests: 65/65 passing",
+            "refs": [
+              "E09"
+            ],
+            "status": "verified"
+          },
+          {
+            "text": "PR #20 merged into main",
+            "refs": [
+              "E14"
+            ],
+            "status": "verified"
+          },
+          {
+            "text": "PR #23 merged into main",
+            "refs": [
+              "E20"
+            ],
+            "status": "verified"
+          },
+          {
+            "text": "Nothing has been checked on a real phone yet.",
+            "refs": [
+              "E09"
+            ],
+            "status": "unverified"
+          },
+          {
+            "text": "This environment's network blocks quietbands.com, so I couldn't load the live pages.",
+            "refs": [
+              "E15"
+            ],
+            "status": "unverified"
+          }
+        ],
+        "narration": "It's in main."
+      },
+      {
+        "stage": "lesson",
+        "claims": [
+          {
+            "text": "Finished isn't shipped until it's merged.",
+            "refs": [
+              "E12",
+              "E14"
+            ],
+            "kind": "unmerged"
+          },
+          {
+            "text": "Build byproducts belong in temp, not in the repo.",
+            "refs": [
+              "E18"
+            ],
+            "kind": "self-revert"
+          }
+        ],
+        "narration": "Lesson: Finished isn't shipped until it's merged."
+      }
+    ],
+    "omitted": []
+  },
+  "status": "preview",
+  "validation": {
+    "ok": true,
+    "errors": [],
+    "warnings": []
+  }
+}

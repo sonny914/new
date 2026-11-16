@@ -1,0 +1,774 @@
+{
+  "schema": "qb-capture/events@1",
+  "session": {
+    "id": "session_01E33KRahnfgaMJD2zhcyZuQ",
+    "url": "https://claude.ai/code/session_01E33KRahnfgaMJD2zhcyZuQ",
+    "title": "Orbs in repo",
+    "created_at": "2026-10-12T06:57:25.576024Z",
+    "updated_at": "2026-10-20T19:50:20.441Z",
+    "status_bucket": "SESSION_STATUS_BUCKET_COMPLETED",
+    "origin": "ios",
+    "sources": [
+      {
+        "repo": "sonny914/sonny914.github.io",
+        "revision": "refs/heads/claude/compassionate-tesla-66ji3t"
+      },
+      {
+        "repo": "sonny914/new",
+        "revision": "refs/heads/main"
+      }
+    ],
+    "outcome_branches": [
+      {
+        "repo": "sonny914/sonny914.github.io",
+        "branch": "claude/orbs-in-repo-68l8w7"
+      },
+      {
+        "repo": "sonny914/new",
+        "branch": "claude/orbs-in-repo-68l8w7"
+      }
+    ],
+    "post_turn_summary": "PR #23 merged to main; 2.6MB sound file removed",
+    "source": "ccr-export",
+    "export": "/home/user/new/docs/sessions/2026-10-12-orbs-in-repo/evidence/ccr-session.json",
+    "key": "2026-10-12-orbs-in-repo"
+  },
+  "generated_at": "2026-10-29T18:23:34.402Z",
+  "level": "full",
+  "events": [
+    {
+      "t": "2026-10-12T06:57:25.576024Z",
+      "kind": "session",
+      "actor": "system",
+      "text": "Orbs in repo",
+      "refs": [
+        "https://claude.ai/code/session_01E33KRahnfgaMJD2zhcyZuQ"
+      ],
+      "tags": [],
+      "data": {
+        "id": "session_01E33KRahnfgaMJD2zhcyZuQ",
+        "source": "ccr-export",
+        "repo": "sonny914/new"
+      },
+      "id": "E00"
+    },
+    {
+      "tags": [],
+      "data": {
+        "platform": "ios"
+      },
+      "t": "2026-10-12T06:57:25.979966Z",
+      "kind": "prompt",
+      "actor": "founder",
+      "turn": 0,
+      "text": "Are the orbs in my repo?",
+      "refs": [
+        "ccr:1ff19e3e-520f-48cc-b288-3380a44bf685"
+      ],
+      "id": "E01"
+    },
+    {
+      "tags": [],
+      "data": {
+        "num_turns": 3,
+        "duration_ms": 12302
+      },
+      "t": "2026-10-12T06:57:52.104318Z",
+      "kind": "reply",
+      "actor": "claude",
+      "turn": 0,
+      "text": "Yes, but only in `sonny914/new`. They aren't in `sonny914.github.io`.\n\n**In `sonny914/new`:**\n- `assets/orb/engine.js` (883 lines) is the orb engine.\n- `assets/orb/thinking-orb.js` (287 lines) is the thinking-orb component, written without React.\n- `lab/thinking-orb/index.html` is the lab page that shows it.\n- `tools/orb.test.mjs` (133 lines) holds the tests.\n\nThe last two commits on those files are \"Thinking orb: the thinking-orbs component without React\" and \"Thinking orb: grab it, fling it, tune it\". That second one means you can grab and fling the orb, and adjust its settings.\n\n**In `sonny914.github.io`:** there's no orb code. None of the site's JS or HTML mentions orbs. Some PNG/MP4 files under `docs/` came up in the search, but those were accidental matches inside the files' binary data, not orb assets.\n\nIf you want the orb on the live site, it has to be ported over from `new`. I can do that and put it on `claude/orbs-in-repo-68l8w7`.",
+      "refs": [
+        "ccr:692b47c3-848d-4400-8854-3637dda505a7"
+      ],
+      "id": "E02"
+    },
+    {
+      "tags": [],
+      "data": {
+        "platform": "ios"
+      },
+      "t": "2026-10-12T06:59:58.438410Z",
+      "kind": "prompt",
+      "actor": "founder",
+      "turn": 1,
+      "text": "I want to port that to my website under experiments. Also I need you to make . A 15 second reel highlighting showcasing the orbs features. Go all out. Show what you can do",
+      "refs": [
+        "ccr:d30b88e2-d17c-45a5-b24e-3c79838153d8"
+      ],
+      "id": "E03"
+    },
+    {
+      "tags": [],
+      "data": {
+        "sha": "be1b0f3b4ce8824760cca51f137337b4476767f4",
+        "subject": "Lab 002: Thinking orb moves to /experiments, with a 15-second reel",
+        "files": [
+          {
+            "path": ".gitignore",
+            "status": "A",
+            "binary": false,
+            "added": 2,
+            "deleted": 0
+          },
+          {
+            "path": "README.md",
+            "status": "M",
+            "binary": false,
+            "added": 1,
+            "deleted": 1
+          },
+          {
+            "path": "_redirects",
+            "status": "M",
+            "binary": false,
+            "added": 5,
+            "deleted": 0
+          },
+          {
+            "path": "assets/bulb/rd.css",
+            "status": "M",
+            "binary": false,
+            "added": 3,
+            "deleted": 0
+          },
+          {
+            "path": "experiments/thinking-orb/index.html",
+            "status": "A",
+            "binary": false,
+            "added": 262,
+            "deleted": 0
+          },
+          {
+            "path": "experiments/thinking-orb/reel-poster.jpg",
+            "status": "A",
+            "binary": true,
+            "added": 0,
+            "deleted": 0,
+            "bytes": 83507
+          },
+          {
+            "path": "experiments/thinking-orb/reel.mp4",
+            "status": "A",
+            "binary": true,
+            "added": 0,
+            "deleted": 0,
+            "bytes": 5866774
+          },
+          {
+            "path": "lab/thinking-orb/index.html",
+            "status": "D",
+            "binary": false,
+            "added": 0,
+            "deleted": 193
+          },
+          {
+            "path": "rd/index.html",
+            "status": "M",
+            "binary": false,
+            "added": 9,
+            "deleted": 1
+          },
+          {
+            "path": "sitemap.xml",
+            "status": "M",
+            "binary": false,
+            "added": 1,
+            "deleted": 0
+          },
+          {
+            "path": "tools/reel/orb-reel.html",
+            "status": "A",
+            "binary": false,
+            "added": 281,
+            "deleted": 0
+          },
+          {
+            "path": "tools/reel/out-sound.wav",
+            "status": "A",
+            "binary": true,
+            "added": 0,
+            "deleted": 0,
+            "bytes": 2646044
+          },
+          {
+            "path": "tools/reel/render.mjs",
+            "status": "A",
+            "binary": false,
+            "added": 49,
+            "deleted": 0
+          },
+          {
+            "path": "tools/reel/sound.mjs",
+            "status": "A",
+            "binary": false,
+            "added": 40,
+            "deleted": 0
+          }
+        ],
+        "additions": 653,
+        "deletions": 195,
+        "repo": "sonny914/new"
+      },
+      "t": "2026-10-12T07:09:16+00:00",
+      "kind": "commit",
+      "actor": "claude",
+      "text": "Lab 002: Thinking orb moves to /experiments, with a 15-second reel\n\n- /experiments/thinking-orb/: the playground, all nine states and the\n  notes, on the R&D page's stylesheet, with the reel up top\n- /rd/#experiments: Lab 002 entry above Lab 001, with a live orb\n- /experiments redirects to the section; /lab/thinking-orb/ redirects\n  to the new page\n- tools/reel: a frame-exact compositor that draws the reel with the\n  real engine, a synthesised score, and a renderer that writes\n  reel.mp4 (1080x1920, 30 fps, AAC) and its poster\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01E33KRahnfgaMJD2zhcyZuQ",
+      "refs": [
+        "git:be1b0f3"
+      ],
+      "id": "E04"
+    },
+    {
+      "tags": [],
+      "data": {
+        "path": "experiments/thinking-orb/reel-poster.jpg",
+        "sha": "be1b0f3b4ce8824760cca51f137337b4476767f4",
+        "bytes": 83507
+      },
+      "t": "2026-10-12T07:09:16+00:00",
+      "kind": "artifact",
+      "actor": "claude",
+      "text": "experiments/thinking-orb/reel-poster.jpg (84 KB)",
+      "refs": [
+        "file:experiments/thinking-orb/reel-poster.jpg@be1b0f3",
+        "git:be1b0f3"
+      ],
+      "id": "E05"
+    },
+    {
+      "tags": [],
+      "data": {
+        "path": "experiments/thinking-orb/reel.mp4",
+        "sha": "be1b0f3b4ce8824760cca51f137337b4476767f4",
+        "bytes": 5866774
+      },
+      "t": "2026-10-12T07:09:16+00:00",
+      "kind": "artifact",
+      "actor": "claude",
+      "text": "experiments/thinking-orb/reel.mp4 (5.9 MB)",
+      "refs": [
+        "file:experiments/thinking-orb/reel.mp4@be1b0f3",
+        "git:be1b0f3"
+      ],
+      "id": "E06"
+    },
+    {
+      "tags": [],
+      "data": {
+        "path": "experiments/thinking-orb/index.html",
+        "sha": "be1b0f3b4ce8824760cca51f137337b4476767f4"
+      },
+      "t": "2026-10-12T07:09:16+00:00",
+      "kind": "page",
+      "actor": "claude",
+      "text": "experiments/thinking-orb/index.html",
+      "refs": [
+        "file:experiments/thinking-orb/index.html@be1b0f3",
+        "git:be1b0f3"
+      ],
+      "id": "E07"
+    },
+    {
+      "tags": [],
+      "data": {
+        "number": 20,
+        "url": "https://github.com/sonny914/new/pull/20",
+        "title": "Lab 002: Thinking orb moves to /experiments, with a 15-second reel",
+        "head": "claude/orbs-in-repo-68l8w7",
+        "base": "main",
+        "additions": 653,
+        "deletions": 195,
+        "changed_files": 14,
+        "commit_count": 1
+      },
+      "t": "2026-10-12T07:09:45Z",
+      "kind": "pr-open",
+      "actor": "claude",
+      "text": "#20 Lab 002: Thinking orb moves to /experiments, with a 15-second reel",
+      "refs": [
+        "gh:pr/20"
+      ],
+      "id": "E08"
+    },
+    {
+      "tags": [
+        "limitation"
+      ],
+      "data": {
+        "num_turns": 53,
+        "duration_ms": 603452
+      },
+      "t": "2026-10-12T07:10:02.087673Z",
+      "kind": "reply",
+      "actor": "claude",
+      "turn": 1,
+      "text": "The orb now has its own page on your site at `/experiments/thinking-orb/`, and the reel is done and sent above. It's all in draft PR #20: https://github.com/sonny914/new/pull/20\n\nYour live site is the `new` repo (quietbands.com), so that's where this went. `sonny914.github.io` only holds design docs and screenshots, and I didn't touch it.\n\n**On the site:**\n- **Experiments section:** \"Experiments\" already exists as a section of your R&D page (`/rd/#experiments`). The orb is listed there as **Lab 002**, above Spatial Hero, with a small live orb next to the heading.\n- **The orb's page** has the reel at the top, then the \"Hold one\" playground with every setting, all nine states, and a short write-up of how it works.\n- **Links:** `quietbands.com/experiments` now goes to that section, so the URL on the reel's last frame works. The old `/lab/thinking-orb/` page is deleted and its address forwards to the new page.\n\n**The reel:** 15 seconds, vertical 1080×1920, with its own soundtrack. Every frame is drawn by the real orb code, so nothing in it is a mock-up.\n- An orange dot blooms into the orb.\n- All nine states cut on the beat.\n- They collapse into a 3×3 grid with an orange ripple: \"Nine states. One engine.\"\n- A hand grabs the orb, spins it and flings it, and it slows down the same way it does when you fling it on the page.\n- \"Tune it.\" The settings sliders move live and the color switches to orange.\n- The 20px orb inside a \"Sending…\" button, then \"Hold one.\" and the URL.\n- The last frames fold back into the opening dot, so it loops without a visible cut on Reels and TikTok.\n\nTo change it later, edit `tools/reel/orb-reel.html` and run `node tools/reel/render.mjs`. A re-render takes about 30 seconds.\n\nTests pass (65/65). Both pages load cleanly on phone and desktop widths in a headless browser. Nothing has been checked on a real phone yet.\n\n**Honest take:** the reel is strong content for @flighty.builds. It makes a code experiment look good, and that's the recognition you want. But it doesn't earn you anything by itself. Post it, and link it to the studio's work rather than to the orb itself.\n\nDo you want me to watch the PR and handle any review comments or deploy failures?",
+      "refs": [
+        "ccr:87d492c1-36e3-464e-aa8e-a5d6fb7e864d"
+      ],
+      "id": "E09"
+    },
+    {
+      "tags": [],
+      "data": {
+        "platform": "ios"
+      },
+      "t": "2026-10-12T07:12:39.906933Z",
+      "kind": "prompt",
+      "actor": "founder",
+      "turn": 2,
+      "text": "Captions and hashtags",
+      "refs": [
+        "ccr:23ca7035-d8b0-43c3-9a74-ce64cce234f6"
+      ],
+      "id": "E10"
+    },
+    {
+      "tags": [],
+      "data": {
+        "num_turns": 1,
+        "duration_ms": 53317
+      },
+      "t": "2026-10-12T07:13:33.399454Z",
+      "kind": "reply",
+      "actor": "claude",
+      "turn": 2,
+      "text": "Merge PR #20 before you post. The end card and these captions point to quietbands.com/experiments, and that link won't work on the live site until the PR is deployed.\n\nCredit Jakub Antalik, who wrote the open-source orb you built on, in every post, and tag him. I don't know his handles, so look them up rather than guessing. The builder crowd will spot an uncredited port, and that would undo the recognition you're posting for.\n\n**Instagram Reels (@flighty.builds)**\n```\nLoading spinners just say \"wait.\" This one tells you what kind of work is happening.\n\n9 states. Searching scans a globe. Connecting wires up a constellation. Solving scrambles, then clicks back into place.\n\nAnd you can grab it. Hold it, spin it, fling it, and it coasts back to its own pace.\n\nPlain canvas. No React. No build step. Built on Jakub Antalik's open-source thinking-orbs.\n\nPlay with it → link in bio\n\n#creativecoding #webdev #uidesign #microinteractions #buildinpublic\n```\nPin this as the first comment:\n```\nCredit: the orb geometry is Jakub Antalik's thinking-orbs (MIT). I ported it off React and made it grabbable. Every frame of this reel was drawn by the real engine, nothing animated by hand.\n```\n\n**TikTok**\n```\na loading spinner you can actually grab. 9 states, zero React. which one goes in your app? #creativecoding #webdev #uidesign #javascript #buildinpublic\n```\nThe question at the end is there to get comments.\n\n**X**\n```\nLoading spinners say \"wait.\" This one shows what kind of work is happening, and you can grab it and fling it.\n\n9 states, plain canvas, no React. Built on [Jakub's handle]'s thinking-orbs.\n```\nPut `quietbands.com/experiments/thinking-orb/` in the first reply, not the post itself. Posts with links tend to get less reach. Use one hashtag at most, or none.\n\n**LinkedIn (Quiet Bands voice)**\n```\nMost loading indicators promise that something is happening. We wanted one that shows what kind of thing.\n\nLab 002 from Quiet Bands R&D: nine states, each a small piece of geometry that turns while the wait lasts. A globe scanned for searching. A constellation wiring itself for connecting. Bands that scramble and click back for solving.\n\nIt's Jakub Antalik's open-source thinking-orbs, taken off React onto plain canvas, with one addition: you can pick it up. Hold it and it stops. Drag it and it turns. Let go and it coasts back to its own pace.\n\nIt already runs on our intake form. The reel was drawn by the same engine, frame by frame.\n\nHold one: quietbands.com/experiments/thinking-orb/\n\n#UXDesign #FrontendDevelopment #CreativeCoding\n```\n\n**Other first lines to test:**\n- \"I made the loading spinner grabbable.\"\n- \"A loading state you can hold.\"\n- \"Your loading spinner has one job. This one has nine.\"\n\n**Hashtags to swap in:** #creativecoding #webdev #uidesign #uxdesign #microinteractions #frontend #javascript #motiondesign #generativeart #designengineering #indiehacker. Use 3–5 per post. More than that doesn't help reach and looks spammy.\n\nThis reel will mostly reach developers and designers, not people who'd hire the studio. That makes it good for @flighty.builds and the community you're growing there. The LinkedIn version is the only one with a realistic chance of reaching someone who pays, so that's the one to polish.",
+      "refs": [
+        "ccr:4f5a698e-2c8a-465d-ab0d-d12e76969be5"
+      ],
+      "id": "E11"
+    },
+    {
+      "tags": [
+        "obstacle"
+      ],
+      "data": {
+        "platform": "ios"
+      },
+      "t": "2026-10-20T19:45:42.582433Z",
+      "kind": "prompt",
+      "actor": "founder",
+      "turn": 3,
+      "text": "Why are these not available under experiments on quietbands.com/experiments?",
+      "refs": [
+        "ccr:76c715cd-f49f-42cd-a649-650abcb3d5bd"
+      ],
+      "id": "E12"
+    },
+    {
+      "tags": [],
+      "data": {
+        "sha": "99d0d381c53a0b10eab32075feed86842949eba8",
+        "parents": [
+          "2afcbb8c78ea44830e12910f508a0c305953e001",
+          "be1b0f3b4ce8824760cca51f137337b4476767f4"
+        ]
+      },
+      "t": "2026-10-20T14:47:34-05:00",
+      "kind": "merge",
+      "actor": "github",
+      "text": "Merge pull request #20 from sonny914/claude/orbs-in-repo-68l8w7",
+      "refs": [
+        "git:99d0d38"
+      ],
+      "id": "E13"
+    },
+    {
+      "tags": [],
+      "data": {
+        "number": 20,
+        "base": "main",
+        "open_ms": 736670000
+      },
+      "t": "2026-10-20T19:47:35Z",
+      "kind": "pr-merge",
+      "actor": "github",
+      "text": "#20 merged into main",
+      "refs": [
+        "gh:pr/20",
+        "git:99d0d38"
+      ],
+      "id": "E14"
+    },
+    {
+      "tags": [
+        "mistake",
+        "limitation"
+      ],
+      "data": {
+        "num_turns": 14,
+        "duration_ms": 149687
+      },
+      "t": "2026-10-20T19:48:12.716250Z",
+      "kind": "reply",
+      "actor": "claude",
+      "turn": 3,
+      "text": "PR #20 is merged into `main`. Netlify publishes `main` automatically, usually within a couple of minutes. This environment's network blocks quietbands.com, so I couldn't load the live pages. What I did confirm is that `main` now has the orb page, the reel and the redirects.\n\nOnce the deploy finishes, these should work:\n- `quietbands.com/experiments` takes you to the Experiments section of the R&D page, with the orb as Lab 002 at the top.\n- `quietbands.com/experiments/thinking-orb/` is the orb page, with the reel, the playground and all nine states.\n- `quietbands.com/lab/thinking-orb/` now forwards to the new page.\n\nIf they still show the old site after about five minutes, check the Deploys tab for the quietbands project in Netlify.\n\nOne mistake of mine went in with it: a 2.6MB sound file left over from building the reel (`tools/reel/out-sound.wav`). Visitors can't reach it, because the site blocks everything under `/tools/`, but it's clutter in the repo. Want me to remove it?",
+      "refs": [
+        "ccr:b28f06c6-f091-4f66-b990-058d1b17cab0"
+      ],
+      "id": "E15"
+    },
+    {
+      "tags": [
+        "approval"
+      ],
+      "data": {
+        "platform": "ios"
+      },
+      "t": "2026-10-20T19:49:35.133675Z",
+      "kind": "prompt",
+      "actor": "founder",
+      "turn": 4,
+      "text": "Yes",
+      "refs": [
+        "ccr:23448b63-a046-4a11-b181-2338a6041b20"
+      ],
+      "id": "E16"
+    },
+    {
+      "tags": [
+        "fix"
+      ],
+      "data": {
+        "sha": "20c1a0353cb9e968c4e6a7aab70095852786098a",
+        "subject": "Remove the reel's stray sound render",
+        "files": [
+          {
+            "path": "tools/reel/out-sound.wav",
+            "status": "D",
+            "binary": true,
+            "added": 0,
+            "deleted": 0,
+            "bytes": 2646044
+          }
+        ],
+        "additions": 0,
+        "deletions": 0,
+        "repo": "sonny914/new"
+      },
+      "t": "2026-10-20T19:49:53+00:00",
+      "kind": "commit",
+      "actor": "claude",
+      "text": "Remove the reel's stray sound render\n\ntools/reel/out-sound.wav was an intermediate from the first render and\nwas committed by mistake. render.mjs writes the score to the OS temp\ndirectory now, so nothing regenerates it in the repo.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01E33KRahnfgaMJD2zhcyZuQ",
+      "refs": [
+        "git:20c1a03"
+      ],
+      "id": "E17"
+    },
+    {
+      "tags": [
+        "self-revert"
+      ],
+      "data": {
+        "path": "tools/reel/out-sound.wav",
+        "bytes": 2646044,
+        "added_in": "be1b0f3b4ce8824760cca51f137337b4476767f4",
+        "removed_in": "20c1a0353cb9e968c4e6a7aab70095852786098a"
+      },
+      "t": "2026-10-20T19:49:53+00:00",
+      "kind": "file-removed",
+      "actor": "claude",
+      "text": "tools/reel/out-sound.wav (2.6 MB) added in be1b0f3, removed in 20c1a03",
+      "refs": [
+        "git:20c1a03",
+        "git:be1b0f3"
+      ],
+      "id": "E18"
+    },
+    {
+      "tags": [],
+      "data": {
+        "number": 23,
+        "url": "https://github.com/sonny914/new/pull/23",
+        "title": "Remove the reel's stray sound render",
+        "head": "claude/orbs-in-repo-68l8w7",
+        "base": "main",
+        "additions": 0,
+        "deletions": 0,
+        "changed_files": 1,
+        "commit_count": 1
+      },
+      "t": "2026-10-20T19:50:00Z",
+      "kind": "pr-open",
+      "actor": "claude",
+      "text": "#23 Remove the reel's stray sound render",
+      "refs": [
+        "gh:pr/23"
+      ],
+      "id": "E19"
+    },
+    {
+      "tags": [],
+      "data": {
+        "number": 23,
+        "base": "main",
+        "open_ms": 10000
+      },
+      "t": "2026-10-20T19:50:10Z",
+      "kind": "pr-merge",
+      "actor": "github",
+      "text": "#23 merged into main",
+      "refs": [
+        "gh:pr/23",
+        "git:2d6d654"
+      ],
+      "id": "E20"
+    },
+    {
+      "tags": [],
+      "data": {
+        "sha": "2d6d654affad1575533734b6142bd9e89e6f061d",
+        "parents": [
+          "99d0d381c53a0b10eab32075feed86842949eba8",
+          "20c1a0353cb9e968c4e6a7aab70095852786098a"
+        ]
+      },
+      "t": "2026-10-20T14:50:10-05:00",
+      "kind": "merge",
+      "actor": "github",
+      "text": "Merge pull request #23 from sonny914/claude/orbs-in-repo-68l8w7",
+      "refs": [
+        "git:2d6d654"
+      ],
+      "id": "E21"
+    },
+    {
+      "tags": [],
+      "data": {
+        "num_turns": 7,
+        "duration_ms": 45153
+      },
+      "t": "2026-10-20T19:50:20.441Z",
+      "kind": "reply",
+      "actor": "claude",
+      "turn": 4,
+      "text": "I removed the stray sound file, and the fix is merged into `main` as PR #23 (https://github.com/sonny914/new/pull/23).\n\n- **Gone from the site's code:** the 2.6MB file is no longer in `main`. It's still in the repo's history, which only matters if you ever care about the repo's download size.\n- **Won't come back:** the reel's render script now saves its sound file to a temp folder outside the project.\n- **Live site:** nothing changes for visitors. The orb page, reel and poster are untouched, and all tests pass.",
+      "refs": [
+        "ccr:41650e3b-9c50-4d95-b806-66ce5c0a413c"
+      ],
+      "id": "E22"
+    }
+  ],
+  "metrics": [
+    {
+      "key": "events",
+      "value": 23,
+      "display": "23",
+      "unit": "events",
+      "refs": [
+        "E00"
+      ],
+      "how": "events in session-events.json"
+    },
+    {
+      "key": "prompts",
+      "value": 5,
+      "display": "5",
+      "unit": "prompts",
+      "refs": [
+        "E01",
+        "E03",
+        "E10",
+        "E12",
+        "E16"
+      ],
+      "how": "founder prompts"
+    },
+    {
+      "key": "pull_requests",
+      "value": 2,
+      "display": "2",
+      "unit": "PRs",
+      "refs": [
+        "E08",
+        "E19"
+      ],
+      "how": "pull requests opened"
+    },
+    {
+      "key": "commits",
+      "value": 2,
+      "display": "2",
+      "unit": "commits",
+      "refs": [
+        "E04",
+        "E17"
+      ],
+      "how": "session commits (Claude-Session trailer)"
+    },
+    {
+      "key": "files_touched",
+      "value": 14,
+      "display": "14",
+      "unit": "files",
+      "refs": [
+        "E04",
+        "E17"
+      ],
+      "how": "distinct paths across session commits"
+    },
+    {
+      "key": "build_minutes",
+      "value": 10,
+      "display": "10",
+      "unit": "min",
+      "refs": [
+        "E09"
+      ],
+      "how": "duration of the turn that did the work"
+    },
+    {
+      "key": "build_steps",
+      "value": 53,
+      "display": "53",
+      "unit": "steps",
+      "refs": [
+        "E09"
+      ],
+      "how": "agent steps in that turn"
+    },
+    {
+      "key": "pr20_files",
+      "value": 14,
+      "display": "14",
+      "unit": "files",
+      "refs": [
+        "E08"
+      ],
+      "how": "PR #20 changed_files"
+    },
+    {
+      "key": "pr20_additions",
+      "value": 653,
+      "display": "+653",
+      "unit": "lines",
+      "refs": [
+        "E08"
+      ],
+      "how": "PR #20 additions"
+    },
+    {
+      "key": "pr20_deletions",
+      "value": 195,
+      "display": "−195",
+      "unit": "lines",
+      "refs": [
+        "E08"
+      ],
+      "how": "PR #20 deletions"
+    },
+    {
+      "key": "pr20_commits",
+      "value": 1,
+      "display": "1",
+      "unit": "commits",
+      "refs": [
+        "E08"
+      ],
+      "how": "PR #20 commit count"
+    },
+    {
+      "key": "pr23_files",
+      "value": 1,
+      "display": "1",
+      "unit": "files",
+      "refs": [
+        "E19"
+      ],
+      "how": "PR #23 changed_files"
+    },
+    {
+      "key": "pr23_additions",
+      "value": 0,
+      "display": "+0",
+      "unit": "lines",
+      "refs": [
+        "E19"
+      ],
+      "how": "PR #23 additions"
+    },
+    {
+      "key": "pr23_deletions",
+      "value": 0,
+      "display": "−0",
+      "unit": "lines",
+      "refs": [
+        "E19"
+      ],
+      "how": "PR #23 deletions"
+    },
+    {
+      "key": "pr23_commits",
+      "value": 1,
+      "display": "1",
+      "unit": "commits",
+      "refs": [
+        "E19"
+      ],
+      "how": "PR #23 commit count"
+    },
+    {
+      "key": "pr20_wait_days",
+      "value": 8,
+      "display": "8",
+      "unit": "days",
+      "refs": [
+        "E14"
+      ],
+      "how": "PR #20 open → merged, whole days"
+    },
+    {
+      "key": "tests_passed",
+      "value": 65,
+      "display": "65/65",
+      "unit": "tests",
+      "refs": [
+        "E09"
+      ],
+      "how": "test count reported in the reply"
+    },
+    {
+      "key": "removed_E18_mb",
+      "value": 2.6,
+      "display": "2.6 MB",
+      "unit": "MB",
+      "refs": [
+        "E18"
+      ],
+      "how": "tools/reel/out-sound.wav blob size"
+    },
+    {
+      "key": "artifact_E06_seconds",
+      "value": 15,
+      "display": "15 s",
+      "unit": "s",
+      "refs": [
+        "E06"
+      ],
+      "how": "ffprobe experiments/thinking-orb/reel.mp4"
+    },
+    {
+      "key": "artifact_E06_size",
+      "value": 1080,
+      "display": "1080×1920",
+      "unit": "px",
+      "refs": [
+        "E06"
+      ],
+      "how": "ffprobe experiments/thinking-orb/reel.mp4"
+    },
+    {
+      "key": "artifact_E06_fps",
+      "value": 30,
+      "display": "30 fps",
+      "unit": "fps",
+      "refs": [
+        "E06"
+      ],
+      "how": "ffprobe experiments/thinking-orb/reel.mp4"
+    }
+  ]
+}

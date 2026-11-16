@@ -1,0 +1,139 @@
+1
+00:00:00,750 --> 00:00:01,996
+Session recap.
+
+2
+00:00:01,996 --> 00:00:03,775
+The orb gets a page.
+
+3
+00:00:04,425 --> 00:00:07,273
+I asked Claude to put the thinking
+
+4
+00:00:07,273 --> 00:00:10,121
+orb on my site, under experiments.
+
+5
+00:00:10,121 --> 00:00:12,299
+And make a 15-second reel.
+
+6
+00:00:12,299 --> 00:00:13,220
+Go all out.
+
+7
+00:00:13,870 --> 00:00:16,880
+About 10 minutes and 53 steps later,
+
+8
+00:00:16,880 --> 00:00:17,884
+it was done.
+
+9
+00:00:17,884 --> 00:00:19,640
+One commit, 14 files.
+
+10
+00:00:20,290 --> 00:00:23,154
+The reel is drawn frame by frame
+
+11
+00:00:23,154 --> 00:00:25,213
+by the real orb engine.
+
+12
+00:00:25,213 --> 00:00:27,629
+Nothing in it is a mock-up.
+
+13
+00:00:28,279 --> 00:00:30,001
+It got its own page:
+
+14
+00:00:30,001 --> 00:00:31,378
+the reel up top,
+
+15
+00:00:31,378 --> 00:00:33,616
+a playground you can grab,
+
+16
+00:00:33,616 --> 00:00:35,338
+and all nine states.
+
+17
+00:00:35,988 --> 00:00:37,005
+Then it sat.
+
+18
+00:00:37,005 --> 00:00:39,547
+8 days later I went looking on
+
+19
+00:00:39,547 --> 00:00:42,597
+quietbands.com, and it wasn't there.
+
+20
+00:00:42,597 --> 00:00:44,122
+The work was done.
+
+21
+00:00:44,122 --> 00:00:46,240
+It just never got merged.
+
+22
+00:00:46,890 --> 00:00:48,222
+So we merged it.
+
+23
+00:00:48,222 --> 00:00:50,971
+And Claude owned a mistake on the
+
+24
+00:00:50,971 --> 00:00:53,719
+way in: a 2.6 megabyte sound file
+
+25
+00:00:53,719 --> 00:00:56,883
+that should never have been committed.
+
+26
+00:00:56,883 --> 00:00:59,215
+Pull request 23 took it out.
+
+27
+00:00:59,865 --> 00:01:03,116
+Before, the R&D page stopped at Lab
+
+28
+00:01:03,116 --> 00:01:03,488
+001.
+
+29
+00:01:03,488 --> 00:01:05,718
+Now Lab 002 sits on top,
+
+30
+00:01:05,718 --> 00:01:07,204
+with a live orb.
+
+31
+00:01:07,854 --> 00:01:09,721
+65 of 65 tests passing.
+
+32
+00:01:09,721 --> 00:01:12,644
+Captions written for four platforms.
+
+33
+00:01:12,644 --> 00:01:14,836
+Two things are still on me:
+
+34
+00:01:14,836 --> 00:01:17,434
+the live site, and a real phone.
+
+35
+00:01:18,084 --> 00:01:20,829
+Lesson: finished isn't shipped until it's merged.

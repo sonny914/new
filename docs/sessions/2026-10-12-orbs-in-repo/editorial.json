@@ -1,0 +1,54 @@
+{
+  "_note": "Editorial pass by Claude (the session running /qb-capture), in the founder's voice. It may only re-word: every number and citation is re-checked by the validator before anything renders.",
+  "title": "The orb gets a page",
+  "derived": [
+    { "key": "caption_platforms", "value": 4, "items": ["Instagram Reels", "TikTok", "**X**", "LinkedIn"], "refs": ["E11"] },
+    { "key": "open_checks", "value": 2, "items": ["couldn't load the live pages", "Nothing has been checked on a real phone yet."], "refs": ["E09", "E15"] }
+  ],
+  "formats": {
+    "16x9": {
+      "intro": { "narration": "Session recap. The orb gets a page." },
+      "goal": { "narration": "I asked Claude to put the thinking orb on my site, under experiments. And make a 15-second reel. Go all out." },
+      "stats": { "narration": "About 10 minutes and 53 steps later, it was done. One commit, 14 files." },
+      "device": { "narration": "The reel is drawn frame by frame by the real orb engine. Nothing in it is a mock-up." },
+      "browser": {
+        "narration": "It got its own page: the reel up top, a playground you can grab, and all nine states.",
+        "refs": ["E09"],
+        "props": { "notes": ["The reel up top", "Hold one: the playground, every setting", "All nine states", "What it is made of"] }
+      },
+      "timeline": { "narration": "Then it sat. 8 days later I went looking on quietbands.com, and it wasn't there. The work was done. It just never got merged." },
+      "merge": {
+        "narration": "So we merged it. And Claude owned a mistake on the way in: a 2.6 megabyte sound file that should never have been committed. Pull request 23 took it out.",
+        "props": { "headline": "Merged. Then cleaned up." }
+      },
+      "beforeafter": { "narration": "Before, the R&D page stopped at Lab 001. Now Lab 002 sits on top, with a live orb.", "props": { "headline": "quietbands.com/rd/#experiments" } },
+      "checklist": {
+        "narration": "65 of 65 tests passing. Captions written for four platforms. Two things are still on me: the live site, and a real phone.",
+        "refs": ["E11"],
+        "props": {
+          "headline": "Where it stands",
+          "items": [
+            { "text": "/experiments/thinking-orb/: the reel, the playground, all nine states", "status": "verified", "source": "commit be1b0f3" },
+            { "text": "A 15-second reel, every frame drawn by the real engine", "status": "verified", "source": "reel.mp4 · be1b0f3" },
+            { "text": "Tests: 65/65 passing", "status": "verified", "source": "reply · 12 OCT 02:10" },
+            { "text": "Captions and hashtags for Instagram, TikTok, X and LinkedIn", "status": "verified", "source": "reply · 12 OCT 02:13" },
+            { "text": "PR #20 and PR #23 merged into main", "status": "verified", "source": "GitHub · 20 OCT" },
+            { "text": "Live site: Claude's environment couldn't reach quietbands.com", "status": "unverified", "source": "reply · 20 OCT 14:48" },
+            { "text": "Not yet checked on a real phone", "status": "unverified", "source": "reply · 12 OCT 02:10" }
+          ]
+        }
+      },
+      "lesson": {
+        "narration": "Lesson: finished isn't shipped until it's merged.",
+        "props": { "lines": ["Finished isn't shipped until it's merged.", "And build byproducts go to temp, not the repo."] }
+      }
+    },
+    "9x16": {
+      "hook": { "narration": "Built in 10 minutes. Merged 8 days later." },
+      "device": { "narration": "Claude gave the orb its own page and a 15-second reel, drawn frame by frame by the real engine." },
+      "timeline": { "narration": "Then it sat. 8 days later I asked why it wasn't on the site." },
+      "merge": { "narration": "So we merged it, and Claude cleaned up its own mistake.", "props": { "headline": "Merged." } },
+      "lesson": { "narration": "Finished isn't shipped until it's merged.", "props": { "lines": ["Finished isn't shipped until it's merged."] } }
+    }
+  }
+}
