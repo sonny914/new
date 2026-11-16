@@ -186,3 +186,13 @@ if (tc && !reduced) {
   document.addEventListener('visibilitychange', () => run(!document.hidden));
   run(true);
 }
+
+/* films: one plays at a time; count plays and finishes */
+document.querySelectorAll('video[data-film]').forEach((v) => {
+  let played = false;
+  v.addEventListener('play', () => {
+    document.querySelectorAll('video[data-film]').forEach((o) => { if (o !== v && !o.paused) o.pause(); });
+    if (!played) { played = true; track('studio_film_play', { film: v.dataset.film, where: v.dataset.where }); }
+  });
+  v.addEventListener('ended', () => track('studio_film_end', { film: v.dataset.film, where: v.dataset.where }), { once: true });
+});

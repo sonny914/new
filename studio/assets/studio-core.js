@@ -26,7 +26,7 @@ export function buildSignup(kind, data, { campaign = '', where = '', attribution
     first_name: clip(data.first_name, 80),
     makes: clip(data.makes, 80),
     workshop_optin: kind === 'workshop' || data.workshop_optin === '1' || data.workshop_optin === true,
-    brief: kind === 'commission' ? { org: clip(data.org, 120), what: clip(data.what, 2000), when: clip(data.when, 60) }
+    brief: kind === 'commission' ? { org: clip(data.org, 120), what: clip(data.what, 2000), use: clip(data.use, 80), when: clip(data.when, 60), budget: clip(data.budget, 80) }
       : kind === 'workshop' && clip(data.idea, 200) ? { idea: clip(data.idea, 200) } : null,
     campaign: clip(campaign, 64),
     source: clip(a.source, 64),
@@ -42,7 +42,7 @@ export function netlifyBody(formName, row) {
   const b = row.brief || {};
   const fields = {
     'form-name': formName, kind: row.kind, email: row.email, first_name: row.first_name, makes: row.makes,
-    workshop_optin: row.workshop_optin ? '1' : '', org: b.org, what: b.what, when: b.when, idea: b.idea,
+    workshop_optin: row.workshop_optin ? '1' : '', org: b.org, what: b.what, use: b.use, when: b.when, budget: b.budget, idea: b.idea,
     campaign: row.campaign, where: row.attribution?.where, source: row.source, path: row.path,
     attribution: JSON.stringify(row.attribution || {}),
   };

@@ -4,8 +4,9 @@
 /field-guide.pdf           /downloads/flighty-rd-field-guide.pdf   302
 /pressure-test             /rd/pressure-test/                       301
 
-# Experiments live in the R&D page's Experiments section; each lab that graduates gets /experiments/<name>/.
-/experiments               /rd/#experiments                         301
+# /experiments/ is the playground page; each lab that graduates gets /experiments/<name>/. Lab notes stay in R&D.
+/lab/bulb                  /experiments/bulb/                       301
+/lab/bulb/*                /experiments/bulb/                       301
 /lab/thinking-orb          /experiments/thinking-orb/               301
 /lab/thinking-orb/*        /experiments/thinking-orb/               301
 
