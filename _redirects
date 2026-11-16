@@ -13,6 +13,7 @@
 /tools/*                   /404.html   404
 /release/*                 /404.html   404
 /DEPLOYMENT_NOTES.md       /404.html   404
+/CLAUDE.md                 /404.html   404
 
 # Legacy property-teams path now lives at /commercial
 /for-property-teams        /commercial/    301!
