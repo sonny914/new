@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>QB Capture thumbnail</title>
+<meta name="robots" content="noindex" />
+<style>
+/* One real frame and a few words. Quiet Bands identity: black ground, cream type, orange for the one live phrase.
+   Every position comes from lib/thumbs.mjs, so the face check there and the picture here agree. */
+@font-face { font-family: 'Hubot Sans'; src: url(./fonts/hubot-sans-latin.woff2) format('woff2'); font-weight: 200 900; font-stretch: 75% 125%; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #000; overflow: hidden; }
+#frame { position: relative; overflow: hidden; background: #000; color: #F2EEE5; font-family: 'Hubot Sans', sans-serif; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+#panel { position: absolute; overflow: hidden; }
+#panel img { position: absolute; max-width: none; }
+#shade { position: absolute; left: 0; right: 0; pointer-events: none; }
+#area { position: absolute; display: flex; flex-direction: column; }
+#text { font-weight: 800; font-stretch: 112%; letter-spacing: -.025em; line-height: .98; white-space: nowrap; align-self: flex-start; }
+#text div { display: block; padding-bottom: .06em; }
+#text .hot { color: #FF5A00; }
+#mark, #logo { position: absolute; }
+#mark svg, #logo img { display: block; width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<div id="frame"><div id="panel"><img id="shot" alt="" /></div><div id="shade"></div><div id="area"><div id="text"></div></div><div id="mark"></div><div id="logo"></div></div>
+<script type="module">
+const d = window.__THUMB__, $ = (id) => document.getElementById(id), px = (v) => `${v}px`;
+const place = (el, r) => Object.assign(el.style, { left: px(r.x), top: px(r.y), width: px(r.w), height: px(r.h) });
+async function build() {
+  const frame = $('frame'); frame.style.width = px(d.W); frame.style.height = px(d.H);
+  place($('panel'), d.panel);
+  const shot = $('shot');
+  Object.assign(shot.style, { left: px(d.img.left - d.panel.x), top: px(d.img.top - d.panel.y), width: px(d.img.width), height: px(d.img.height) });
+  shot.src = d.frame; await shot.decode();
+  place($('area'), d.text);
+  $('area').style.justifyContent = d.align === 'start' ? 'flex-start' : d.align === 'end' ? 'flex-end' : 'center';
+  const text = $('text');
+  for (const line of d.lines) { const row = document.createElement('div'); for (const r of line) { const s = document.createElement('span'); s.textContent = r.t; if (r.hot) s.className = 'hot'; row.append(s); } text.append(row); }
+  await document.fonts.load("800 100px 'Hubot Sans'"); await document.fonts.ready;
+  // the largest size at which every line fits the text area; below the floor the words are too many
+  const max = d.tall ? 168 : 136, min = d.tall ? 76 : 60;
+  let font = max, fits = false;
+  for (; font >= min; font -= 2) { text.style.fontSize = px(font); if (text.offsetWidth <= d.text.w && text.offsetHeight <= d.text.h) { fits = true; break; } }
+  const b = text.getBoundingClientRect(), rect = { x: b.left, y: b.top, w: b.width, h: b.height };
+  if (d.layout === 'over') {
+    // a soft local shade behind the type only, so the rest of the frame stays as it was shot
+    const top = d.band === 'top', reach = Math.min(d.H, (top ? rect.y + rect.h : d.H - rect.y) * 1.5);
+    Object.assign($('shade').style, { top: top ? '0' : 'auto', bottom: top ? 'auto' : '0', height: px(reach),
+      background: `linear-gradient(${top ? '180deg' : '0deg'}, rgba(0,0,0,.86) 0%, rgba(0,0,0,.62) 55%, rgba(0,0,0,0) 100%)` });
+  }
+  // the mark or logo takes the corner farthest from the type
+  const m = Math.round(d.W * 0.05), far = d.band === 'top' ? { bottom: px(m) } : { top: px(m) }, side = d.band === 'right' ? { left: px(m) } : { right: px(m) };
+  if (d.mark) { const el = $('mark'); el.innerHTML = await (await fetch(d.mark)).text(); Object.assign(el.style, { width: px(Math.round(d.W * 0.05)), color: '#F2EEE5', ...far, ...side }); el.querySelectorAll('[fill]').forEach((n) => n.setAttribute('fill', 'currentColor')); }
+  if (d.logo) { const el = $('logo'), img = new Image(); img.src = d.logo; await img.decode(); el.append(img); Object.assign(el.style, { width: px(Math.round(d.W * 0.14)), ...far, ...(d.mark ? (d.band === 'right' ? { right: px(m) } : { left: px(m) }) : side) }); }
+  window.thumb = { ok: true, fits, font, rect };
+}
+if (d) build().catch((e) => { window.thumb = { error: String(e?.message ?? e) }; }); else window.thumb = { ok: true };
+</script>
+</body>
+</html>

@@ -15,7 +15,12 @@ npm run capture -- final --key <key>          # re-time to the recorded narratio
 npm run capture -- doc <documentary.json> --check   # documentary mode: check a hand-approved storyboard of real footage
 npm run capture -- doc <documentary.json> --stills 2,14 --formats 16x9,9x16   # review frames
 npm run capture -- doc <documentary.json> --formats 16x9,9x16 [--narration <dir>]   # preview (no voice), or the final cut once every line is recorded
+npm run capture -- scout demand --seeds "ai short film, ai lip sync" --out <dir>   # topic scout: what YouTube's search box suggests for each seed
+npm run capture -- scout rank <candidates.json>   # order hand-written topics by that evidence; footage that doesn't exist makes a topic "not makeable"
+npm run capture -- thumbs <thumbs.json> [--formats 16x9,9x16] [--check]   # packaging: thumbnails from real frames of the cut, a feed-size sheet, checked titles
 ```
+
+The scout and packaging steps sit either side of a video: which topic to make, and how it is presented. Their workflows are the `qb-scout` and `qb-packaging` skills. The scout needs `suggestqueries.google.com` on the environment's allowed hosts.
 
 Documentary mode is for creative work, where the footage is the story: see "Documentary mode" in the MVP doc. Its storyboard and media can live outside the repo (frames are cached next to the storyboard), and its measurements come from [`analysis/`](analysis/README.md).
 
@@ -34,7 +39,9 @@ Needs Node 20+, FFmpeg and Playwright's Chromium (preinstalled in cloud sessions
 | `lib/render.mjs` | Playwright frames → FFmpeg; score, narration and subtitle mux |
 | `lib/score.mjs` | the synthesized score |
 | `lib/documentary.mjs` | documentary mode: beats, narration placement, the no-talking-over-dialogue and every-number-cited checks |
+| `lib/scout.mjs` | topic scout: search suggestions per seed, and the check that every candidate topic cites one and has footage |
+| `lib/thumbs.mjs` | packaging: thumbnail variants from real frames, checked against the cut, the facts and the measured face |
 | `analysis/` | measurements of footage (mouth movement against voice, mouth and eye tracks), Python + MediaPipe |
-| `stage/` | the motion-graphics templates (`stage.js`), styles and vendored fonts (OFL) |
+| `stage/` | the motion-graphics templates (`stage.js`), the thumbnail template (`thumb.html`), styles and vendored fonts (OFL) |
 
 Tests: `tools/capture.test.mjs` (part of `npm test`). Changes: [`CHANGELOG.md`](CHANGELOG.md).

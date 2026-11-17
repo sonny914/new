@@ -31,13 +31,19 @@ QB Capture turns a session, or a storyboard of real footage, into 16:9 and 9:16 
 - **Docs:** `tools/capture/README.md` and `CHANGELOG.md`.
 - **Skills:**
   - `qb-capture`: session recaps;
-  - `harlem88-production-notes`: Production Notes episodes and the overlay reference.
+  - `harlem88-production-notes`: Production Notes episodes and the overlay reference;
+  - `qb-scout`: which topic to make next, from YouTube search suggestions and the footage that exists;
+  - `qb-packaging`: thumbnails and titles for a finished cut.
 - **Rendering a storyboard:** `node tools/capture/cli.mjs doc <storyboard.json> --out <dir> --formats 16x9,9x16`.
   - `--narration <dir>`: a narrated draft. Add `--final` for the release render.
   - `--stills 2,43`: single frames. Check stills before a full render, which takes 7–20 minutes per format.
 - **Gameplay and screen recordings:** set `"wide": true` on the storyboard and `"dialogue": false` on clips with no speech.
 - **Analysis scripts:** they need a Python venv and MediaPipe models (`tools/capture/analysis/README.md`). Run them with `python -I`.
 - **Before sending a render,** review it frame by frame and check its duration and loudness.
+- **Topics and thumbnails follow the same rules as footage:**
+  - a topic cites a search phrase from the demand file and footage that exists;
+  - a thumbnail is a real frame the video contains, never a generated or retouched image;
+  - no predicted views or click rates.
 
 ## Narration (the founder's cloned voice, on Higgsfield)
 
