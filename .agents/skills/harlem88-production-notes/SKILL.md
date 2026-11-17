@@ -30,7 +30,7 @@ node tools/capture/cli.mjs notes intake <review.zip|dir> --out <workdir>
 
 Keep the workdir private: outside the repo, or in the scratchpad. Footage and the founder's notes are not repo content.
 
-Read `topics.md` and recommend one topic to the founder, with the reason and the gaps. A finding with only stills (cards) and no excerpt is not makeable: say so and name the files that would make it.
+Read `topics.md` and recommend one topic to the founder, with the reason and the gaps. To weigh the makeable topics by what people search for, use the `qb-scout` skill. A finding with only stills (cards) and no excerpt is not makeable: say so and name the files that would make it.
 
 ### 2. Footage review
 
@@ -146,7 +146,7 @@ This writes:
 - `production-notes.md`: footage hashes, every fact and its source, the script with timings, the graphics per scene;
 - `approval.json`: script, voice, logo, final and publish, all `pending` until the founder says yes.
 
-Give the founder the package and the checklist. Never post it yourself.
+Give the founder the package and the checklist. Never post it yourself. Thumbnails and title options come from the `qb-packaging` skill.
 
 ## When the episode is done
 

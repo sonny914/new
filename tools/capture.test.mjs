@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, mkdirSync, existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fromTranscript, fromCcrExport, fromCcrEvents, sessionCommits, githubPulls, sessionAliases, redact } from './capture/lib/ingest.mjs';
@@ -15,6 +15,8 @@ import { ROOT, readJSON } from './capture/lib/util.mjs';
 import { loadDoc, timeDoc, clipData, silentSeconds, docPayload } from './capture/lib/documentary.mjs';
 import { parseReview, rankTopics, inventory, extractReview, sentence, intake, draftEpisode, packageEpisode } from './capture/lib/notes.mjs';
 import { stills } from './capture/lib/render.mjs';
+import { queriesFor, parseSuggest, relevant, gatherDemand, rankCandidates, briefReport } from './capture/lib/scout.mjs';
+import { parseText, coverBox, layoutFor, shownSpans, loadThumbs, checkThumbs, packageThumbs, MAX_BYTES } from './capture/lib/thumbs.mjs';
 import { execFileSync } from 'node:child_process';
 
 const ORBS = join(ROOT, 'docs/sessions/2026-10-12-orbs-in-repo');
@@ -381,4 +383,99 @@ test('documentary: footage with no speech is measured for level only when declar
   assert.equal(m.summary.has_audio, false); assert.equal(m.n, 60); assert.ok(m.db.every((v) => v <= -90), 'no audio track measures as silence');
   const r = timeDoc(withDoc(doc, { clips: { g: { file: c.file, label: 'Gameplay', dialogue: false } } }));
   assert.deepEqual(r.problems, []);
+});
+
+// ---- topic scout -----------------------------------------------------------------------------------------------
+// YouTube's answers, stubbed: nobody asks "why ai lip sync", so that search falls back to the plain phrase
+const SUGGEST = { 'ai lip sync': ['ai lip sync', 'ai lip sync video', 'ai lip sync tutorial'], 'how to ai lip sync': ['how to ai lip sync', 'how to make ai lip sync video', 'how to use hedra'],
+  'why ai lip sync': ['ai lip sync', 'how to ai lip sync', 'why am i syncing'] };
+const stub = (q) => JSON.stringify([q, SUGGEST[q.trim()] ?? [], [], {}]);
+
+test('scout: suggestions are parsed strictly, and a phrase belongs to a seed only if it carries every word of it', () => {
+  assert.deepEqual(parseSuggest('["q",["AI  Lip Sync","b"],[],{}]'), ['ai lip sync', 'b']);
+  assert.throws(() => parseSuggest('<html>blocked</html>'), /not JSON/); assert.throws(() => parseSuggest('{"a":1}'), /unexpected shape/);
+  assert.equal(relevant('why ai videos are bad', 'ai video'), true); assert.equal(relevant('why am i videos', 'ai video'), false);
+  assert.equal(queriesFor('AI lip sync').length, 7); assert.equal(queriesFor('x', { deep: true }).length, 33);
+});
+
+test('scout: weight follows position, and a fallback suggestion is never counted as a second sign of demand', () => {
+  const d = gatherDemand(['ai lip sync'], { fetcher: stub, pause: 0, now: new Date('2026-11-17T12:00:00Z') });
+  const p = (x) => d.phrases.find((y) => y.phrase === x);
+  assert.equal(p('ai lip sync').weight, 1); assert.deepEqual(p('ai lip sync').hits, [{ q: 'ai lip sync', pos: 1 }], 'the "why" search fell back to it; that is not counted');
+  assert.equal(p('how to ai lip sync').hits.length, 1); assert.equal(p('how to ai lip sync').question, true);
+  assert.equal(p('ai lip sync tutorial').weight, 0.8); assert.equal(p('how to use hedra'), undefined, 'not about the seed');
+  assert.equal(d.queries.length, 7, 'the raw answers are kept'); assert.match(d.note, /not search volume/);
+});
+
+test('scout: a topic must cite a phrase people were shown to search for, and needs footage that exists', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'qb-scout-'));
+  writeFileSync(join(dir, 'demand.json'), JSON.stringify(gatherDemand(['ai lip sync'], { fetcher: stub, pause: 0, now: new Date('2026-11-17T12:00:00Z') })));
+  writeFileSync(join(dir, 'take.mp4'), 'x');
+  const spec = (candidates) => ({ schema: 'qb-capture/scout@1', demand: 'demand.json', candidates });
+  const now = new Date('2026-11-20T12:00:00Z');
+  const bad = rankCandidates(spec([{ title: 'Invented', phrases: ['ai lip sync secrets'], footage: ['take.mp4'] }, { title: 'Unsourced', phrases: ['ai lip sync'], seen: [{ url: 'https://x' }] }]), { base: dir, now });
+  assert.equal(bad.ok, false); assert.match(bad.problems.join('\n'), /"ai lip sync secrets" is not in the demand file/); assert.match(bad.problems.join('\n'), /Unsourced: every "seen" entry/);
+  const r = rankCandidates(spec([
+    { title: 'No footage yet', phrases: ['ai lip sync', 'ai lip sync video', 'how to ai lip sync'], footage: ['missing.mp4'] },
+    { title: 'The silent mouth', phrases: ['AI lip sync tutorial'], footage: ['take.mp4'], seen: [{ url: 'https://example.com/v', what: 'top result is a tool demo', on: '2026-11-17' }] }]), { base: dir, now });
+  assert.equal(r.ok, true); assert.deepEqual(r.ranked.map((c) => c.title), ['The silent mouth', 'No footage yet'], 'makeable first, whatever the search evidence');
+  assert.equal(r.ranked[1].makeable, false); assert.match(r.ranked[1].gaps.join(), /no footage of this exists yet.*missing\.mp4/);
+  assert.match(briefReport(r), /not a forecast of views/);
+  assert.match(rankCandidates(spec([]), { base: dir, now: new Date('2027-01-20T00:00:00Z') }).warnings.join(), /63 days old/);
+});
+
+// ---- packaging -------------------------------------------------------------------------------------------------
+test('thumbs: text parses into lines with one accent, and a frame is placed by the same box the face check uses', () => {
+  const t = parseText('He talks.\nNo *sound*.');
+  assert.deepEqual(t.lines, [[{ t: 'He talks.' }], [{ t: 'No ' }, { t: 'sound', hot: true }, { t: '.' }]]); assert.equal(t.words, 4); assert.equal(t.hot, 1);
+  assert.deepEqual(coverBox([1920, 1080], { x: 0, y: 0, w: 1280, h: 720 }), { left: 0, top: 0, width: 1280, height: 720 });
+  // a tall frame in a wide canvas: scaled to the width, the focus brought to the centre, never past an edge
+  assert.deepEqual(coverBox([1080, 1920], { x: 0, y: 0, w: 1280, h: 720 }, [0.5, 0.25]), { left: 0, top: -208.89, width: 1280, height: 2275.56 });
+  assert.equal(coverBox([1080, 1920], { x: 0, y: 0, w: 1280, h: 720 }, [0.5, 0]).top, 0);
+  const side = layoutFor('16x9', 'side'), over = layoutFor('9x16', 'over', 'top');
+  assert.ok(side.text.x + side.text.w <= side.panel.x, 'side: type and picture never share ground');
+  assert.ok(over.text.y >= (1920 - 1350) / 2 && over.text.y + over.text.h <= 1920 - (1920 - 1350) / 2, '9:16 type stays inside the centred 4:5 area');
+});
+
+function thumbsFixture(spec, { face = false } = {}) {
+  const doc = docFixture([{ id: 's', template: 'clip', stage: 'goal', clip: 'c', beats: [{ play: [0, 1.5] }, { hold: 1.5, dur: 1 }] }], [{ text: '88', from: 'record:series name' }]);
+  if (face) { // a face low in the frame
+    const a = JSON.parse(readFileSync(join(doc.base, 'clip.json'), 'utf8')); a.summary.width = 64; a.summary.height = 64; a.boxes = a.moving.map(() => [20, 40, 44, 60]);
+    writeFileSync(join(doc.base, 'clip-face.json'), JSON.stringify(a));
+    const d = JSON.parse(readFileSync(join(doc.base, 'doc.json'), 'utf8')); d.clips.c.analysis = 'clip-face.json'; writeFileSync(join(doc.base, 'doc.json'), JSON.stringify(d));
+  }
+  const file = join(doc.base, 'thumbs.json');
+  writeFileSync(file, JSON.stringify({ schema: 'qb-capture/thumbs@1', storyboard: 'doc.json', ...spec }));
+  return file;
+}
+
+test('thumbs: a frame must be in the cut, numbers need facts, one accent, and a logo is the approved file or nothing', () => {
+  assert.deepEqual(shownSpans({ scenes: [{ beats: [{ clip: 'c', src0: 0, src1: 1.5 }, { clip: 'c', src0: 1.5, src1: 1.5, b: { clip: 'd', src: 2 } }, { clip: 'c', src0: 3, src1: 3.5 }] }] }).get('c'), [[0, 1.5], [3, 3.5]]);
+  const ok = checkThumbs(loadThumbs(thumbsFixture({ variants: [{ clip: 'c', at: 1.2, text: 'He talks.\nNo *sound*.' }], titles: ['His mouth moves. Nothing comes out. | HARLEM ’88'] })));
+  assert.deepEqual(ok.problems, []); assert.equal(ok.variants[0].shown, 'in the cut'); assert.equal(ok.variants[0].id, 'a');
+  const bad = checkThumbs(loadThumbs(thumbsFixture({ logo: 'brand/logo.svg', variants: [{ clip: 'c', at: 3.2, text: 'Never shown' }, { clip: 'c', at: 9, text: 'Past the end' },
+    { clip: 'c', at: 1, text: '*Took* 9 *tries*' }, { clip: 'x', at: 0, text: 'No clip' }], titles: ['Fixed in 3 takes', 'x'.repeat(101), 'A title that is allowed but runs long enough that a feed will cut the end of it off'] })));
+  const all = bad.problems.join('\n');
+  for (const re of [/variant a: c at 3\.2 s is not in the cut \(it shows 0–1\.5 s\)/, /variant b: clip\.mp4 has no frame at 9 s/, /variant c: 2 phrases in orange/, /variant c: "Took 9 tries" shows 9, which no fact cites/,
+    /variant d: no clip "x"/, /title 1: "Fixed in 3 takes" shows 3/, /title 2: 101 characters/, /logo: .*never a typeset stand-in/]) assert.match(all, re);
+  assert.match(bad.warnings.join(), /title 3: 8\d characters/);
+  // a frame from a loose file cannot be checked against the cut, and says so
+  const loose = checkThumbs(loadThumbs(thumbsFixture({ variants: [{ file: 'clip.mp4', at: 1, text: 'Loose' }] })));
+  assert.deepEqual(loose.problems, []); assert.match(loose.warnings.join(), /not checked against the cut/);
+});
+
+test('thumbs: variants render as real frames at YouTube size, type on a measured face is refused, and the package waits for a choice', { timeout: 120000 }, async () => {
+  const file = thumbsFixture({ mark: true, variants: [{ id: 'side', clip: 'c', at: 1.2, text: 'He talks.\nNo *sound*.', layout: 'side' }, { id: 'auto', clip: 'c', at: 1.2, text: 'No *sound*' }], titles: ['The silent mouth'] }, { face: true });
+  const r = await packageThumbs(file, { formats: ['16x9', '9x16'] });
+  assert.deepEqual(r.files.map((f) => f.file), ['thumb-side-16x9.jpg', 'thumb-side-9x16.jpg', 'thumb-auto-16x9.jpg', 'thumb-auto-9x16.jpg']);
+  assert.ok(r.files.filter((f) => f.variant === 'auto').every((f) => f.band === 'top'), 'type takes the half the face is not in');
+  const size = (f) => execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', join(r.out, f)], { encoding: 'utf8' }).trim();
+  assert.equal(size('thumb-side-16x9.jpg'), '1280,720'); assert.equal(size('thumb-side-9x16.jpg'), '1080,1920');
+  assert.ok(r.files.every((f) => f.bytes < MAX_BYTES)); assert.ok(statSync(join(r.out, 'thumbs-sheet.jpg')).size > 0);
+  const pkg = JSON.parse(readFileSync(join(r.out, 'packaging.json'), 'utf8'));
+  assert.equal(pkg.status, 'awaiting approval'); assert.ok(pkg.items.every((i) => i.status === 'pending')); assert.equal(pkg.frames[0].shown, 'in the cut');
+  assert.doesNotMatch(readFileSync(join(r.out, 'packaging.md'), 'utf8'), /\d\s?%/, 'no click rate is ever stated');
+  const onFace = thumbsFixture({ variants: [{ clip: 'c', at: 1.2, text: 'No *sound*', band: 'bottom' }] }, { face: true });
+  await assert.rejects(packageThumbs(onFace), /the text sits on the face/);
+  assert.equal(existsSync(join(onFace, '..', 'packaging', 'thumb-a-16x9.jpg')), false, 'the refused thumbnail is not written');
 });

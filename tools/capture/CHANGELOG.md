@@ -2,6 +2,21 @@
 
 QB Capture documents its own development here. Sessions that change `tools/capture/` are also recapped like any other work; runs of the capture itself never are (see `lib/guard.mjs`).
 
+## 0.5.0 — 17 Nov 2026
+
+Two steps either side of a video: which topic to make, and how it is presented. Neither generates footage, forecasts views or publishes.
+
+- **Topic scout (`scout demand`, `scout rank`):**
+  - `demand` asks YouTube's search suggestions about each seed phrase and the questions around it, and keeps every raw answer. A phrase is weighted by the position it was suggested at. A fallback suggestion (YouTube answering a question nobody asks with the plain phrase) is not counted twice.
+  - `rank` orders hand-written candidate topics. A candidate that cites a phrase the demand file doesn't hold is refused. A candidate whose footage doesn't exist is listed as not makeable, below every topic that is.
+  - The reports say what the evidence is: that a phrase is searched, not how often.
+- **Packaging (`thumbs`):**
+  - A thumbnail is one frame of the footage as decoded, with type over it (`over`) or beside it (`side`), at 1280×720 and 1080×1920.
+  - Checks before rendering: a frame from a storyboard clip must be in a stretch the cut shows; every number in a thumbnail or title needs a cited fact; one orange accent; titles within YouTube's 100 characters; a logo is the approved file or absent.
+  - Checks while rendering: type that lands on a measured face, or that doesn't fit at a readable size, is refused and not written. A measured face is framed in the part of the picture the type leaves free.
+  - Output: up to three variants, a sheet showing them at feed sizes on dark and light, and `packaging.md` / `packaging.json` with every frame's file, time and hash. Everything waits for the founder's choice.
+- **Skills:** `qb-scout` and `qb-packaging`.
+
 ## 0.4.1 — 13 Nov 2026
 
 Production Notes on game footage: "SPIRITED, as made: Part 1", cut from gameplay recorded with the game's own engine.

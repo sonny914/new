@@ -12,6 +12,10 @@
 //                                       render a hand-approved documentary of real footage (preview until --narration is given)
 //   node tools/capture/cli.mjs notes    intake <review.zip|dir> | draft <workdir> --topic <n> | package <storyboard.json>
 //                                       HARLEM '88 Production Notes: ranked topics, draft episodes, approval packages
+//   node tools/capture/cli.mjs scout    demand --seeds "<phrase>, <phrase>" --out <dir> [--deep] | rank <candidates.json>
+//                                       topic scout: what people search for on YouTube, set against footage that exists
+//   node tools/capture/cli.mjs thumbs   <thumbs.json> [--out <dir>] [--formats 16x9,9x16] [--check]
+//                                       packaging: thumbnails cut from real frames of the footage, and checked titles
 //
 // run = steps 1–7 of the end-of-session flow (finalize, collect, narrate, select scenes, storyboard, silent preview, present).
 // Nothing here spends credits, publishes or deploys. Paid narration happens outside this CLI, only after `approve`.
@@ -31,9 +35,11 @@ import { sessionReport, logEntry, appendLog } from './lib/report.mjs';
 import { ENV_FLAG, lock, recordIndex } from './lib/guard.mjs';
 import { loadDoc, timeDoc, docPayload } from './lib/documentary.mjs';
 import { intake, draftEpisode, packageEpisode } from './lib/notes.mjs';
+import { scoutDemand, scoutRank } from './lib/scout.mjs';
+import { packageThumbs } from './lib/thumbs.mjs';
 
 process.env[ENV_FLAG] = '1'; // anything this process starts knows it is inside a capture
-export const VERSION = '0.4.1'; // bump with CHANGELOG.md
+export const VERSION = '0.5.0'; // bump with CHANGELOG.md
 const LOG_HEADER = '# Production log\n\nHow this recap was made: every run, what it decided, what it validated, and what it cost. Newest last.';
 
 const argv = process.argv.slice(2);
@@ -302,7 +308,37 @@ async function cmdNotes() {
   }
 }
 
-const commands = { run: cmdRun, stills: cmdStills, script: cmdScript, approve: cmdApprove, 'fetch-narration': cmdFetchNarration, final: cmdFinal, doc: cmdDoc, notes: cmdNotes };
+// Topic scout. `demand` reads YouTube's search suggestions for each seed (public, no key); `rank` orders hand-written
+// candidate topics, refusing any that cite a phrase the demand file does not hold. Neither forecasts views.
+async function cmdScout() {
+  const sub = argv[1];
+  if (sub === 'demand') {
+    const given = opt('seeds'), file = argv[2] && !argv[2].startsWith('--') ? resolve(argv[2]) : null;
+    const seeds = (given && given !== true ? String(given).split(',') : file ? readFileSync(file, 'utf8').split('\n') : []).map((x) => x.trim()).filter((x) => x && !x.startsWith('#'));
+    if (!seeds.length || !opt('out') || opt('out') === true) throw new Error('usage: scout demand --seeds "<phrase>, <phrase>" | <seeds.txt>  --out <dir> [--deep] [--hl en] [--gl US]');
+    const out = resolve(opt('out')), d = scoutDemand(seeds, out, { deep: !!opt('deep'), hl: opt('hl') ?? 'en', gl: opt('gl') ?? 'US' });
+    say(`demand: ${d.queries.length} searches, ${d.phrases.length} phrases (${d.phrases.filter((p) => p.question).length} questions) → ${join(out, 'demand.md')}`);
+    say('next: write candidates.json against footage that exists, then node tools/capture/cli.mjs scout rank <candidates.json>');
+  } else if (sub === 'rank' && argv[2]) {
+    const r = scoutRank(resolve(argv[2]));
+    for (const w of r.warnings) say(`warning: ${w}`);
+    if (!r.ok) throw new Error(`candidates check failed:\n- ${r.problems.join('\n- ')}`);
+    say(`rank: ${r.ranked.filter((c) => c.makeable).length} of ${r.ranked.length} topics makeable → ${r.out}`);
+    r.ranked.slice(0, 5).forEach((c, i) => say(`  ${i + 1}. [${c.demand}] ${c.title}${c.makeable ? '' : ' (no footage)'}`));
+  } else throw new Error('usage: scout demand --seeds "<phrase>, <phrase>" --out <dir> [--deep] | scout rank <candidates.json>');
+}
+
+// Packaging: thumbnails from real frames and checked titles, for the founder to choose from. Nothing is uploaded.
+async function cmdThumbs() {
+  const file = argv[1] && !argv[1].startsWith('--') ? resolve(argv[1]) : null;
+  if (!file) throw new Error('usage: thumbs <thumbs.json> [--out <dir>] [--formats 16x9,9x16] [--check]');
+  const r = await packageThumbs(file, { out: opt('out') && opt('out') !== true ? resolve(opt('out')) : undefined, formats: String(opt('formats') ?? '16x9').split(','), checkOnly: !!opt('check') });
+  for (const w of r.checked.warnings) say(`warning: ${w}`);
+  if (!r.out) { say(`checked: ${r.checked.variants.length} variants, ${r.checked.titles.length} titles`); return; }
+  say(`thumbs: ${r.files.map((f) => f.file).join(', ')} + thumbs-sheet.jpg, packaging.md → ${r.out}`);
+}
+
+const commands = { scout: cmdScout, thumbs: cmdThumbs, run: cmdRun, stills: cmdStills, script: cmdScript, approve: cmdApprove, 'fetch-narration': cmdFetchNarration, final: cmdFinal, doc: cmdDoc, notes: cmdNotes };
 if (!commands[cmd]) {
   const head = readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1);
   console.log(head.slice(0, head.findIndex((l) => !l.startsWith('//'))).map((l) => l.replace(/^\/\/ ?/, '')).join('\n'));
